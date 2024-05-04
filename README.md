@@ -4,7 +4,7 @@
     <meta charset="utf-8">
   </head>
     <body class="logged-in env-production page-responsive page-blob" style="word-wrap: break-word;">
-      <p> BluZ Scintillation gamma spectrometer based on SiPM Sensl FC60035/FJ60035, Broadcom AFBR-S4N66C013 & NaI(Tl) or SrI2(Eu).</p>
+      <p> BluZ Scintillation gamma spectrometer based on SiPM Sensl FC60035/FJ60035, Broadcom AFBR-S4N66C013 & NaI(Tl) or SrI2(Eu). Bluetooth 5.x</p>
       <a href="https://github.com/Maniak003/BluZ/wiki/Description" rel="nofollow">
         <img src="https://github.com/Maniak003/BluZ/blob/main/Documents/BluZ.png" alt="BluZ" style="max-width: 100%;">
       </a>
