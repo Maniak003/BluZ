@@ -8,5 +8,11 @@
       <a href="https://github.com/Maniak003/BluZ/wiki/Description" rel="nofollow">
         <img src="https://github.com/Maniak003/BluZ/blob/main/Documents/BluZ.png" alt="BluZ" style="max-width: 100%;">
       </a>
+      <a href="https://github.com/Maniak003/BluZ/wiki/Description" rel="nofollow">
+        <img src="https://github.com/Maniak003/BluZ/blob/main/Documents/BluZ-3D-Top.png" alt="BluZ" style="max-width: 100%;">
+      </a>
+      <a href="https://github.com/Maniak003/BluZ/wiki/Description" rel="nofollow">
+        <img src="https://github.com/Maniak003/BluZ/blob/main/Documents/BluZ-3D-Bot.png" alt="BluZ" style="max-width: 100%;">
+      </a>
     </body>
 </html>

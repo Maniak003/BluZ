@@ -2503,7 +2503,7 @@
     (property "Value" "RUM002N05" (id 1) (at 132.715 126.365 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "Package_TO_SOT_SMD:SOT-723" (id 2) (at 147.955 114.935 0)
+    (property "Footprint" "My-library:SOT-723" (id 2) (at 147.955 114.935 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 142.875 117.475 0)
@@ -2893,7 +2893,7 @@
     (property "Value" "RUM002N05" (id 1) (at 149.225 126.365 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "Package_TO_SOT_SMD:SOT-723" (id 2) (at 164.465 114.935 0)
+    (property "Footprint" "My-library:SOT-723" (id 2) (at 164.465 114.935 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 159.385 117.475 0)
@@ -4590,10 +4590,10 @@
       (reference "M1") (unit 1) (value "VibroMotor") (footprint "My-library:VibroMotor")
     )
     (path "/023c9820-1d2c-4bbf-b944-cb0d2cdd9333"
-      (reference "Q1") (unit 1) (value "RUM002N05") (footprint "Package_TO_SOT_SMD:SOT-723")
+      (reference "Q1") (unit 1) (value "RUM002N05") (footprint "My-library:SOT-723")
     )
     (path "/319576f9-2cb0-4f46-bd3c-2849efa10845"
-      (reference "Q2") (unit 1) (value "RUM002N05") (footprint "Package_TO_SOT_SMD:SOT-723")
+      (reference "Q2") (unit 1) (value "RUM002N05") (footprint "My-library:SOT-723")
     )
     (path "/0884e69a-0118-4e3d-a73e-60459bf2172a"
       (reference "R1") (unit 1) (value "39k") (footprint "Resistor_SMD:R_0402_1005Metric")
