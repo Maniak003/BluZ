@@ -1,0 +1,9 @@
+../STM32_WPAN/Target/bpka.c:44:6:BPKA_Reset	1
+../STM32_WPAN/Target/bpka.c:54:5:BPKA_StartP256Key	2
+../STM32_WPAN/Target/bpka.c:74:6:BPKA_ReadP256Key	1
+../STM32_WPAN/Target/bpka.c:82:5:BPKA_StartDhKey	2
+../STM32_WPAN/Target/bpka.c:106:5:BPKA_ReadDhKey	2
+../STM32_WPAN/Target/bpka.c:119:13:BPKACB_Complete	1
+../STM32_WPAN/Target/bpka.c:123:13:BPKACB_Process	1
+../STM32_WPAN/Target/bpka.c:129:5:BPKA_Process	11
+../STM32_WPAN/Target/bpka.c:215:6:BPKA_BG_Process	2

@@ -1,0 +1,6 @@
+../System/Interfaces/pka_p256.c:113:6:HW_PKA_P256_StartRangeCheck	16	static
+../System/Interfaces/pka_p256.c:130:10:HW_PKA_P256_IsRangeCheckOk	8	static
+../System/Interfaces/pka_p256.c:137:6:HW_PKA_P256_StartPointCheck	16	static
+../System/Interfaces/pka_p256.c:171:10:HW_PKA_P256_IsPointCheckOk	8	static
+../System/Interfaces/pka_p256.c:178:6:HW_PKA_P256_StartEccScalarMul	24	static
+../System/Interfaces/pka_p256.c:221:6:HW_PKA_P256_ReadEccScalarMul	16	static

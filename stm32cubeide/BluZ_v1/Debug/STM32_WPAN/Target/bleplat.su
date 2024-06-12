@@ -1,0 +1,16 @@
+../STM32_WPAN/Target/bleplat.c:30:6:BLEPLAT_Init	8	static
+../STM32_WPAN/Target/bleplat.c:39:5:BLEPLAT_NvmAdd	32	static
+../STM32_WPAN/Target/bleplat.c:50:5:BLEPLAT_NvmGet	24	static
+../STM32_WPAN/Target/bleplat.c:61:5:BLEPLAT_NvmCompare	16	static
+../STM32_WPAN/Target/bleplat.c:70:6:BLEPLAT_NvmDiscard	16	static
+../STM32_WPAN/Target/bleplat.c:77:6:BLEPLAT_RngGet	16	static
+../STM32_WPAN/Target/bleplat.c:86:6:BLEPLAT_AesEcbEncrypt	24	static
+../STM32_WPAN/Target/bleplat.c:95:6:BLEPLAT_AesCmacSetKey	16	static
+../STM32_WPAN/Target/bleplat.c:102:6:BLEPLAT_AesCmacCompute	24	static
+../STM32_WPAN/Target/bleplat.c:111:5:BLEPLAT_PkaStartP256Key	16	static
+../STM32_WPAN/Target/bleplat.c:118:6:BLEPLAT_PkaReadP256Key	16	static
+../STM32_WPAN/Target/bleplat.c:125:5:BLEPLAT_PkaStartDhKey	16	static
+../STM32_WPAN/Target/bleplat.c:133:5:BLEPLAT_PkaReadDhKey	16	static
+../STM32_WPAN/Target/bleplat.c:140:6:BPKACB_Complete	8	static
+../STM32_WPAN/Target/bleplat.c:148:9:BLEPLAT_TimerStart	16	static
+../STM32_WPAN/Target/bleplat.c:156:6:BLEPLAT_TimerStop	16	static

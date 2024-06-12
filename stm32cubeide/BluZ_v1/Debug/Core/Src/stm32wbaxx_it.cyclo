@@ -1,0 +1,14 @@
+../Drivers/CMSIS/Include/core_cm33.h:2390:22:__NVIC_EnableIRQ	2
+../Drivers/CMSIS/Include/core_cm33.h:2428:22:__NVIC_DisableIRQ	2
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rcc.h:1708:22:LL_RCC_RADIO_DisableSleepTimerClock	1
+../Core/Src/stm32wbaxx_it.c:75:6:NMI_Handler	1
+../Core/Src/stm32wbaxx_it.c:90:6:HardFault_Handler	1
+../Core/Src/stm32wbaxx_it.c:105:6:MemManage_Handler	1
+../Core/Src/stm32wbaxx_it.c:120:6:BusFault_Handler	1
+../Core/Src/stm32wbaxx_it.c:135:6:UsageFault_Handler	1
+../Core/Src/stm32wbaxx_it.c:150:6:SVC_Handler	1
+../Core/Src/stm32wbaxx_it.c:163:6:DebugMon_Handler	1
+../Core/Src/stm32wbaxx_it.c:176:6:PendSV_Handler	1
+../Core/Src/stm32wbaxx_it.c:189:6:SysTick_Handler	1
+../Core/Src/stm32wbaxx_it.c:210:6:RADIO_IRQHandler	2
+../Core/Src/stm32wbaxx_it.c:232:6:HASH_IRQHandler	3

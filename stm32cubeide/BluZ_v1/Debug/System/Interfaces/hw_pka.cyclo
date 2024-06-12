@@ -1,0 +1,16 @@
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:453:22:LL_AHB2_GRP1_EnableClock	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:527:22:LL_AHB2_GRP1_DisableClock	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pka.h:203:22:LL_PKA_Config	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pka.h:214:22:LL_PKA_Enable	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pka.h:225:22:LL_PKA_Disable	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pka.h:312:22:LL_PKA_Start	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pka.h:504:26:LL_PKA_IsActiveFlag_PROCEND	2
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pka.h:559:22:LL_PKA_ClearFlag_PROCEND	1
+../System/Interfaces/hw_pka.c:38:5:HW_PKA_Enable	3
+../System/Interfaces/hw_pka.c:82:6:HW_PKA_WriteSingleInput	1
+../System/Interfaces/hw_pka.c:91:6:HW_PKA_WriteOperand	2
+../System/Interfaces/hw_pka.c:109:6:HW_PKA_Start	1
+../System/Interfaces/hw_pka.c:121:5:HW_PKA_EndOfOperation	1
+../System/Interfaces/hw_pka.c:129:10:HW_PKA_ReadSingleOutput	1
+../System/Interfaces/hw_pka.c:138:6:HW_PKA_ReadResult	2
+../System/Interfaces/hw_pka.c:152:6:HW_PKA_Disable	2

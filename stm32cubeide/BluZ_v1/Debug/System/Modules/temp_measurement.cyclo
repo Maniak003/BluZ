@@ -1,0 +1,2 @@
+../System/Modules/temp_measurement.c:46:23:TEMPMEAS_Init	3
+../System/Modules/temp_measurement.c:67:6:TEMPMEAS_RequestTemperatureMeasurement	1

@@ -1,0 +1,7 @@
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rcc.h:1761:26:LL_RCC_RADIO_GetSleepTimerClockSource	4	static
+../STM32_WPAN/Target/ll_sys_if.c:79:6:ll_sys_bg_process_init	8	static
+../STM32_WPAN/Target/ll_sys_if.c:90:6:ll_sys_schedule_bg_process	8	static
+../STM32_WPAN/Target/ll_sys_if.c:100:6:ll_sys_schedule_bg_process_isr	8	static
+../STM32_WPAN/Target/ll_sys_if.c:110:6:ll_sys_config_params	16	static
+../STM32_WPAN/Target/ll_sys_if.c:161:6:ll_sys_bg_temperature_measurement_init	8	static
+../STM32_WPAN/Target/ll_sys_if.c:172:6:ll_sys_bg_temperature_measurement	8	static

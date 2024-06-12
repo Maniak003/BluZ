@@ -1,0 +1,7 @@
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:453:22:LL_AHB2_GRP1_EnableClock	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:492:26:LL_AHB2_GRP1_IsEnabledClock	2
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:527:22:LL_AHB2_GRP1_DisableClock	1
+../System/Interfaces/hw_aes.c:46:5:HW_AES_Enable	2
+../System/Interfaces/hw_aes.c:70:6:HW_AES_SetKey	6
+../System/Interfaces/hw_aes.c:135:6:HW_AES_Crypt	2
+../System/Interfaces/hw_aes.c:159:6:HW_AES_Disable	2
