@@ -2589,7 +2589,7 @@
     (property "Reference" "L1" (id 0) (at 101.8372 62.865 90)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "47uH" (id 1) (at 104.3741 62.865 90))
+    (property "Value" "10uH" (id 1) (at 102.235 62.865 0))
     (property "Footprint" "Inductor_SMD:L_0603_1608Metric" (id 2) (at 106.045 62.865 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -3778,7 +3778,7 @@
     (property "Reference" "#PWR0126" (id 0) (at 95.885 70.485 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "+2V8" (id 1) (at 99.06 64.135 0))
+    (property "Value" "+2V8" (id 1) (at 91.44 65.405 0))
     (property "Footprint" "" (id 2) (at 95.885 66.675 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -4599,7 +4599,7 @@
       (reference "J12") (unit 1) (value "BTAnt") (footprint "lib:conn_mini")
     )
     (path "/0b90163a-d2f5-4daf-8d59-98bfbed918e0"
-      (reference "L1") (unit 1) (value "47uH") (footprint "Inductor_SMD:L_0603_1608Metric")
+      (reference "L1") (unit 1) (value "10uH") (footprint "Inductor_SMD:L_0603_1608Metric")
     )
     (path "/77373934-a013-4003-ae17-82edd2463c24"
       (reference "L2") (unit 1) (value "22uH") (footprint "Inductor_SMD:L_1206_3216Metric")
