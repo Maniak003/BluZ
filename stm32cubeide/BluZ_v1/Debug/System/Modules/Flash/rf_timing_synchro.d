@@ -62,7 +62,7 @@ System/Modules/Flash/rf_timing_synchro.o: \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files/DWC_ble154combo.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/os_wrapper.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_full/ll_fw_config.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_basic/ll_fw_config.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/mem_intf.h \
  ../Utilities/tim_serv/stm32_timer.h \
  ../System/Modules/Flash/flash_driver.h
@@ -131,7 +131,7 @@ System/Modules/Flash/rf_timing_synchro.o: \
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files/DWC_ble154combo.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/os_wrapper.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_full/ll_fw_config.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_basic/ll_fw_config.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/mem_intf.h:
 ../Utilities/tim_serv/stm32_timer.h:
 ../System/Modules/Flash/flash_driver.h:

@@ -66,7 +66,7 @@ typedef struct{
 #define CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET         2
 #define CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET              1
 /* USER CODE BEGIN PM */
-
+uint16_t MTUSizeValue;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -104,13 +104,13 @@ do {\
 /*
  The following 128bits UUIDs have been generated from the random UUID
  generator:
- 00000000CC7A482A984A7F2ED5B3E58F: Service 128bits UUID
- 000000008E2245419D4C21EDAE82ED19: Characteristic 128bits UUID
- 000000008E2245419D4C21EDAE82ED19: Characteristic 128bits UUID
+ 0000FE80CC7A482A984A7F2ED5B3E58F: Service 128bits UUID
+ 0000FE818E2245419D4C21EDAE82ED19: Characteristic 128bits UUID
+ 0000FE828E2245419D4C21EDAE82ED19: Characteristic 128bits UUID
  */
-#define COPY_BLUZ_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x00,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
-#define COPY_RX_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x00,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_TX_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x00,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_BLUZ_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x80,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
+#define COPY_RX_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x81,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_TX_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x82,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 
 /* USER CODE BEGIN PF */
 
@@ -127,7 +127,6 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
   hci_event_pckt *p_event_pckt;
   evt_blecore_aci *p_blecore_evt;
   aci_gatt_attribute_modified_event_rp0 *p_attribute_modified;
-  aci_gatt_write_permit_req_event_rp0   *p_write_perm_req;
   BLUZ_NotificationEvt_t                 notification;
   /* USER CODE BEGIN Service1_EventHandler_1 */
 
@@ -152,51 +151,7 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
           notification.AttributeHandle          = p_attribute_modified->Attr_Handle;
           notification.DataTransfered.Length    = p_attribute_modified->Attr_Data_Length;
           notification.DataTransfered.p_Payload = p_attribute_modified->Attr_Data;
-          if(p_attribute_modified->Attr_Handle == (BLUZ_Context.RxCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))
-          {
-            return_value = SVCCTL_EvtAckFlowEnable;
-            /* USER CODE BEGIN Service1_Char_1 */
-
-            /* USER CODE END Service1_Char_1 */
-            switch(p_attribute_modified->Attr_Data[0])
-            {
-              /* USER CODE BEGIN Service1_Char_1_attribute_modified */
-
-              /* USER CODE END Service1_Char_1_attribute_modified */
-
-              /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
-                /* USER CODE BEGIN Service1_Char_1_Disabled_BEGIN */
-
-                /* USER CODE END Service1_Char_1_Disabled_BEGIN */
-                notification.EvtOpcode = BLUZ_RX_NOTIFY_DISABLED_EVT;
-                BLUZ_Notification(&notification);
-                /* USER CODE BEGIN Service1_Char_1_Disabled_END */
-
-                /* USER CODE END Service1_Char_1_Disabled_END */
-                break;
-
-              /* Enabled Notification management */
-              case COMSVC_Notification:
-                /* USER CODE BEGIN Service1_Char_1_COMSVC_Notification_BEGIN */
-
-                /* USER CODE END Service1_Char_1_COMSVC_Notification_BEGIN */
-                notification.EvtOpcode = BLUZ_RX_NOTIFY_ENABLED_EVT;
-                BLUZ_Notification(&notification);
-                /* USER CODE BEGIN Service1_Char_1_COMSVC_Notification_END */
-
-                /* USER CODE END Service1_Char_1_COMSVC_Notification_END */
-                break;
-
-              default:
-                /* USER CODE BEGIN Service1_Char_1_default */
-
-                /* USER CODE END Service1_Char_1_default */
-                break;
-            }
-          }  /* if(p_attribute_modified->Attr_Handle == (BLUZ_Context.RxCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
-
-          else if(p_attribute_modified->Attr_Handle == (BLUZ_Context.TxCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))
+          if(p_attribute_modified->Attr_Handle == (BLUZ_Context.TxCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /* USER CODE BEGIN Service1_Char_2 */
@@ -240,17 +195,6 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
             }
           }  /* if(p_attribute_modified->Attr_Handle == (BLUZ_Context.TxCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
 
-          else if(p_attribute_modified->Attr_Handle == (BLUZ_Context.TxCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
-          {
-            return_value = SVCCTL_EvtAckFlowEnable;
-
-            notification.EvtOpcode = BLUZ_TX_WRITE_EVT;
-            /* USER CODE BEGIN Service1_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
-
-            /* USER CODE END Service1_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
-            BLUZ_Notification(&notification);
-          } /* if(p_attribute_modified->Attr_Handle == (BLUZ_Context.TxCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
-
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
@@ -272,14 +216,6 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
-          p_write_perm_req = (aci_gatt_write_permit_req_event_rp0*)p_blecore_evt->data;
-          if(p_write_perm_req->Attribute_Handle == (BLUZ_Context.TxCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
-          {
-            return_value = SVCCTL_EvtAckFlowEnable;
-            /*USER CODE BEGIN Service1_Char_2_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
-#warning user shall call aci_gatt_write_resp() function if allowed
-            /*USER CODE END Service1_Char_2_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
-          } /*if(p_write_perm_req->Attribute_Handle == (BLUZ_Context.TxCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
 
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
 
@@ -369,13 +305,12 @@ void BLUZ_Init(void)
    * service_max_attribute_record = 1 for BluZ +
    *                                2 for RX +
    *                                2 for TX +
-   *                                1 for RX configuration descriptor +
    *                                1 for TX configuration descriptor +
-   *                              = 7
+   *                              = 6
    * This value doesn't take into account number of descriptors manually added
    * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
-  max_attr_record = 7;
+  max_attr_record = 6;
 
   /* USER CODE BEGIN SVCCTL_InitService */
   /* max_attr_record to be updated if descriptors have been added */
@@ -405,9 +340,9 @@ void BLUZ_Init(void)
                           UUID_TYPE_128,
                           (Char_UUID_t *) &uuid,
                           SizeRx,
-                          CHAR_PROP_NOTIFY,
+                          CHAR_PROP_READ | CHAR_PROP_WRITE_WITHOUT_RESP,
                           ATTR_PERMISSION_NONE,
-                          GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                          GATT_DONT_NOTIFY_EVENTS,
                           0x10,
                           CHAR_VALUE_LEN_CONSTANT,
                           &(BLUZ_Context.RxCharHdle));
@@ -433,9 +368,9 @@ void BLUZ_Init(void)
                           UUID_TYPE_128,
                           (Char_UUID_t *) &uuid,
                           SizeTx,
-                          CHAR_PROP_WRITE | CHAR_PROP_NOTIFY,
+                          CHAR_PROP_NOTIFY,
                           ATTR_PERMISSION_NONE,
-                          GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                          GATT_NOTIFY_ATTRIBUTE_WRITE,
                           0x10,
                           CHAR_VALUE_LEN_CONSTANT,
                           &(BLUZ_Context.TxCharHdle));

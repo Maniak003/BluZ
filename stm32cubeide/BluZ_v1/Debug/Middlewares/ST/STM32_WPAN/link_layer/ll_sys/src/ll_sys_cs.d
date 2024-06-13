@@ -7,7 +7,7 @@ Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.o: \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_full/ll_fw_config.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_basic/ll_fw_config.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/mem_intf.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/os_wrapper.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/pta.h \
@@ -22,7 +22,7 @@ Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.o: \
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_full/ll_fw_config.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_basic/ll_fw_config.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/mem_intf.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/os_wrapper.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/pta.h:

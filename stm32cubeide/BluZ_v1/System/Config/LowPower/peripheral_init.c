@@ -38,8 +38,8 @@ extern ADC_HandleTypeDef hadc4;
 extern CRC_HandleTypeDef hcrc;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern RNG_HandleTypeDef hrng;
-extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim17;
 extern UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN EV */
@@ -70,8 +70,8 @@ void MX_StandbyExit_PeripharalInit(void)
   memset(&hcrc, 0, sizeof(hcrc));
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&hrng, 0, sizeof(hrng));
-  memset(&htim1, 0, sizeof(htim1));
   memset(&htim2, 0, sizeof(htim2));
+  memset(&htim17, 0, sizeof(htim17));
   memset(&huart2, 0, sizeof(huart2));
 
   CRCCTRL_Init();

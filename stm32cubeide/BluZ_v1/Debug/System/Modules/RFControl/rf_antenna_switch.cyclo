@@ -1,3 +1,1 @@
-../System/Modules/RFControl/rf_antenna_switch.c:36:13:RF_CONTROL_AntennaSwitch_Enable	2
-../System/Modules/RFControl/rf_antenna_switch.c:52:13:RF_CONTROL_AntennaSwitch_Disable	2
-../System/Modules/RFControl/rf_antenna_switch.c:62:6:RF_CONTROL_AntennaSwitch	3
+../System/Modules/RFControl/rf_antenna_switch.c:84:6:RF_CONTROL_AntennaSwitch	1

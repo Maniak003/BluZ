@@ -5,5 +5,5 @@
 
 USER_OBJS :=
 
-LIBS := -l:LinkLayer_BLE_Full_lib.a -l:stm32wba_ble_stack_full.a
+LIBS := -l:LinkLayer_BLE_Basic_lib.a -l:stm32wba_ble_stack_basic.a
 

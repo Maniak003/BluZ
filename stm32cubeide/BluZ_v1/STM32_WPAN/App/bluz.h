@@ -49,9 +49,8 @@ typedef enum
 
 typedef enum
 {
-  BLUZ_RX_NOTIFY_ENABLED_EVT,
-  BLUZ_RX_NOTIFY_DISABLED_EVT,
-  BLUZ_TX_WRITE_EVT,
+  BLUZ_RX_READ_EVT,
+  BLUZ_RX_WRITE_NO_RESP_EVT,
   BLUZ_TX_NOTIFY_ENABLED_EVT,
   BLUZ_TX_NOTIFY_DISABLED_EVT,
   /* USER CODE BEGIN Service1_OpcodeEvt_t */
@@ -93,7 +92,7 @@ typedef struct
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
-
+#define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 /* USER CODE END EV */
 
 /* Exported macros -----------------------------------------------------------*/

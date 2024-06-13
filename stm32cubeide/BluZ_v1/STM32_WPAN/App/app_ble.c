@@ -177,9 +177,9 @@ BLUZ_APP_ConnHandleNotEvt_t BLUZHandleNotification;
 static char a_GapDeviceName[] = {  'B', 'l', 'u', 'Z' }; /* Gap Device Name */
 
 /* Advertising Data */
-uint8_t a_AdvData[8] =
+uint8_t a_AdvData[11] =
 {
-  2, AD_TYPE_TX_POWER_LEVEL, 0 /* -0.3dBm */, /* Transmission Power */
+  5, AD_TYPE_COMPLETE_LOCAL_NAME, 'B', 'l', 'u', 'Z',  /* Complete name */
   4, AD_TYPE_MANUFACTURER_SPECIFIC_DATA, 0x30, 0x00, 0x00 /*  */,
 };
 uint64_t buffer_nvm[CFG_BLEPLAT_NVM_MAX_SIZE] = {0};
@@ -285,6 +285,31 @@ void APP_BLE_Init(void)
 
   }
   /* USER CODE BEGIN APP_BLE_Init_2 */
+  /* Код начальной инициализации */
+  tBleStatus status;
+  status = aci_gap_set_discoverable(ADV_TYPE,
+                                    ADV_INTERVAL_MIN,
+                                    ADV_INTERVAL_MAX,
+                                    CFG_BD_ADDRESS_TYPE,
+                                    ADV_FILTER,
+                                    0, 0, 0, 0, 0, 0);
+  if (status != BLE_STATUS_SUCCESS)
+  {
+    return;
+  }
+
+  status = aci_gap_delete_ad_type(AD_TYPE_TX_POWER_LEVEL);
+  if (status != BLE_STATUS_SUCCESS)
+  {
+    return;
+  }
+
+  /* Update Advertising data */
+  status = aci_gap_update_adv_data(sizeof(a_AdvData), (uint8_t *) a_AdvData);
+  if (status != BLE_STATUS_SUCCESS)
+  {
+    return;
+  }
 
   /* USER CODE END APP_BLE_Init_2 */
 
@@ -326,12 +351,37 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       gap_cmd_resp_release();
 
       /* USER CODE BEGIN EVT_DISCONN_COMPLETE_1 */
+      connectFlag = false;
 
       /* USER CODE END EVT_DISCONN_COMPLETE_1 */
       BLUZHandleNotification.EvtOpcode = BLUZ_DISCON_HANDLE_EVT;
       BLUZHandleNotification.ConnectionHandle = p_disconnection_complete_event->Connection_Handle;
       BLUZ_APP_EvtRx(&BLUZHandleNotification);
       /* USER CODE BEGIN EVT_DISCONN_COMPLETE */
+      tBleStatus status;
+      status = aci_gap_set_discoverable(ADV_TYPE,
+                                        ADV_INTERVAL_MIN,
+                                        ADV_INTERVAL_MAX,
+                                        CFG_BD_ADDRESS_TYPE,
+                                        ADV_FILTER,
+                                        0, 0, 0, 0, 0, 0);
+      if (status != BLE_STATUS_SUCCESS)
+      {
+        //return;
+      }
+
+      status = aci_gap_delete_ad_type(AD_TYPE_TX_POWER_LEVEL);
+      if (status != BLE_STATUS_SUCCESS)
+      {
+        //return;
+      }
+
+      /* Update Advertising data */
+      status = aci_gap_update_adv_data(sizeof(a_AdvData), (uint8_t *) a_AdvData);
+      if (status != BLE_STATUS_SUCCESS)
+      {
+        //return;
+      }
 
       /* USER CODE END EVT_DISCONN_COMPLETE */
       break; /* HCI_DISCONNECTION_COMPLETE_EVT_CODE */
@@ -455,7 +505,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           BLUZHandleNotification.ConnectionHandle = p_conn_complete->Connection_Handle;
           BLUZ_APP_EvtRx(&BLUZHandleNotification);
           /* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
-
+          connectFlag = true;
           /* USER CODE END HCI_EVT_LE_CONN_COMPLETE */
           break; /* HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE */
         }
@@ -1403,5 +1453,32 @@ void NVMCB_Store( const uint32_t* ptr, uint32_t size )
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
+#if defined(__GNUC__) && !defined (__clang__)
+uint8_t __attribute__((optimize("Os"))) APP_BLE_ComputeCRC8( uint8_t *DataPtr , uint8_t Datalen )
+#else
+uint8_t APP_BLE_ComputeCRC8( uint8_t *DataPtr , uint8_t Datalen )
+#endif
+{
+  uint8_t i, j;
+  const uint8_t PolynomeCRC = 0x97;
+  uint8_t CRC8 = 0x00;
+
+  for (i = 0; i < Datalen; i++)
+  {
+    CRC8 ^= DataPtr[i];
+    for (j = 0; j < 8; j++)
+    {
+      if ((CRC8 & 0x80) != 0)
+      {
+        CRC8 = (uint8_t) ((CRC8 << 1) ^ PolynomeCRC);
+      }
+      else
+      {
+        CRC8 <<= 1;
+      }
+    }
+  }
+  return (CRC8);
+}
 
 /* USER CODE END FD_WRAP_FUNCTIONS */

@@ -79,14 +79,15 @@ BluZ_v1.list \
 
 
 # All Target
-all: main-build
+all:
+	+@$(MAKE) --no-print-directory main-build && $(MAKE) --no-print-directory post-build
 
 # Main-build Target
 main-build: BluZ_v1.elf secondary-outputs
 
 # Tool invocations
-BluZ_v1.elf BluZ_v1.map: $(OBJS) $(USER_OBJS) /home/ed/work/gitprojects/BluZ/stm32cubeide/BluZ_v1/STM32WBA54KGUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -z noexecstack -o "BluZ_v1.elf" @"objects.list" $(USER_OBJS) -Wl,--start-group $(LIBS) -Wl,--end-group -mcpu=cortex-m33 -T"/home/ed/work/gitprojects/BluZ/stm32cubeide/BluZ_v1/STM32WBA54KGUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="BluZ_v1.map" -Wl,--gc-sections -static -L../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib -L../Middlewares/ST/STM32_WPAN/ble/stack/lib --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+BluZ_v1.elf BluZ_v1.map: $(OBJS) $(USER_OBJS) /home/ed/work/github/BluZ/stm32cubeide/BluZ_v1/STM32WBA54KGUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -z noexecstack -o "BluZ_v1.elf" @"objects.list" $(USER_OBJS) -Wl,--start-group $(LIBS) -Wl,--end-group -mcpu=cortex-m33 -T"/home/ed/work/github/BluZ/stm32cubeide/BluZ_v1/STM32WBA54KGUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="BluZ_v1.map" -Wl,--gc-sections -static -L../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib -L../Middlewares/ST/STM32_WPAN/ble/stack/lib --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -105,6 +106,10 @@ clean:
 	-$(RM) BluZ_v1.elf BluZ_v1.list BluZ_v1.map default.size.stdout
 	-@echo ' '
 
+post-build:
+	arm-none-eabi-objcopy -O ihex BluZ_v1.elf BluZ_v1.hex
+	-@echo ' '
+
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
 
 fail-specified-linker-script-missing:
@@ -114,6 +119,6 @@ fail-specified-linker-script-missing:
 warn-no-linker-script-specified:
 	@echo 'Warning: No linker script specified. Check the linker settings in the build configuration.'
 
-.PHONY: all clean dependents main-build fail-specified-linker-script-missing warn-no-linker-script-specified
+.PHONY: all clean dependents main-build fail-specified-linker-script-missing warn-no-linker-script-specified post-build
 
 -include ../makefile.targets

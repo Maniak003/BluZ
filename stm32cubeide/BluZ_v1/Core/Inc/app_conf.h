@@ -76,7 +76,7 @@
  * Define IO Authentication
  */
 #define CFG_BONDING_MODE                 (0)
-#define CFG_USED_FIXED_PIN               (0) /* 0->fixed pin is used ; 1->No fixed pin used*/
+#define CFG_USED_FIXED_PIN               (1) /* 0->fixed pin is used ; 1->No fixed pin used*/
 #define CFG_FIXED_PIN                    (111111)
 #define CFG_ENCRYPTION_KEY_SIZE_MAX      (16)
 #define CFG_ENCRYPTION_KEY_SIZE_MIN      (8)
@@ -440,7 +440,7 @@ typedef enum
 
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
-#define RADIO_INTR_PRIO_LOW                 (3)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
+#define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
 #if (USE_RADIO_LOW_ISR == 1)
 #define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
@@ -456,7 +456,7 @@ typedef enum
  *   0 -> RF TX output level from -20 dBm to +10 dBm
  *   1 -> RF TX output level from -20 dBm to +3 dBm
  */
-#define CFG_RF_TX_POWER_TABLE_ID            (0)
+#define CFG_RF_TX_POWER_TABLE_ID            (1)
 
 /* USER CODE BEGIN Radio_Configuration */
 
@@ -477,10 +477,10 @@ typedef enum
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                                  (2000U)  /* bytes */
+#define CFG_MM_POOL_SIZE                                  (4000U)  /* bytes */
 #define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
 #define CFG_AMM_VIRTUAL_STACK_BLE                         (1U)
-#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (400U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
 #define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
 #define CFG_AMM_POOL_SIZE                                 DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \

@@ -64,6 +64,8 @@ void MX_RTC_Init(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define A_DATA_Pin GPIO_PIN_12
+#define A_DATA_GPIO_Port GPIOB
 #define A_SCK_Pin GPIO_PIN_8
 #define A_SCK_GPIO_Port GPIOA
 #define A_CS_Pin GPIO_PIN_7
@@ -84,7 +86,8 @@ void MX_RTC_Init(void);
 #define TX_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
-
+#define INTERVAL1 50
+#define INTERVAL2 5000
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
