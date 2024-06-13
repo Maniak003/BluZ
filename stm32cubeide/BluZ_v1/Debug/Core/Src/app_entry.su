@@ -3,7 +3,7 @@
 ../Core/Src/app_entry.c:178:10:MX_APPE_Init	16	static
 ../Core/Src/app_entry.c:248:13:Config_HSE	16	static
 ../Core/Src/app_entry.c:267:13:System_Init	8	static
-../Core/Src/app_entry.c:304:13:SystemPower_Config	8	static
+../Core/Src/app_entry.c:304:13:SystemPower_Config	40	static
 ../Core/Src/app_entry.c:350:13:RNG_Init	8	static
 ../Core/Src/app_entry.c:357:13:AMM_WrapperInit	16	static
 ../Core/Src/app_entry.c:362:19:AMM_WrapperAllocate	16	static

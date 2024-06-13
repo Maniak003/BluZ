@@ -1,8 +1,6 @@
 ../Drivers/CMSIS/Include/core_cm33.h:2390:22:__NVIC_EnableIRQ	16	static,ignoring_inline_asm
 ../Drivers/CMSIS/Include/core_cm33.h:2587:22:__NVIC_SetPriority	16	static
 ../Drivers/CMSIS/Include/core_cm33.h:2609:26:__NVIC_GetPriority	16	static
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_system.h:796:22:LL_DBGMCU_DisableDBGStopMode	4	static
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_system.h:816:22:LL_DBGMCU_DisableDBGStandbyMode	4	static
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pwr.h:383:22:LL_PWR_SetPowerMode	16	static
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pwr.h:481:22:LL_PWR_EnableUltraLowPowerMode	4	static
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pwr.h:1015:22:LL_PWR_EnableBkUpAccess	4	static

@@ -137,20 +137,23 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-	  HAL_Delay(100);
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
+    intervalTmp = HAL_GetTick();
 	if ((interval2 + INTERVAL2 < intervalTmp) /*&& system_startup_done*/) {
 	  interval2 = intervalTmp;
 	  SendData();
 	}
-    intervalTmp = HAL_GetTick();
     if (interval1 + INTERVAL1 < intervalTmp) {
+		if (connectFlag) {
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+		} else {
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		}
     	interval1 = intervalTmp;
-    	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+    //	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
     }
 
   }

@@ -86,7 +86,7 @@ void MX_RTC_Init(void);
 #define TX_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
-#define INTERVAL1 50
+#define INTERVAL1 100
 #define INTERVAL2 5000
 /* USER CODE END Private defines */
 

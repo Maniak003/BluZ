@@ -411,7 +411,7 @@ typedef enum
  *   - 2 : Debugger available in low power mode.
  *
  ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL           (2)
+#define CFG_DEBUGGER_LEVEL           (0)
 
 /******************************************************************************
  * RealTime GPIO debug module configuration

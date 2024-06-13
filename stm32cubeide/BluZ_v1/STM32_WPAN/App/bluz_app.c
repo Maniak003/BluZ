@@ -246,8 +246,8 @@ void SendData( void )
 
 		/*Data Packet to send to remote*/
 		//Notification_Data_Buffer[0] += 1;
-		bzero((char *) uartBuffer, sizeof(uartBuffer));
-		sprintf(uartBuffer, "bz_rx_app: SendData\n\r");
+		//bzero((char *) uartBuffer, sizeof(uartBuffer));
+		//sprintf(uartBuffer, "bz_rx_app: SendData\n\r");
 		//HAL_UART_Transmit(&huart1, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
 		/* compute CRC */
 		//crc_result = APP_BLE_ComputeCRC8((uint8_t*) Notification_Data_Buffer, (MTUSizeValue - 1));
@@ -262,16 +262,13 @@ void SendData( void )
 		BZ_Context.TxData.p_Payload = Notification_Data_Buffer;
 		BZ_Context.TxData.Length =  MTUSizeValue;
 
-		status = BLUZ_UpdateValue(BLUZ_RX, (BLUZ_Data_t *) &BZ_Context.TxData);
+		status = BLUZ_UpdateValue(BLUZ_TX, (BLUZ_Data_t *) &BZ_Context.TxData);
 
-		if (status == BLE_STATUS_INSUFFICIENT_RESOURCES)
-		{
+		if (status == BLE_STATUS_INSUFFICIENT_RESOURCES) {
 			bzero((char *) uartBuffer, sizeof(uartBuffer));
 			sprintf(uartBuffer, "bz_rx_app: Error transfer with status: %d\n\r", status);
 			//HAL_UART_Transmit(&huart1, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
-		}
-		else
-		{
+		} else {
 			bzero((char *) uartBuffer, sizeof(uartBuffer));
 			sprintf(uartBuffer, "bz_rx_app: Send complete\n\r");
 			//HAL_UART_Transmit(&huart1, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
