@@ -47,6 +47,8 @@ typedef struct
 
 typedef enum
 {
+  Rx_NOTIFICATION_OFF,
+  Rx_NOTIFICATION_ON,
   Tx_NOTIFICATION_OFF,
   Tx_NOTIFICATION_ON,
   /* USER CODE BEGIN Service1_APP_SendInformation_t */
@@ -57,6 +59,7 @@ typedef enum
 
 typedef struct
 {
+  BLUZ_APP_SendInformation_t     Rx_Notification_Status;
   BLUZ_APP_SendInformation_t     Tx_Notification_Status;
   /* USER CODE BEGIN Service1_APP_Context_t */
 
@@ -89,6 +92,7 @@ BLUZ_App_Context_t BZ_Context;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+static void BLUZ_Rx_SendNotification(void);
 static void BLUZ_Tx_SendNotification(void);
 
 /* USER CODE BEGIN PFP */
@@ -99,48 +103,68 @@ static uint8_t Notification_Data_Buffer[DATA_NOTIFICATION_MAX_PACKET_SIZE]; /* D
 void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 {
   /* USER CODE BEGIN Service1_Notification_1 */
+	bzero((char *) uartBuffer, sizeof(uartBuffer));
+	sprintf(uartBuffer, "Service1_Notification_1\n\r");
+	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
   /* USER CODE END Service1_Notification_1 */
   switch(p_Notification->EvtOpcode)
   {
     /* USER CODE BEGIN Service1_Notification_Service1_EvtOpcode */
+	bzero((char *) uartBuffer, sizeof(uartBuffer));
+	sprintf(uartBuffer, "Service1_Notification_Service1_EvtOpcode\n\r");
+	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
     /* USER CODE END Service1_Notification_Service1_EvtOpcode */
 
-    case BLUZ_RX_READ_EVT:
-      /* USER CODE BEGIN Service1Char1_READ_EVT */
-
-      /* USER CODE END Service1Char1_READ_EVT */
+    case BLUZ_RX_NOTIFY_ENABLED_EVT:
+      /* USER CODE BEGIN Service1Char1_NOTIFY_ENABLED_EVT */
+    	bzero((char *) uartBuffer, sizeof(uartBuffer));
+    	sprintf(uartBuffer, "Service1Char1_NOTIFY_ENABLED_EVT\n\r");
+    	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+      /* USER CODE END Service1Char1_NOTIFY_ENABLED_EVT */
       break;
 
-    case BLUZ_RX_WRITE_NO_RESP_EVT:
-      /* USER CODE BEGIN Service1Char1_WRITE_NO_RESP_EVT */
+    case BLUZ_RX_NOTIFY_DISABLED_EVT:
+      /* USER CODE BEGIN Service1Char1_NOTIFY_DISABLED_EVT */
+    	bzero((char *) uartBuffer, sizeof(uartBuffer));
+    	sprintf(uartBuffer, "Service1Char1_NOTIFY_DISABLED_EVT\n\r");
+    	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+      /* USER CODE END Service1Char1_NOTIFY_DISABLED_EVT */
+      break;
+
+    case BLUZ_TX_WRITE_NO_RESP_EVT:
+      /* USER CODE BEGIN Service1Char2_WRITE_NO_RESP_EVT */
     	/* Прием данных со смартфона */
-		#pragma message ("Warning receive data from smartPhone")
-    	  if (p_Notification->DataTransfered.Length > 10) {
-    		bzero((char *) uartBuffer, sizeof(uartBuffer));
-    		sprintf(uartBuffer, "bz_rx_app: DataTransfered\n\r");
-    		//HAL_UART_Transmit(&huart1, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
-    		for (int iii = 0; iii < p_Notification->DataTransfered.Length; iii++) {
-    			sprintf(uartBuffer, "%02X ", p_Notification->DataTransfered.p_Payload[iii]);
-    			//HAL_UART_Transmit(&huart1, (uint8_t *) uartBuffer, 3, 100);
-    		}
-    		//HAL_UART_Transmit(&huart1, (uint8_t *) "\n\r", 2, 100);
-  		/* Нужно очистить приемный буфер */
-  		//bzero(p_Notification->DataTransfered.p_Payload, p_Notification->DataTransfered.Length);
-    	  }
-      /* USER CODE END Service1Char1_WRITE_NO_RESP_EVT */
+    	bzero((char *) uartBuffer, sizeof(uartBuffer));
+    	sprintf(uartBuffer, "Service1Char2_WRITE_NO_RESP_EVT\n\r");
+    	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		if (p_Notification->DataTransfered.Length > 10) {
+			bzero((char *) uartBuffer, sizeof(uartBuffer));
+			sprintf(uartBuffer, "bz_rx_app: DataTransfered\n\r");
+			HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
+			for (int iii = 0; iii < p_Notification->DataTransfered.Length; iii++) {
+				sprintf(uartBuffer, "%02X ", p_Notification->DataTransfered.p_Payload[iii]);
+				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, 3, 100);
+			}
+			HAL_UART_Transmit(&huart2, (uint8_t *) "\n\r", 2, 100);
+		}
+      /* USER CODE END Service1Char2_WRITE_NO_RESP_EVT */
       break;
 
     case BLUZ_TX_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char2_NOTIFY_ENABLED_EVT */
-
+    	bzero((char *) uartBuffer, sizeof(uartBuffer));
+    	sprintf(uartBuffer, "Service1Char2_NOTIFY_ENABLED_EVT\n\r");
+    	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
       /* USER CODE END Service1Char2_NOTIFY_ENABLED_EVT */
       break;
 
     case BLUZ_TX_NOTIFY_DISABLED_EVT:
       /* USER CODE BEGIN Service1Char2_NOTIFY_DISABLED_EVT */
-
+    	bzero((char *) uartBuffer, sizeof(uartBuffer));
+    	sprintf(uartBuffer, "Service1Char2_NOTIFY_DISABLED_EVT\n\r");
+    	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
       /* USER CODE END Service1Char2_NOTIFY_DISABLED_EVT */
       break;
 
@@ -159,6 +183,9 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 void BLUZ_APP_EvtRx(BLUZ_APP_ConnHandleNotEvt_t *p_Notification)
 {
   /* USER CODE BEGIN Service1_APP_EvtRx_1 */
+	bzero((char *) uartBuffer, sizeof(uartBuffer));
+	sprintf(uartBuffer, "Service1_APP_EvtRx_1\n\r");
+	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
   /* USER CODE END Service1_APP_EvtRx_1 */
 
@@ -213,6 +240,30 @@ void BLUZ_APP_Init(void)
  * LOCAL FUNCTIONS
  *
  *************************************************************/
+__USED void BLUZ_Rx_SendNotification(void) /* Property Notification */
+{
+  BLUZ_APP_SendInformation_t notification_on_off = Rx_NOTIFICATION_OFF;
+  BLUZ_Data_t bluz_notification_data;
+
+  bluz_notification_data.p_Payload = (uint8_t*)a_BLUZ_UpdateCharData;
+  bluz_notification_data.Length = 0;
+
+  /* USER CODE BEGIN Service1Char1_NS_1*/
+
+  /* USER CODE END Service1Char1_NS_1*/
+
+  if (notification_on_off != Rx_NOTIFICATION_OFF)
+  {
+    BLUZ_UpdateValue(BLUZ_RX, &bluz_notification_data);
+  }
+
+  /* USER CODE BEGIN Service1Char1_NS_Last*/
+
+  /* USER CODE END Service1Char1_NS_Last*/
+
+  return;
+}
+
 __USED void BLUZ_Tx_SendNotification(void) /* Property Notification */
 {
   BLUZ_APP_SendInformation_t notification_on_off = Tx_NOTIFICATION_OFF;
@@ -262,7 +313,7 @@ void SendData( void )
 		BZ_Context.TxData.p_Payload = Notification_Data_Buffer;
 		BZ_Context.TxData.Length =  MTUSizeValue;
 
-		status = BLUZ_UpdateValue(BLUZ_TX, (BLUZ_Data_t *) &BZ_Context.TxData);
+		status = BLUZ_UpdateValue(BLUZ_RX, (BLUZ_Data_t *) &BZ_Context.TxData);
 
 		if (status == BLE_STATUS_INSUFFICIENT_RESOURCES) {
 			bzero((char *) uartBuffer, sizeof(uartBuffer));
