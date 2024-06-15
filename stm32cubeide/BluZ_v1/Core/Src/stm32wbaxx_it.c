@@ -62,8 +62,10 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
+extern ADC_HandleTypeDef hadc4;
+extern TIM_HandleTypeDef htim1;
 /* USER CODE BEGIN EV */
-
+extern TIM_HandleTypeDef htim2;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -203,6 +205,42 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32wbaxx.s).                    */
 /******************************************************************************/
+
+/**
+  * @brief This function handles TIM1 Update interrupt.
+  */
+void TIM1_UP_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM1_UP_IRQn 0 */
+
+  /* USER CODE END TIM1_UP_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim1);
+  /* USER CODE BEGIN TIM1_UP_IRQn 1 */
+  HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
+  HAL_TIM_OC_Stop(&htim2, TIM_CHANNEL_1);
+	HAL_TIM_Base_Stop_IT(&htim1);
+
+  /* USER CODE END TIM1_UP_IRQn 1 */
+}
+
+/**
+  * @brief This function handles ADC4 (12bits) global interrupt.
+  */
+void ADC4_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC4_IRQn 0 */
+	//HAL_ADC_Stop_IT(&hadc4);
+  /* USER CODE END ADC4_IRQn 0 */
+  HAL_ADC_IRQHandler(&hadc4);
+  /* USER CODE BEGIN ADC4_IRQn 1 */
+  /* Включение звука */
+  HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_Base_Start_IT(&htim1);	// Таймер для вибро и звука
+  //HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_SET);
+  //HAL_TIM_Base_Start_IT(&htim1);
+  //HAL_ADC_Start_IT(&hadc4);
+  /* USER CODE END ADC4_IRQn 1 */
+}
 
 /**
   * @brief This function handles 2.4GHz RADIO global interrupt.

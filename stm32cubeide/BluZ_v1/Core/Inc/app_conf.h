@@ -316,7 +316,6 @@ typedef enum
   CFG_TASK_HW_RNG,                /* Task linked to chip internal peripheral. */
   CFG_TASK_LINK_LAYER,            /* Tasks linked to Communications Layers. */
   CFG_TASK_HCI_ASYNCH_EVT_ID,
-  CFG_TASK_LINK_LAYER_TEMP_MEAS,
   CFG_TASK_BLE_HOST,
   CFG_TASK_BPKA,
   CFG_TASK_AMM_BCKGND,
@@ -434,9 +433,6 @@ typedef enum
 
 /* Do not modify - must be 1 */
 #define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
-
-/* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
-#define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (1)
 
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */

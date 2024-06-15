@@ -73,8 +73,7 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
  ../System/Config/Debug_GPIO/app_debug.h \
  ../System/Modules/RTDebug/RTDebug.h \
  ../System/Config/Debug_GPIO/debug_config.h \
- ../System/Modules/RTDebug/debug_signals.h ../System/Modules/adc_ctrl.h \
- ../System/Modules/utilities_common.h
+ ../System/Modules/RTDebug/debug_signals.h
 ../Core/Inc/app_common.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -157,5 +156,3 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
 ../System/Modules/RTDebug/RTDebug.h:
 ../System/Config/Debug_GPIO/debug_config.h:
 ../System/Modules/RTDebug/debug_signals.h:
-../System/Modules/adc_ctrl.h:
-../System/Modules/utilities_common.h:

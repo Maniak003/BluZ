@@ -45,10 +45,6 @@
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
 #include "app_debug.h"
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-#include "adc_ctrl.h"
-#include "temp_measurement.h"
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -187,11 +183,6 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Configure the system Power Mode */
   SystemPower_Config();
 
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  /* Initialize the Temperature measurement */
-  TEMPMEAS_Init ();
-#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
-
   /* Initialize the Advance Memory Manager */
   AMM_Init (&ammInitConfig);
 
@@ -281,10 +272,6 @@ static void System_Init( void )
   /* Initialize the Command Interpreter */
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
-
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  ADCCTRL_Init ();
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;

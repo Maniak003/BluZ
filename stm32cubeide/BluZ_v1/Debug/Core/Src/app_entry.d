@@ -86,9 +86,7 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
  ../System/Modules/Flash/simple_nvm_arbiter.h \
  ../System/Modules/Flash/simple_nvm_arbiter_common.h \
  ../System/Config/Flash/simple_nvm_arbiter_conf.h \
- ../System/Modules/Flash/simple_nvm_arbiter_common.h \
- ../System/Modules/adc_ctrl.h ../System/Modules/utilities_common.h \
- ../System/Modules/temp_measurement.h
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h
 ../Core/Inc/app_common.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -189,6 +187,3 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
 ../System/Modules/Flash/simple_nvm_arbiter_common.h:
 ../System/Config/Flash/simple_nvm_arbiter_conf.h:
 ../System/Modules/Flash/simple_nvm_arbiter_common.h:
-../System/Modules/adc_ctrl.h:
-../System/Modules/utilities_common.h:
-../System/Modules/temp_measurement.h:

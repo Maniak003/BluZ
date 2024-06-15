@@ -50,9 +50,6 @@
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-void ll_sys_bg_temperature_measurement(void);
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

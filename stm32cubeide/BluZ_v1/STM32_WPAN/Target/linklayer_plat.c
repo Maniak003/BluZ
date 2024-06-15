@@ -25,9 +25,6 @@
 #include "stm32wbaxx_ll_rcc.h"
 #include "app_conf.h"
 #include "scm.h"
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-#include "adc_ctrl.h"
-#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
@@ -44,11 +41,6 @@ void (*low_isr_callback)(void) = NULL;
 
 /* RNG handle */
 extern RNG_HandleTypeDef hrng;
-
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-/* Link Layer temperature request from background */
-extern void ll_sys_bg_temperature_measurement(void);
-#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
 /* Radio critical sections */
 static uint32_t primask_bit = 0;
@@ -470,9 +462,6 @@ void LINKLAYER_PLAT_RCOStopClbr(void)
   */
 void LINKLAYER_PLAT_RequestTemperature(void)
 {
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  ll_sys_bg_temperature_measurement();
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 }
 
 /**

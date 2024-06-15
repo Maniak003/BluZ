@@ -74,8 +74,7 @@ System/Config/LowPower/peripheral_init.o: \
  ../System/Config/Debug_GPIO/debug_config.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../System/Modules/crc_ctrl.h ../System/Modules/utilities_common.h \
- ../System/Modules/adc_ctrl.h
+ ../System/Modules/crc_ctrl.h ../System/Modules/utilities_common.h
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
 ../Drivers/CMSIS/Device/ST/STM32WBAxx/Include/stm32wbaxx.h:
@@ -158,4 +157,3 @@ System/Config/LowPower/peripheral_init.o: \
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
 ../System/Modules/crc_ctrl.h:
 ../System/Modules/utilities_common.h:
-../System/Modules/adc_ctrl.h:

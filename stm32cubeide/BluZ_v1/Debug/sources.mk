@@ -29,7 +29,6 @@ Middlewares/ST/STM32_WPAN/ble/svc/Src \
 Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src \
 STM32_WPAN/App \
 STM32_WPAN/Target \
-System/Config/ADC_Ctrl \
 System/Config/CRC_Ctrl \
 System/Config/Debug_GPIO \
 System/Config/Flash \

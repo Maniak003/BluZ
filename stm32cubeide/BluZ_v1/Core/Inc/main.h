@@ -70,20 +70,20 @@ void MX_RTC_Init(void);
 #define A_SCK_GPIO_Port GPIOA
 #define A_CS_Pin GPIO_PIN_7
 #define A_CS_GPIO_Port GPIOA
-#define Vibro_Pin GPIO_PIN_6
-#define Vibro_GPIO_Port GPIOA
+#define VIBRO_Pin GPIO_PIN_6
+#define VIBRO_GPIO_Port GPIOA
+#define SOUND_Pin GPIO_PIN_5
+#define SOUND_GPIO_Port GPIOA
 #define LED_Pin GPIO_PIN_2
 #define LED_GPIO_Port GPIOA
 #define batLev_Pin GPIO_PIN_1
 #define batLev_GPIO_Port GPIOA
 #define AIn_Pin GPIO_PIN_0
 #define AIn_GPIO_Port GPIOA
-#define Sound_Pin GPIO_PIN_4
-#define Sound_GPIO_Port GPIOB
-#define Sync_Pin GPIO_PIN_15
-#define Sync_GPIO_Port GPIOA
 #define TX_Pin GPIO_PIN_12
 #define TX_GPIO_Port GPIOA
+#define Sync_Pin GPIO_PIN_15
+#define Sync_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 #define INTERVAL1 100

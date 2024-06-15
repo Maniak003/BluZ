@@ -72,9 +72,7 @@ STM32_WPAN/Target/ll_sys_if.o: ../STM32_WPAN/Target/ll_sys_if.c \
  ../System/Config/Debug_GPIO/debug_config.h ../Core/Inc/app_conf.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../STM32_WPAN/Target/ll_sys_if.h ../Utilities/sequencer/stm32_seq.h \
- ../System/Modules/temp_measurement.h \
- ../System/Modules/utilities_common.h
+ ../STM32_WPAN/Target/ll_sys_if.h ../Utilities/sequencer/stm32_seq.h
 ../Core/Inc/app_common.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -157,5 +155,3 @@ STM32_WPAN/Target/ll_sys_if.o: ../STM32_WPAN/Target/ll_sys_if.c \
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
 ../STM32_WPAN/Target/ll_sys_if.h:
 ../Utilities/sequencer/stm32_seq.h:
-../System/Modules/temp_measurement.h:
-../System/Modules/utilities_common.h:
