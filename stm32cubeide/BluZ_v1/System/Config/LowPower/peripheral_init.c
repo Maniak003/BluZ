@@ -71,16 +71,6 @@ void MX_StandbyExit_PeripharalInit(void)
   memset(&htim3, 0, sizeof(htim3));
   memset(&huart2, 0, sizeof(huart2));
 
-  MX_ICACHE_Init();
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  MX_ADC4_Init();
-
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
-  MX_CRC_Init();
-  MX_RAMCFG_Init();
-  MX_RNG_Init();
-  MX_TIM1_Init();
-  MX_TIM3_Init();
   CRCCTRL_Init();
 
 #if (CFG_DEBUGGER_LEVEL == 0)

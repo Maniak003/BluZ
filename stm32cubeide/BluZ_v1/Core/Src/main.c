@@ -66,6 +66,14 @@ char uartBuffer[100] = {0,};
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_ICACHE_Init(void);
+static void MX_ADC4_Init(void);
+static void MX_USART2_UART_Init(void);
+static void MX_CRC_Init(void);
+static void MX_RAMCFG_Init(void);
+static void MX_RNG_Init(void);
+static void MX_TIM1_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -213,14 +221,14 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
                               |RCC_CLOCKTYPE_PCLK7|RCC_CLOCKTYPE_HCLK5;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB7CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.AHB5_PLL1_CLKDivider = RCC_SYSCLK_PLL1_DIV1;
-  RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
+  RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -259,7 +267,7 @@ void PeriphCommonClock_Config(void)
   * @param None
   * @retval None
   */
-void MX_ADC4_Init(void)
+static void MX_ADC4_Init(void)
 {
 
   /* USER CODE BEGIN ADC4_Init 0 */
@@ -318,7 +326,7 @@ void MX_ADC4_Init(void)
   * @param None
   * @retval None
   */
-void MX_CRC_Init(void)
+static void MX_CRC_Init(void)
 {
 
   /* USER CODE BEGIN CRC_Init 0 */
@@ -351,7 +359,7 @@ void MX_CRC_Init(void)
   * @param None
   * @retval None
   */
-void MX_ICACHE_Init(void)
+static void MX_ICACHE_Init(void)
 {
 
   /* USER CODE BEGIN ICACHE_Init 0 */
@@ -383,7 +391,7 @@ void MX_ICACHE_Init(void)
   * @param None
   * @retval None
   */
-void MX_RAMCFG_Init(void)
+static void MX_RAMCFG_Init(void)
 {
 
   /* USER CODE BEGIN RAMCFG_Init 0 */
@@ -412,7 +420,7 @@ void MX_RAMCFG_Init(void)
   * @param None
   * @retval None
   */
-void MX_RNG_Init(void)
+static void MX_RNG_Init(void)
 {
 
   /* USER CODE BEGIN RNG_Init 0 */
@@ -487,7 +495,7 @@ void MX_RTC_Init(void)
   * @param None
   * @retval None
   */
-void MX_TIM1_Init(void)
+static void MX_TIM1_Init(void)
 {
 
   /* USER CODE BEGIN TIM1_Init 0 */
@@ -562,7 +570,7 @@ void MX_TIM1_Init(void)
   * @param None
   * @retval None
   */
-void MX_TIM3_Init(void)
+static void MX_TIM3_Init(void)
 {
 
   /* USER CODE BEGIN TIM3_Init 0 */
@@ -611,7 +619,7 @@ void MX_TIM3_Init(void)
   * @param None
   * @retval None
   */
-void MX_USART2_UART_Init(void)
+static void MX_USART2_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART2_Init 0 */

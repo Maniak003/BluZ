@@ -57,15 +57,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
-void MX_ICACHE_Init(void);
-void MX_ADC4_Init(void);
-void MX_USART2_UART_Init(void);
-void MX_CRC_Init(void);
-void MX_RAMCFG_Init(void);
-void MX_RNG_Init(void);
 void MX_RTC_Init(void);
-void MX_TIM1_Init(void);
-void MX_TIM3_Init(void);
 
 /* USER CODE BEGIN EFP */
 

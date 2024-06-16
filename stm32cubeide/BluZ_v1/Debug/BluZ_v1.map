@@ -9847,9 +9847,9 @@ Discarded input sections
  .data          0x00000000        0x0 ./System/Config/LowPower/peripheral_init.o
  .bss           0x00000000        0x0 ./System/Config/LowPower/peripheral_init.o
  .text.MX_StandbyExit_PeripharalInit
-                0x00000000      0x114 ./System/Config/LowPower/peripheral_init.o
- .debug_info    0x00000000     0x16e0 ./System/Config/LowPower/peripheral_init.o
- .debug_abbrev  0x00000000      0x243 ./System/Config/LowPower/peripheral_init.o
+                0x00000000       0xfc ./System/Config/LowPower/peripheral_init.o
+ .debug_info    0x00000000     0x16bc ./System/Config/LowPower/peripheral_init.o
+ .debug_abbrev  0x00000000      0x22e ./System/Config/LowPower/peripheral_init.o
  .debug_aranges
                 0x00000000       0x20 ./System/Config/LowPower/peripheral_init.o
  .debug_rnglists
@@ -9958,8 +9958,8 @@ Discarded input sections
  .debug_macro   0x00000000       0xa0 ./System/Config/LowPower/peripheral_init.o
  .debug_macro   0x00000000       0x88 ./System/Config/LowPower/peripheral_init.o
  .debug_macro   0x00000000      0x126 ./System/Config/LowPower/peripheral_init.o
- .debug_line    0x00000000      0xd86 ./System/Config/LowPower/peripheral_init.o
- .debug_str     0x00000000    0xf880d ./System/Config/LowPower/peripheral_init.o
+ .debug_line    0x00000000      0xd80 ./System/Config/LowPower/peripheral_init.o
+ .debug_str     0x00000000    0xf87bd ./System/Config/LowPower/peripheral_init.o
  .comment       0x00000000       0x44 ./System/Config/LowPower/peripheral_init.o
  .debug_frame   0x00000000       0x34 ./System/Config/LowPower/peripheral_init.o
  .ARM.attributes
@@ -19638,29 +19638,22 @@ LOAD /opt/st/stm32cubeide_1.15.1/plugins/com.st.stm32cube.ide.mcu.externaltools.
                 0x08000a5c                PeriphCommonClock_Config
  .text.MX_ADC4_Init
                 0x08000a94       0xd4 ./Core/Src/main.o
-                0x08000a94                MX_ADC4_Init
  .text.MX_ICACHE_Init
                 0x08000b68       0x26 ./Core/Src/main.o
-                0x08000b68                MX_ICACHE_Init
  *fill*         0x08000b8e        0x2 
  .text.MX_RAMCFG_Init
                 0x08000b90       0x28 ./Core/Src/main.o
-                0x08000b90                MX_RAMCFG_Init
  .text.MX_RNG_Init
                 0x08000bb8       0x2c ./Core/Src/main.o
-                0x08000bb8                MX_RNG_Init
  .text.MX_RTC_Init
                 0x08000be4       0x9c ./Core/Src/main.o
                 0x08000be4                MX_RTC_Init
  .text.MX_TIM1_Init
                 0x08000c80      0x134 ./Core/Src/main.o
-                0x08000c80                MX_TIM1_Init
  .text.MX_TIM3_Init
                 0x08000db4       0xb4 ./Core/Src/main.o
-                0x08000db4                MX_TIM3_Init
  .text.MX_USART2_UART_Init
                 0x08000e68       0xac ./Core/Src/main.o
-                0x08000e68                MX_USART2_UART_Init
  .text.MX_GPIO_Init
                 0x08000f14       0xf8 ./Core/Src/main.o
  .text.Error_Handler
@@ -28654,79 +28647,79 @@ LOAD /opt/st/stm32cubeide_1.15.1/plugins/com.st.stm32cube.ide.mcu.externaltools.
  .debug_info    0x000332c7      0xa1b ./Utilities/sequencer/stm32_seq.o
  .debug_info    0x00033ce2      0x8b1 ./Utilities/tim_serv/stm32_timer.o
 
-.debug_abbrev   0x00000000     0x9aad
+.debug_abbrev   0x00000000     0x9aab
  .debug_abbrev  0x00000000      0x3a9 ./Core/Src/app_entry.o
- .debug_abbrev  0x000003a9      0x359 ./Core/Src/main.o
- .debug_abbrev  0x00000702      0x29e ./Core/Src/stm32wbaxx_hal_msp.o
- .debug_abbrev  0x000009a0      0x2a6 ./Core/Src/stm32wbaxx_it.o
- .debug_abbrev  0x00000c46       0xbc ./Core/Src/sysmem.o
- .debug_abbrev  0x00000d02      0x118 ./Core/Src/system_stm32wbaxx.o
- .debug_abbrev  0x00000e1a       0x24 ./Core/Startup/startup_stm32wba54kgux.o
- .debug_abbrev  0x00000e3e      0x29f ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.o
- .debug_abbrev  0x000010dd      0x2e6 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.o
- .debug_abbrev  0x000013c3      0x247 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc_ex.o
- .debug_abbrev  0x0000160a      0x343 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.o
- .debug_abbrev  0x0000194d      0x1bb ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc.o
- .debug_abbrev  0x00001b08      0x11e ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc_ex.o
- .debug_abbrev  0x00001c26      0x2fe ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash.o
- .debug_abbrev  0x00001f24      0x2bc ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash_ex.o
- .debug_abbrev  0x000021e0      0x1ca ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.o
- .debug_abbrev  0x000023aa      0x228 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.o
- .debug_abbrev  0x000025d2      0x233 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.o
- .debug_abbrev  0x00002805      0x1bf ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.o
- .debug_abbrev  0x000029c4      0x1fc ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_ramcfg.o
- .debug_abbrev  0x00002bc0      0x2dc ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc.o
- .debug_abbrev  0x00002e9c      0x21d ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc_ex.o
- .debug_abbrev  0x000030b9      0x1cc ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rng.o
- .debug_abbrev  0x00003285      0x228 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc.o
- .debug_abbrev  0x000034ad      0x21d ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.o
- .debug_abbrev  0x000036ca      0x2bd ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.o
- .debug_abbrev  0x00003987      0x2c7 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.o
- .debug_abbrev  0x00003c4e      0x327 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart.o
- .debug_abbrev  0x00003f75      0x2d4 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.o
- .debug_abbrev  0x00004249      0x191 ./Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.o
- .debug_abbrev  0x000043da       0xb8 ./Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.o
- .debug_abbrev  0x00004492      0x17f ./Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.o
- .debug_abbrev  0x00004611      0x18e ./Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.o
- .debug_abbrev  0x0000479f      0x1fa ./Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.o
- .debug_abbrev  0x00004999      0x4a0 ./STM32_WPAN/App/app_ble.o
- .debug_abbrev  0x00004e39      0x2fe ./STM32_WPAN/App/bluz.o
- .debug_abbrev  0x00005137      0x27e ./STM32_WPAN/App/bluz_app.o
- .debug_abbrev  0x000053b5      0x121 ./STM32_WPAN/Target/bleplat.o
- .debug_abbrev  0x000054d6      0x1c8 ./STM32_WPAN/Target/bpka.o
- .debug_abbrev  0x0000569e       0x92 ./STM32_WPAN/Target/host_stack_if.o
- .debug_abbrev  0x00005730      0x400 ./STM32_WPAN/Target/linklayer_plat.o
- .debug_abbrev  0x00005b30      0x19c ./STM32_WPAN/Target/ll_sys_if.o
- .debug_abbrev  0x00005ccc       0xf7 ./STM32_WPAN/Target/power_table.o
- .debug_abbrev  0x00005dc3       0x9e ./System/Config/CRC_Ctrl/crc_ctrl_conf.o
- .debug_abbrev  0x00005e61       0xb8 ./System/Config/Debug_GPIO/app_debug.o
- .debug_abbrev  0x00005f19       0xc8 ./System/Config/Flash/simple_nvm_arbiter_conf.o
- .debug_abbrev  0x00005fe1      0x26e ./System/Config/Log/log_module.o
- .debug_abbrev  0x0000624f       0xdc ./System/Config/LowPower/user_low_power_config.o
- .debug_abbrev  0x0000632b      0x30c ./System/Interfaces/hw_aes.o
- .debug_abbrev  0x00006637      0x30a ./System/Interfaces/hw_pka.o
- .debug_abbrev  0x00006941      0x3de ./System/Interfaces/hw_rng.o
- .debug_abbrev  0x00006d1f      0x11c ./System/Interfaces/pka_p256.o
- .debug_abbrev  0x00006e3b      0x418 ./System/Interfaces/stm32_lpm_if.o
- .debug_abbrev  0x00007253      0x308 ./System/Interfaces/timer_if.o
- .debug_abbrev  0x0000755b      0x1d3 ./System/Modules/Flash/flash_driver.o
- .debug_abbrev  0x0000772e      0x300 ./System/Modules/Flash/flash_manager.o
- .debug_abbrev  0x00007a2e      0x25d ./System/Modules/Flash/rf_timing_synchro.o
- .debug_abbrev  0x00007c8b      0x360 ./System/Modules/Flash/simple_nvm_arbiter.o
- .debug_abbrev  0x00007feb      0x2c9 ./System/Modules/MemoryManager/advanced_memory_manager.o
- .debug_abbrev  0x000082b4      0x14b ./System/Modules/MemoryManager/stm32_mm.o
- .debug_abbrev  0x000083ff      0x1c0 ./System/Modules/Nvm/nvm_emul.o
- .debug_abbrev  0x000085bf       0xc4 ./System/Modules/RTDebug/RTDebug.o
- .debug_abbrev  0x00008683      0x271 ./System/Modules/ble_timer.o
- .debug_abbrev  0x000088f4      0x1b4 ./System/Modules/crc_ctrl.o
- .debug_abbrev  0x00008aa8      0x198 ./System/Modules/otp.o
- .debug_abbrev  0x00008c40      0x3d5 ./System/Modules/scm.o
- .debug_abbrev  0x00009015      0x19e ./System/Modules/stm_list.o
- .debug_abbrev  0x000091b3      0x1fe ./System/Modules/baes/baes_cmac.o
- .debug_abbrev  0x000093b1      0x161 ./System/Modules/baes/baes_ecb.o
- .debug_abbrev  0x00009512       0x12 ./System/Startup/stm32wbaxx_ResetHandler.o
- .debug_abbrev  0x00009524      0x295 ./Utilities/sequencer/stm32_seq.o
- .debug_abbrev  0x000097b9      0x2f4 ./Utilities/tim_serv/stm32_timer.o
+ .debug_abbrev  0x000003a9      0x357 ./Core/Src/main.o
+ .debug_abbrev  0x00000700      0x29e ./Core/Src/stm32wbaxx_hal_msp.o
+ .debug_abbrev  0x0000099e      0x2a6 ./Core/Src/stm32wbaxx_it.o
+ .debug_abbrev  0x00000c44       0xbc ./Core/Src/sysmem.o
+ .debug_abbrev  0x00000d00      0x118 ./Core/Src/system_stm32wbaxx.o
+ .debug_abbrev  0x00000e18       0x24 ./Core/Startup/startup_stm32wba54kgux.o
+ .debug_abbrev  0x00000e3c      0x29f ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.o
+ .debug_abbrev  0x000010db      0x2e6 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.o
+ .debug_abbrev  0x000013c1      0x247 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc_ex.o
+ .debug_abbrev  0x00001608      0x343 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.o
+ .debug_abbrev  0x0000194b      0x1bb ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc.o
+ .debug_abbrev  0x00001b06      0x11e ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc_ex.o
+ .debug_abbrev  0x00001c24      0x2fe ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash.o
+ .debug_abbrev  0x00001f22      0x2bc ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash_ex.o
+ .debug_abbrev  0x000021de      0x1ca ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.o
+ .debug_abbrev  0x000023a8      0x228 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.o
+ .debug_abbrev  0x000025d0      0x233 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.o
+ .debug_abbrev  0x00002803      0x1bf ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.o
+ .debug_abbrev  0x000029c2      0x1fc ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_ramcfg.o
+ .debug_abbrev  0x00002bbe      0x2dc ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc.o
+ .debug_abbrev  0x00002e9a      0x21d ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc_ex.o
+ .debug_abbrev  0x000030b7      0x1cc ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rng.o
+ .debug_abbrev  0x00003283      0x228 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc.o
+ .debug_abbrev  0x000034ab      0x21d ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.o
+ .debug_abbrev  0x000036c8      0x2bd ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.o
+ .debug_abbrev  0x00003985      0x2c7 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.o
+ .debug_abbrev  0x00003c4c      0x327 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart.o
+ .debug_abbrev  0x00003f73      0x2d4 ./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.o
+ .debug_abbrev  0x00004247      0x191 ./Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.o
+ .debug_abbrev  0x000043d8       0xb8 ./Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.o
+ .debug_abbrev  0x00004490      0x17f ./Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.o
+ .debug_abbrev  0x0000460f      0x18e ./Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.o
+ .debug_abbrev  0x0000479d      0x1fa ./Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.o
+ .debug_abbrev  0x00004997      0x4a0 ./STM32_WPAN/App/app_ble.o
+ .debug_abbrev  0x00004e37      0x2fe ./STM32_WPAN/App/bluz.o
+ .debug_abbrev  0x00005135      0x27e ./STM32_WPAN/App/bluz_app.o
+ .debug_abbrev  0x000053b3      0x121 ./STM32_WPAN/Target/bleplat.o
+ .debug_abbrev  0x000054d4      0x1c8 ./STM32_WPAN/Target/bpka.o
+ .debug_abbrev  0x0000569c       0x92 ./STM32_WPAN/Target/host_stack_if.o
+ .debug_abbrev  0x0000572e      0x400 ./STM32_WPAN/Target/linklayer_plat.o
+ .debug_abbrev  0x00005b2e      0x19c ./STM32_WPAN/Target/ll_sys_if.o
+ .debug_abbrev  0x00005cca       0xf7 ./STM32_WPAN/Target/power_table.o
+ .debug_abbrev  0x00005dc1       0x9e ./System/Config/CRC_Ctrl/crc_ctrl_conf.o
+ .debug_abbrev  0x00005e5f       0xb8 ./System/Config/Debug_GPIO/app_debug.o
+ .debug_abbrev  0x00005f17       0xc8 ./System/Config/Flash/simple_nvm_arbiter_conf.o
+ .debug_abbrev  0x00005fdf      0x26e ./System/Config/Log/log_module.o
+ .debug_abbrev  0x0000624d       0xdc ./System/Config/LowPower/user_low_power_config.o
+ .debug_abbrev  0x00006329      0x30c ./System/Interfaces/hw_aes.o
+ .debug_abbrev  0x00006635      0x30a ./System/Interfaces/hw_pka.o
+ .debug_abbrev  0x0000693f      0x3de ./System/Interfaces/hw_rng.o
+ .debug_abbrev  0x00006d1d      0x11c ./System/Interfaces/pka_p256.o
+ .debug_abbrev  0x00006e39      0x418 ./System/Interfaces/stm32_lpm_if.o
+ .debug_abbrev  0x00007251      0x308 ./System/Interfaces/timer_if.o
+ .debug_abbrev  0x00007559      0x1d3 ./System/Modules/Flash/flash_driver.o
+ .debug_abbrev  0x0000772c      0x300 ./System/Modules/Flash/flash_manager.o
+ .debug_abbrev  0x00007a2c      0x25d ./System/Modules/Flash/rf_timing_synchro.o
+ .debug_abbrev  0x00007c89      0x360 ./System/Modules/Flash/simple_nvm_arbiter.o
+ .debug_abbrev  0x00007fe9      0x2c9 ./System/Modules/MemoryManager/advanced_memory_manager.o
+ .debug_abbrev  0x000082b2      0x14b ./System/Modules/MemoryManager/stm32_mm.o
+ .debug_abbrev  0x000083fd      0x1c0 ./System/Modules/Nvm/nvm_emul.o
+ .debug_abbrev  0x000085bd       0xc4 ./System/Modules/RTDebug/RTDebug.o
+ .debug_abbrev  0x00008681      0x271 ./System/Modules/ble_timer.o
+ .debug_abbrev  0x000088f2      0x1b4 ./System/Modules/crc_ctrl.o
+ .debug_abbrev  0x00008aa6      0x198 ./System/Modules/otp.o
+ .debug_abbrev  0x00008c3e      0x3d5 ./System/Modules/scm.o
+ .debug_abbrev  0x00009013      0x19e ./System/Modules/stm_list.o
+ .debug_abbrev  0x000091b1      0x1fe ./System/Modules/baes/baes_cmac.o
+ .debug_abbrev  0x000093af      0x161 ./System/Modules/baes/baes_ecb.o
+ .debug_abbrev  0x00009510       0x12 ./System/Startup/stm32wbaxx_ResetHandler.o
+ .debug_abbrev  0x00009522      0x295 ./Utilities/sequencer/stm32_seq.o
+ .debug_abbrev  0x000097b7      0x2f4 ./Utilities/tim_serv/stm32_timer.o
 
 .debug_aranges  0x00000000     0x2c90
  .debug_aranges

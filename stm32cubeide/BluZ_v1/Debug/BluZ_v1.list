@@ -29,7 +29,7 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
  12 .debug_info   00034593  00000000  00000000  00033508  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00009aad  00000000  00000000  00067a9b  2**0
+ 13 .debug_abbrev 00009aab  00000000  00000000  00067a9b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  14 .debug_aranges 00002c90  00000000  00000000  00071548  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -1303,8 +1303,8 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
  8000a0a:	2302      	movs	r3, #2
  8000a0c:	607b      	str	r3, [r7, #4]
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
- 8000a0e:	2300      	movs	r3, #0
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
+ 8000a0e:	2304      	movs	r3, #4
  8000a10:	60bb      	str	r3, [r7, #8]
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
  8000a12:	2300      	movs	r3, #0
@@ -1318,13 +1318,13 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHB5_PLL1_CLKDivider = RCC_SYSCLK_PLL1_DIV1;
  8000a1e:	2300      	movs	r3, #0
  8000a20:	61bb      	str	r3, [r7, #24]
-  RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
- 8000a22:	2300      	movs	r3, #0
+  RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV2;
+ 8000a22:	2310      	movs	r3, #16
  8000a24:	61fb      	str	r3, [r7, #28]
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
  8000a26:	463b      	mov	r3, r7
- 8000a28:	2101      	movs	r1, #1
+ 8000a28:	2100      	movs	r1, #0
  8000a2a:	4618      	mov	r0, r3
  8000a2c:	f003 faea 	bl	8004004 <HAL_RCC_ClockConfig>
  8000a30:	4603      	mov	r3, r0
@@ -1406,7 +1406,7 @@ void PeriphCommonClock_Config(void)
   * @param None
   * @retval None
   */
-void MX_ADC4_Init(void)
+static void MX_ADC4_Init(void)
 {
  8000a94:	b580      	push	{r7, lr}
  8000a96:	b084      	sub	sp, #16
@@ -1556,7 +1556,7 @@ void MX_ADC4_Init(void)
   * @param None
   * @retval None
   */
-void MX_ICACHE_Init(void)
+static void MX_ICACHE_Init(void)
 {
  8000b68:	b580      	push	{r7, lr}
  8000b6a:	af00      	add	r7, sp, #0
@@ -1598,7 +1598,7 @@ void MX_ICACHE_Init(void)
   * @param None
   * @retval None
   */
-void MX_RAMCFG_Init(void)
+static void MX_RAMCFG_Init(void)
 {
  8000b90:	b580      	push	{r7, lr}
  8000b92:	af00      	add	r7, sp, #0
@@ -1637,7 +1637,7 @@ void MX_RAMCFG_Init(void)
   * @param None
   * @retval None
   */
-void MX_RNG_Init(void)
+static void MX_RNG_Init(void)
 {
  8000bb8:	b580      	push	{r7, lr}
  8000bba:	af00      	add	r7, sp, #0
@@ -1796,7 +1796,7 @@ void MX_RTC_Init(void)
   * @param None
   * @retval None
   */
-void MX_TIM1_Init(void)
+static void MX_TIM1_Init(void)
 {
  8000c80:	b580      	push	{r7, lr}
  8000c82:	b098      	sub	sp, #96	@ 0x60
@@ -2005,7 +2005,7 @@ void MX_TIM1_Init(void)
   * @param None
   * @retval None
   */
-void MX_TIM3_Init(void)
+static void MX_TIM3_Init(void)
 {
  8000db4:	b580      	push	{r7, lr}
  8000db6:	b08a      	sub	sp, #40	@ 0x28
@@ -2132,7 +2132,7 @@ void MX_TIM3_Init(void)
   * @param None
   * @retval None
   */
-void MX_USART2_UART_Init(void)
+static void MX_USART2_UART_Init(void)
 {
  8000e68:	b580      	push	{r7, lr}
  8000e6a:	af00      	add	r7, sp, #0
