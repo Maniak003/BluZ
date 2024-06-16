@@ -1,6 +1,5 @@
 /*****************************************************************************
  * @file    ble_gatt_aci.h
- * @author  MDG
  * @brief   STM32WBA BLE API (gatt_aci)
  *          Auto-generated file: do not edit!
  *****************************************************************************
@@ -245,8 +244,9 @@ tBleStatus aci_gatt_add_char_desc( uint16_t Service_Handle,
  * indication) is sent to any client that has registered for notifications (or
  * indications) via the Client Characteristic Configuration.
  * Notes:
- * - The command is disallowed if it causes the generation of an indication on
- * a bearer which is still awaiting confirmation of a previous indication.
+ * - The command is disallowed if it would cause the generation of an
+ * indication on a bearer which is still awaiting confirmation of a previous
+ * indication.
  * - The command does not execute and returns BLE_STATUS_BUSY if notifications
  * from a previous call are not completed. The application can enable and wait
  * for the event ACI_GATT_NOTIFICATION_COMPLETE_EVENT to avoid this case.
@@ -276,7 +276,9 @@ tBleStatus aci_gatt_add_char_desc( uint16_t Service_Handle,
  *        If the Val_Offset is set to a value greater than 0, then the length
  *        of the attribute will be set to the maximum length as specified for
  *        the attribute while adding the characteristic.
- * @param Char_Value_Length Length of the characteristic value in octets
+ * @param Char_Value_Length Length of the Char_Value parameter in octets.
+ *        On STM32WB, this value must not exceed (BLE_CMD_MAX_PARAM_LEN - 6)
+ *        i.e. 249 for BLE_CMD_MAX_PARAM_LEN default value.
  * @param Char_Value Characteristic value
  * @return Value indicating success or error code.
  */
@@ -750,6 +752,9 @@ tBleStatus aci_gatt_read_multiple_char_value( uint16_t Connection_Handle,
  * Starts the procedure to write a characteristic value.
  * When the procedure is completed, a ACI_GATT_PROC_COMPLETE_EVENT event is
  * generated.
+ * The length of the value to be written must not exceed (ATT_MTU - 3). On
+ * STM32WB, it must also not exceed (BLE_CMD_MAX_PARAM_LEN - 5) i.e. 250 for
+ * BLE_CMD_MAX_PARAM_LEN default value.
  * 
  * @param Connection_Handle Specifies the ATT bearer for which the command
  *        applies.
@@ -784,7 +789,9 @@ tBleStatus aci_gatt_write_char_value( uint16_t Connection_Handle,
  *          parameter is the connection-oriented channel index)
  * @param Attr_Handle Handle of the characteristic value to be written
  * @param Val_Offset Offset at which the attribute has to be written
- * @param Attribute_Val_Length Length of the value to be written
+ * @param Attribute_Val_Length Length of the value to be written.
+ *        On STM32WB, this value must not exceed (BLE_CMD_MAX_PARAM_LEN - 7)
+ *        i.e. 248 for BLE_CMD_MAX_PARAM_LEN default value.
  * @param Attribute_Val Value to be written
  * @return Value indicating success or error code.
  */
@@ -810,7 +817,9 @@ tBleStatus aci_gatt_write_long_char_value( uint16_t Connection_Handle,
  *          parameter is the connection-oriented channel index)
  * @param Attr_Handle Handle of the attribute to be written
  * @param Val_Offset Offset at which the attribute has to be written
- * @param Attribute_Val_Length Length of the value to be written
+ * @param Attribute_Val_Length Length of the value to be written.
+ *        On STM32WB, this value must not exceed (BLE_CMD_MAX_PARAM_LEN - 7)
+ *        i.e. 248 for BLE_CMD_MAX_PARAM_LEN default value.
  * @param Attribute_Val Value to be written
  * @return Value indicating success or error code.
  */
@@ -836,7 +845,9 @@ tBleStatus aci_gatt_write_char_reliable( uint16_t Connection_Handle,
  *          parameter is the connection-oriented channel index)
  * @param Attr_Handle Handle of the attribute to be written
  * @param Val_Offset Offset at which the attribute has to be written
- * @param Attribute_Val_Length Length of the value to be written
+ * @param Attribute_Val_Length Length of the value to be written.
+ *        On STM32WB, this value must not exceed (BLE_CMD_MAX_PARAM_LEN - 7)
+ *        i.e. 248 for BLE_CMD_MAX_PARAM_LEN default value.
  * @param Attribute_Val Value to be written
  * @return Value indicating success or error code.
  */
@@ -873,6 +884,9 @@ tBleStatus aci_gatt_read_long_char_desc( uint16_t Connection_Handle,
  * Starts the procedure to write a characteristic descriptor.
  * When the procedure is completed, a ACI_GATT_PROC_COMPLETE_EVENT event is
  * generated.
+ * The length of the value to be written must not exceed (ATT_MTU - 3). On
+ * STM32WB, it must also not exceed (BLE_CMD_MAX_PARAM_LEN - 5) i.e. 250 for
+ * BLE_CMD_MAX_PARAM_LEN default value.
  * 
  * @param Connection_Handle Specifies the ATT bearer for which the command
  *        applies.
@@ -916,9 +930,10 @@ tBleStatus aci_gatt_read_char_desc( uint16_t Connection_Handle,
  * @brief ACI_GATT_WRITE_WITHOUT_RESP
  * Starts the procedure to write a characteristic value without waiting for any
  * response from the server. No events are generated after this command is
- * executed. The length of the value to be written must not exceed (ATT_MTU -
- * 3); it must also not exceed (BLE_EVT_MAX_PARAM_LEN - 5) i.e. 250 for
- * BLE_EVT_MAX_PARAM_LEN default value.
+ * executed.
+ * The length of the value to be written must not exceed (ATT_MTU - 3). On
+ * STM32WB, it must also not exceed (BLE_CMD_MAX_PARAM_LEN - 5) i.e. 250 for
+ * BLE_CMD_MAX_PARAM_LEN default value.
  * 
  * @param Connection_Handle Specifies the ATT bearer for which the command
  *        applies.
@@ -942,9 +957,10 @@ tBleStatus aci_gatt_write_without_resp( uint16_t Connection_Handle,
  * Starts a signed write without response from the server.
  * The procedure is used to write a characteristic value with an authentication
  * signature without waiting for any response from the server. It cannot be
- * used when the link is encrypted. The length of the value to be written must
- * not exceed (ATT_MTU - 15); it must also not exceed (BLE_EVT_MAX_PARAM_LEN -
- * 5) i.e. 250 for BLE_EVT_MAX_PARAM_LEN default value.
+ * used when the link is encrypted.
+ * The length of the value to be written must not exceed (ATT_MTU - 15). On
+ * STM32WB, it must also not exceed (BLE_CMD_MAX_PARAM_LEN - 5) i.e. 250 for
+ * BLE_CMD_MAX_PARAM_LEN default value.
  * 
  * @param Connection_Handle Connection handle for which the command applies.
  *        Values:
@@ -1040,8 +1056,8 @@ tBleStatus aci_gatt_allow_read( uint16_t Connection_Handle );
 /**
  * @brief ACI_GATT_SET_SECURITY_PERMISSION
  * This command sets the security permission for the attribute handle
- * specified. Currently the setting of security permission is allowed only for
- * client configuration descriptor.
+ * specified. It is allowed only for the Client Characteristic Configuration
+ * descriptor.
  * 
  * @param Serv_Handle Handle of the service which contains the attribute whose
  *        security permission has to be modified
@@ -1109,6 +1125,8 @@ tBleStatus aci_gatt_read_handle_value( uint16_t Attr_Handle,
  * This command is a more flexible version of ACI_GATT_UPDATE_CHAR_VALUE to
  * support update of long attribute up to 512 bytes and indicate selectively
  * the generation of Indication/Notification.
+ * The description notes for the ACI_GATT_UPDATE_CHAR_VALUE command also apply
+ * here.
  * 
  * @param Conn_Handle_To_Notify Specifies the client(s) to be notified.
  *        Values:
@@ -1121,8 +1139,8 @@ tBleStatus aci_gatt_read_handle_value( uint16_t Attr_Handle,
  *          channel index)
  * @param Service_Handle Handle of service to which the characteristic belongs
  * @param Char_Handle Handle of the characteristic declaration
- * @param Update_Type Allow Notification or Indication generation,
- *         if enabled in the client characteristic configuration descriptor
+ * @param Update_Type Allow Notification or Indication generation, if enabled
+ *        in the client characteristic configuration descriptor
  *        Flags:
  *        - 0x00: Do not notify
  *        - 0x01: Notification
@@ -1133,7 +1151,9 @@ tBleStatus aci_gatt_read_handle_value( uint16_t Attr_Handle,
  *        fixed length characteristic this field is ignored.
  * @param Value_Offset The offset from which the attribute value has to be
  *        updated.
- * @param Value_Length Length of the Value parameter in octets
+ * @param Value_Length Length of the Value parameter in octets.
+ *        On STM32WB, this value must not exceed (BLE_CMD_MAX_PARAM_LEN - 12)
+ *        i.e. 243 for BLE_CMD_MAX_PARAM_LEN default value.
  * @param Value Updated characteristic value
  * @return Value indicating success or error code.
  */

@@ -65,7 +65,7 @@ extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
 extern ADC_HandleTypeDef hadc4;
 extern TIM_HandleTypeDef htim1;
 /* USER CODE BEGIN EV */
-extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -217,8 +217,8 @@ void TIM1_UP_IRQHandler(void)
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_IRQn 1 */
   HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
-  HAL_TIM_OC_Stop(&htim2, TIM_CHANNEL_1);
-	HAL_TIM_Base_Stop_IT(&htim1);
+  HAL_TIM_OC_Stop(&htim3, TIM_CHANNEL_2);
+  HAL_TIM_Base_Stop_IT(&htim1);
 
   /* USER CODE END TIM1_UP_IRQn 1 */
 }
@@ -234,7 +234,7 @@ void ADC4_IRQHandler(void)
   HAL_ADC_IRQHandler(&hadc4);
   /* USER CODE BEGIN ADC4_IRQn 1 */
   /* Включение звука */
-  HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_OC_Start(&htim3, TIM_CHANNEL_2);
   HAL_TIM_Base_Start_IT(&htim1);	// Таймер для вибро и звука
   //HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_SET);
   //HAL_TIM_Base_Start_IT(&htim1);

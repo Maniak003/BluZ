@@ -57,7 +57,15 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+void MX_ICACHE_Init(void);
+void MX_ADC4_Init(void);
+void MX_USART2_UART_Init(void);
+void MX_CRC_Init(void);
+void MX_RAMCFG_Init(void);
+void MX_RNG_Init(void);
 void MX_RTC_Init(void);
+void MX_TIM1_Init(void);
+void MX_TIM3_Init(void);
 
 /* USER CODE BEGIN EFP */
 
@@ -72,12 +80,12 @@ void MX_RTC_Init(void);
 #define A_CS_GPIO_Port GPIOA
 #define VIBRO_Pin GPIO_PIN_6
 #define VIBRO_GPIO_Port GPIOA
-#define SOUND_Pin GPIO_PIN_5
-#define SOUND_GPIO_Port GPIOA
-#define LED_Pin GPIO_PIN_2
+#define LED_Pin GPIO_PIN_5
 #define LED_GPIO_Port GPIOA
-#define batLev_Pin GPIO_PIN_1
+#define batLev_Pin GPIO_PIN_2
 #define batLev_GPIO_Port GPIOA
+#define SOUND_Pin GPIO_PIN_1
+#define SOUND_GPIO_Port GPIOA
 #define AIn_Pin GPIO_PIN_0
 #define AIn_GPIO_Port GPIOA
 #define TX_Pin GPIO_PIN_12
@@ -87,7 +95,7 @@ void MX_RTC_Init(void);
 
 /* USER CODE BEGIN Private defines */
 #define INTERVAL1 100
-#define INTERVAL2 5000
+#define INTERVAL2 2000
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

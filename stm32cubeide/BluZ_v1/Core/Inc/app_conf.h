@@ -39,7 +39,7 @@
 /**
  * Define Tx Power
  */
-#define CFG_TX_POWER                      (0x19) /* 0x19 <=> -0.3 dBm */
+#define CFG_TX_POWER                      (0x17) /* 0x17 <=> -2.4 dBm */
 
 /**
  * Definition of public BD Address,
@@ -65,8 +65,8 @@
  */
 #define CFG_BLE_ADDRESS_TYPE              (GAP_PUBLIC_ADDR)
 
-#define ADV_INTERVAL_MIN                  (0x0080)
-#define ADV_INTERVAL_MAX                  (0x00A0)
+#define ADV_INTERVAL_MIN                  (0x0140)
+#define ADV_INTERVAL_MAX                  (0x01E0)
 #define ADV_LP_INTERVAL_MIN               (0x0640)
 #define ADV_LP_INTERVAL_MAX               (0x0FA0)
 #define ADV_TYPE                          ADV_IND
@@ -84,17 +84,17 @@
 /**
  * Define Input Output capabilities
  */
-#define CFG_IO_CAPABILITY                (IO_CAP_DISPLAY_YES_NO)
+#define CFG_IO_CAPABILITY                ( IO_CAP_NO_INPUT_NO_OUTPUT)
 
 /**
  * Define Man In The Middle modes
  */
-#define CFG_MITM_PROTECTION              (MITM_PROTECTION_REQUIRED)
+#define CFG_MITM_PROTECTION              (MITM_PROTECTION_NOT_REQUIRED)
 
 /**
  * Define Secure Connections Support
  */
-#define CFG_SC_SUPPORT                   (SC_PAIRING_OPTIONAL)
+#define CFG_SC_SUPPORT                   (SC_PAIRING_UNSUPPORTED)
 
 /**
  * Define Keypress Notification Support
@@ -134,7 +134,7 @@
                                      0 | \
                                      0 | \
                                      0 | \
-                                     0 | \
+                                     BLE_OPTIONS_POWER_CLASS_1 | \
                                      0 | \
                                      0)
 
@@ -478,7 +478,7 @@ typedef enum
 #define CFG_AMM_VIRTUAL_STACK_BLE                         (1U)
 #define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (400U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
-#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (400U)  /* words (32 bits) */
 #define CFG_AMM_POOL_SIZE                                 DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
                                                           + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
 

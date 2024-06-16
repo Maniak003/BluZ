@@ -1,4 +1,8 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05Patchv6_2/firmware/public_inc/common_types.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/branches/P10164613/issue_2029/firmware/public_inc/common_types.h#2 $*/
+/*Version_INFO 
+V2  --> Original version is 1.30a-SOW05PatchV6_2
+V2  --> combined patch case 01641860
+*/
 /**
  ********************************************************************************
  * @file    common_types.h
@@ -140,6 +144,7 @@
 #define MEMSET(ptr_memory, value, memory_size)				ble_memset(ptr_memory, value, memory_size)
 #define MEMCPY(ptr_destination, ptr_source, memory_size)	ble_memcpy(ptr_destination, ptr_source, memory_size)
 #define MEMCMP(ptr_destination, ptr_source, memory_size)	ble_memcmp(ptr_destination, ptr_source, memory_size)
+#define MEMMOV(ptr_destination, ptr_source, memory_size)	ble_memmov(ptr_destination, ptr_source, memory_size)
 
 
 
