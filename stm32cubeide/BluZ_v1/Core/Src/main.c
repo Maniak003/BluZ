@@ -44,6 +44,8 @@ ADC_HandleTypeDef hadc4;
 
 CRC_HandleTypeDef hcrc;
 
+LPTIM_HandleTypeDef hlptim2;
+
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
 RNG_HandleTypeDef hrng;
@@ -51,14 +53,15 @@ RNG_HandleTypeDef hrng;
 RTC_HandleTypeDef hrtc;
 
 TIM_HandleTypeDef htim1;
-TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-bool connectFlag = false;
+bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false;
 uint32_t interval1 = 0, interval2 = 0, intervalTmp = 0;
 char uartBuffer[100] = {0,};
+
+bool SoundEnable = true, VibroEnable = true, LEDEnable = true;
 
 /* USER CODE END PV */
 
@@ -73,14 +76,38 @@ static void MX_CRC_Init(void);
 static void MX_RAMCFG_Init(void);
 static void MX_RNG_Init(void);
 static void MX_TIM1_Init(void);
-static void MX_TIM3_Init(void);
+static void MX_LPTIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void NotifyAct(uint8_t SRC) {
+	if (SoundEnable) {
+		if (SRC & 0b00000001) {
+			SoundFlag = true;
+			HAL_LPTIM_Counter_Start(&hlptim2);
+		}
+	}
 
+	if (VibroEnable) {
+		if (SRC & 0b00000010) {
+			VibroFlag = true;
+			HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_SET);
+		}
+	}
+
+	if (LEDEnable) {
+		if (SRC & 0b00000100) {
+			LEDflag = true;
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+		}
+	}
+	if (SoundEnable || VibroEnable || LEDEnable) {
+		HAL_TIM_Base_Start_IT(&htim1);	// Таймер для вибро и звука
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -124,7 +151,7 @@ int main(void)
   MX_RNG_Init();
   MX_RTC_Init();
   MX_TIM1_Init();
-  MX_TIM3_Init();
+  MX_LPTIM2_Init();
   /* USER CODE BEGIN 2 */
   //MX_GPIO_Init();
   bzero((char *) uartBuffer, sizeof(uartBuffer));
@@ -140,14 +167,10 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  /* Включим sound */
-  //__HAL_TIM_CLEAR_FLAG(&htim17, TIM_SR_UIF); // Clear flags
-  HAL_TIM_OC_Start(&htim3, TIM_CHANNEL_2);
-
-  /* Включим vibro */
-  HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_SET);
   __HAL_TIM_CLEAR_FLAG(&htim1, TIM_SR_UIF); // Clear flags
-  HAL_TIM_Base_Start_IT(&htim1);	// Таймер для вибро и звука
+  /* Включим LED, Vibro, Sound */
+  NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY | LED_NOTIFY);
+
   HAL_ADC_Start_IT(&hadc4);
 
   while (1)
@@ -161,20 +184,17 @@ int main(void)
 	  interval2 = intervalTmp;
 	  SendData();
 	  /* Включение звука */
-	  HAL_TIM_OC_Start(&htim3, TIM_CHANNEL_2);
-	  HAL_TIM_Base_Start_IT(&htim1);	// Таймер для вибро и звука
+	  SoundFlag = true;
+	  //HAL_TIM_OC_Start(&htim3, TIM_CHANNEL_2);
+	  HAL_LPTIM_Counter_Start(&hlptim2);
+	  HAL_TIM_Base_Start_IT(&htim1);	// Таймер для LED, вибро и звука
 	}
     if (interval1 + INTERVAL1 < intervalTmp) {
-		if (connectFlag) {
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		} else {
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-		}
     	interval1 = intervalTmp;
-    //	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+		if (connectFlag) {
+			NotifyAct(LED_NOTIFY);
+		}
     }
-    //HAL_GPIO_TogglePin(SOUND_GPIO_Port, SOUND_Pin);
-    //HAL_GPIO_WritePin(SOUND_GPIO_Port, SOUND_Pin, GPIO_PIN_SET);
   }
   /* USER CODE END 3 */
 }
@@ -387,6 +407,50 @@ static void MX_ICACHE_Init(void)
 }
 
 /**
+  * @brief LPTIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_LPTIM2_Init(void)
+{
+
+  /* USER CODE BEGIN LPTIM2_Init 0 */
+
+  /* USER CODE END LPTIM2_Init 0 */
+
+  LPTIM_OC_ConfigTypeDef sConfig1 = {0};
+
+  /* USER CODE BEGIN LPTIM2_Init 1 */
+
+  /* USER CODE END LPTIM2_Init 1 */
+  hlptim2.Instance = LPTIM2;
+  hlptim2.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
+  hlptim2.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV1;
+  hlptim2.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
+  hlptim2.Init.Period = 1460;
+  hlptim2.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
+  hlptim2.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
+  hlptim2.Init.Input1Source = LPTIM_INPUT1SOURCE_GPIO;
+  hlptim2.Init.Input2Source = LPTIM_INPUT2SOURCE_GPIO;
+  hlptim2.Init.RepetitionCounter = 0;
+  if (HAL_LPTIM_Init(&hlptim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfig1.Pulse = 0;
+  sConfig1.OCPolarity = LPTIM_OCPOLARITY_HIGH;
+  if (HAL_LPTIM_OC_ConfigChannel(&hlptim2, &sConfig1, LPTIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN LPTIM2_Init 2 */
+
+  /* USER CODE END LPTIM2_Init 2 */
+  HAL_LPTIM_MspPostInit(&hlptim2);
+
+}
+
+/**
   * @brief RAMCFG Initialization Function
   * @param None
   * @retval None
@@ -562,55 +626,6 @@ static void MX_TIM1_Init(void)
   /* USER CODE BEGIN TIM1_Init 2 */
 
   /* USER CODE END TIM1_Init 2 */
-
-}
-
-/**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 1480;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_OC_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_OC_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-  HAL_TIM_MspPostInit(&htim3);
 
 }
 

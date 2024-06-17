@@ -53,14 +53,14 @@ extern "C" {
 
 /* USER CODE END EM */
 
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+void HAL_LPTIM_MspPostInit(LPTIM_HandleTypeDef *hlptim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 void MX_RTC_Init(void);
 
 /* USER CODE BEGIN EFP */
-
+void NotifyAct(uint8_t SRC);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -86,8 +86,11 @@ void MX_RTC_Init(void);
 #define Sync_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-#define INTERVAL1 100
-#define INTERVAL2 2000
+#define INTERVAL1 2000
+#define INTERVAL2 5000
+#define SOUND_NOTIFY 1
+#define VIBRO_NOTIFY 2
+#define LED_NOTIFY   4
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
