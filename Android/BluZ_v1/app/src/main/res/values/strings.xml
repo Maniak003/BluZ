@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">BluZ</string>
+    <string name="textSpecter">S</string>
+    <string name="textHistory">H</string>
+    <string name="textDosimetr">D</string>
+    <string name="textSetup">O</string>
+    <string name="textLog">L</string>
+    <string name="textExit">E</string>
+    <string name="textSaveSetup">Save</string>
+    <string name="textScan">Scan</string>
+    <string name="textScan2">Stop</string>
+    <string name="textSaveBQ">BqMon</string>
+    <string name="textStartStop">Start</string>
+    <string name="textStartStop2">Stop</string>
+    <string name="textClearDoze">Clear</string>
+    <string name="textClearLog">Clear</string>
+    <string name="textEmpty">.</string>
+    <string name="saveComplete">Save complete</string>
+    <string name="resetDosimeter">Reset complete</string>
+    <string name="resetLogs">Reset logs complete</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
