@@ -1,4 +1,4 @@
-20926618934516309
+20930061655161171
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -61061,6 +61061,13 @@ Buzzer55x55
 3
 3
 My-library
+CAP_horizontal
+
+
+0
+2
+2
+My-library
 CSPG6_1P05X1P65_STM
 
 MLPF-WB-02D3 
@@ -61089,23 +61096,23 @@ SMD SMT crystal
 2
 2
 My-library
+DA2257
+
+
+0
+10
+10
+My-library
+HY931147C
+
+
+0
+16
+16
+My-library
 MLPF-WB-04D3
 
 
-0
-6
-6
-My-library
-My-
-
-
-0
-3
-3
-My-library
-My-li
-
-MLPF-WB-02D3 
 0
 6
 6
@@ -61123,6 +61130,13 @@ PowerSwotch
 0
 3
 3
+My-library
+SMD-CONN
+
+
+0
+1
+1
 My-library
 SOT-23-3
 SOT, 3 Pin (https://www.jedec.org/sites/default/files/docs/Mo-178D.PDF inferred 3-pin variant), generated with kicad-footprint-generator ipc_gullwing_generator.py
