@@ -2,6 +2,7 @@ package ru.starline.bluz
 
 import android.content.res.Resources
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -94,6 +95,7 @@ class NumberFragment : Fragment() {
 
                 /* Сохранение параметров */
                 val btnSaveSetup: Button = view.findViewById(R.id.buttonSaveSetup)
+                var textMACADR: TextView = view.findViewById(R.id.textMACADDR)
                 btnSaveSetup.setOnClickListener {
                     Toast.makeText(mainContext, R.string.saveComplete, Toast.LENGTH_LONG).show()
                 }
@@ -104,6 +106,13 @@ class NumberFragment : Fragment() {
                     if (btnScanBT.text == getString(R.string.textScan)) {
                         btnScanBT.setText(getString(R.string.textScan2))
                         btnScanBT.setTextColor(getResources().getColor(R.color.Red, mainContext.theme))
+                        /*
+                        *   Сканирование BT устройств
+                        */
+                        val BTT = BluetoothInterface()
+
+                        BTT.setTextObjects(indicatorBT, textMACADR)
+                        BTT.startScan()
                     } else {
                         btnScanBT.setText(getString(R.string.textScan))
                         btnScanBT.setTextColor(getResources().getColor(R.color.buttonTextColor, mainContext.theme))
