@@ -1,0 +1,4 @@
+../STM32_WPAN/Target/ll_sys_if.c:73:6:ll_sys_bg_process_init	0	static
+../STM32_WPAN/Target/ll_sys_if.c:84:6:ll_sys_schedule_bg_process	0	static
+../STM32_WPAN/Target/ll_sys_if.c:94:6:ll_sys_schedule_bg_process_isr	0	static
+../STM32_WPAN/Target/ll_sys_if.c:104:6:ll_sys_config_params	16	static
