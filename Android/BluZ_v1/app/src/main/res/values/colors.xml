@@ -5,5 +5,8 @@
     <color name="Red">#FFFF0000</color>
     <color name="Green">#FF00FF00</color>
     <color name="buttonColor">#5E5904</color>
-    <color name="buttonTextColor">#C19203</color>
+    <color name="activeButtonColor">#9E7C06</color>
+    <color name="buttonTextColor">#EAB105</color>
+    <color name="labelTextColor">#058EEA</color>
+    <color name="editTextColor">#FFEB3B</color>
 </resources>

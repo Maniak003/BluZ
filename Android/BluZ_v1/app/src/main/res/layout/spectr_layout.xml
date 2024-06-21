@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/spectrLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,16 +9,55 @@
     android:orientation="horizontal"
     android:scrollbars="none">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/black"
-        android:gravity="right"
-        android:orientation="horizontal"
+    <ImageView
+        android:id="@+id/specterView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/screen_background_dark" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="right"
+        android:orientation="horizontal"
+        tools:layout_editor_absoluteX="797dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textStatistics1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Statistics 1" />
+
+            <TextView
+                android:id="@+id/textStatistics2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Statistics 1" />
+
+            <TextView
+                android:id="@+id/textStatistics3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=" " />
+
+            <ImageView
+                android:id="@+id/statisticView"
+                android:layout_width="200dp"
+                android:layout_height="100dp"
+                android:layout_weight="0"
+                app:srcCompat="@android:drawable/screen_background_dark" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -44,4 +84,5 @@
         </LinearLayout>
 
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

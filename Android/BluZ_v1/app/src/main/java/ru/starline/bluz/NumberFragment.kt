@@ -1,6 +1,11 @@
 package ru.starline.bluz
 
+import android.content.SharedPreferences
 import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -8,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.toColorInt
@@ -39,8 +45,9 @@ class NumberFragment : Fragment() {
         arguments?.takeIf { it.containsKey(ARG_OBJECT) }?.apply {
             if (getInt(ARG_OBJECT) == 0) {  // Спектр
                 /*
-                * Кнопки закладки спектр
+                * Объекты закладки спектр
                 */
+                drawSPEC = drawSpecter(view.findViewById(R.id.specterView))
 
                 /* Старт набора спектра */
                 val btnSpecterSS: Button = view.findViewById(R.id.buttonSpecterSS)
@@ -52,16 +59,20 @@ class NumberFragment : Fragment() {
                         btnSpecterSS.setText(getString(R.string.textStartStop))
                         btnSpecterSS.setTextColor(getResources().getColor(R.color.buttonTextColor, mainContext.theme))
                     }
+                    drawSPEC.init()
+                    drawSPEC.testLine()
                 }
 
                 /* Сохранение спектра в файл */
                 val btnSaveBQ: Button = view.findViewById(R.id.buttonSaveBQ)
                 btnSaveBQ.setOnClickListener {
-                    Toast.makeText(mainContext, R.string.saveComplete, Toast.LENGTH_LONG).show()
+                    Toast.makeText(mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
+                    drawSPEC.init()
+                    drawSPEC.clearSpecter()
                 }
             } else if (getInt(ARG_OBJECT) == 1) {   // История
             /*
-            *   Кнопки закладки история
+            *   Обекты закладки история
             */
                 /* Сохранение спектра в файл */
                 val btnHistorySave: Button = view.findViewById(R.id.buttonHistorySave)
@@ -71,7 +82,7 @@ class NumberFragment : Fragment() {
 
             } else if (getInt(ARG_OBJECT) == 2) {   // Дозиметр
             /*
-            *   Кнопки закладки дозиметра
+            *   Обекты закладки дозиметра
             */
                 /* Сброс дозиметра */
                 val btnClearDose: Button = view.findViewById(R.id.buttonClearDoze)
@@ -80,7 +91,7 @@ class NumberFragment : Fragment() {
                 }
             } else if (getInt(ARG_OBJECT) == 3) {   // Логи
             /*
-            *   Кнопки закладки логов
+            *   Обекты закладки логов
             */
                 /* Очистка логов */
                 val btnCleaarLog: Button = view.findViewById(R.id.buttonClearLog)
@@ -89,19 +100,27 @@ class NumberFragment : Fragment() {
                 }
 
             } else if (getInt(ARG_OBJECT) == 4) {   // Настройки
-            /*
-            *   Кнопки закладки настроек
-            */
-
+                /*
+                *   Обекты закладки настроек
+                */
                 /* Сохранение параметров */
                 val btnSaveSetup: Button = view.findViewById(R.id.buttonSaveSetup)
-                var textMACADR: TextView = view.findViewById(R.id.textMACADDR)
+                textMACADR = view.findViewById(R.id.textMACADDR)
+                if (! LEMAC.isEmpty()) {
+                    textMACADR.setText(LEMAC)
+                }
                 btnSaveSetup.setOnClickListener {
-                    Toast.makeText(mainContext, R.string.saveComplete, Toast.LENGTH_LONG).show()
+                    /* Сохраняем MAC адрес */
+                    LEMAC = textMACADR.text.toString()
+                    PP.setPropStr(propADDRESS, LEMAC)
+                    Log.d("BluZ-BT", "mac addr_: ")
+                    Log.d("BluZ-BT", LEMAC)
+                    Toast.makeText(mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
                 }
 
                 /* Сканирование bluetooth устройств */
                 val btnScanBT: Button = view.findViewById(R.id.buttonScanBT)
+                val BTT = BluetoothInterface()
                 btnScanBT.setOnClickListener {
                     if (btnScanBT.text == getString(R.string.textScan)) {
                         btnScanBT.setText(getString(R.string.textScan2))
@@ -109,20 +128,15 @@ class NumberFragment : Fragment() {
                         /*
                         *   Сканирование BT устройств
                         */
-                        val BTT = BluetoothInterface()
-
-                        BTT.setTextObjects(indicatorBT, textMACADR)
-                        BTT.startScan()
+                        BTT.startScan(indicatorBT, textMACADR, btnScanBT)
                     } else {
                         btnScanBT.setText(getString(R.string.textScan))
                         btnScanBT.setTextColor(getResources().getColor(R.color.buttonTextColor, mainContext.theme))
+                        BTT.stopScan()
                     }
-                    indicatorBT.setBackgroundColor(getResources().getColor(R.color.Green, mainContext.theme))
+                    //indicatorBT.setBackgroundColor(getResources().getColor(R.color.Green, mainContext.theme))
                 }
-
             }
-            //val textView: TextView = view.findViewById(R.id.textView)
-            //textView.text = getInt(ARG_OBJECT).toString()
         }
     }
 }

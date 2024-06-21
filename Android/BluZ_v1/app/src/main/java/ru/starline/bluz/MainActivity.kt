@@ -21,25 +21,35 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
+import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
+import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.content.ContentProviderCompat.requireContext
 import java.nio.charset.Charset
-
 
 public var pagerFrame: Int = 1
 public lateinit var viewPager: ViewPager2
 public lateinit var indicatorBT: TextView
 public lateinit var mainContext: Context
+public lateinit var bColor: buttonColor
+public lateinit var textMACADR: EditText
 public var LEMAC: String = ""
+public const val propADDRESS: String = "Address"
+public lateinit var PP: propControl
+public lateinit var drawSPEC: drawSpecter
 
 class MainActivity : FragmentActivity() {
     private lateinit var adapter: NumberAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContentView(R.layout.activity_main)
         mainContext = applicationContext
 
@@ -53,22 +63,41 @@ class MainActivity : FragmentActivity() {
         /*
         *   Проверка и запрос разрешений.
         */
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.NEARBY_WIFI_DEVICES) == PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH
+            ) == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.NEARBY_WIFI_DEVICES
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
 
         } else {
-            val permissionsRq = arrayOf(Manifest.permission.BLUETOOTH,
+            val permissionsRq = arrayOf(
+                Manifest.permission.BLUETOOTH,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.BLUETOOTH_CONNECT,
                 Manifest.permission.BLUETOOTH_SCAN,
                 Manifest.permission.NEARBY_WIFI_DEVICES
-                )
+            )
             ActivityCompat.requestPermissions(this, permissionsRq, 0)
         }
 
@@ -92,31 +121,54 @@ class MainActivity : FragmentActivity() {
         var btnSpecter: Button = findViewById(R.id.buttonSpecter)
         btnSpecter.setOnClickListener {
             viewPager.setCurrentItem(0, false)
+            bColor.resetToDefault()
+            bColor.setToActive(btnSpecter)
         }
 
         /* Окно с историей */
         var btnHistory: Button = findViewById(R.id.buttonHistory)
         btnHistory.setOnClickListener {
             viewPager.setCurrentItem(1, false)
+            bColor.resetToDefault()
+            bColor.setToActive(btnHistory)
         }
 
         /* Окно дозиметра */
         var btnDozimeter: Button = findViewById(R.id.buttonDosimeter)
         btnDozimeter.setOnClickListener {
             viewPager.setCurrentItem(2, false)
+            bColor.resetToDefault()
+            bColor.setToActive(btnDozimeter)
         }
 
         /* Окно c kjufvb */
         var btnLog: Button = findViewById(R.id.buttonLog)
         btnLog.setOnClickListener {
             viewPager.setCurrentItem(3, false)
+            bColor.resetToDefault()
+            bColor.setToActive(btnLog)
         }
 
         /* Окно с настройками */
         var btnSetup: Button = findViewById(R.id.buttonSetup)
         btnSetup.setOnClickListener {
             viewPager.setCurrentItem(4, false)
+            bColor.resetToDefault()
+            bColor.setToActive(btnSetup)
         }
+        bColor = buttonColor()
+        bColor.initColor(btnSpecter, btnHistory, btnDozimeter, btnLog, btnSetup)
+        bColor.resetToDefault()
+        bColor.setToActive(btnSpecter)  // Активная закладка.
+
+        /*
+        *       Параметры приложения
+        */
+
+        PP = propControl()
+        LEMAC = PP.getPropStr(propADDRESS)
+        Log.d("BluZ-BT", "mac addr: ")
+        Log.d("BluZ-BT", LEMAC)
     }
 }
 

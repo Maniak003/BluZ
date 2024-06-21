@@ -47,58 +47,70 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/Red"
-                android:maxHeight="10dp"
-                android:minHeight="10dp" />
+                android:maxHeight="5dp"
+                android:minHeight="5dp" />
 
             <Button
                 android:id="@+id/buttonSpecter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:minWidth="50dp"
                 android:text="@string/textSpecter"
                 android:textAlignment="center"
-                android:textColor="@color/buttonTextColor" />
+                android:textColor="@color/buttonTextColor"
+                app:cornerRadius="20dp" />
 
             <Button
                 android:id="@+id/buttonHistory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textHistory"
-                android:textColor="@color/buttonTextColor" />
+                android:textColor="@color/buttonTextColor"
+                app:cornerRadius="20dp" />
 
             <Button
                 android:id="@+id/buttonDosimeter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textDosimetr"
-                android:textColor="@color/buttonTextColor" />
+                android:textColor="@color/buttonTextColor"
+                app:cornerRadius="20dp" />
 
             <Button
                 android:id="@+id/buttonLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textLog"
-                android:textColor="@color/buttonTextColor" />
+                android:textColor="@color/buttonTextColor"
+                app:cornerRadius="20dp" />
 
             <Button
                 android:id="@+id/buttonSetup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textSetup"
-                android:textColor="@color/buttonTextColor" />
+                android:textColor="@color/buttonTextColor"
+                app:cornerRadius="20dp" />
 
             <Button
                 android:id="@+id/buttonExit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textExit"
-                android:textColor="@color/buttonTextColor" />
+                android:textColor="@color/buttonTextColor"
+                app:cornerRadius="20dp" />
 
         </LinearLayout>
 

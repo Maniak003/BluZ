@@ -18,6 +18,11 @@
     <string name="saveComplete">Save complete</string>
     <string name="resetDosimeter">Reset complete</string>
     <string name="resetLogs">Reset logs complete</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="defaultMAC">XX:XX:XX:XX:XX:XX</string>
+    <string name="labelMAC">MAC Address:</string>
+    <string name="labelAPP">Application parameters</string>
+    <string name="labelDEVICE">Device parameters</string>
+    <string name="labelSpecterType">Specter style</string>
+    <!-- TODO: Remove or change this placeholder text
+    <string name="hello_blank_fragment">Hello blank fragment</string> -->
 </resources>
