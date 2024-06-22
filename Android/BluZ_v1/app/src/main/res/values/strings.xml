@@ -23,6 +23,15 @@
     <string name="labelAPP">Application parameters</string>
     <string name="labelDEVICE">Device parameters</string>
     <string name="labelSpecterType">Specter style</string>
+    <string name="specterLinColor">Specter color</string>
+    <string name="RBLine">Lin</string>
+    <string name="RBLog">Lg</string>
+    <string name="RBFoneLin">FoneLin</string>
+    <string name="RBFoneLog">FoneLg</string>
+    <string name="AColor">A</string>
+    <string name="RColor">R</string>
+    <string name="GColor">G</string>
+    <string name="BColor">B</string>
     <!-- TODO: Remove or change this placeholder text
     <string name="hello_blank_fragment">Hello blank fragment</string> -->
 </resources>

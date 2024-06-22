@@ -111,10 +111,11 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
   switch(p_Notification->EvtOpcode)
   {
     /* USER CODE BEGIN Service1_Notification_Service1_EvtOpcode */
+  /*
 	bzero((char *) uartBuffer, sizeof(uartBuffer));
 	sprintf(uartBuffer, "Service1_Notification_Service1_EvtOpcode\n\r");
 	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-
+*/
     /* USER CODE END Service1_Notification_Service1_EvtOpcode */
 
     case BLUZ_RX_NOTIFY_ENABLED_EVT:
