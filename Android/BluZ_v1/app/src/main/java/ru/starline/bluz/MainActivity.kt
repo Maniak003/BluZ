@@ -32,6 +32,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.content.ContentProviderCompat.requireContext
 import java.nio.charset.Charset
+import java.util.UUID
 
 public var pagerFrame: Int = 1
 public lateinit var viewPager: ViewPager2
@@ -43,6 +44,7 @@ public var LEMAC: String = ""
 public const val propADDRESS: String = "Address"
 public lateinit var PP: propControl
 public lateinit var drawSPEC: drawSpecter
+public lateinit var BTT:  BluetoothInterface
 
 class MainActivity : FragmentActivity() {
     private lateinit var adapter: NumberAdapter
@@ -167,8 +169,10 @@ class MainActivity : FragmentActivity() {
 
         PP = propControl()
         LEMAC = PP.getPropStr(propADDRESS)
-        Log.d("BluZ-BT", "mac addr: ")
-        Log.d("BluZ-BT", LEMAC)
+        if ((LEMAC.length == 17) && ! LEMAC.contentEquals("XX")) {
+            BTT = BluetoothInterface(indicatorBT)
+        }
+        Log.d("BluZ-BT", "mac addr: " + LEMAC)
     }
 }
 

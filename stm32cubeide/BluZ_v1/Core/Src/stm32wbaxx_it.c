@@ -62,6 +62,9 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
+extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
+extern DMA_QListTypeDef List_GPDMA1_Channel0;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern ADC_HandleTypeDef hadc4;
 extern TIM_HandleTypeDef htim1;
 /* USER CODE BEGIN EV */
@@ -209,6 +212,59 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles EXTI Line15 interrupt.
+  */
+void EXTI15_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI15_IRQn 0 */
+
+  /* USER CODE END EXTI15_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(Sync_Pin);
+  /* USER CODE BEGIN EXTI15_IRQn 1 */
+  pulseCounter++;
+  /* Включение LED */
+  //NotifyAct(LED_NOTIFY);
+  /* USER CODE END EXTI15_IRQn 1 */
+}
+
+/**
+  * @brief This function handles GPDMA1 Channel 0 global interrupt.
+  */
+void GPDMA1_Channel0_IRQHandler(void)
+{
+  /* USER CODE BEGIN GPDMA1_Channel0_IRQn 0 */
+
+  /* USER CODE END GPDMA1_Channel0_IRQn 0 */
+  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel0);
+  /* USER CODE BEGIN GPDMA1_Channel0_IRQn 1 */
+  /*
+   * 0 - 1024 канала
+   * 1 - 2048 каналов
+   * 2 - 4096 каналов
+   */
+	switch (resolution) {
+		/* 1024 */
+		case 0:	{
+			specterBuffer[((pulseLevel >> 2) & 0x3FF) + HEADER_OFFSET_2048]++;
+			break;
+		}
+		/* 2048 */
+		case 1: {
+			specterBuffer[((pulseLevel >> 1) & 0x7FF) + HEADER_OFFSET_4096]++;
+			break;
+		}
+		/* 4096 */
+		case 2: {
+			specterBuffer[(pulseLevel & 0xFFF) + HEADER_OFFSET_8192]++;
+			break;
+		}
+	}
+	/* Оповещение об импульсе */
+	NotifyAct(LED_NOTIFY);
+  /* USER CODE END GPDMA1_Channel0_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM1 Update interrupt.
   */
 void TIM1_UP_IRQHandler(void)
@@ -246,8 +302,6 @@ void ADC4_IRQHandler(void)
   /* USER CODE END ADC4_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc4);
   /* USER CODE BEGIN ADC4_IRQn 1 */
-  /* Включение звука */
-  NotifyAct(LED_NOTIFY);
   /* USER CODE END ADC4_IRQn 1 */
 }
 

@@ -64,6 +64,7 @@ extern UART_HandleTypeDef huart2;
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
+void BleStackCB_Process(void);
 
 /* USER CODE END EV */
 

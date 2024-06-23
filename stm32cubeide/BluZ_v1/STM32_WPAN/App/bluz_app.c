@@ -290,7 +290,7 @@ __USED void BLUZ_Tx_SendNotification(void) /* Property Notification */
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
-void SendData( void )
+void sendData( uint8_t *dataSpectrBufer )
 {
 	if (connectFlag) {
 	  tBleStatus status = BLE_STATUS_INVALID_PARAMS;
@@ -298,18 +298,11 @@ void SendData( void )
 
 		/*Data Packet to send to remote*/
 		//Notification_Data_Buffer[0] += 1;
-		//bzero((char *) uartBuffer, sizeof(uartBuffer));
-		//sprintf(uartBuffer, "bz_rx_app: SendData\n\r");
-		//HAL_UART_Transmit(&huart1, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
 		/* compute CRC */
 		//crc_result = APP_BLE_ComputeCRC8((uint8_t*) Notification_Data_Buffer, (MTUSizeValue - 1));
 		//Notification_Data_Buffer[MTUSizeValue - 1] = crc_result;
-		uint8_t chr = 0x30;
 		for (int iii = 0; iii < MTUSizeValue; iii++) {
-			if (chr > 0x39) {
-				chr = 0x30;
-			}
-			Notification_Data_Buffer[iii] = chr++;
+			Notification_Data_Buffer[iii] = dataSpectrBufer[iii];
 		}
 		BZ_Context.TxData.p_Payload = Notification_Data_Buffer;
 		BZ_Context.TxData.Length =  MTUSizeValue;

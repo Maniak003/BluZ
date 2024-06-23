@@ -109,9 +109,11 @@ class NumberFragment : Fragment() {
                     if (btnSpecterSS.text == getString(R.string.textStartStop)) {
                         btnSpecterSS.setText(getString(R.string.textStartStop2))
                         btnSpecterSS.setTextColor(getResources().getColor(R.color.Red, mainContext.theme))
+                        BTT.initLeDevice()
                     } else {
                         btnSpecterSS.setText(getString(R.string.textStartStop))
                         btnSpecterSS.setTextColor(getResources().getColor(R.color.buttonTextColor, mainContext.theme))
+                        BTT.destroyDevice()
                     }
                     drawSPEC.init()
                     /* Массив для теста */
@@ -178,7 +180,7 @@ class NumberFragment : Fragment() {
 
                 /* Сканирование bluetooth устройств */
                 val btnScanBT: Button = view.findViewById(R.id.buttonScanBT)
-                val BTT = BluetoothInterface()
+                //BTT = BluetoothInterface(indicatorBT)
                 btnScanBT.setOnClickListener {
                     if (btnScanBT.text == getString(R.string.textScan)) {
                         btnScanBT.setText(getString(R.string.textScan2))
@@ -186,13 +188,12 @@ class NumberFragment : Fragment() {
                         /*
                         *   Сканирование BT устройств
                         */
-                        BTT.startScan(indicatorBT, textMACADR, btnScanBT)
+                        BTT.startScan(textMACADR, btnScanBT)
                     } else {
                         btnScanBT.setText(getString(R.string.textScan))
                         btnScanBT.setTextColor(getResources().getColor(R.color.buttonTextColor, mainContext.theme))
                         BTT.stopScan()
                     }
-                    //indicatorBT.setBackgroundColor(getResources().getColor(R.color.Green, mainContext.theme))
                 }
 
                 tvColor = view.findViewById(R.id.tvColor)

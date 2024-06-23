@@ -29,6 +29,10 @@
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
+extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
+extern DMA_QListTypeDef List_GPDMA1_Channel0;
+extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
+extern DMA_QListTypeDef List_GPDMA1_Channel0;
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 extern ADC_HandleTypeDef hadc4;
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
@@ -61,6 +65,10 @@ void MX_StandbyExit_PeripharalInit(void)
   /* Re-Initialize Tick with new clock source */
   HAL_InitTick(TICK_INT_PRIORITY);
 
+  memset(&Node_GPDMA1_Channel0, 0, sizeof(Node_GPDMA1_Channel0));
+  memset(&List_GPDMA1_Channel0, 0, sizeof(List_GPDMA1_Channel0));
+  memset(&Node_GPDMA1_Channel0, 0, sizeof(Node_GPDMA1_Channel0));
+  memset(&List_GPDMA1_Channel0, 0, sizeof(List_GPDMA1_Channel0));
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   memset(&hadc4, 0, sizeof(hadc4));
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */

@@ -28,7 +28,10 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#ifndef __INCLUDE_MAIN_H
+#define __INCLUDE_MAIN_H
+#include "main.h"
+#endif
 /* USER CODE END Includes */
 
 /* Exported defines ----------------------------------------------------------*/
@@ -93,7 +96,7 @@ typedef struct
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
-#define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
+
 extern char uartBuffer[100];
 extern UART_HandleTypeDef huart2;
 /* USER CODE END EV */

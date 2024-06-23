@@ -40,6 +40,29 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+/*
+ * Размер буфера для служебных данных
+ * Значение для вычисления максимального размера буфера
+ * для разрешения 4096
+ * 8192 + 104 =  34 * 244(MTU)
+ */
+#define CRC_SIZE 1							/* размер в uint16_t */
+#define HEADER_OFFSET_2048 74 - CRC_SIZE	/* размер в uint16_t */
+#define HEADER_OFFSET_4096 26 - CRC_SIZE	/* размер в uint16_t */
+#define HEADER_OFFSET_8192 52 - CRC_SIZE	/* размер в uint16_t */
+#define NUMBER_MTU_1024 9					/* Количество MTU для передачи спектра разрешением 1024 */
+#define NUMBER_MTU_2048 17					/* Количество MTU для передачи спектра разрешением 2048 */
+#define NUMBER_MTU_4096 34					/* Количество MTU для передачи спектра разрешением 4096 */
+#define NUMBER_MTU_DOZR 4					/* Количество MTU для передачи накоплений дозиметра */
+#define NUMBER_MTU_LOG 3					/* Количество MTU для передачи логов */
+#define NUMBER_MTU_PARAM 1					/* Количество MTU для передачи текущих параметров прибора */
+
+#define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
+extern uint16_t MTUSizeValue;
+extern uint8_t resolution;
+extern uint16_t specterBuffer[4096 + HEADER_OFFSET_8192];
+extern uint32_t pulseCounter, pulseLevel;
+void sendData(uint8_t *dataSpectrBufer);
 
 /* USER CODE END ET */
 
@@ -84,6 +107,7 @@ void NotifyAct(uint8_t SRC);
 #define TX_GPIO_Port GPIOA
 #define Sync_Pin GPIO_PIN_15
 #define Sync_GPIO_Port GPIOB
+#define Sync_EXTI_IRQn EXTI15_IRQn
 
 /* USER CODE BEGIN Private defines */
 #define INTERVAL1 2000

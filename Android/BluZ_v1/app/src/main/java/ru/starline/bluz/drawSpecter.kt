@@ -24,8 +24,8 @@ class drawSpecter {
     }
 
     fun testLine() {
-        Log.d("BluZ-BT", HSize.toString())
-        Log.d("BluZ-BT", VSize.toString())
+        //Log.d("BluZ-BT", HSize.toString())
+        //Log.d("BluZ-BT", VSize.toString())
         specBitmap = Bitmap.createBitmap(HSize, VSize, Bitmap.Config.ARGB_8888)
         specCanvas = Canvas(specBitmap)
         var paint: Paint = Paint()

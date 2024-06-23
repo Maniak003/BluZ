@@ -41,6 +41,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc4;
+DMA_NodeTypeDef Node_GPDMA1_Channel0;
+DMA_QListTypeDef List_GPDMA1_Channel0;
+DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 CRC_HandleTypeDef hcrc;
 
@@ -57,9 +60,32 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+
 bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false;
-uint32_t interval1 = 0, interval2 = 0, intervalTmp = 0;
+uint32_t interval1 = 0, interval2 = 0, intervalTmp = 0, pulseCounter = 0,  pulseLevel = 0;
 char uartBuffer[100] = {0,};
+uint8_t resolution = 0; /* 0 - 1024, 1 - 2048, 2 - 4096, 3 - Логи, 4 - Параметры, 5 - История дозиметра*/
+uint8_t tmpBTBuffer[DATA_NOTIFICATION_MAX_PACKET_SIZE] = {0,};
+/*
+ * Значения заголовка и формат данных
+ * 0 -  количество MTU
+ * 		1  - для параметров прибора
+ *  	3  - для даных лога
+ *  	4  - для данных дозиметра
+ * 		9  - для спектра 1024 разрядов
+ * 		17 - для спектра 2048 разрядов
+ * 		34 - для спектра 4096 разрядов
+ *
+ * 1 - Тип передаваемых данных
+ * 		0 - Текущий спектр
+ * 		1 - Исторический спектр
+ * 		2 - Данные дозиметра
+ * 		3 - Логи
+ * 		4 - параметры прибора
+ *
+ */
+uint16_t specterBuffer[4096 + HEADER_OFFSET_8192] = {0,};
+
 
 bool SoundEnable = true, VibroEnable = true, LEDEnable = true;
 
@@ -69,20 +95,22 @@ bool SoundEnable = true, VibroEnable = true, LEDEnable = true;
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ICACHE_Init(void);
+static void MX_GPDMA1_Init(void);
 static void MX_ADC4_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_CRC_Init(void);
 static void MX_RAMCFG_Init(void);
 static void MX_RNG_Init(void);
-static void MX_TIM1_Init(void);
+static void MX_ICACHE_Init(void);
 static void MX_LPTIM2_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 void NotifyAct(uint8_t SRC) {
 	if (SoundEnable) {
 		if (SRC & 0b00000001) {
@@ -144,14 +172,15 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ICACHE_Init();
+  MX_GPDMA1_Init();
   MX_ADC4_Init();
   MX_USART2_UART_Init();
   MX_RAMCFG_Init();
   MX_RNG_Init();
   MX_RTC_Init();
-  MX_TIM1_Init();
+  MX_ICACHE_Init();
   MX_LPTIM2_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
   //MX_GPIO_Init();
   bzero((char *) uartBuffer, sizeof(uartBuffer));
@@ -171,7 +200,7 @@ int main(void)
   /* Включим LED, Vibro, Sound */
   NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY | LED_NOTIFY);
 
-  HAL_ADC_Start_IT(&hadc4);
+  HAL_ADC_Start_DMA(&hadc4, &pulseLevel, 1);
 
   while (1)
   {
@@ -180,9 +209,49 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     intervalTmp = HAL_GetTick();
-	if ((interval2 + INTERVAL2 < intervalTmp) /*&& system_startup_done*/) {
+	if ( connectFlag && (interval2 + INTERVAL2 < intervalTmp) /*&& system_startup_done*/) {
 	  interval2 = intervalTmp;
-	  SendData();
+
+	  /* Test */
+	  specterBuffer[1] = 0;		/* Для теста передаем тип данны - текущий спектр */
+	  resolution = 0;			/* Разрешение 1024 */
+
+	  uint16_t countMTU = 0;
+	  switch (resolution) {
+		  case 0: {
+			  countMTU = NUMBER_MTU_1024;
+			  break;
+		  }
+		  case 1: {
+			  countMTU = NUMBER_MTU_2048;
+			  break;
+		  }
+		  case 2: {
+			  countMTU = NUMBER_MTU_4096;
+			  break;
+		  }
+		  case 3: {
+			  countMTU = NUMBER_MTU_LOG;
+			  break;
+		  }
+		  case 4: {
+			  countMTU = NUMBER_MTU_PARAM;
+			  break;
+		  }
+		  case 5: {
+			  countMTU = NUMBER_MTU_DOZR;
+			  break;
+		  }
+	  }
+	  specterBuffer[0] = countMTU;			/* Количество BT передач для выбранного resolution */
+	  for (int iii = 0; iii < countMTU; iii++) {
+		  for (int jjj = 0; jjj < MTUSizeValue / 2; jjj++) {
+			  uint16_t dataSpectr = specterBuffer[jjj + iii * (MTUSizeValue / 2)];
+			  tmpBTBuffer[jjj] = (uint8_t) (dataSpectr & 0xFF);
+			  tmpBTBuffer[jjj + 1] = (uint8_t) (dataSpectr >> 8 & 0xFF);
+		  }
+		  sendData(tmpBTBuffer);
+	  }
 	  /* Включение звука */
 	  SoundFlag = true;
 	  //HAL_TIM_OC_Start(&htim3, TIM_CHANNEL_2);
@@ -306,7 +375,7 @@ static void MX_ADC4_Init(void)
   hadc4.Init.NbrOfConversion = 1;
   hadc4.Init.ExternalTrigConv = ADC_EXTERNALTRIG_EXT_IT15;
   hadc4.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
-  hadc4.Init.DMAContinuousRequests = DISABLE;
+  hadc4.Init.DMAContinuousRequests = ENABLE;
   hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
   hadc4.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
   hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_1CYCLE_5;
@@ -362,6 +431,34 @@ static void MX_CRC_Init(void)
   /* USER CODE BEGIN CRC_Init 2 */
 
   /* USER CODE END CRC_Init 2 */
+
+}
+
+/**
+  * @brief GPDMA1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPDMA1_Init(void)
+{
+
+  /* USER CODE BEGIN GPDMA1_Init 0 */
+
+  /* USER CODE END GPDMA1_Init 0 */
+
+  /* Peripheral clock enable */
+  __HAL_RCC_GPDMA1_CLK_ENABLE();
+
+  /* GPDMA1 interrupt Init */
+    HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
+
+  /* USER CODE BEGIN GPDMA1_Init 1 */
+
+  /* USER CODE END GPDMA1_Init 1 */
+  /* USER CODE BEGIN GPDMA1_Init 2 */
+
+  /* USER CODE END GPDMA1_Init 2 */
 
 }
 
@@ -714,6 +811,10 @@ static void MX_GPIO_Init(void)
 
   /*RT DEBUG GPIO_Init */
   RT_DEBUG_GPIO_Init();
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
