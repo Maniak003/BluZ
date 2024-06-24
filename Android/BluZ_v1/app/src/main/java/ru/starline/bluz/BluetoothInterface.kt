@@ -40,33 +40,34 @@ RX_UUID   : 0000fe81-8e22-4541-9d4c-21edae82ed19
 TX_UUID   : 0000fe82-8e22-4541-9d4c-21edae82ed19
 */
 
-val BLUETOOTH_LE_CCCD: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
-val BLUETOOTH_BLUZ_SERVICE: UUID = UUID.fromString("0000fe80-cc7a-482a-984a-7f2ed5b3e58f")
-val BLUETOOTH_BLUZ_CHAR_R: UUID = UUID.fromString("0000fe81-8e22-4541-9d4c-21edae82ed19")
-val BLUETOOTH_BLUZ_CHAR_W: UUID = UUID.fromString("0000fe82-8e22-4541-9d4c-21edae82ed19")
-private var readCharacteristic: BluetoothGattCharacteristic? = null
-private var writeCharacteristic:BluetoothGattCharacteristic? = null
-
 /**
  * Created by ed on 20,июнь,2024
  */
 class BluetoothInterface(tv: TextView) {
-    var LEMACADDRESS: String = ""
-    val BTM = mainContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    val BTA = BTM.adapter
-    val BTS = BTA.bluetoothLeScanner
-    var indBT: TextView = tv
+    private var LEMACADDRESS: String = ""
+    private val BTM = mainContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    private val BTA = BTM.adapter
+    private val BTS = BTA.bluetoothLeScanner
+    private var indBT: TextView = tv
     lateinit var txtMACADDRESS: EditText
     lateinit var startButton: Button
-    private var delegate: BLUZDelegate = BLUZDelegate()
+    //private var delegate: BLUZDelegate = BLUZDelegate()
     //private var delegate: DeviceDelegate = null
-    var gatt: BluetoothGatt? = null
-    var device: BluetoothDevice? = null
+    private var gatt: BluetoothGatt? = null
+    private var device: BluetoothDevice? = null
     private var writeBuffer: ArrayList<ByteArray>? = null
-    val MAX_MTU: Int = 244
+    private val MAX_MTU: Int = 251
+    private val payloadSize: Int = MAX_MTU - 3
     private var writePending = false
     var connected: Boolean = false
-    private val payloadSize: Int = MAX_MTU
+    private val BLUETOOTH_LE_CCCD: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+    private val BLUETOOTH_BLUZ_SERVICE: UUID = UUID.fromString("0000fe80-cc7a-482a-984a-7f2ed5b3e58f")
+    private val BLUETOOTH_BLUZ_CHAR_R: UUID = UUID.fromString("0000fe81-8e22-4541-9d4c-21edae82ed19")
+    private val BLUETOOTH_BLUZ_CHAR_W: UUID = UUID.fromString("0000fe82-8e22-4541-9d4c-21edae82ed19")
+    private var readCharacteristic: BluetoothGattCharacteristic? = null
+    private var writeCharacteristic:BluetoothGattCharacteristic? = null
+    public var receiveBuffer = UByteArray(8296)
+
     /*
     *      Обработчик окончания сканирования, здесь получим результат
     */
@@ -99,6 +100,7 @@ class BluetoothInterface(tv: TextView) {
         startButton = startBTN
         textMAC.setText(mainContext.getString(R.string.defaultMAC))
         BTS.startScan(leScanCallback)
+        Log.d("BluZ-BT", "LE scanning.")
     }
     @SuppressLint("MissingPermission")
     fun stopScan() {
@@ -129,6 +131,7 @@ class BluetoothInterface(tv: TextView) {
         }
     }
 */
+    /*
 class BLUZDelegate  {
     fun connectCharacteristics(gattService: BluetoothGattService): Boolean {
         Log.i("BluZ-BT", "Service BLUZ")
@@ -141,37 +144,47 @@ class BLUZDelegate  {
     fun onCharacteristicChanged(g: BluetoothGatt?, c: BluetoothGattCharacteristic?) { }
     fun onCharacteristicWrite(g: BluetoothGatt?, c: BluetoothGattCharacteristic?, status: Int ) { }
     fun canWrite(): Boolean { return true }
-}
+}*/
 
     /*
      *    Start BLE.
      */
     @SuppressLint("MissingPermission")
     fun initLeDevice() {
-        writeBuffer = ArrayList() // Буфер для передачи.
-        Log.d("BluZ-BT", "Accept connect...")
-        if (!BTA.isEnabled()) {
-            //Log.d(TAG, "Bluetooth disabled. Exit.");
-            Toast.makeText(mainContext, "BlueTooth disable ? \nProgram terminated.", Toast.LENGTH_LONG).show()
-            //finish()
-        }
-        device = BTA.getRemoteDevice(LEMAC) // Подключаемся по MAC адресу.
-        Log.d("BluZ-BT", "Status: " + BTA.getState());
-        if (device == null) {
-            Log.i("BluZ-BT", "Error: Device: $LEMAC not connected.")
-            return
-        } else {
-            //Log.i(TAG, "Try gatt connect.");
-            gatt = device!!.connectGatt(mainContext, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
-            if (gatt == null) {
-                Log.i("BluZ-BT", "Error: Gatt create failed.");
+        if ((LEMAC.length == 17) &&  LEMAC[0] != 'X') {
+            writeBuffer = ArrayList() // Буфер для передачи.
+            Log.d("BluZ-BT", "Accept connect...")
+            if (!BTA.isEnabled()) {
+                //Log.d(TAG, "Bluetooth disabled. Exit.");
+                Toast.makeText( mainContext, "BlueTooth disable ? \nProgram terminated.", Toast.LENGTH_LONG ).show()
                 //finish()
             }
+            device = BTA.getRemoteDevice(LEMAC) // Подключаемся по MAC адресу.
+            Log.d("BluZ-BT", "Status: " + BTA.getState());
+            if (device == null) {
+                Log.i("BluZ-BT", "Error: Device: $LEMAC not connected.")
+                return
+            } else {
+                //Log.i(TAG, "Try gatt connect.");
+                gatt = device!!.connectGatt( mainContext,false, gattCallback, BluetoothDevice.TRANSPORT_LE)
+                if (gatt == null) {
+                    Log.i("BluZ-BT", "Error: Gatt create failed.");
+                    //finish()
+                }
+            }
+        } else {
+            Toast.makeText( mainContext, "MAC address not setting.\nScan BT device.", Toast.LENGTH_LONG ).show()
         }
     }
 
     // Сюда попадаем после завершения работы connectGatt
     private val gattCallback = object : BluetoothGattCallback() {
+        private var idxArray: Int = 0
+        private var numberMTU: Int = 0
+        private var dataType: Int = 0
+        private var indexData: Int = 0
+        private var endOfData: Int = 0
+        private var checkSumm: UShort = 0u
         @SuppressLint("MissingPermission")
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             when (newState) {
@@ -201,25 +214,27 @@ class BLUZDelegate  {
         @SuppressLint("MissingPermission")
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             Log.d("BluZ-BT", "servicesDiscovered, status $status")
-            var sync = true
+            //var sync = true
             writePending = false
             Log.d("BluZ-BT", "Set gatt Characteristics.")
             for (gattService in gatt.services) {
                 if (gattService.uuid == BLUETOOTH_BLUZ_SERVICE) {
-                    delegate = BLUZDelegate()
+                    writeCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_W)
+                    readCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_R)
+                    //delegate = BLUZDelegate()
                 }
-                if (delegate != null) {
-                    sync = delegate.connectCharacteristics(gattService)
-                    break
-                }
+                //if (delegate != null) {
+                //    sync = delegate.connectCharacteristics(gattService)
+                //    break
+                //}
             }
-            if (sync) {
+            //if (sync) {
                 if (!gatt.requestMtu(MAX_MTU)) Log.d("BluZ-BT", "Error set MTU.")
-            }
+            //}
         }
 
         override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor, status: Int) {
-            delegate!!.onDescriptorWrite(gatt, descriptor, status)
+            //delegate!!.onDescriptorWrite(gatt, descriptor, status)
             if (descriptor.characteristic === readCharacteristic) {
                 Log.d("BluZ-BT", "writing read characteristic descriptor finished, status=$status")
                 if (status != BluetoothGatt.GATT_SUCCESS) {
@@ -241,7 +256,7 @@ class BLUZDelegate  {
                 Log.d("BluZ-BT", "write finished, status=" + status);
                 return
             }
-            delegate!!.onCharacteristicWrite(gatt, characteristic, status)
+            //delegate!!.onCharacteristicWrite(gatt, characteristic, status)
             if (characteristic === writeCharacteristic) { // NOPMD - test object identity
                 Log.d("BluZ-BT", "write finished, status=" + status);
                 writeNext()
@@ -271,8 +286,9 @@ class BLUZDelegate  {
                 return
             }
             val readDescriptor = readCharacteristic!!.getDescriptor(BLUETOOTH_LE_CCCD)
+            //val readDescriptor = readCharacteristic!!.getDescriptor(BLUETOOTH_BLUZ_CHAR_W)
             if (readDescriptor == null) {
-                Log.d("BluZ-BT", "Error: no CCCD descriptor for read characteristic")
+                Log.e("BluZ-BT", "Error: no BLUETOOTH_LE_CCCD descriptor for read characteristic")
                 return
             }
             val readProperties = readCharacteristic!!.properties
@@ -283,15 +299,16 @@ class BLUZDelegate  {
                 Log.d("BluZ-BT", "enable read notification")
                 readDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
             } else {
-                Log.d(
+                Log.e(
                     "BluZ-BT",
                     "Error: no indication/notification for read characteristic ($readProperties)"
                 )
                 return
             }
+
             Log.d("BluZ-BT", "writing read characteristic descriptor")
             if (!gatt.writeDescriptor(readDescriptor)) {
-                Log.d("BluZ-BT", "Error: read characteristic CCCD descriptor not writable")
+                Log.e("BluZ-BT", "Error: read characteristic CCCD descriptor not writable")
             }
             // continues asynchronously in onDescriptorWrite()
         }
@@ -300,15 +317,82 @@ class BLUZDelegate  {
         *      Прием данных
         */
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
-            delegate!!.onCharacteristicChanged(gatt, characteristic)
+            //delegate!!.onCharacteristicChanged(gatt, characteristic)
             if (characteristic == readCharacteristic) { // NOPMD - test object identity
                 val data = readCharacteristic!!.value
                 /*
                      Заполнение массива
                 */
-                // Ищем стартовую последовательность <B>.
                 if (data.isNotEmpty()) {
-                    Log.d("BluZ-BT", "Receive: " + data.size.toString())
+                    /*
+                    *   Ищем стартовую последовательность <B> (60, 66, 62)
+                    *   Разбираем заголовок
+                    */
+                    if ((data[0].toUByte() == 60.toUByte())
+                       && (data[1].toUByte() == 66.toUByte())
+                       && (data[2].toUByte() == 62.toUByte())) {
+                        idxArray = 0                    // Индекс полного массива с данными
+                        numberMTU = data[3].toInt()     // Количество пакетов для передачи
+                        dataType = data[4].toInt()      // Тип передаваемых данных
+
+                        /* Определим размер заголовка */
+                        when(numberMTU) {
+                            1 -> {                      // Параметры прибора
+                                indexData = 8           // Размер заголовка
+                            }
+                            3 -> {                      // Логи
+                                indexData = 8
+                            }
+                            9 -> {                      // Спектр с разрешеним 1024
+                                indexData = 146
+                            }
+                            17 -> {                     // Спектр с разрешеним 2048
+                                indexData = 50
+                            }
+                            34 -> {                     // Спектр с разрешеним 4096
+                                indexData = 102
+                            }
+                        }
+                        /* Считаем контрольную сумму */
+                        checkSumm = 0u
+                        for (idxH in 0 .. indexData - 1) {
+                            checkSumm = (checkSumm + data[idxH].toUByte()).toUShort()
+                        }
+                        numberMTU--                     // Считаем количество передач
+                    } else {
+                        numberMTU--
+                        indexData = 0
+                        if (numberMTU == 0) {           // Последний буфер, не считаем последние 2 байта
+                            endOfData = data.size - 7
+                        } else {
+                            endOfData = data.size - 5
+                        }
+                    }
+                    when(dataType) {
+                        /* Данные спектра */
+                        0 -> {
+                            /* Перегружаем данные в массив для спектра */
+                            for (idx in indexData..endOfData) {
+                                checkSumm =  (checkSumm + data[idx].toUByte()).toUShort()
+                                receiveBuffer[idxArray++] = data[idx].toUByte()
+                            }
+                        }
+                    }
+                    Log.d("BluZ-BT", "Receive: " + data.size.toString()
+                            + data[0] + " " + data[1] + " " + data[2] + " " + data[3] + " " + data[4] + " " + data[242].toUByte() + " " + data[243].toUByte()
+                            + " numMTU: " + numberMTU.toString() + " indexData: " + indexData.toString() + " endOfData: " + endOfData.toString())
+                    if (numberMTU == 0) {
+                        var tmpCS: UShort
+                        tmpCS = (data[242].toUByte() + (data[243].toUByte() * 256u)).toUShort()
+                        if (tmpCS == checkSumm) {
+                            Log.d("BluZ-BT", "CS - correct")
+                            /* Накопление массива закончено можно вызывать обновление экрана */
+                            drawSPEC.redrawSpecter(dataType, receiveBuffer)
+                        } else {
+                            Log.d("BluZ-BT", "CS - incorrect. Found: $tmpCS calculate: $checkSumm")
+                            Log.d("BluZ-BT", "data[242]: " + data[242].toUByte() + " data[243]: " + data[243].toUByte())
+                        }
+                    }
                 }
             }
         }
@@ -325,7 +409,7 @@ class BLUZDelegate  {
         } else {
             gatt!!.disconnect()
             gatt!!.close()
-            delegate?.disconnect()
+            //delegate?.disconnect()
             //delegate = null
             device = null
             writeBuffer!!.clear()
@@ -335,8 +419,9 @@ class BLUZDelegate  {
     // Передача данных в ассинхронном режиме.
     @SuppressLint("MissingPermission")
     private fun writeNext() {
-        val data: ByteArray?
-        //synchronized(writeBuffer) {
+        val data: ByteArray = writeBuffer!!.removeAt(0)
+        /*
+        synchronized(writeBuffer) {
             if (!writeBuffer!!.isEmpty() && delegate!!.canWrite()) {
                 writePending = true
                 data = writeBuffer!!.removeAt(0)
@@ -344,7 +429,7 @@ class BLUZDelegate  {
                 writePending = false
                 data = null
             }
-        //}
+        } */
         data?.let {
             writeCharacteristic!!.value = it
             if (!gatt!!.writeCharacteristic(writeCharacteristic)) {
@@ -373,7 +458,7 @@ class BLUZDelegate  {
             } else {
                 Arrays.copyOfRange(data, 0, payloadSize)
             }
-            if (!writePending && writeBuffer!!.isEmpty() && delegate!!.canWrite()) {
+            if (!writePending && writeBuffer!!.isEmpty() /*&& delegate!!.canWrite()*/) {
                 writePending = true
             } else {
                 writeBuffer!!.add(data0!!)

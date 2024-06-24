@@ -62,4 +62,13 @@ class drawSpecter {
     constructor(view: ImageView) {
         imgView = view
     }
+    fun redrawSpecter(resolution: Int, data: UByteArray) {
+        clearSpecter()
+        when(resolution) {
+            /* 1024 */
+            0 -> {
+
+            }
+        }
+    }
 }

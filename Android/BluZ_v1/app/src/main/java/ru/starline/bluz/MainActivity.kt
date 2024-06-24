@@ -56,6 +56,7 @@ class MainActivity : FragmentActivity() {
         mainContext = applicationContext
 
         indicatorBT = findViewById(R.id.indicatorBT)
+        BTT = BluetoothInterface(indicatorBT)
 
         viewPager = findViewById(R.id.VPMain)
         viewPager.isUserInputEnabled = false
@@ -169,9 +170,10 @@ class MainActivity : FragmentActivity() {
 
         PP = propControl()
         LEMAC = PP.getPropStr(propADDRESS)
+        /*
         if ((LEMAC.length == 17) && ! LEMAC.contentEquals("XX")) {
             BTT = BluetoothInterface(indicatorBT)
-        }
+        }*/
         Log.d("BluZ-BT", "mac addr: " + LEMAC)
     }
 }

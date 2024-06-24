@@ -47,6 +47,7 @@ extern "C" {
  * 8192 + 104 =  34 * 244(MTU)
  */
 #define CRC_SIZE 1							/* размер в uint16_t */
+#define MTU_SIZE 244						/* Размер mtu в uint8_t */
 #define HEADER_OFFSET_2048 74 - CRC_SIZE	/* размер в uint16_t */
 #define HEADER_OFFSET_4096 26 - CRC_SIZE	/* размер в uint16_t */
 #define HEADER_OFFSET_8192 52 - CRC_SIZE	/* размер в uint16_t */
@@ -56,6 +57,12 @@ extern "C" {
 #define NUMBER_MTU_DOZR 4					/* Количество MTU для передачи накоплений дозиметра */
 #define NUMBER_MTU_LOG 3					/* Количество MTU для передачи логов */
 #define NUMBER_MTU_PARAM 1					/* Количество MTU для передачи текущих параметров прибора */
+#define SIZE_BUF_1024 1098
+#define SIZE_BUF_2048 2074
+#define SIZE_BUF_4096 4148
+#define SIZE_BUF_DOZR 488
+#define SIZE_BUF_LOG 366
+#define SIZE_BUF_PARAM 122
 
 #define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 extern uint16_t MTUSizeValue;

@@ -179,8 +179,8 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Сканирование bluetooth устройств */
-                val btnScanBT: Button = view.findViewById(R.id.buttonScanBT)
                 //BTT = BluetoothInterface(indicatorBT)
+                val btnScanBT: Button = view.findViewById(R.id.buttonScanBT)
                 btnScanBT.setOnClickListener {
                     if (btnScanBT.text == getString(R.string.textScan)) {
                         btnScanBT.setText(getString(R.string.textScan2))
