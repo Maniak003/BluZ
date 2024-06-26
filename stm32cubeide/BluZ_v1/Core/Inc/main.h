@@ -57,7 +57,7 @@ extern "C" {
 #define NUMBER_MTU_DOZR 4					/* Количество MTU для передачи накоплений дозиметра */
 #define NUMBER_MTU_LOG 3					/* Количество MTU для передачи логов */
 #define NUMBER_MTU_PARAM 1					/* Количество MTU для передачи текущих параметров прибора */
-#define SIZE_BUF_1024 1098
+#define SIZE_BUF_1024 1098					/* Итоговый размер буфера в uint16_t*/
 #define SIZE_BUF_2048 2074
 #define SIZE_BUF_4096 4148
 #define SIZE_BUF_DOZR 488
@@ -67,7 +67,8 @@ extern "C" {
 #define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 extern uint16_t MTUSizeValue;
 extern uint8_t resolution;
-extern uint16_t specterBuffer[4096 + HEADER_OFFSET_8192];
+extern uint16_t specterBuffer[SIZE_BUF_4096];
+extern uint16_t tmpSpecterBuffer[4096];
 extern uint32_t pulseCounter, pulseLevel;
 void sendData(uint8_t *dataSpectrBufer);
 

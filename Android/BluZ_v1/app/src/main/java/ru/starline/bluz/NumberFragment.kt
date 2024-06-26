@@ -49,6 +49,7 @@ class NumberFragment : Fragment() {
     private lateinit var selG: SeekBar
     private lateinit var selB: SeekBar
 
+
     /* Получение цвета для отображения спектров */
     fun setSpecterColor(setCol: Int, Col: Int): Int {
         var tmpColor: Int = 0
@@ -101,7 +102,9 @@ class NumberFragment : Fragment() {
                 /*
                 * Объекты закладки спектр
                 */
-                drawSPEC = drawSpecter(view.findViewById(R.id.specterView))
+                drawSPEC = drawSpecter(view.findViewById(R.id.specterView), view.findViewById(R.id.textStatistics1), view.findViewById(R.id.textStatistics2))
+                drawSPEC.init()
+                drawSPEC.clearSpecter()
 
                 /* Старт набора спектра */
                 val btnSpecterSS: Button = view.findViewById(R.id.buttonSpecterSS)
@@ -115,12 +118,6 @@ class NumberFragment : Fragment() {
                         btnSpecterSS.setTextColor(getResources().getColor(R.color.buttonTextColor, mainContext.theme))
                         BTT.destroyDevice()
                     }
-                    drawSPEC.init()
-                    /* Массив для теста */
-                    for (idx in 0..drawSPEC.HSize ) {
-                        drawSPEC.spectrData[idx] = Math.log(idx.toDouble())
-                    }
-                    drawSPEC.testLine()
                 }
 
                 /* Сохранение спектра в файл */

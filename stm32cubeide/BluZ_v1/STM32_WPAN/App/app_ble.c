@@ -345,6 +345,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                     p_disconnection_complete_event->Reason);
 
         /* USER CODE BEGIN EVT_DISCONN_COMPLETE_2 */
+        connectFlag = false;
+  	    bzero((char *) uartBuffer, sizeof(uartBuffer));
+  	    sprintf(uartBuffer, "EVT_DISCONN_COMPLETE_2\n\r");
+  	    HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
         /* USER CODE END EVT_DISCONN_COMPLETE_2 */
       }
@@ -352,6 +356,9 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
 
       /* USER CODE BEGIN EVT_DISCONN_COMPLETE_1 */
       connectFlag = false;
+	  bzero((char *) uartBuffer, sizeof(uartBuffer));
+	  sprintf(uartBuffer, "EVT_DISCONN_COMPLETE_1\n\r");
+	  HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
       /* USER CODE END EVT_DISCONN_COMPLETE_1 */
       BLUZHandleNotification.EvtOpcode = BLUZ_DISCON_HANDLE_EVT;
@@ -505,7 +512,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           BLUZHandleNotification.ConnectionHandle = p_conn_complete->Connection_Handle;
           BLUZ_APP_EvtRx(&BLUZHandleNotification);
           /* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
-          connectFlag = true;
+          //connectFlag = true;
+    	  bzero((char *) uartBuffer, sizeof(uartBuffer));
+    	  sprintf(uartBuffer, "HCI_EVT_LE_CONN_COMPLETE\n\r");
+    	  HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
           /* USER CODE END HCI_EVT_LE_CONN_COMPLETE */
           break; /* HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE */
         }

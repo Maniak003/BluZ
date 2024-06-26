@@ -120,6 +120,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 
     case BLUZ_RX_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char1_NOTIFY_ENABLED_EVT */
+    	connectFlag = true;
     	bzero((char *) uartBuffer, sizeof(uartBuffer));
     	sprintf(uartBuffer, "Service1Char1_NOTIFY_ENABLED_EVT\n\r");
     	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
@@ -197,12 +198,18 @@ void BLUZ_APP_EvtRx(BLUZ_APP_ConnHandleNotEvt_t *p_Notification)
     /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case BLUZ_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
+    	bzero((char *) uartBuffer, sizeof(uartBuffer));
+    	sprintf(uartBuffer, "Service1_APP_CONN_HANDLE_EVT\n\r");
+    	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
       /* USER CODE END Service1_APP_CONN_HANDLE_EVT */
       break;
 
     case BLUZ_DISCON_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_DISCON_HANDLE_EVT */
+    	bzero((char *) uartBuffer, sizeof(uartBuffer));
+    	sprintf(uartBuffer, "Service1_APP_DISCON_HANDLE_EVT\n\r");
+    	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
       /* USER CODE END Service1_APP_DISCON_HANDLE_EVT */
       break;

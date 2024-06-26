@@ -64,9 +64,13 @@ class BluetoothInterface(tv: TextView) {
     private val BLUETOOTH_BLUZ_SERVICE: UUID = UUID.fromString("0000fe80-cc7a-482a-984a-7f2ed5b3e58f")
     private val BLUETOOTH_BLUZ_CHAR_R: UUID = UUID.fromString("0000fe81-8e22-4541-9d4c-21edae82ed19")
     private val BLUETOOTH_BLUZ_CHAR_W: UUID = UUID.fromString("0000fe82-8e22-4541-9d4c-21edae82ed19")
-    private var readCharacteristic: BluetoothGattCharacteristic? = null
-    private var writeCharacteristic:BluetoothGattCharacteristic? = null
-    public var receiveBuffer = UByteArray(8296)
+    private var rdCharacteristic: BluetoothGattCharacteristic? = null
+    private var wrCharacteristic:BluetoothGattCharacteristic? = null
+    @OptIn(ExperimentalUnsignedTypes::class)
+    public var receiveBuffer = UByteArray(255)
+    public var testIdx: Int = 0
+    public var testIdx2: Int = 0
+    public var pulseCounter: UInt = 0u
 
     /*
     *      Обработчик окончания сканирования, здесь получим результат
@@ -110,7 +114,7 @@ class BluetoothInterface(tv: TextView) {
     /*
      * delegate device specific behaviour to inner class
      */
-
+/*
     class DeviceDelegate {
         fun connectCharacteristics(s: BluetoothGattService?): Boolean { return true }
         // following methods only overwritten for Telit devices
@@ -120,7 +124,7 @@ class BluetoothInterface(tv: TextView) {
         fun canWrite(): Boolean { return true }
         fun disconnect() { }
     }
-
+*/
 /*
     class BLUZDelegate : DeviceDelegate() {
         fun connectCharacteristics(gattService: BluetoothGattService): Boolean {
@@ -219,8 +223,8 @@ class BLUZDelegate  {
             Log.d("BluZ-BT", "Set gatt Characteristics.")
             for (gattService in gatt.services) {
                 if (gattService.uuid == BLUETOOTH_BLUZ_SERVICE) {
-                    writeCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_W)
-                    readCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_R)
+                    wrCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_W)
+                    rdCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_R)
                     //delegate = BLUZDelegate()
                 }
                 //if (delegate != null) {
@@ -235,7 +239,7 @@ class BLUZDelegate  {
 
         override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor, status: Int) {
             //delegate!!.onDescriptorWrite(gatt, descriptor, status)
-            if (descriptor.characteristic === readCharacteristic) {
+            if (descriptor.characteristic === rdCharacteristic) {
                 Log.d("BluZ-BT", "writing read characteristic descriptor finished, status=$status")
                 if (status != BluetoothGatt.GATT_SUCCESS) {
                     Log.d("BluZ-BT", "Error: Write characteristic failed.")
@@ -251,13 +255,13 @@ class BLUZDelegate  {
         }
 
         override fun onCharacteristicWrite( gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int ) {
-            if ( !connected || writeCharacteristic == null) return
+            if ( !connected || wrCharacteristic == null) return
             if (status != BluetoothGatt.GATT_SUCCESS) {
                 Log.d("BluZ-BT", "write finished, status=" + status);
                 return
             }
             //delegate!!.onCharacteristicWrite(gatt, characteristic, status)
-            if (characteristic === writeCharacteristic) { // NOPMD - test object identity
+            if (characteristic === wrCharacteristic) { // NOPMD - test object identity
                 Log.d("BluZ-BT", "write finished, status=" + status);
                 writeNext()
             }
@@ -270,28 +274,27 @@ class BLUZDelegate  {
                 var payloadSize: Int = mtu - 3
                 Log.d("BluZ-BT", "payload size $payloadSize")
             }
-            if (writeCharacteristic == null) {
+            if (wrCharacteristic == null) {
                 Log.e("BluZ-BT", "Error: characteristic not writable - 1")
                 return
             } else {
-                val writeProperties = writeCharacteristic!!.properties
+                val writeProperties = wrCharacteristic!!.properties
                 if ((writeProperties and (BluetoothGattCharacteristic.PROPERTY_WRITE +
                             BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) == 0 ) {
                     Log.e("BluZ-BT", "Error: characteristic not writable - 2")
                     return
                 }
             }
-            if (!gatt.setCharacteristicNotification(readCharacteristic, true)) {
+            if (!gatt.setCharacteristicNotification(rdCharacteristic, true)) {
                 Log.e("BluZ-BT", "Error: no notification for read characteristic")
                 return
             }
-            val readDescriptor = readCharacteristic!!.getDescriptor(BLUETOOTH_LE_CCCD)
-            //val readDescriptor = readCharacteristic!!.getDescriptor(BLUETOOTH_BLUZ_CHAR_W)
+            val readDescriptor = rdCharacteristic!!.getDescriptor(BLUETOOTH_LE_CCCD)
             if (readDescriptor == null) {
                 Log.e("BluZ-BT", "Error: no BLUETOOTH_LE_CCCD descriptor for read characteristic")
                 return
             }
-            val readProperties = readCharacteristic!!.properties
+            val readProperties = rdCharacteristic!!.properties
             if ((readProperties and BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) {
                 Log.d("BluZ-BT", "enable read indication")
                 readDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
@@ -318,8 +321,9 @@ class BLUZDelegate  {
         */
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
             //delegate!!.onCharacteristicChanged(gatt, characteristic)
-            if (characteristic == readCharacteristic) { // NOPMD - test object identity
-                val data = readCharacteristic!!.value
+            if (characteristic == rdCharacteristic) { // NOPMD - test object identity
+                //val data = readCharacteristic!!.value
+                val data = rdCharacteristic!!.value
                 /*
                      Заполнение массива
                 */
@@ -328,12 +332,17 @@ class BLUZDelegate  {
                     *   Ищем стартовую последовательность <B> (60, 66, 62)
                     *   Разбираем заголовок
                     */
+                    var specterType: Int = 0
+                    testIdx2 = 0;
                     if ((data[0].toUByte() == 60.toUByte())
                        && (data[1].toUByte() == 66.toUByte())
                        && (data[2].toUByte() == 62.toUByte())) {
+                        testIdx = 0
                         idxArray = 0                    // Индекс полного массива с данными
                         numberMTU = data[3].toInt()     // Количество пакетов для передачи
                         dataType = data[4].toInt()      // Тип передаваемых данных
+                        pulseCounter = (data[10].toUByte() + data[11].toUByte() * 256u + data[12].toUByte() * 65536u + data[13].toUByte() * 16777216u).toUInt()
+                        Log.d("BluZ-BT", "Start sequence detect. Size: $numberMTU, Type: $dataType, Pulse: $pulseCounter")
 
                         /* Определим размер заголовка */
                         when(numberMTU) {
@@ -345,18 +354,27 @@ class BLUZDelegate  {
                             }
                             9 -> {                      // Спектр с разрешеним 1024
                                 indexData = 146
+                                endOfData = data.size - 5
+                                specterType = 0
                             }
                             17 -> {                     // Спектр с разрешеним 2048
                                 indexData = 50
+                                endOfData = data.size - 5
+                                specterType = 1
                             }
                             34 -> {                     // Спектр с разрешеним 4096
                                 indexData = 102
+                                endOfData = data.size - 5
+                                specterType = 2
                             }
                         }
-                        /* Считаем контрольную сумму */
+                        /* Считаем контрольную сумму заголовка*/
                         checkSumm = 0u
                         for (idxH in 0 .. indexData - 1) {
                             checkSumm = (checkSumm + data[idxH].toUByte()).toUShort()
+                            receiveBuffer[idxH] = data[idxH].toUByte()
+                            testIdx++
+                            testIdx2++
                         }
                         numberMTU--                     // Считаем количество передач
                     } else {
@@ -370,27 +388,47 @@ class BLUZDelegate  {
                     }
                     when(dataType) {
                         /* Данные спектра */
-                        0 -> {
+                        0, 1 -> {
                             /* Перегружаем данные в массив для спектра */
-                            for (idx in indexData..endOfData) {
-                                checkSumm =  (checkSumm + data[idx].toUByte()).toUShort()
-                                receiveBuffer[idxArray++] = data[idx].toUByte()
+                            var idx = indexData
+                            var d0: UByte
+                            var d1: UByte
+                            while (idx <= endOfData) {
+                                d0 = data[idx++].toUByte()
+                                d1 = data[idx++].toUByte()
+                                checkSumm =  (checkSumm + d0 + d1).toUShort()
+                                /* Накопление массива спектра */
+                                drawSPEC.spectrData[idxArray++] = (d0 + d1 * 256u).toDouble()
+                                testIdx+=2
+                                testIdx2+=2
                             }
                         }
                     }
-                    Log.d("BluZ-BT", "Receive: " + data.size.toString()
-                            + data[0] + " " + data[1] + " " + data[2] + " " + data[3] + " " + data[4] + " " + data[242].toUByte() + " " + data[243].toUByte()
+                    /*
+                    Log.d("BluZ-BT", "Receive: " + data.size.toString()+ " real size: " + testIdx2.toString() + " "
+                            + data[0] + " " + data[1] + " " + data[2] + " " + data[3] + " " + data[4] + " " + data[240] + " " + data[241] + " " + data[242].toUByte() + " " + data[243].toUByte()
                             + " numMTU: " + numberMTU.toString() + " indexData: " + indexData.toString() + " endOfData: " + endOfData.toString())
+                    */
+
                     if (numberMTU == 0) {
                         var tmpCS: UShort
                         tmpCS = (data[242].toUByte() + (data[243].toUByte() * 256u)).toUShort()
+                        Log.d("BluZ-BT", "Total data size: $testIdx")
                         if (tmpCS == checkSumm) {
-                            Log.d("BluZ-BT", "CS - correct")
+                            Log.d("BluZ-BT", "CS - correct: $checkSumm")
                             /* Накопление массива закончено можно вызывать обновление экрана */
-                            drawSPEC.redrawSpecter(dataType, receiveBuffer)
+                            drawSPEC.init()
+                            if (drawSPEC.VSize > 0 && drawSPEC.HSize > 0) {
+                                Log.d("BluZ-BT", "call drawSPEC")
+                                drawSPEC.clearSpecter()
+                            } else {
+                                Log.e("BluZ-BT", "drawSPEC is null")
+                            }
+                            /* 0 - 1024, 1 - 2048, 2 - 4096 */
+                            drawSPEC.redrawSpecter(specterType, pulseCounter)
                         } else {
-                            Log.d("BluZ-BT", "CS - incorrect. Found: $tmpCS calculate: $checkSumm")
-                            Log.d("BluZ-BT", "data[242]: " + data[242].toUByte() + " data[243]: " + data[243].toUByte())
+                            Log.e("BluZ-BT", "CS - incorrect. Found: $tmpCS calculate: $checkSumm")
+                            //Log.e("BluZ-BT", "data[242]: " + data[242].toUByte() + " data[243]: " + data[243].toUByte())
                         }
                     }
                 }
@@ -431,8 +469,8 @@ class BLUZDelegate  {
             }
         } */
         data?.let {
-            writeCharacteristic!!.value = it
-            if (!gatt!!.writeCharacteristic(writeCharacteristic)) {
+            wrCharacteristic!!.value = it
+            if (!gatt!!.writeCharacteristic(wrCharacteristic)) {
                 Log.d("BluZ-BT", "Write Characteristic error")
                 // onSerialIoError(IOException("write failed"))
             } else {
@@ -448,7 +486,7 @@ class BLUZDelegate  {
     @SuppressLint("MissingPermission")
     @Throws(IOException::class)
     fun write(data: ByteArray) {
-        if ( !connected || writeCharacteristic == null) {
+        if ( !connected || wrCharacteristic == null) {
             throw IOException("not connected")
         }
         var data0: ByteArray?
@@ -475,8 +513,8 @@ class BLUZDelegate  {
             }
         }
         if (data0 != null) {
-            writeCharacteristic!!.setValue(data0)
-            if (!gatt!!.writeCharacteristic(writeCharacteristic)) {
+            wrCharacteristic!!.setValue(data0)
+            if (!gatt!!.writeCharacteristic(wrCharacteristic)) {
                 Log.d("BluZ-BT", "Write Characteristic error")
             } else {
                 Log.d("BluZ-BT", "write started, len=" + data0!!.size)

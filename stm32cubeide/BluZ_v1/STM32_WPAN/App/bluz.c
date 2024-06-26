@@ -144,6 +144,9 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
         case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE:
         {
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
+            bzero((char *) uartBuffer, sizeof(uartBuffer));
+            sprintf(uartBuffer, "ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE\n\r");
+            HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
           p_attribute_modified = (aci_gatt_attribute_modified_event_rp0*)p_blecore_evt->data;
@@ -160,12 +163,18 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
             switch(p_attribute_modified->Attr_Data[0])
             {
               /* USER CODE BEGIN Service1_Char_1_attribute_modified */
+				bzero((char *) uartBuffer, sizeof(uartBuffer));
+				sprintf(uartBuffer, "Service1_Char_1_attribute_modified\n\r");
+				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
               /* USER CODE END Service1_Char_1_attribute_modified */
 
               /* Disabled Notification management */
               case (!(COMSVC_Notification)):
                 /* USER CODE BEGIN Service1_Char_1_Disabled_BEGIN */
+				bzero((char *) uartBuffer, sizeof(uartBuffer));
+				sprintf(uartBuffer, "Service1_Char_1_Disabled_BEGIN\n\r");
+				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
                 /* USER CODE END Service1_Char_1_Disabled_BEGIN */
                 notification.EvtOpcode = BLUZ_RX_NOTIFY_DISABLED_EVT;
@@ -178,6 +187,9 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
               /* Enabled Notification management */
               case COMSVC_Notification:
                 /* USER CODE BEGIN Service1_Char_1_COMSVC_Notification_BEGIN */
+  				bzero((char *) uartBuffer, sizeof(uartBuffer));
+  				sprintf(uartBuffer, "Service1_Char_1_COMSVC_Notification_BEGIN\n\r");
+  				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
                 /* USER CODE END Service1_Char_1_COMSVC_Notification_BEGIN */
                 notification.EvtOpcode = BLUZ_RX_NOTIFY_ENABLED_EVT;
@@ -189,6 +201,9 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
 
               default:
                 /* USER CODE BEGIN Service1_Char_1_default */
+    				bzero((char *) uartBuffer, sizeof(uartBuffer));
+    				sprintf(uartBuffer, "Service1_Char_1_default\n\r");
+    				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
                 /* USER CODE END Service1_Char_1_default */
                 break;

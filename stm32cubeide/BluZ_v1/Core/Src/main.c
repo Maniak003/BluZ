@@ -66,28 +66,26 @@ uint32_t interval1 = 0, interval2 = 0, intervalTmp = 0, pulseCounter = 0,  pulse
 char uartBuffer[100] = {0,};
 uint8_t resolution = 0; /* 0 - 1024, 1 - 2048, 2 - 4096, 3 - Логи, 4 - Параметры, 5 - История дозиметра*/
 uint8_t tmpBTBuffer[DATA_NOTIFICATION_MAX_PACKET_SIZE] = {0,};
+uint16_t tmpSpecterBuffer[4096];
 /*
  * Значения заголовка и формат данных для передачи
- * 	0,1,2 - Маркер начала <B>
- * 	3 -  количество MTU
- * 		1  - для параметров прибора
- *  	3  - для даных лога
- *  	4  - для данных дозиметра
- * 		9  - для спектра 1024 разрядов
- * 		17 - для спектра 2048 разрядов
- * 		34 - для спектра 4096 разрядов
+ * 0,1,2 - Маркер начала <B>
+ * 3 -  количество MTU
+ *    1  - Параметры прибора
+ *    3  - Даные лога
+ *    4  - Данные дозиметра
+ *    9  - Спектр 1024 разрядов
+ *    17 - Спектр 2048 разрядов
+ *    34 - Спектр 4096 разрядов
  *
  * 4 - Тип передаваемых данных
- * 		0 - Текущий спектр
- * 		1 - Исторический спектр
- * 		2 - Данные дозиметра
- * 		3 - Логи
- * 		4 - параметры прибора
+ *    0 - Текущий спектр
+ *    1 - Исторический спектр
+ *
+ * 5, 6 - Общее число импульсов от начала измерения uint32_t
  *
  */
-uint16_t specterBuffer[4096 + HEADER_OFFSET_8192] = {0,};
-
-
+uint16_t specterBuffer[SIZE_BUF_4096] = {0,};
 bool SoundEnable = true, VibroEnable = true, LEDEnable = true;
 
 /* USER CODE END PV */
@@ -213,64 +211,82 @@ int main(void)
 	if ( connectFlag && (interval2 + INTERVAL2 < intervalTmp) /*&& system_startup_done*/) {
 	  interval2 = intervalTmp;
 
-	  /* Test */
-	  /* Для теста передаем тип данны - текущий спектр */
+	  /* Шаблон заголовка */
 	  uint8_t hdr[] = {'<', 'B', '>', 0, 0, 0, 0, 0};
-	  hdr[3] = 9;	/* Количестко передач */
-	  hdr[4] = 0;	/* будем передавать спектр */
 
-	  specterBuffer[0] = (uint16_t) (hdr[0] | (((uint16_t) hdr[1] << 8) & 0xFF00));
-	  specterBuffer[1] = (uint16_t) (hdr[2] | (((uint16_t) hdr[3] << 8) & 0xFF00));
-	  specterBuffer[2] = (uint16_t) (hdr[4] | (((uint16_t) hdr[5] << 8) & 0xFF00));
-	  specterBuffer[3] = (uint16_t) (hdr[6] | (((uint16_t) hdr[7] << 8) & 0xFF00));
+	  resolution = 0;			/* Тест разрешение 1024 */
 
-	  /*
-	  specterBuffer[0] = 1;
-	  specterBuffer[1] = 2;
-	  specterBuffer[2] = 3;
-	  specterBuffer[3] = 4;*/
-	  resolution = 0;			/* Разрешение 1024 */
-
-	  uint16_t countMTU = 0;
+	  uint16_t countMTU;
 	  uint16_t idxCS;
+	  uint16_t headerOffset;
 	  switch (resolution) {
 		  case 0: {
 			  countMTU = NUMBER_MTU_1024;
-			  idxCS = SIZE_BUF_1024;
+			  idxCS = SIZE_BUF_1024 - 1 ;
+			  hdr[4] = 0;					/* Тип передаваемых данных */
+			  headerOffset = HEADER_OFFSET_2048;
 			  break;
 		  }
 		  case 1: {
 			  countMTU = NUMBER_MTU_2048;
-			  idxCS = SIZE_BUF_2048;
+			  idxCS = SIZE_BUF_2048 - 1;
+			  hdr[4] = 0;
+			  headerOffset = HEADER_OFFSET_4096;
 			  break;
 		  }
 		  case 2: {
 			  countMTU = NUMBER_MTU_4096;
-			  idxCS = SIZE_BUF_4096;
+			  idxCS = SIZE_BUF_4096 - 1;
+			  hdr[4] = 0;
+			  headerOffset = HEADER_OFFSET_8192;
 			  break;
 		  }
 		  case 3: {
 			  countMTU = NUMBER_MTU_LOG;
-			  idxCS = SIZE_BUF_LOG;
+			  idxCS = SIZE_BUF_LOG - 1;
+			  hdr[4] = 0;
 			  break;
 		  }
 		  case 4: {
 			  countMTU = NUMBER_MTU_PARAM;
-			  idxCS = SIZE_BUF_PARAM;
+			  idxCS = SIZE_BUF_PARAM - 1;
+			  hdr[4] = 0;
 			  break;
 		  }
 		  case 5: {
 			  countMTU = NUMBER_MTU_DOZR;
-			  idxCS = SIZE_BUF_DOZR;
+			  idxCS = SIZE_BUF_DOZR - 1;
+			  hdr[4] = 0;
 			  break;
 		  }
 	  }
-	  specterBuffer[idxCS] = 0;					/* Очистим контрольнуюю сумму */
-	  uint16_t tmpCS = 0;
-	  //specterBuffer[0] = countMTU;			/* Количество BT передач для выбранного resolution */
-	  /* Test */
-	  //char test = 1;
+
+	  /* Подготовка заголовка */
+	  hdr[3] = countMTU;		/* Количество передач */
+	  specterBuffer[0] = (uint16_t) (hdr[0] | (((uint16_t) hdr[1] << 8) & 0xFF00));
+	  specterBuffer[1] = (uint16_t) (hdr[2] | (((uint16_t) hdr[3] << 8) & 0xFF00));
+	  specterBuffer[2] = (uint16_t) (hdr[4] | (((uint16_t) hdr[5] << 8) & 0xFF00));
+	  specterBuffer[3] = (uint16_t) (hdr[6] | (((uint16_t) hdr[7] << 8) & 0xFF00));
+	  specterBuffer[5] = pulseCounter & 0xFFFF;
+	  specterBuffer[6] = ((uint32_t) pulseCounter >> 16 ) & 0xFFFF;
+	  //specterBuffer[5] = 0x0000;
+	  //specterBuffer[6] = 0x1000;
+
+	  //
+	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
+	  /* Загрузка спектра в буфер для передачи */
 	  int kkk = 0;
+	  for (int jjj = headerOffset; jjj < idxCS; jjj++) {
+		  specterBuffer[jjj] = tmpSpecterBuffer[kkk++];
+		  /* Тестовые данные */
+		  //specterBuffer[jjj] = jjj;
+		  //specterBuffer[jjj] = log(jjj) * 400;
+	  }
+	  //specterBuffer[idxCS - 1] = 1;
+	  specterBuffer[idxCS] = 0;
+	  //specterBuffer[SIZE_BUF_1024 - 1 ] = 0;
+	  /* End test */
+	  kkk = 0;
 	  for (int iii = 0; iii < countMTU; iii++) {
 		  for (int jjj = 0; jjj < MTUSizeValue; jjj++) {
 			  uint16_t dataSpectr = specterBuffer[kkk++];
@@ -287,12 +303,20 @@ int main(void)
 			  tmpBTBuffer[243] = (uint8_t) ((tmpCS >> 8) & 0xFF);
 		  }
 		  sendData(tmpBTBuffer);
+		  MX_APPE_Process();
+		  /*
+		   * TODO -- требуется задержка в передаче, иначе не все пакеты принимаются
+		   */
+		  HAL_Delay(20);
 	  }
+		bzero((char *) uartBuffer, sizeof(uartBuffer));
+		sprintf(uartBuffer, "CS: %d, MTU: %d\n\r", tmpCS, MTUSizeValue);
+		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 	  /* Включение звука */
 	  SoundFlag = true;
 	  //HAL_TIM_OC_Start(&htim3, TIM_CHANNEL_2);
-	  HAL_LPTIM_Counter_Start(&hlptim2);
-	  HAL_TIM_Base_Start_IT(&htim1);	// Таймер для LED, вибро и звука
+	  //HAL_LPTIM_Counter_Start(&hlptim2);
+	  //HAL_TIM_Base_Start_IT(&htim1);	// Таймер для LED, вибро и звука
 	}
     if (interval1 + INTERVAL1 < intervalTmp) {
     	interval1 = intervalTmp;
