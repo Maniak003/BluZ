@@ -34,34 +34,34 @@ import androidx.core.content.ContentProviderCompat.requireContext
 import java.nio.charset.Charset
 import java.util.UUID
 
-public var pagerFrame: Int = 1
-public lateinit var viewPager: ViewPager2
-public lateinit var indicatorBT: TextView
-public lateinit var mainContext: Context
-public lateinit var bColor: buttonColor
-public lateinit var textMACADR: EditText
-public var LEMAC: String = ""
+public var GO: globalObj = globalObj()
 public const val propADDRESS: String = "Address"
-public lateinit var PP: propControl
-public lateinit var drawSPEC: drawSpecter
-public lateinit var BTT:  BluetoothInterface
+public const val propColorSpecterLin: String = "ColorLin"
+public const val propColorSpecterLog: String = "ColorLog"
+public const val propColorSpecterFone: String = "ColorFone"
+//public lateinit var mainContext: Context
+public var PI: Int = 0
 
-class MainActivity : FragmentActivity() {
-    private lateinit var adapter: NumberAdapter
+public class MainActivity : FragmentActivity() {
+
+    /*
+    override fun onStart() {
+        super.onStart()
+        GO.drawSPEC.init()
+        GO.drawSPEC.clearSpecter()
+    }*/
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-
         setContentView(R.layout.activity_main)
-        mainContext = applicationContext
-
-        indicatorBT = findViewById(R.id.indicatorBT)
-        BTT = BluetoothInterface(indicatorBT)
-
-        viewPager = findViewById(R.id.VPMain)
-        viewPager.isUserInputEnabled = false
-        adapter = NumberAdapter(this)
-        viewPager.adapter = adapter
+        GO.mainContext = applicationContext
+        enableEdgeToEdge()
+        GO.adapter = NumberAdapter(this)
+        GO.indicatorBT = findViewById(R.id.indicatorBT)
+        GO.viewPager = findViewById(R.id.VPMain)
+        GO.viewPager.isUserInputEnabled = false             // Отключение прокрутки viewPager2
+        GO.viewPager.adapter = GO.adapter
+        GO.bColor = buttonColor()
 
         /*
         *   Проверка и запрос разрешений.
@@ -123,58 +123,56 @@ class MainActivity : FragmentActivity() {
         /* Окно со спектром */
         var btnSpecter: Button = findViewById(R.id.buttonSpecter)
         btnSpecter.setOnClickListener {
-            viewPager.setCurrentItem(0, false)
-            bColor.resetToDefault()
-            bColor.setToActive(btnSpecter)
+            GO.viewPager.setCurrentItem(0, false)
+            GO.bColor.resetToDefault()
+            GO.bColor.setToActive(btnSpecter)
         }
 
         /* Окно с историей */
         var btnHistory: Button = findViewById(R.id.buttonHistory)
         btnHistory.setOnClickListener {
-            viewPager.setCurrentItem(1, false)
-            bColor.resetToDefault()
-            bColor.setToActive(btnHistory)
+            GO.viewPager.setCurrentItem(1, false)
+            GO.bColor.resetToDefault()
+            GO.bColor.setToActive(btnHistory)
         }
 
         /* Окно дозиметра */
         var btnDozimeter: Button = findViewById(R.id.buttonDosimeter)
         btnDozimeter.setOnClickListener {
-            viewPager.setCurrentItem(2, false)
-            bColor.resetToDefault()
-            bColor.setToActive(btnDozimeter)
+            GO.viewPager.setCurrentItem(2, false)
+            GO.bColor.resetToDefault()
+            GO.bColor.setToActive(btnDozimeter)
         }
 
-        /* Окно c kjufvb */
+        /* Окно c логами */
         var btnLog: Button = findViewById(R.id.buttonLog)
         btnLog.setOnClickListener {
-            viewPager.setCurrentItem(3, false)
-            bColor.resetToDefault()
-            bColor.setToActive(btnLog)
+            GO.viewPager.setCurrentItem(3, false)
+            GO.bColor.resetToDefault()
+            GO.bColor.setToActive(btnLog)
         }
 
         /* Окно с настройками */
         var btnSetup: Button = findViewById(R.id.buttonSetup)
         btnSetup.setOnClickListener {
-            viewPager.setCurrentItem(4, false)
-            bColor.resetToDefault()
-            bColor.setToActive(btnSetup)
+            GO.viewPager.setCurrentItem(4, false)
+            GO.bColor.resetToDefault()
+            GO.bColor.setToActive(btnSetup)
         }
-        bColor = buttonColor()
-        bColor.initColor(btnSpecter, btnHistory, btnDozimeter, btnLog, btnSetup)
-        bColor.resetToDefault()
-        bColor.setToActive(btnSpecter)  // Активная закладка.
+        GO.bColor.initColor(btnSpecter, btnHistory, btnDozimeter, btnLog, btnSetup)
+        GO.bColor.resetToDefault()
+        GO.bColor.setToActive(btnSpecter)  // Активная закладка.
 
         /*
         *       Параметры приложения
         */
-
-        PP = propControl()
-        LEMAC = PP.getPropStr(propADDRESS)
-        /*
-        if ((LEMAC.length == 17) && ! LEMAC.contentEquals("XX")) {
-            BTT = BluetoothInterface(indicatorBT)
-        }*/
-        Log.d("BluZ-BT", "mac addr: " + LEMAC)
+        GO.PP = propControl()
+        GO.LEMAC = GO.PP.getPropStr(propADDRESS)
+        GO.ColorLin = GO.PP.getPropInt(propColorSpecterLin)
+        GO.ColorLog = GO.PP.getPropInt(propColorSpecterLog)
+        GO.ColorFone = GO.PP.getPropInt(propColorSpecterFone)
+        GO.BTT = BluetoothInterface(GO.indicatorBT)
+        Log.d("BluZ-BT", "mac addr: " + GO.LEMAC)
     }
 }
 

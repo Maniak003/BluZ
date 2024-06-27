@@ -123,6 +123,7 @@
                     android:background="@color/Green" />
 
                 <RadioGroup
+                    android:id="@+id/rbTypeGroup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">

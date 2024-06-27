@@ -23,6 +23,7 @@ import android.widget.Toast
 import java.io.IOException
 import java.util.Arrays
 import java.util.UUID
+import ru.starline.bluz.globalObj
 
 /*
  The following 128bits UUIDs have been generated from the random UUID
@@ -45,12 +46,12 @@ TX_UUID   : 0000fe82-8e22-4541-9d4c-21edae82ed19
  */
 class BluetoothInterface(tv: TextView) {
     private var LEMACADDRESS: String = ""
-    private val BTM = mainContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    private val BTM = GO.mainContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private val BTA = BTM.adapter
     private val BTS = BTA.bluetoothLeScanner
     private var indBT: TextView = tv
     lateinit var txtMACADDRESS: EditText
-    lateinit var startButton: Button
+    //lateinit var startButton: Button
     //private var delegate: BLUZDelegate = BLUZDelegate()
     //private var delegate: DeviceDelegate = null
     private var gatt: BluetoothGatt? = null
@@ -89,9 +90,10 @@ class BluetoothInterface(tv: TextView) {
                 if (result.device.name == "BluZ") {
                     LEMACADDRESS = result.device.address
                     txtMACADDRESS.setText(result.device.address)
-                    //indBT.setBackgroundColor(mainContext.getResources().getColor(R.color.Green, mainContext.theme) )
-                    startButton.setTextColor(mainContext.getResources().getColor(R.color.buttonTextColor, mainContext.theme))
-                    startButton.setText(mainContext.getString(R.string.textScan))
+                    GO.adapter.fragment.let {
+                        GO.scanButton.setTextColor(GO.mainContext.getResources().getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                        GO.scanButton.setText(GO.mainContext.getString(R.string.textScan))
+                    }
                     BTS.stopScan(this)
                 }
             }
@@ -99,10 +101,13 @@ class BluetoothInterface(tv: TextView) {
     }
 
     @SuppressLint("MissingPermission")
-    fun startScan(textMAC: EditText, startBTN: Button) {
-        txtMACADDRESS = textMAC // Установить тект для редактирования
-        startButton = startBTN
-        textMAC.setText(mainContext.getString(R.string.defaultMAC))
+    fun startScan(textMAC: EditText/*, startBTN: Button*/) {
+        //GO.adapter.fragment.let {
+        //    it.btnSpecterSS
+        //}
+        txtMACADDRESS = textMAC // Установить текст для редактирования
+        //startButton = startBTN
+        textMAC.setText(GO.mainContext.getString(R.string.defaultMAC))
         BTS.startScan(leScanCallback)
         Log.d("BluZ-BT", "LE scanning.")
     }
@@ -155,29 +160,30 @@ class BLUZDelegate  {
      */
     @SuppressLint("MissingPermission")
     fun initLeDevice() {
-        if ((LEMAC.length == 17) &&  LEMAC[0] != 'X') {
+        if ((GO.LEMAC.length == 17) &&  GO.LEMAC[0] != 'X') {
             writeBuffer = ArrayList() // Буфер для передачи.
             Log.d("BluZ-BT", "Accept connect...")
             if (!BTA.isEnabled()) {
                 //Log.d(TAG, "Bluetooth disabled. Exit.");
-                Toast.makeText( mainContext, "BlueTooth disable ? \nProgram terminated.", Toast.LENGTH_LONG ).show()
+                Toast.makeText(GO.mainContext, "BlueTooth disable ? \nProgram terminated.", Toast.LENGTH_LONG ).show()
                 //finish()
             }
-            device = BTA.getRemoteDevice(LEMAC) // Подключаемся по MAC адресу.
+            device = BTA.getRemoteDevice(GO.LEMAC) // Подключаемся по MAC адресу.
             Log.d("BluZ-BT", "Status: " + BTA.getState());
             if (device == null) {
-                Log.i("BluZ-BT", "Error: Device: $LEMAC not connected.")
+                var tmpmac = GO.LEMAC
+                Log.i("BluZ-BT", "Error: Device: $tmpmac not connected.")
                 return
             } else {
                 //Log.i(TAG, "Try gatt connect.");
-                gatt = device!!.connectGatt( mainContext,false, gattCallback, BluetoothDevice.TRANSPORT_LE)
+                gatt = device!!.connectGatt(GO.mainContext,false, gattCallback, BluetoothDevice.TRANSPORT_LE)
                 if (gatt == null) {
                     Log.i("BluZ-BT", "Error: Gatt create failed.");
                     //finish()
                 }
             }
         } else {
-            Toast.makeText( mainContext, "MAC address not setting.\nScan BT device.", Toast.LENGTH_LONG ).show()
+            Toast.makeText(GO.mainContext, "MAC address not setting.\nScan BT device.", Toast.LENGTH_LONG ).show()
         }
     }
 
@@ -193,7 +199,7 @@ class BLUZDelegate  {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
-                    tv.setBackgroundColor(mainContext.getColor(R.color.Green))
+                    tv.setBackgroundColor(GO.mainContext.getColor(R.color.Green))
                     Log.i("BluZ-BT", "Gatt connect success.")
                     if (!gatt.discoverServices()) {
                         Log.e("BluZ-BT", "Error: Discover service failed.")
@@ -205,7 +211,7 @@ class BLUZDelegate  {
                     }
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    tv.setBackgroundColor(mainContext.getColor(R.color.Red))
+                    tv.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
 
                     connected = false
                     writePending = false
@@ -311,7 +317,7 @@ class BLUZDelegate  {
 
             Log.d("BluZ-BT", "writing read characteristic descriptor")
             if (!gatt.writeDescriptor(readDescriptor)) {
-                Log.e("BluZ-BT", "Error: read characteristic CCCD descriptor not writable")
+                Log.w("BluZ-BT", "Characteristic CCCD descriptor not writable")
             }
             // continues asynchronously in onDescriptorWrite()
         }
@@ -338,7 +344,7 @@ class BLUZDelegate  {
                        && (data[1].toUByte() == 66.toUByte())
                        && (data[2].toUByte() == 62.toUByte())) {
                         testIdx = 0
-                        idxArray = 0                    // Индекс полного массива с данными
+                        idxArray = 0                    // Индекс результирующего массива с данными
                         numberMTU = data[3].toInt()     // Количество пакетов для передачи
                         dataType = data[4].toInt()      // Тип передаваемых данных
                         pulseCounter = (data[10].toUByte() + data[11].toUByte() * 256u + data[12].toUByte() * 65536u + data[13].toUByte() * 16777216u).toUInt()
@@ -398,7 +404,7 @@ class BLUZDelegate  {
                                 d1 = data[idx++].toUByte()
                                 checkSumm =  (checkSumm + d0 + d1).toUShort()
                                 /* Накопление массива спектра */
-                                drawSPEC.spectrData[idxArray++] = (d0 + d1 * 256u).toDouble()
+                                GO.drawSPECTER.spectrData[idxArray++] = (d0 + d1 * 256u).toDouble()
                                 testIdx+=2
                                 testIdx2+=2
                             }
@@ -417,15 +423,17 @@ class BLUZDelegate  {
                         if (tmpCS == checkSumm) {
                             Log.d("BluZ-BT", "CS - correct: $checkSumm")
                             /* Накопление массива закончено можно вызывать обновление экрана */
-                            drawSPEC.init()
-                            if (drawSPEC.VSize > 0 && drawSPEC.HSize > 0) {
+
+                            GO.drawSPECTER.init()
+                            if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                                 Log.d("BluZ-BT", "call drawSPEC")
-                                drawSPEC.clearSpecter()
+                                GO.drawSPECTER.clearSpecter()
+                                /* 0 - 1024, 1 - 2048, 2 - 4096 */
+                                GO.drawSPECTER.redrawSpecter(specterType, pulseCounter)
                             } else {
+                                //GO.drawObjectInit = true
                                 Log.e("BluZ-BT", "drawSPEC is null")
                             }
-                            /* 0 - 1024, 1 - 2048, 2 - 4096 */
-                            drawSPEC.redrawSpecter(specterType, pulseCounter)
                         } else {
                             Log.e("BluZ-BT", "CS - incorrect. Found: $tmpCS calculate: $checkSumm")
                             //Log.e("BluZ-BT", "data[242]: " + data[242].toUByte() + " data[243]: " + data[243].toUByte())
@@ -440,7 +448,7 @@ class BLUZDelegate  {
 
     @SuppressLint("MissingPermission")
     fun destroyDevice() {
-        indBT.setBackgroundColor(mainContext.getColor(R.color.Red))
+        indBT.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
         if (gatt == null) {
             //Toast.makeText(getBaseContext(), "BlueTooth disabled ?.", Toast.LENGTH_LONG).show();
             //finish()
