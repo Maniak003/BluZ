@@ -23,7 +23,7 @@ import ru.starline.bluz.MainActivity
 const val ARG_OBJECT = "oblect"
 
 class NumberFragment : Fragment() {
-    public lateinit var btnSpecterSS: Button
+    private lateinit var btnSpecterSS: Button
     private  lateinit var rbGroup: RadioGroup
     private lateinit var rbLine: RadioButton
     private lateinit var rbLg: RadioButton
@@ -33,7 +33,27 @@ class NumberFragment : Fragment() {
     private lateinit var selR: SeekBar
     private lateinit var selG: SeekBar
     private lateinit var selB: SeekBar
+/*
+    override fun onResume() {
+        super.onResume()
+        Log.d("BluZ-BT", "View: Resume.")
+    }
 
+    override fun onPause() {
+        super.onPause()
+        Log.d("BluZ-BT", "View: Pause.")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("BluZ-BT", "View: Stop.")
+    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Log.d("BluZ-BT", "View: Destroy.")
+
+    }
+*/
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -57,16 +77,32 @@ class NumberFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         arguments?.takeIf { it.containsKey(ARG_OBJECT) }?.apply {
+            //var ps = getInt(ARG_OBJECT)
+            //Log.d("BluZ-BT", "Position: $ps ")
             if (getInt(ARG_OBJECT) == 0) {  // Спектр
                 /*
                 * Объекты закладки спектр
                 */
-                GO.drawSPECTER = drawSpecter(view.findViewById(R.id.specterView), view.findViewById(R.id.textStatistics1), view.findViewById(R.id.textStatistics2))
-                //GO.drawSPEC.init()
-                //GO.drawSPEC.clearSpecter()
+
+                GO.drawSPECTER.imgView = view.findViewById(R.id.specterView)
+                GO.drawSPECTER.txtStat1 = view.findViewById(R.id.textStatistics1)
+                GO.drawSPECTER.txtStat2 = view.findViewById(R.id.textStatistics2)
+                GO.drawSPECTER.txtStat3 = view.findViewById(R.id.textStatistics3)
 
                 /* Старт набора спектра */
                 btnSpecterSS = view.findViewById(R.id.buttonSpecterSS)
+                /* Проверяем была ли инициализация ранее */
+                if (GO.initBT) {
+                    if (GO.BTT.connected) {         // Восстанавливаем кнопку запуска
+                        btnSpecterSS.setText(getString(R.string.textStartStop2))
+                        btnSpecterSS.setTextColor(getResources().getColor(R.color.Red, GO.mainContext.theme))
+                    }
+                    GO.drawSPECTER.reInit()
+                } else {
+                    GO.initBT = true
+                }
+
+                /* Обработка нажатия на кнопку Start/Stop */
                 btnSpecterSS.setOnClickListener {
                     if (btnSpecterSS.text == getString(R.string.textStartStop)) {
                         btnSpecterSS.setText(getString(R.string.textStartStop2))
@@ -83,7 +119,7 @@ class NumberFragment : Fragment() {
                 val btnSaveBQ: Button = view.findViewById(R.id.buttonSaveBQ)
                 btnSaveBQ.setOnClickListener {
                     Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
-                    GO.drawSPECTER.init()
+                    //GO.drawSPECTER.init()
                     GO.drawSPECTER.clearSpecter()
                 }
             } else if (getInt(ARG_OBJECT) == 1) {   // История
@@ -122,7 +158,7 @@ class NumberFragment : Fragment() {
                 /* Сохранение параметров */
                 val btnSaveSetup: Button = view.findViewById(R.id.buttonSaveSetup)
                 GO.textMACADR = view.findViewById(R.id.textMACADDR)
-                if (! GO.LEMAC.isEmpty()) {
+                if (GO.LEMAC.isNotEmpty()) {
                     GO.textMACADR.setText(GO.LEMAC)
                 }
                 btnSaveSetup.setOnClickListener {
@@ -138,7 +174,6 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Сканирование bluetooth устройств */
-                //BTT = BluetoothInterface(indicatorBT)
                 GO.scanButton = view.findViewById(R.id.buttonScanBT)
                 GO.scanButton.setOnClickListener {
                     if (GO.scanButton.text == getString(R.string.textScan)) {
@@ -147,7 +182,7 @@ class NumberFragment : Fragment() {
                         /*
                         *   Сканирование BT устройств
                         */
-                        GO.BTT.startScan(GO.textMACADR/*, btnScanBT*/)
+                        GO.BTT.startScan(GO.textMACADR)
                     } else {
                         GO.scanButton.setText(getString(R.string.textScan))
                         GO.scanButton.setTextColor(getResources().getColor(R.color.buttonTextColor, GO.mainContext.theme))

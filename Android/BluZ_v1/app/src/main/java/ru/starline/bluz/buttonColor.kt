@@ -43,7 +43,7 @@ class buttonColor {
     }
     /* Получение цвета для отображения спектров */
     fun setSpecterColor(setCol: Int, Col: Int, fullColor: Int): Int {
-        var tmpColor: Int = 0
+        var tmpColor: Int
         var tmpA: Int
         var tmpR: Int
         var tmpG: Int

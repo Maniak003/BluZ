@@ -1,5 +1,6 @@
 package ru.starline.bluz
 
+import android.content.ClipData.Item
 import android.content.Context
 import android.widget.Button
 import android.widget.EditText
@@ -15,6 +16,7 @@ class globalObj {
     public lateinit var drawSPECTER: drawSpecter
     public var pagerFrame: Int = 1
     public lateinit var BTT:  BluetoothInterface
+    public var initBT: Boolean = false
     public lateinit var adapter: NumberAdapter
     public lateinit var textMACADR: EditText
     public lateinit var bColor: buttonColor
@@ -25,8 +27,6 @@ class globalObj {
     public var ColorLin: Int = 0
     public var ColorLog: Int = 0
     public var ColorFone: Int = 0
-    public lateinit var textStat1: TextView
-    public lateinit var textStat2: TextView
     public var drawObjectInit: Boolean = true
 
 }

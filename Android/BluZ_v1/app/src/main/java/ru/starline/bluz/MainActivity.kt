@@ -34,7 +34,7 @@ import androidx.core.content.ContentProviderCompat.requireContext
 import java.nio.charset.Charset
 import java.util.UUID
 
-public var GO: globalObj = globalObj()
+public val GO: globalObj = globalObj()
 public const val propADDRESS: String = "Address"
 public const val propColorSpecterLin: String = "ColorLin"
 public const val propColorSpecterLog: String = "ColorLog"
@@ -56,6 +56,7 @@ public class MainActivity : FragmentActivity() {
         setContentView(R.layout.activity_main)
         GO.mainContext = applicationContext
         enableEdgeToEdge()
+        GO.drawSPECTER = drawSpecter()
         GO.adapter = NumberAdapter(this)
         GO.indicatorBT = findViewById(R.id.indicatorBT)
         GO.viewPager = findViewById(R.id.VPMain)

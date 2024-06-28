@@ -20,10 +20,16 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+//import kotlinx.coroutines.DefaultExecutor.thread
 import java.io.IOException
 import java.util.Arrays
 import java.util.UUID
 import ru.starline.bluz.globalObj
+import kotlin.concurrent.thread
 
 /*
  The following 128bits UUIDs have been generated from the random UUID
@@ -72,6 +78,10 @@ class BluetoothInterface(tv: TextView) {
     public var testIdx: Int = 0
     public var testIdx2: Int = 0
     public var pulseCounter: UInt = 0u
+    public var cps: Float = 0.0f
+    public var messTime: ULong = 0u
+    public var battaryLevel: UByte = 0u
+    public var temperatureMC: Float = 0.0f
 
     /*
     *      Обработчик окончания сканирования, здесь получим результат
@@ -212,7 +222,6 @@ class BLUZDelegate  {
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     tv.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
-
                     connected = false
                     writePending = false
                     Log.i("BluZ-BT", "Disconnect.")
@@ -303,6 +312,7 @@ class BLUZDelegate  {
             val readProperties = rdCharacteristic!!.properties
             if ((readProperties and BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) {
                 Log.d("BluZ-BT", "enable read indication")
+                BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
                 readDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
             } else if ((readProperties and BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
                 Log.d("BluZ-BT", "enable read notification")
@@ -361,7 +371,7 @@ class BLUZDelegate  {
                             9 -> {                      // Спектр с разрешеним 1024
                                 indexData = 146
                                 endOfData = data.size - 5
-                                specterType = 0
+                                specterType = 0         // Определяет размер по горизонтали
                             }
                             17 -> {                     // Спектр с разрешеним 2048
                                 indexData = 50
@@ -426,10 +436,14 @@ class BLUZDelegate  {
 
                             GO.drawSPECTER.init()
                             if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
-                                Log.d("BluZ-BT", "call drawSPEC")
-                                GO.drawSPECTER.clearSpecter()
-                                /* 0 - 1024, 1 - 2048, 2 - 4096 */
-                                GO.drawSPECTER.redrawSpecter(specterType, pulseCounter)
+                                /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
+                                MainScope().launch {
+                                     withContext(Dispatchers.Main) {
+                                         //Log.d("BluZ-BT", "call drawSPEC")
+                                         GO.drawSPECTER.clearSpecter()
+                                         GO.drawSPECTER.redrawSpecter(specterType, pulseCounter, cps, messTime, battaryLevel, temperatureMC)
+                                     }
+                                }
                             } else {
                                 //GO.drawObjectInit = true
                                 Log.e("BluZ-BT", "drawSPEC is null")
@@ -442,12 +456,12 @@ class BLUZDelegate  {
                 }
             }
         }
-
     }
 
 
     @SuppressLint("MissingPermission")
     fun destroyDevice() {
+        connected = false
         indBT.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
         if (gatt == null) {
             //Toast.makeText(getBaseContext(), "BlueTooth disabled ?.", Toast.LENGTH_LONG).show();
@@ -540,7 +554,7 @@ class BLUZDelegate  {
     }
 
 
-    fun connect() {
-        initLeDevice()
-    }
+    //fun connect() {
+    //    initLeDevice()
+    //}
 }

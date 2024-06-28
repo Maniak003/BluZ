@@ -35,8 +35,6 @@ class propControl {
     }
 
     constructor() {
-        Log.i("BluZ-BT", "Point 15.1")
         prop = GO.mainContext.getSharedPreferences("device.properties", Context.MODE_PRIVATE)
-        Log.i("BluZ-BT", "Point 15.2")
     }
 }
