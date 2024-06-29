@@ -4027,7 +4027,7 @@
     (property "Reference" "R15" (id 0) (at 176.403 42.3453 0)
       (effects (font (size 1.27 1.27)) (justify left) hide)
     )
-    (property "Value" "5.1M" (id 1) (at 175.895 45.72 0)
+    (property "Value" "4.3M" (id 1) (at 175.895 45.72 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "Resistor_SMD:R_0402_1005Metric" (id 2) (at 172.847 43.18 90)
@@ -4656,7 +4656,7 @@
       (reference "R14") (unit 1) (value "470") (footprint "Resistor_SMD:R_0402_1005Metric")
     )
     (path "/c8dd2620-be56-4c2f-bce2-f222bc17d9b2"
-      (reference "R15") (unit 1) (value "5.1M") (footprint "Resistor_SMD:R_0402_1005Metric")
+      (reference "R15") (unit 1) (value "4.3M") (footprint "Resistor_SMD:R_0402_1005Metric")
     )
     (path "/38b7e2d0-586a-40b8-a9a0-11da2387564e"
       (reference "R16") (unit 1) (value "100M") (footprint "Resistor_SMD:R_0402_1005Metric")
