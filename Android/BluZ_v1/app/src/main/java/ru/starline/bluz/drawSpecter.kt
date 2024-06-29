@@ -29,9 +29,9 @@ class drawSpecter {
     public lateinit var txtStat1: TextView
     public lateinit var txtStat2: TextView
     public lateinit var txtStat3: TextView
-    private lateinit var saveStat1: String
-    private lateinit var saveStat2: String
-    private lateinit var saveStat3: String
+    private var saveStat1: String = ""
+    private var saveStat2: String = ""
+    private var saveStat3: String = ""
 
     /* Установка рабочих параметров и создание необходимых объектов */
     fun init() {
@@ -46,12 +46,9 @@ class drawSpecter {
                 specCanvas = Canvas(specBitmap)
                 GO.drawObjectInit =false
             }
+        } else {
+            imgView.setImageBitmap(specBitmap)
         }
-    }
-
-    /* Восстановление текущего состояния */
-    fun reInit() {
-        imgView.setImageBitmap(specBitmap)
         txtStat1.setText(saveStat1)
         txtStat2.setText(saveStat2)
         txtStat3.setText(saveStat3)

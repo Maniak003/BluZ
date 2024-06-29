@@ -242,23 +242,31 @@ void GPDMA1_Channel0_IRQHandler(void)
    * 1 - 2048 каналов
    * 2 - 4096 каналов
    */
+  if (pulseLevel > 150) {
 	switch (resolution) {
 		/* 1024 */
 		case 0:	{
-			tmpSpecterBuffer[((pulseLevel >> 2) & 0x3FF) + HEADER_OFFSET_2048]++;
+			if (tmpSpecterBuffer[((pulseLevel >> 2) & 0x3FF) + HEADER_OFFSET_2048] < 65535) {
+				tmpSpecterBuffer[((pulseLevel >> 2) & 0x3FF) + HEADER_OFFSET_2048]++;
+			}
 			break;
 		}
 		/* 2048 */
 		case 1: {
-			tmpSpecterBuffer[((pulseLevel >> 1) & 0x7FF) + HEADER_OFFSET_4096]++;
+			if (tmpSpecterBuffer[((pulseLevel >> 1) & 0x7FF) + HEADER_OFFSET_4096] < 65535) {
+				tmpSpecterBuffer[((pulseLevel >> 1) & 0x7FF) + HEADER_OFFSET_4096]++;
+			}
 			break;
 		}
 		/* 4096 */
 		case 2: {
-			tmpSpecterBuffer[(pulseLevel & 0xFFF) + HEADER_OFFSET_8192]++;
+			if (tmpSpecterBuffer[(pulseLevel & 0xFFF) + HEADER_OFFSET_8192] < 65535) {
+				tmpSpecterBuffer[(pulseLevel & 0xFFF) + HEADER_OFFSET_8192]++;
+			}
 			break;
 		}
 	}
+  }
 	/* Оповещение об импульсе */
 	NotifyAct(LED_NOTIFY);
   /* USER CODE END GPDMA1_Channel0_IRQn 1 */

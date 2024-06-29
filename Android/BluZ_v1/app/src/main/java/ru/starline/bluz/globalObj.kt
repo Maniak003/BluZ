@@ -14,6 +14,7 @@ class globalObj {
     public var LEMAC: String = ""
     public lateinit var mainContext: Context
     public lateinit var drawSPECTER: drawSpecter
+    public var drawObjectInit: Boolean = true
     public var pagerFrame: Int = 1
     public lateinit var BTT:  BluetoothInterface
     public var initBT: Boolean = false
@@ -27,6 +28,5 @@ class globalObj {
     public var ColorLin: Int = 0
     public var ColorLog: Int = 0
     public var ColorFone: Int = 0
-    public var drawObjectInit: Boolean = true
 
 }

@@ -97,7 +97,7 @@ class NumberFragment : Fragment() {
                         btnSpecterSS.setText(getString(R.string.textStartStop2))
                         btnSpecterSS.setTextColor(getResources().getColor(R.color.Red, GO.mainContext.theme))
                     }
-                    GO.drawSPECTER.reInit()
+                    GO.drawSPECTER.init()
                 } else {
                     GO.initBT = true
                 }
