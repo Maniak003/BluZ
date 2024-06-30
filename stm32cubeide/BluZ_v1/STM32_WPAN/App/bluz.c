@@ -163,9 +163,10 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
             switch(p_attribute_modified->Attr_Data[0])
             {
               /* USER CODE BEGIN Service1_Char_1_attribute_modified */
+            /*
 				bzero((char *) uartBuffer, sizeof(uartBuffer));
 				sprintf(uartBuffer, "Service1_Char_1_attribute_modified\n\r");
-				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100); */
 
               /* USER CODE END Service1_Char_1_attribute_modified */
 

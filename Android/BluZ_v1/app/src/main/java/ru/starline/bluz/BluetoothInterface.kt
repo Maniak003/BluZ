@@ -348,7 +348,6 @@ class BLUZDelegate  {
                     *   Ищем стартовую последовательность <B> (60, 66, 62)
                     *   Разбираем заголовок
                     */
-                    var specterType: Int = 0
                     testIdx2 = 0;
                     if ((data[0].toUByte() == 60.toUByte())
                        && (data[1].toUByte() == 66.toUByte())
@@ -371,17 +370,17 @@ class BLUZDelegate  {
                             9 -> {                      // Спектр с разрешеним 1024
                                 indexData = 146
                                 endOfData = data.size - 5
-                                specterType = 0         // Определяет размер по горизонтали
+                                GO.specterType = 0         // Определяет размер по горизонтали
                             }
                             17 -> {                     // Спектр с разрешеним 2048
                                 indexData = 50
                                 endOfData = data.size - 5
-                                specterType = 1
+                                GO.specterType = 1
                             }
                             34 -> {                     // Спектр с разрешеним 4096
                                 indexData = 102
                                 endOfData = data.size - 5
-                                specterType = 2
+                                GO.specterType = 2
                             }
                         }
                         /* Считаем контрольную сумму заголовка*/
@@ -441,7 +440,7 @@ class BLUZDelegate  {
                                      withContext(Dispatchers.Main) {
                                          //Log.d("BluZ-BT", "call drawSPEC")
                                          GO.drawSPECTER.clearSpecter()
-                                         GO.drawSPECTER.redrawSpecter(specterType, pulseCounter, cps, messTime, battaryLevel, temperatureMC)
+                                         GO.drawSPECTER.redrawSpecter(GO.specterType, pulseCounter, cps, messTime, battaryLevel, temperatureMC)
                                      }
                                 }
                             } else {

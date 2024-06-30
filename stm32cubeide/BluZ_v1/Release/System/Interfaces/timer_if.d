@@ -73,8 +73,8 @@ System/Interfaces/timer_if.o: ../System/Interfaces/timer_if.c \
  ../System/Config/Debug_GPIO/debug_config.h ../Core/Inc/app_conf.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../System/Interfaces/timer_if.h ../Utilities/tim_serv/stm32_timer.h \
- ../Utilities/misc/stm32_systime.h
+ ../Core/Inc/LTC1662.h ../Core/Inc/main.h ../System/Interfaces/timer_if.h \
+ ../Utilities/tim_serv/stm32_timer.h ../Utilities/misc/stm32_systime.h
 ../Core/Inc/main.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h:
 ../Core/Inc/stm32wbaxx_hal_conf.h:
@@ -156,6 +156,8 @@ System/Interfaces/timer_if.o: ../System/Interfaces/timer_if.c \
 ../Core/Inc/app_conf.h:
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
+../Core/Inc/LTC1662.h:
+../Core/Inc/main.h:
 ../System/Interfaces/timer_if.h:
 ../Utilities/tim_serv/stm32_timer.h:
 ../Utilities/misc/stm32_systime.h:

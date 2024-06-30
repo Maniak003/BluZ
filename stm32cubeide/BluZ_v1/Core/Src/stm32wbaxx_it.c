@@ -242,7 +242,6 @@ void GPDMA1_Channel0_IRQHandler(void)
    * 1 - 2048 каналов
    * 2 - 4096 каналов
    */
-  if (pulseLevel > 150) {
 	switch (resolution) {
 		/* 1024 */
 		case 0:	{
@@ -266,7 +265,6 @@ void GPDMA1_Channel0_IRQHandler(void)
 			break;
 		}
 	}
-  }
 	/* Оповещение об импульсе */
 	NotifyAct(LED_NOTIFY);
   /* USER CODE END GPDMA1_Channel0_IRQn 1 */

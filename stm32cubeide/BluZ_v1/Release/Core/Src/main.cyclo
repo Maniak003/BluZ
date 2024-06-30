@@ -1,6 +1,6 @@
 ../Core/Src/main.c:113:6:NotifyAct	10
-../Core/Src/main.c:335:6:SystemClock_Config	4
-../Core/Src/main.c:390:6:PeriphCommonClock_Config	2
-../Core/Src/main.c:662:6:MX_RTC_Init	3
-../Core/Src/main.c:144:5:main	25
-../Core/Src/main.c:891:6:Error_Handler	1
+../Core/Src/main.c:362:6:SystemClock_Config	4
+../Core/Src/main.c:417:6:PeriphCommonClock_Config	2
+../Core/Src/main.c:689:6:MX_RTC_Init	3
+../Core/Src/main.c:144:5:main	27
+../Core/Src/main.c:918:6:Error_Handler	1

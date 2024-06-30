@@ -62,7 +62,7 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 
 bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false;
-uint32_t interval1 = 0, interval2 = 0, intervalTmp = 0, pulseCounter = 0,  pulseLevel = 0;
+uint32_t interval1 = 0, interval2 = 0, interval3 = 0, intervalTmp = 0, pulseCounter = 0,  pulseLevel = 0;
 char uartBuffer[100] = {0,};
 uint8_t resolution = 0; /* 0 - 1024, 1 - 2048, 2 - 4096, 3 - Логи, 4 - Параметры, 5 - История дозиметра*/
 uint8_t tmpBTBuffer[DATA_NOTIFICATION_MAX_PACKET_SIZE] = {0,};
@@ -200,6 +200,23 @@ int main(void)
   NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY | LED_NOTIFY);
 
   HAL_ADC_Start_DMA(&hadc4, &pulseLevel, 1);
+  /*
+   * Настройка ltc1662
+   * порога компаратора
+   *
+   */
+  setLevelOnPort(0, 0x0A0);
+
+  /*
+   * Настройка высокого напряжения
+   * Чем выше значение тем ниже напряжение.
+   */
+  setLevelOnPort(1, 0x200);
+
+  resolution = 0;			/* Тест разрешение 1024 */
+  //resolution = 1;			/* Тест разрешение 2048 */
+  //resolution = 2;			/* Тест разрешение 4096 */
+
 
   while (1)
   {
@@ -208,17 +225,22 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     intervalTmp = HAL_GetTick();
-	if ( connectFlag && (interval2 + INTERVAL2 < intervalTmp) /*&& system_startup_done*/) {
+
+	if (interval3 + INTERVAL3 < intervalTmp) {
+		interval3 = intervalTmp;
+
+	}
+
+
+    if ( connectFlag && (interval2 + INTERVAL2 < intervalTmp) /*&& system_startup_done*/) {
 	  interval2 = intervalTmp;
 
 	  /* Шаблон заголовка */
 	  uint8_t hdr[] = {'<', 'B', '>', 0, 0, 0, 0, 0};
 
-	  resolution = 0;			/* Тест разрешение 1024 */
-
-	  uint16_t countMTU;
-	  uint16_t idxCS;
-	  uint16_t headerOffset;
+	  uint16_t countMTU = 0;
+	  uint16_t idxCS = 0 ;
+	  uint16_t headerOffset = 0;
 	  switch (resolution) {
 		  case 0: {
 			  countMTU = NUMBER_MTU_1024;
@@ -274,14 +296,19 @@ int main(void)
 
 	  //
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
-	  /* Загрузка спектра в буфер для передачи */
+	  /*
+	   * Загрузка спектра в буфер,
+	   * что бы исключить изменение данных на время передачи
+	   *
+	   */
 	  int kkk = 0;
 	  for (int jjj = headerOffset; jjj < idxCS; jjj++) {
 		  specterBuffer[jjj] = tmpSpecterBuffer[kkk++];
 		  /* Тестовые данные */
-		  //specterBuffer[jjj] = jjj;
+		  //specterBuffer[jjj] = 0;
 		  //specterBuffer[jjj] = log(jjj) * 400;
 	  }
+	  //specterBuffer[2048] = 10;
 	  //specterBuffer[idxCS - 1] = 1;
 	  specterBuffer[idxCS] = 0;
 	  //specterBuffer[SIZE_BUF_1024 - 1 ] = 0;

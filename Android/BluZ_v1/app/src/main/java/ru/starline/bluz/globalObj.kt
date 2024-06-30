@@ -28,5 +28,6 @@ class globalObj {
     public var ColorLin: Int = 0
     public var ColorLog: Int = 0
     public var ColorFone: Int = 0
+    public var specterType: Int = 0
 
 }

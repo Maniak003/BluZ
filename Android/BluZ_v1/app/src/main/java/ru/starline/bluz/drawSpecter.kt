@@ -55,7 +55,7 @@ class drawSpecter {
     }
 
     fun redrawSpecter(spType: Int, PCounter: UInt, cps: Float, messTm:ULong, battLevel: UByte, tempMC: Float) {
-        //Log.d("BluZ-BT", "HSize: " + HSize.toString() + " VSize: " + VSize.toString())
+        Log.d("BluZ-BT", "Type: " + spType.toString() + " HSize: " + HSize.toString() + " VSize: " + VSize.toString())
         //Log.d("BluZ-BT", "Draw specter.")
         var xSize: Double = 1.0
         var paintLin: Paint = Paint()

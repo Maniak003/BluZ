@@ -32,6 +32,7 @@ extern "C" {
 #include "app_entry.h"
 #include "app_common.h"
 #include "app_debug.h"
+#include "LTC1662.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -120,6 +121,7 @@ void NotifyAct(uint8_t SRC);
 /* USER CODE BEGIN Private defines */
 #define INTERVAL1 2000
 #define INTERVAL2 5000
+#define INTERVAL3 2000
 #define SOUND_NOTIFY 1
 #define VIBRO_NOTIFY 2
 #define LED_NOTIFY   4
