@@ -16,9 +16,21 @@ class propControl {
         ed.commit()
     }
 
+    fun setPropFloat(key: String, value: Float) {
+        var ed: SharedPreferences.Editor = prop.edit()
+        ed.putFloat(key, value)
+        ed.commit()
+    }
+
     fun setPropInt(key: String, value: Int) {
         var ed: SharedPreferences.Editor = prop.edit()
         ed.putInt(key, value)
+        ed.commit()
+    }
+
+    fun setPropByte(key:String, value:UByte) {
+        var ed: SharedPreferences.Editor = prop.edit()
+        ed.putInt(key, value.toInt())
         ed.commit()
     }
 
@@ -34,6 +46,9 @@ class propControl {
         return prop.getFloat(key, 0.0f)
     }
 
+    fun getPropByte (key: String): UByte {
+        return prop.getInt(key, 0).toUByte()
+    }
     constructor() {
         prop = GO.mainContext.getSharedPreferences("device.properties", Context.MODE_PRIVATE)
     }

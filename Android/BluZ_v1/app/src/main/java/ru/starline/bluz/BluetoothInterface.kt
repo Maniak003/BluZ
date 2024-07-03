@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
@@ -75,6 +76,7 @@ class BluetoothInterface(tv: TextView) {
     private var wrCharacteristic:BluetoothGattCharacteristic? = null
     @OptIn(ExperimentalUnsignedTypes::class)
     public var receiveBuffer = UByteArray(255)
+    public var sendBuffer = UByteArray(255)
     public var testIdx: Int = 0
     public var testIdx2: Int = 0
     public var pulseCounter: UInt = 0u
@@ -478,17 +480,17 @@ class BLUZDelegate  {
     // Передача данных в ассинхронном режиме.
     @SuppressLint("MissingPermission")
     private fun writeNext() {
-        val data: ByteArray = writeBuffer!!.removeAt(0)
-        /*
-        synchronized(writeBuffer) {
-            if (!writeBuffer!!.isEmpty() && delegate!!.canWrite()) {
+        var data: ByteArray? = writeBuffer!!.removeAt(0)
+
+        synchronized(writeBuffer!!) {
+            if (!writeBuffer!!.isEmpty() /*&& delegate!!.canWrite()*/) {
                 writePending = true
                 data = writeBuffer!!.removeAt(0)
             } else {
                 writePending = false
                 data = null
             }
-        } */
+        }
         data?.let {
             wrCharacteristic!!.value = it
             if (!gatt!!.writeCharacteristic(wrCharacteristic)) {
@@ -507,9 +509,10 @@ class BLUZDelegate  {
     @SuppressLint("MissingPermission")
     @Throws(IOException::class)
     fun write(data: ByteArray) {
-        if ( !connected || wrCharacteristic == null) {
+        if ( !connected || wrCharacteristic == null) return
+        /*if ( !connected || wrCharacteristic == null) {
             throw IOException("not connected")
-        }
+        }*/
         var data0: ByteArray?
         synchronized(writeBuffer!!) {
             data0 = if (data.size <= payloadSize) {
@@ -540,6 +543,13 @@ class BLUZDelegate  {
             } else {
                 Log.d("BluZ-BT", "write started, len=" + data0!!.size)
             }
+            /*
+            val ddd = data0
+            if (!gatt!!.writeCharacteristic(wrCharacteristic, ddd!!, WRITE_TYPE_NO_RESPONSE)) {
+                Log.d("BluZ-BT", "Write Characteristic error")
+            } else {
+                Log.d("BluZ-BT", "write started, len=" + data0!!.size)
+            }*/
         }
         // continues asynchronously in onCharacteristicWrite()
     }

@@ -36,17 +36,26 @@
             <TextView
                 android:id="@+id/textStatistics1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textAllCaps="true"
+                android:textColor="@color/labelTextColor2"
+                android:textSize="12sp" />
 
             <TextView
                 android:id="@+id/textStatistics2"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textAllCaps="false"
+                android:textColor="@color/labelTextColor2"
+                android:textSize="12sp" />
 
             <TextView
                 android:id="@+id/textStatistics3"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textAllCaps="false"
+                android:textColor="@color/labelTextColor2"
+                android:textSize="12sp" />
 
             <ImageView
                 android:id="@+id/statisticView"
@@ -63,21 +72,36 @@
 
             <Button
                 android:id="@+id/buttonSpecterSS"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textStartStop"
                 android:textAllCaps="false"
-                android:textColor="@color/buttonTextColor" />
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/buttonSaveBQ"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textSaveBQ"
                 android:textAllCaps="false"
-                android:textColor="@color/buttonTextColor" />
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/buttonLoadSpectr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
+                android:backgroundTint="@color/buttonColor"
+                android:text="@string/textLoadSpectr"
+                android:textAllCaps="false"
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
         </LinearLayout>
 
     </LinearLayout>

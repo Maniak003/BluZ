@@ -30,4 +30,17 @@ class globalObj {
     public var ColorFone: Int = 0
     public var specterType: Int = 0
 
+    /* Параметры для хранения в приборе */
+    public var propLevel1: Float = 0.0f
+    public var propLevel2: Float = 0.0f
+    public var propLevel3: Float = 0.0f
+    public var propCPS2UR: Float = 0.0f
+    public var propCoefA: Float = 0.0f
+    public var propCoefB: Float = 0.0f
+    public var propCoefC: Float = 0.0f
+    public var propIndicator: UByte = 0u
+    public var propComparator: UInt = 0u
+    public var propHVoltage: UInt = 0u
+
+
 }

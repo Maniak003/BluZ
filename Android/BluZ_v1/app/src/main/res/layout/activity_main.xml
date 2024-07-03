@@ -60,6 +60,7 @@
                 android:text="@string/textSpecter"
                 android:textAlignment="center"
                 android:textColor="@color/buttonTextColor"
+                android:textSize="12sp"
                 app:cornerRadius="20dp" />
 
             <Button
@@ -70,6 +71,7 @@
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textHistory"
                 android:textColor="@color/buttonTextColor"
+                android:textSize="12sp"
                 app:cornerRadius="20dp" />
 
             <Button
@@ -80,6 +82,7 @@
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textDosimetr"
                 android:textColor="@color/buttonTextColor"
+                android:textSize="12sp"
                 app:cornerRadius="20dp" />
 
             <Button
@@ -90,6 +93,7 @@
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textLog"
                 android:textColor="@color/buttonTextColor"
+                android:textSize="12sp"
                 app:cornerRadius="20dp" />
 
             <Button
@@ -100,6 +104,7 @@
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textSetup"
                 android:textColor="@color/buttonTextColor"
+                android:textSize="12sp"
                 app:cornerRadius="20dp" />
 
             <Button
@@ -110,6 +115,7 @@
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textExit"
                 android:textColor="@color/buttonTextColor"
+                android:textSize="12sp"
                 app:cornerRadius="20dp" />
 
         </LinearLayout>

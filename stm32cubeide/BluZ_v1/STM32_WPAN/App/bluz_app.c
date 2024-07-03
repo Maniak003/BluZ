@@ -142,9 +142,33 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
     	sprintf(uartBuffer, "Service1Char2_WRITE_NO_RESP_EVT\n\r");
     	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 		if (p_Notification->DataTransfered.Length > 10) {
+			/* Прием данных */
+			if (p_Notification->DataTransfered.p_Payload[0] == (uint8_t) '<'
+			  && p_Notification->DataTransfered.p_Payload[1] == (uint8_t) 'S'
+			  && p_Notification->DataTransfered.p_Payload[2] == (uint8_t) '>') {
+				/* Настройки */
+				if (p_Notification->DataTransfered.p_Payload[3] == 0) {
+					/*
+					*  Управление индикацией
+                    *  0 - Светодиодная индикация прихода частицы (1 - включена, 0 - выключена)
+                    *  1 - Звуковое сопровождение прихода частицы (1 - включено, 0 - выключено)
+                    *  2 - Звуковая сигнализация 1 порог (1 - включено, 0 - выключено)
+                    *  3 - Звуковая сигнализация 2 порог (1 - включено, 0 - выключено)
+                    *  4 - Звуковая сигнализация 3 порог (1 - включено, 0 - выключено)
+                    *  5 - Вибро сигнализация 1 порог (1 - включено, 0 - выключено)
+                    *  6 - Вибро сигнализация 2 порог (1 - включено, 0 - выключено)
+                    *  7 - Вибро сигнализация 3 порог (1 - включено, 0 - выключено)
+					*/
+
+					LEDEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000001;		// LED
+					SoundEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000010;	// Sound
+				}
+			}
+
+			/* Вывод приемного буфера */
 			bzero((char *) uartBuffer, sizeof(uartBuffer));
 			sprintf(uartBuffer, "bz_rx_app: DataTransfered\n\r");
-			HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
+			HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 			for (int iii = 0; iii < p_Notification->DataTransfered.Length; iii++) {
 				sprintf(uartBuffer, "%02X ", p_Notification->DataTransfered.p_Payload[iii]);
 				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, 3, 100);

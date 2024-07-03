@@ -39,6 +39,18 @@ public const val propADDRESS: String = "Address"
 public const val propColorSpecterLin: String = "ColorLin"
 public const val propColorSpecterLog: String = "ColorLog"
 public const val propColorSpecterFone: String = "ColorFone"
+public const val propLevel1: String = "Level1"
+public const val propLevel2: String = "Level2"
+public const val propLevel3: String = "Level3"
+public const val propCPS2UR: String = "CPS2UR"
+public const val propCoefA: String = "CoeffA"
+public const val propCoefB: String = "CoeffB"
+public const val propCoefC: String = "CoeffC"
+public const val propIndicator: String = "Indicator"
+public const val propHV: String = "HVoltage"
+public const val propComparator: String = "Comparator"
+
+
 //public lateinit var mainContext: Context
 public var PI: Int = 0
 
@@ -173,6 +185,20 @@ public class MainActivity : FragmentActivity() {
         GO.ColorLog = GO.PP.getPropInt(propColorSpecterLog)
         GO.ColorFone = GO.PP.getPropInt(propColorSpecterFone)
         GO.BTT = BluetoothInterface(GO.indicatorBT)
+        /*
+        *       Параметры прибора
+        */
+        GO.propLevel1 = GO.PP.getPropFloat(propLevel1)
+        GO.propLevel2 = GO.PP.getPropFloat(propLevel2)
+        GO.propLevel3 = GO.PP.getPropFloat(propLevel3)
+        GO.propCoefA = GO.PP.getPropFloat(propCoefA)
+        GO.propCoefB = GO.PP.getPropFloat(propCoefB)
+        GO.propCoefC = GO.PP.getPropFloat(propCoefC)
+        GO.propCPS2UR = GO.PP.getPropFloat(propCPS2UR)
+        GO.propIndicator = GO.PP.getPropByte(propIndicator)
+        GO.propHVoltage = GO.PP.getPropInt(propHV).toUInt()
+        GO.propComparator = GO.PP.getPropInt(propComparator).toUInt()
+
         Log.d("BluZ-BT", "mac addr: " + GO.LEMAC)
     }
 }

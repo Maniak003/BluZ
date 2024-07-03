@@ -222,8 +222,8 @@ void EXTI15_IRQHandler(void)
   HAL_GPIO_EXTI_IRQHandler(Sync_Pin);
   /* USER CODE BEGIN EXTI15_IRQn 1 */
   pulseCounter++;
-  /* Включение LED */
-  //NotifyAct(LED_NOTIFY);
+	/* Оповещение об импульсе */
+	NotifyAct(LED_NOTIFY);
   /* USER CODE END EXTI15_IRQn 1 */
 }
 
@@ -265,8 +265,6 @@ void GPDMA1_Channel0_IRQHandler(void)
 			break;
 		}
 	}
-	/* Оповещение об импульсе */
-	NotifyAct(LED_NOTIFY);
   /* USER CODE END GPDMA1_Channel0_IRQn 1 */
 }
 

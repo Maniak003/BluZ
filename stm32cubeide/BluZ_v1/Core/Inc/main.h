@@ -70,6 +70,7 @@ extern uint8_t resolution;
 extern uint16_t specterBuffer[SIZE_BUF_4096];
 extern uint16_t tmpSpecterBuffer[4096];
 extern uint32_t pulseCounter, pulseLevel;
+extern bool SoundEnable, VibroEnable, LEDEnable;
 void sendData(uint8_t *dataSpectrBufer);
 
 /* USER CODE END ET */

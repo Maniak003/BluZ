@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -19,6 +20,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.card.MaterialCardView.OnCheckedChangeListener
 import ru.starline.bluz.globalObj
 import ru.starline.bluz.MainActivity
+import java.nio.ByteBuffer
 
 const val ARG_OBJECT = "oblect"
 
@@ -33,6 +35,8 @@ class NumberFragment : Fragment() {
     private lateinit var selR: SeekBar
     private lateinit var selG: SeekBar
     private lateinit var selB: SeekBar
+    private lateinit var CBsound: CheckBox
+    private lateinit var CBled: CheckBox
 /*
     override fun onResume() {
         super.onResume()
@@ -157,6 +161,9 @@ class NumberFragment : Fragment() {
                 */
                 /* Сохранение параметров */
                 val btnSaveSetup: Button = view.findViewById(R.id.buttonSaveSetup)
+                CBled = view.findViewById(R.id.CBledKvant)
+                CBsound = view.findViewById(R.id.CBsoundKvant)
+
                 GO.textMACADR = view.findViewById(R.id.textMACADDR)
                 if (GO.LEMAC.isNotEmpty()) {
                     GO.textMACADR.setText(GO.LEMAC)
@@ -164,13 +171,161 @@ class NumberFragment : Fragment() {
                 btnSaveSetup.setOnClickListener {
                     /* Сохраняем MAC адрес */
                     GO.LEMAC = GO.textMACADR.text.toString()
-                    GO.PP.setPropStr(propADDRESS, GO.LEMAC)     // Сохраним MAC адрес устройства
-                    GO.PP.setPropInt(propColorSpecterLin, GO.ColorLin)     // Сохраним цвет линейного графика
-                    GO.PP.setPropInt(propColorSpecterLog, GO.ColorLog)     // Сохраним цвет логарифмического графика
-                    GO.PP.setPropInt(propColorSpecterFone, GO.ColorFone)    // Сохранним цвет графика фона
+                    GO.PP.setPropStr(propADDRESS, GO.LEMAC)                         // Сохраним MAC адрес устройства
+                    GO.PP.setPropInt(propColorSpecterLin, GO.ColorLin)              // Сохраним цвет линейного графика
+                    GO.PP.setPropInt(propColorSpecterLog, GO.ColorLog)              // Сохраним цвет логарифмического графика
+                    GO.PP.setPropInt(propColorSpecterFone, GO.ColorFone)            // Сохранним цвет графика фона
+                    GO.PP.setPropByte(propIndicator, GO.propIndicator)              // Параметры индикации прибора: свук, led, vibro
+                    GO.PP.setPropFloat(propLevel1, GO.propLevel1)                   // Значение первого порога
+                    GO.PP.setPropFloat(propLevel2, GO.propLevel2)                   // Значение второго порога
+                    GO.PP.setPropFloat(propLevel3, GO.propLevel3)                   // Значение третьего порога
+                    GO.PP.setPropFloat(propCPS2UR, GO.propCPS2UR)                   // Коэффициент пересчета cps в uRh
+                    GO.PP.setPropFloat(propCoefA, GO.propCoefA)                     // A - полинома пересчета канала в энергию
+                    GO.PP.setPropFloat(propCoefB, GO.propCoefB)                     // B - полинома пересчета канала в энергию
+                    GO.PP.setPropFloat(propCoefC, GO.propCoefC)                     // C - полинома пересчета канала в энергию
+                    GO.PP.setPropInt(propHV, GO.propHVoltage.toInt())               // Уровень высокого напряжения
+                    GO.PP.setPropInt(propComparator, GO.propComparator.toInt())     // Уровень Компаратора
                     Log.d("BluZ-BT", "mac addr: ")
                     Log.d("BluZ-BT", GO.LEMAC)
                     Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
+
+                    /*
+                    * Заголовок буфера для передачи
+                    *
+                    * 0,1,2         - Маркер <S>
+                    * 3             - Режим
+                    *                   0 - Настройки
+                    *                   1 - Команды управления
+                    * 4,5,6,7       - Первый порог в uR
+                    * 8,9,10,11     - Второй порог в uR
+                    * 12,13,14,15   - Третий порог в uR
+                    * 16,17,18,19   - Коэффициент пересчета CPS в uR
+                    * 20            - Битовые флаги управления светодиодом, звуком и вибро
+                    *                   0 - Светодиодная индикация прихода частицы (1 - включена, 0 - выключена)
+                    *                   1 - Звуковое сопровождение прихода частицы  (1 - включено, 0 - выключено)
+                    *                   2 - Звуковая сигнализация 1 порог   (1 - включено, 0 - выключено)
+                    *                   3 - Звуковая сигнализация 2 порог   (1 - включено, 0 - выключено)
+                    *                   4 - Звуковая сигнализация 3 порог   (1 - включено, 0 - выключено)
+                    *                   5 - Вибро сигнализация 1 порог   (1 - включено, 0 - выключено)
+                    *                   6 - Вибро сигнализация 2 порог   (1 - включено, 0 - выключено)
+                    *                   7 - Вибро сигнализация 3 порог   (1 - включено, 0 - выключено)
+                    * 21,22,23,24   - Коэффициент A полинома преобразования канала в энергию.
+                    * 25,26,27,28   - Коэффициент B полинома преобразования канала в энергию.
+                    * 29,30,31,32   - Коэффициент C полинома преобразования канала в энергию.
+                    * 33,34         - Уровень высокого напряжения
+                    * 35,36         - Уровень компаратора
+                    *
+                    * 242, 243      - Контрольная сумма
+                    */
+                    GO.BTT.sendBuffer[0] = '<'.code.toUByte()
+                    GO.BTT.sendBuffer[1] = 'S'.code.toUByte()
+                    GO.BTT.sendBuffer[2] = '>'.code.toUByte()
+
+                    /* Сохраненние настроек */
+                    GO.BTT.sendBuffer[3] = 0u
+
+                    var convVal: ByteArray
+
+                    /*
+                    * EEE754
+                    var convVal = ByteBuffer.allocate(4).putFloat(testD).array();
+                    GO.BTT.sendBuffer[3] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[4] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[5] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[6] = convVal[3].toUByte()
+                    */
+
+                    /* Первый порог */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propLevel1).array();
+                    GO.BTT.sendBuffer[4] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[5] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[6] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[7] = convVal[3].toUByte()
+
+                    /* Второй порог */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propLevel2).array();
+                    GO.BTT.sendBuffer[8] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[9] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[10] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[11] = convVal[3].toUByte()
+
+                    /* Третий порог */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propLevel3).array();
+                    GO.BTT.sendBuffer[12] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[13] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[14] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[15] = convVal[3].toUByte()
+
+                    /* Коэффициент пересчета cps в uRh */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCPS2UR).array();
+                    GO.BTT.sendBuffer[16] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[17] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[18] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[19] = convVal[3].toUByte()
+
+                    /* Светодиод сопровождает приход частицы */
+                    if (CBled.isChecked) {
+                        GO.propIndicator = GO.propIndicator or  0b00000001.toUByte()
+                    } else {
+                        GO.propIndicator = GO.propIndicator and 0b11111110.toUByte()
+                    }
+
+                    /* Звук сопровождает приход частицы */
+                    if (CBsound.isChecked) {
+                        GO.propIndicator = GO.propIndicator or  0b00000010.toUByte()
+                    } else {
+                        GO.propIndicator = GO.propIndicator and 0b11111101.toUByte()
+                    }
+
+                    GO.BTT.sendBuffer[20] = GO.propIndicator            //  Управление светодиодом, звуком, вибро.
+
+                    /* Коэффициент A полинома */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoefA).array();
+                    GO.BTT.sendBuffer[21] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[22] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[23] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[24] = convVal[3].toUByte()
+
+                    /* Коэффициент B полинома */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoefB).array();
+                    GO.BTT.sendBuffer[25] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[26] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[27] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[28] = convVal[3].toUByte()
+
+                    /* Коэффициент C полинома */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoefC).array();
+                    GO.BTT.sendBuffer[29] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[30] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[31] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[32] = convVal[3].toUByte()
+
+                    /* Уровень высокого напряжения */
+                    convVal = ByteBuffer.allocate(2).putInt(GO.propHVoltage.toInt()).array()
+                    GO.BTT.sendBuffer[33] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[34] = convVal[1].toUByte()
+
+                    /* Уровень компаратора */
+                    convVal = ByteBuffer.allocate(2).putInt(GO.propComparator.toInt()).array()
+                    GO.BTT.sendBuffer[35] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[36] = convVal[1].toUByte()
+
+
+                    /*
+                    *   Подсчет контрольной суммы
+                    */
+                    var sendCS: UInt = 0u
+
+                    for (iii in 0..GO.BTT.sendBuffer.size - 2) {
+                        sendCS += GO.BTT.sendBuffer[iii]
+                    }
+                    convVal = ByteBuffer.allocate(2).putInt(sendCS.toInt()).array()
+                    GO.BTT.sendBuffer[242] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[243] = convVal[1].toUByte()
+
+                    //Log.d("BluZ-BT", "propIndicator: " + GO.propIndicator.toString())
+                    /* Передача данных в прибор */
+                    GO.BTT.write(GO.BTT.sendBuffer.toByteArray())
                 }
 
                 /* Сканирование bluetooth устройств */
