@@ -205,7 +205,7 @@ int main(void)
    * порога компаратора
    *
    */
-  setLevelOnPort(0, 0x0A0);
+  setLevelOnPort(0, 0x0F0);
 
   /*
    * Настройка высокого напряжения

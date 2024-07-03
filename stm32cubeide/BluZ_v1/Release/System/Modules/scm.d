@@ -72,8 +72,7 @@ System/Modules/scm.o: ../System/Modules/scm.c ../System/Modules/scm.h \
  ../System/Modules/RTDebug/RTDebug.h \
  ../System/Config/Debug_GPIO/debug_config.h ../Core/Inc/app_conf.h \
  ../System/Modules/RTDebug/debug_signals.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../Core/Inc/LTC1662.h ../Core/Inc/main.h
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h
 ../System/Modules/scm.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h:
@@ -156,5 +155,3 @@ System/Modules/scm.o: ../System/Modules/scm.c ../System/Modules/scm.h \
 ../Core/Inc/app_conf.h:
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
-../Core/Inc/LTC1662.h:
-../Core/Inc/main.h:

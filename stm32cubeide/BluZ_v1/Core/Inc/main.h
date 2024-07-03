@@ -32,7 +32,6 @@ extern "C" {
 #include "app_entry.h"
 #include "app_common.h"
 #include "app_debug.h"
-#include "LTC1662.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

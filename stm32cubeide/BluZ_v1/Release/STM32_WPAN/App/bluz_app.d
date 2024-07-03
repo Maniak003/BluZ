@@ -73,10 +73,10 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
  ../System/Config/Debug_GPIO/debug_config.h ../Core/Inc/app_conf.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../Core/Inc/LTC1662.h ../Core/Inc/main.h ../Core/Inc/app_common.h \
- ../STM32_WPAN/App/app_ble.h ../STM32_WPAN/Target/ll_sys_if.h \
- ../System/Modules/dbg_trace.h ../Middlewares/ST/STM32_WPAN/ble/ble.h \
- ../STM32_WPAN/App/ble_conf.h ../STM32_WPAN/App/ble_dbg_conf.h \
+ ../Core/Inc/app_common.h ../STM32_WPAN/App/app_ble.h \
+ ../STM32_WPAN/Target/ll_sys_if.h ../System/Modules/dbg_trace.h \
+ ../Middlewares/ST/STM32_WPAN/ble/ble.h ../STM32_WPAN/App/ble_conf.h \
+ ../STM32_WPAN/App/ble_dbg_conf.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_core.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_std.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_defs.h \
@@ -179,8 +179,6 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
 ../Core/Inc/app_conf.h:
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
-../Core/Inc/LTC1662.h:
-../Core/Inc/main.h:
 ../Core/Inc/app_common.h:
 ../STM32_WPAN/App/app_ble.h:
 ../STM32_WPAN/Target/ll_sys_if.h:

@@ -73,8 +73,8 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
  ../System/Config/Debug_GPIO/debug_config.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../Core/Inc/LTC1662.h ../Core/Inc/main.h ../Core/Inc/app_entry.h \
- ../Utilities/sequencer/stm32_seq.h ../Utilities/tim_serv/stm32_timer.h \
+ ../Core/Inc/app_entry.h ../Utilities/sequencer/stm32_seq.h \
+ ../Utilities/tim_serv/stm32_timer.h \
  ../System/Modules/MemoryManager/stm32_mm.h ../STM32_WPAN/App/app_ble.h \
  ../STM32_WPAN/Target/ll_sys_if.h ../System/Config/LowPower/app_sys.h \
  ../System/Modules/otp.h ../System/Modules/scm.h \
@@ -171,8 +171,6 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
 ../System/Config/Debug_GPIO/debug_config.h:
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
-../Core/Inc/LTC1662.h:
-../Core/Inc/main.h:
 ../Core/Inc/app_entry.h:
 ../Utilities/sequencer/stm32_seq.h:
 ../Utilities/tim_serv/stm32_timer.h:
