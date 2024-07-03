@@ -1135,7 +1135,7 @@ Disassembly of section .text:
  8000cdc:	495e      	ldr	r1, [pc, #376]	@ (8000e58 <main+0x4fc>)
  8000cde:	485f      	ldr	r0, [pc, #380]	@ (8000e5c <main+0x500>)
  8000ce0:	f000 ffe0 	bl	8001ca4 <HAL_ADC_Start_DMA>
- 8000ce4:	21a0      	movs	r1, #160	@ 0xa0
+ 8000ce4:	21f0      	movs	r1, #240	@ 0xf0
  8000ce6:	4628      	mov	r0, r5
  8000ce8:	f7ff fc3c 	bl	8000564 <setLevelOnPort>
  8000cec:	f44f 7100 	mov.w	r1, #512	@ 0x200
