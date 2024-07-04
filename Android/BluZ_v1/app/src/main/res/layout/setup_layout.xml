@@ -342,6 +342,7 @@
                 android:layout_marginTop="-5dp"
                 android:layout_weight="0"
                 android:backgroundTint="@color/buttonColor"
+                android:insetLeft="10dp"
                 android:text="@string/textSaveSetup"
                 android:textAllCaps="false"
                 android:textColor="@color/buttonTextColor"
@@ -349,12 +350,40 @@
 
             <Button
                 android:id="@+id/buttonScanBT"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-5dp"
                 android:layout_weight="0"
                 android:backgroundTint="@color/buttonColor"
+                android:insetLeft="10dp"
                 android:text="@string/textScan"
+                android:textAllCaps="false"
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/buttonReadFromDevice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
+                android:layout_weight="0"
+                android:backgroundTint="@color/buttonColor"
+                android:insetLeft="10dp"
+                android:text="@string/readFromDevice"
+                android:textAllCaps="false"
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/buttonWriteToDevice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
+                android:layout_weight="0"
+                android:autoText="false"
+                android:backgroundTint="@color/buttonColor"
+                android:insetLeft="10dp"
+                android:text="@string/writeToDevice"
                 android:textAllCaps="false"
                 android:textColor="@color/buttonTextColor"
                 android:textSize="12sp" />

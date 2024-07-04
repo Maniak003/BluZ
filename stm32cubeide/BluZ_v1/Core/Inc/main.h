@@ -63,12 +63,13 @@ extern "C" {
 #define SIZE_BUF_DOZR 488
 #define SIZE_BUF_LOG 366
 #define SIZE_BUF_PARAM 122
+#define MAX_RESOLUTION 4096
 
 #define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 extern uint16_t MTUSizeValue;
 extern uint8_t resolution;
 extern uint16_t specterBuffer[SIZE_BUF_4096];
-extern uint16_t tmpSpecterBuffer[4096];
+extern uint16_t tmpSpecterBuffer[MAX_RESOLUTION];
 extern uint32_t pulseCounter, pulseLevel;
 extern bool SoundEnable, VibroEnable, LEDEnable;
 void sendData(uint8_t *dataSpectrBufer);

@@ -146,22 +146,46 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 			if (p_Notification->DataTransfered.p_Payload[0] == (uint8_t) '<'
 			  && p_Notification->DataTransfered.p_Payload[1] == (uint8_t) 'S'
 			  && p_Notification->DataTransfered.p_Payload[2] == (uint8_t) '>') {
-				/* Настройки */
-				if (p_Notification->DataTransfered.p_Payload[3] == 0) {
-					/*
-					*  Управление индикацией
-                    *  0 - Светодиодная индикация прихода частицы (1 - включена, 0 - выключена)
-                    *  1 - Звуковое сопровождение прихода частицы (1 - включено, 0 - выключено)
-                    *  2 - Звуковая сигнализация 1 порог (1 - включено, 0 - выключено)
-                    *  3 - Звуковая сигнализация 2 порог (1 - включено, 0 - выключено)
-                    *  4 - Звуковая сигнализация 3 порог (1 - включено, 0 - выключено)
-                    *  5 - Вибро сигнализация 1 порог (1 - включено, 0 - выключено)
-                    *  6 - Вибро сигнализация 2 порог (1 - включено, 0 - выключено)
-                    *  7 - Вибро сигнализация 3 порог (1 - включено, 0 - выключено)
-					*/
+				/* Проверка контрольной суммы */
+				uint16_t checkSumm = 0, checkSummTest = 0;
+				for (int iii = 0; iii < p_Notification->DataTransfered.Length - 3; iii++) {
+					checkSumm = checkSumm + p_Notification->DataTransfered.p_Payload[iii];
+				}
+				/* Контрольная сумма в передаче */
+				checkSummTest = p_Notification->DataTransfered.p_Payload[242] | (uint16_t) p_Notification->DataTransfered.p_Payload[243] << 8;
 
-					LEDEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000001;		// LED
-					SoundEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000010;	// Sound
+				/* Сравниваем контрольные суммы */
+				if (checkSummTest == checkSumm) {
+					bzero((char *) uartBuffer, sizeof(uartBuffer));
+					sprintf(uartBuffer, "CS correct: %u, Ln: %u\n\r", checkSumm, p_Notification->DataTransfered.Length);
+					HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+					/* Настройки */
+					if (p_Notification->DataTransfered.p_Payload[3] == 0) {
+						/*
+						*  Управление индикацией
+						*  0 - Светодиодная индикация прихода частицы (1 - включена, 0 - выключена)
+						*  1 - Звуковое сопровождение прихода частицы (1 - включено, 0 - выключено)
+						*  2 - Звуковая сигнализация 1 порог (1 - включено, 0 - выключено)
+						*  3 - Звуковая сигнализация 2 порог (1 - включено, 0 - выключено)
+						*  4 - Звуковая сигнализация 3 порог (1 - включено, 0 - выключено)
+						*  5 - Вибро сигнализация 1 порог (1 - включено, 0 - выключено)
+						*  6 - Вибро сигнализация 2 порог (1 - включено, 0 - выключено)
+						*  7 - Вибро сигнализация 3 порог (1 - включено, 0 - выключено)
+						*/
+
+						LEDEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000001;		// LED
+						SoundEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000010;	// Sound
+
+					/* Очистка буфера спектра */
+					} else if (p_Notification->DataTransfered.p_Payload[3] == 1) {
+						for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
+							tmpSpecterBuffer[iii] = 0;
+						}
+					}
+				} else {
+					bzero((char *) uartBuffer, sizeof(uartBuffer));
+					sprintf(uartBuffer, "CS incorrect, calcCS: %u, CS: %u Ln: %u\n\r", checkSumm, checkSummTest, p_Notification->DataTransfered.Length);
+					HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 				}
 			}
 
@@ -341,12 +365,12 @@ void sendData( uint8_t *dataSpectrBufer )
 		status = BLUZ_UpdateValue(BLUZ_RX, (BLUZ_Data_t *) &BZ_Context.TxData);
 
 		if (status == BLE_STATUS_INSUFFICIENT_RESOURCES) {
-			bzero((char *) uartBuffer, sizeof(uartBuffer));
-			sprintf(uartBuffer, "bz_rx_app: Error transfer with status: %d\n\r", status);
+			//bzero((char *) uartBuffer, sizeof(uartBuffer));
+			//sprintf(uartBuffer, "bz_rx_app: Error transfer with status: %d\n\r", status);
 			//HAL_UART_Transmit(&huart1, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
 		} else {
-			bzero((char *) uartBuffer, sizeof(uartBuffer));
-			sprintf(uartBuffer, "bz_rx_app: Send complete\n\r");
+			//bzero((char *) uartBuffer, sizeof(uartBuffer));
+			//sprintf(uartBuffer, "bz_rx_app: Send complete\n\r");
 			//HAL_UART_Transmit(&huart1, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
 		}
 

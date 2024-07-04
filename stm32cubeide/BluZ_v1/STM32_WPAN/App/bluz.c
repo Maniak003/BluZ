@@ -488,9 +488,9 @@ tBleStatus BLUZ_UpdateValue(BLUZ_CharOpcode_t CharOpcode, BLUZ_Data_t *pData)
 {
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
   /* USER CODE BEGIN Service1_App_Update_Char_1 */
-	bzero((char *) uartBuffer, sizeof(uartBuffer));
-	sprintf(uartBuffer, "Service1_App_Update_Char_1\n\rLength: %d\n\r", pData->Length);
-	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+	//bzero((char *) uartBuffer, sizeof(uartBuffer));
+	//sprintf(uartBuffer, "Service1_App_Update_Char_1\n\rLength: %d\n\r", pData->Length);
+	//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
   /* USER CODE END Service1_App_Update_Char_1 */
 
@@ -511,16 +511,16 @@ tBleStatus BLUZ_UpdateValue(BLUZ_CharOpcode_t CharOpcode, BLUZ_Data_t *pData)
         LOG_INFO_APP("  Success: aci_gatt_update_char_value RX command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1*/
-		bzero((char *) uartBuffer, sizeof(uartBuffer));
-		sprintf(uartBuffer, "Service1_Char_Value_1\n\r");
-		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		//bzero((char *) uartBuffer, sizeof(uartBuffer));
+		//sprintf(uartBuffer, "Service1_Char_Value_1\n\r");
+		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 		bzero((char *) uartBuffer, sizeof(uartBuffer));
 		if (ret != BLE_STATUS_SUCCESS) {
 			sprintf(uartBuffer, "NO SUCCESS\n\r");
 		} else {
 			sprintf(uartBuffer, "SUCCESS\n\r");
 		}
-		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 		/*
 		bzero((char *) uartBuffer, sizeof(uartBuffer));
 		sprintf(uartBuffer, "DATA [%d]: \n\r", pData->Length);

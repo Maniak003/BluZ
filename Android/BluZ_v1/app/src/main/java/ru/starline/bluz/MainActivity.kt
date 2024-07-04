@@ -196,8 +196,8 @@ public class MainActivity : FragmentActivity() {
         GO.propCoefC = GO.PP.getPropFloat(propCoefC)
         GO.propCPS2UR = GO.PP.getPropFloat(propCPS2UR)
         GO.propIndicator = GO.PP.getPropByte(propIndicator)
-        GO.propHVoltage = GO.PP.getPropInt(propHV).toUInt()
-        GO.propComparator = GO.PP.getPropInt(propComparator).toUInt()
+        GO.propHVoltage = GO.PP.getPropInt(propHV).toUShort()
+        GO.propComparator = GO.PP.getPropInt(propComparator).toUShort()
 
         Log.d("BluZ-BT", "mac addr: " + GO.LEMAC)
     }

@@ -25,6 +25,8 @@ class globalObj {
     public lateinit var viewPager: ViewPager2
     public lateinit var PP: propControl
     public lateinit var scanButton: Button
+    public lateinit var btnReadFromDevice: Button
+    public lateinit var btnWriteToDevice: Button
     public var ColorLin: Int = 0
     public var ColorLog: Int = 0
     public var ColorFone: Int = 0
@@ -39,8 +41,9 @@ class globalObj {
     public var propCoefB: Float = 0.0f
     public var propCoefC: Float = 0.0f
     public var propIndicator: UByte = 0u
-    public var propComparator: UInt = 0u
-    public var propHVoltage: UInt = 0u
+    public var propComparator: UShort = 0u
+    public var propHVoltage: UShort = 0u
+    public var sendCS: UShort = 0u
 
 
 }

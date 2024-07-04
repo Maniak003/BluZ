@@ -11,6 +11,7 @@
     <string name="textScan2">Stop</string>
     <string name="textSaveBQ">BqMon</string>
     <string name="textLoadSpectr">Load</string>
+    <string name="textClearSpectr">Clear</string>
     <string name="textStartStop">Start</string>
     <string name="textStartStop2">Stop</string>
     <string name="textClearDoze">Clear</string>
@@ -35,6 +36,8 @@
     <string name="BColor">B</string>
     <string name="soundKvant">Sound of kvant</string>
     <string name="ledKvant">Led of kvant</string>
+    <string name="readFromDevice">Read</string>
+    <string name="writeToDevice">Write</string>
     <!-- TODO: Remove or change this placeholder text
     <string name="hello_blank_fragment">Hello blank fragment</string> -->
 </resources>

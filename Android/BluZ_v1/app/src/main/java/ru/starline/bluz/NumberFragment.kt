@@ -124,8 +124,46 @@ class NumberFragment : Fragment() {
                 btnSaveBQ.setOnClickListener {
                     Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
                     //GO.drawSPECTER.init()
+                    //GO.drawSPECTER.clearSpecter()
+                }
+                /* Кнопка загрузки данных */
+
+                /* Кнопка буфера спектра */
+                val btnClearSpecter : Button = view.findViewById(R.id.buttonClearSpectr)
+                btnClearSpecter.setOnClickListener {
+                    /*
+                    *   Команда очистки спектра в буфере прибора
+                    *
+                    * 0, 1, 2       -   Заголовок <S>
+                    * 3             -   Код команды
+                    * 242, 243      -   Контрольная сумма
+                    *
+                    */
+                    GO.BTT.sendBuffer[0] = '<'.code.toUByte()
+                    GO.BTT.sendBuffer[1] = 'S'.code.toUByte()
+                    GO.BTT.sendBuffer[2] = '>'.code.toUByte()
+
+                    /* Очистка буфера спектра */
+                    GO.BTT.sendBuffer[3] = 1u
+
+                    /*
+                    *   Подсчет контрольной суммы
+                    */
+                    GO.sendCS = 0u
+                    Log.d("BluZ-BT", "calcCS: " + GO.sendCS.toString() + " Buffer size:  " + GO.BTT.sendBuffer.size.toString())
+                    for (iii in 0..241) {
+                        GO.sendCS = (GO.sendCS + GO.BTT.sendBuffer[iii]).toUShort()
+                    }
+                    Log.d("BluZ-BT", "calcCS: " + GO.sendCS.toString())
+                    GO.BTT.sendBuffer[242] = (GO.sendCS and 255u).toUByte()
+                    GO.BTT.sendBuffer[243] = ((GO.sendCS.toUInt() shr 8) and 255u).toUByte()
+                    //GO.BTT.sendBuffer[242] = 1u
+                    //GO.BTT.sendBuffer[243] = 2u
+
+                    GO.BTT.write(GO.BTT.sendBuffer.toByteArray())
                     GO.drawSPECTER.clearSpecter()
                 }
+
             } else if (getInt(ARG_OBJECT) == 1) {   // История
             /*
             *   Обекты закладки история
@@ -188,6 +226,34 @@ class NumberFragment : Fragment() {
                     Log.d("BluZ-BT", "mac addr: ")
                     Log.d("BluZ-BT", GO.LEMAC)
                     Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
+                }
+
+                /* Сканирование bluetooth устройств */
+                GO.scanButton = view.findViewById(R.id.buttonScanBT)
+                GO.scanButton.setOnClickListener {
+                    if (GO.scanButton.text == getString(R.string.textScan)) {
+                        GO.scanButton.setText(getString(R.string.textScan2))
+                        GO.scanButton.setTextColor(getResources().getColor(R.color.Red, GO.mainContext.theme))
+                        /*
+                        *   Сканирование BT устройств
+                        */
+                        GO.BTT.startScan(GO.textMACADR)
+                    } else {
+                        GO.scanButton.setText(getString(R.string.textScan))
+                        GO.scanButton.setTextColor(getResources().getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                        GO.BTT.stopScan()
+                    }
+                }
+
+                /* Чтение настроек из прибора */
+                GO.btnReadFromDevice = view.findViewById(R.id.buttonReadFromDevice)
+                GO.btnReadFromDevice.setOnClickListener {
+
+                }
+
+                /* Запись настроек в прибор */
+                GO.btnWriteToDevice = view.findViewById(R.id.buttonWriteToDevice)
+                GO.btnWriteToDevice.setOnClickListener {
 
                     /*
                     * Заголовок буфера для передачи
@@ -224,8 +290,7 @@ class NumberFragment : Fragment() {
                     /* Сохраненние настроек */
                     GO.BTT.sendBuffer[3] = 0u
 
-                    var convVal: ByteArray
-
+                    var convVal = ByteArray(4)
                     /*
                     * EEE754
                     var convVal = ByteBuffer.allocate(4).putFloat(testD).array();
@@ -241,6 +306,7 @@ class NumberFragment : Fragment() {
                     GO.BTT.sendBuffer[5] = convVal[1].toUByte()
                     GO.BTT.sendBuffer[6] = convVal[2].toUByte()
                     GO.BTT.sendBuffer[7] = convVal[3].toUByte()
+                    //convVal.
 
                     /* Второй порог */
                     convVal = ByteBuffer.allocate(4).putFloat(GO.propLevel2).array();
@@ -301,48 +367,27 @@ class NumberFragment : Fragment() {
                     GO.BTT.sendBuffer[32] = convVal[3].toUByte()
 
                     /* Уровень высокого напряжения */
-                    convVal = ByteBuffer.allocate(2).putInt(GO.propHVoltage.toInt()).array()
-                    GO.BTT.sendBuffer[33] = convVal[0].toUByte()
-                    GO.BTT.sendBuffer[34] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[33] = (GO.propHVoltage and 255u).toUByte()
+                    GO.BTT.sendBuffer[34] = ((GO.propHVoltage.toUInt() shr 8) and 255u).toUByte()
 
                     /* Уровень компаратора */
-                    convVal = ByteBuffer.allocate(2).putInt(GO.propComparator.toInt()).array()
-                    GO.BTT.sendBuffer[35] = convVal[0].toUByte()
-                    GO.BTT.sendBuffer[36] = convVal[1].toUByte()
-
+                    GO.BTT.sendBuffer[35] = (GO.propComparator and 255u).toUByte()
+                    GO.BTT.sendBuffer[36] = ((GO.propComparator.toUInt() shr 8) and 255u).toUByte()
 
                     /*
                     *   Подсчет контрольной суммы
                     */
-                    var sendCS: UInt = 0u
+                    GO.sendCS = 0u
 
-                    for (iii in 0..GO.BTT.sendBuffer.size - 2) {
-                        sendCS += GO.BTT.sendBuffer[iii]
+                    for (iii in 0..241) {
+                        GO.sendCS = (GO.sendCS + GO.BTT.sendBuffer[iii]).toUShort()
                     }
-                    convVal = ByteBuffer.allocate(2).putInt(sendCS.toInt()).array()
-                    GO.BTT.sendBuffer[242] = convVal[0].toUByte()
-                    GO.BTT.sendBuffer[243] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[242] = (GO.sendCS and 255u).toUByte()
+                    GO.BTT.sendBuffer[243] = ((GO.sendCS.toUInt() shr 8) and 255u).toUByte()
 
                     //Log.d("BluZ-BT", "propIndicator: " + GO.propIndicator.toString())
                     /* Передача данных в прибор */
                     GO.BTT.write(GO.BTT.sendBuffer.toByteArray())
-                }
-
-                /* Сканирование bluetooth устройств */
-                GO.scanButton = view.findViewById(R.id.buttonScanBT)
-                GO.scanButton.setOnClickListener {
-                    if (GO.scanButton.text == getString(R.string.textScan)) {
-                        GO.scanButton.setText(getString(R.string.textScan2))
-                        GO.scanButton.setTextColor(getResources().getColor(R.color.Red, GO.mainContext.theme))
-                        /*
-                        *   Сканирование BT устройств
-                        */
-                        GO.BTT.startScan(GO.textMACADR)
-                    } else {
-                        GO.scanButton.setText(getString(R.string.textScan))
-                        GO.scanButton.setTextColor(getResources().getColor(R.color.buttonTextColor, GO.mainContext.theme))
-                        GO.BTT.stopScan()
-                    }
                 }
 
                 /* Radiobuttons для выбора элемента настройки цвета */
