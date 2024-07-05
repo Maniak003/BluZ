@@ -36,8 +36,23 @@
     <string name="BColor">B</string>
     <string name="soundKvant">Sound of kvant</string>
     <string name="ledKvant">Led of kvant</string>
+    <string name="ledMarker">Marker</string>
     <string name="readFromDevice">Read</string>
     <string name="writeToDevice">Write</string>
+    <string name="textLevel_1">Level 1</string>
+    <string name="textLevel_2">Level 2</string>
+    <string name="textLevel_3">Level 3</string>
+    <string name="textResolution">Resolution</string>
+    <string name="textRes1024">1024</string>
+    <string name="textRes2048">2048</string>
+    <string name="textRes4096">4096</string>
+    <string name="textPolinom">Ax<sup>2</sup> + Bx + C</string>
+    <string name="textPolinomA">A:</string>
+    <string name="textPolinomB">B:</string>
+    <string name="textPolinomC">C:</string>
+    <string name="textDACControl">DAC control</string>
+    <string name="textHVoltage">HVoltage</string>
+    <string name="textComparator">Comparator</string>
     <!-- TODO: Remove or change this placeholder text
     <string name="hello_blank_fragment">Hello blank fragment</string> -->
 </resources>

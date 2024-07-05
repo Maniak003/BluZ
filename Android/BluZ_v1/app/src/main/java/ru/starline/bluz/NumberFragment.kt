@@ -256,7 +256,7 @@ class NumberFragment : Fragment() {
                 GO.btnWriteToDevice.setOnClickListener {
 
                     /*
-                    * Заголовок буфера для передачи
+                    * Формат буфера для передачи
                     *
                     * 0,1,2         - Маркер <S>
                     * 3             - Режим

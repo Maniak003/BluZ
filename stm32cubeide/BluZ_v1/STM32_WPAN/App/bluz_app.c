@@ -147,34 +147,114 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 			  && p_Notification->DataTransfered.p_Payload[1] == (uint8_t) 'S'
 			  && p_Notification->DataTransfered.p_Payload[2] == (uint8_t) '>') {
 				/* Проверка контрольной суммы */
-				uint16_t checkSumm = 0, checkSummTest = 0;
+				uint16_t checkSumm = 0;
 				for (int iii = 0; iii < p_Notification->DataTransfered.Length - 3; iii++) {
 					checkSumm = checkSumm + p_Notification->DataTransfered.p_Payload[iii];
 				}
 				/* Контрольная сумма в передаче */
-				checkSummTest = p_Notification->DataTransfered.p_Payload[242] | (uint16_t) p_Notification->DataTransfered.p_Payload[243] << 8;
+				uint16_t checkSummTest = p_Notification->DataTransfered.p_Payload[242] | (uint16_t) p_Notification->DataTransfered.p_Payload[243] << 8;
 
 				/* Сравниваем контрольные суммы */
 				if (checkSummTest == checkSumm) {
 					bzero((char *) uartBuffer, sizeof(uartBuffer));
 					sprintf(uartBuffer, "CS correct: %u, Ln: %u\n\r", checkSumm, p_Notification->DataTransfered.Length);
 					HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-					/* Настройки */
+                    /*
+                    * Формат буфера настроек
+                    *
+                    * 0,1,2         - Маркер <S>
+                    * 3             - Режим
+                    *                   0 - Настройки
+                    *                   1 - Команда очистки буфера спектра
+                    * 4,5,6,7       - Первый порог в uR
+                    * 8,9,10,11     - Второй порог в uR
+                    * 12,13,14,15   - Третий порог в uR
+                    * 16,17,18,19   - Коэффициент пересчета CPS в uR
+                    * 20            - Битовые флаги управления светодиодом, звуком и вибро
+                    *                   0 - Светодиодная индикация прихода частицы (1 - включена, 0 - выключена)
+                    *                   1 - Звуковое сопровождение прихода частицы  (1 - включено, 0 - выключено)
+                    *                   2 - Звуковая сигнализация 1 порог   (1 - включено, 0 - выключено)
+                    *                   3 - Звуковая сигнализация 2 порог   (1 - включено, 0 - выключено)
+                    *                   4 - Звуковая сигнализация 3 порог   (1 - включено, 0 - выключено)
+                    *                   5 - Вибро сигнализация 1 порог   (1 - включено, 0 - выключено)
+                    *                   6 - Вибро сигнализация 2 порог   (1 - включено, 0 - выключено)
+                    *                   7 - Вибро сигнализация 3 порог   (1 - включено, 0 - выключено)
+                    * 21,22,23,24   - Коэффициент A полинома преобразования канала в энергию.
+                    * 25,26,27,28   - Коэффициент B полинома преобразования канала в энергию.
+                    * 29,30,31,32   - Коэффициент C полинома преобразования канала в энергию.
+                    * 33,34         - Уровень высокого напряжения
+                    * 35,36         - Уровень компаратора
+                    *
+                    * 242, 243      - Контрольная сумма
+                    */
 					if (p_Notification->DataTransfered.p_Payload[3] == 0) {
-						/*
-						*  Управление индикацией
-						*  0 - Светодиодная индикация прихода частицы (1 - включена, 0 - выключена)
-						*  1 - Звуковое сопровождение прихода частицы (1 - включено, 0 - выключено)
-						*  2 - Звуковая сигнализация 1 порог (1 - включено, 0 - выключено)
-						*  3 - Звуковая сигнализация 2 порог (1 - включено, 0 - выключено)
-						*  4 - Звуковая сигнализация 3 порог (1 - включено, 0 - выключено)
-						*  5 - Вибро сигнализация 1 порог (1 - включено, 0 - выключено)
-						*  6 - Вибро сигнализация 2 порог (1 - включено, 0 - выключено)
-						*  7 - Вибро сигнализация 3 порог (1 - включено, 0 - выключено)
-						*/
-
 						LEDEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000001;		// LED
 						SoundEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000010;	// Sound
+						levelSound1 = p_Notification->DataTransfered.p_Payload[20] & 0b00000100;	// Звук для первого порога
+						levelSound2 = p_Notification->DataTransfered.p_Payload[20] & 0b00001000;	// Звук для второго порога
+						levelSound3 = p_Notification->DataTransfered.p_Payload[20] & 0b00010000;	// Звук для третьего порога
+						levelVibro1 = p_Notification->DataTransfered.p_Payload[20] & 0b00100000;	// Вибро для первого порога
+						levelVibro2 = p_Notification->DataTransfered.p_Payload[20] & 0b01000000;	// Вибро для второго порога
+						levelVibro3 = p_Notification->DataTransfered.p_Payload[20] & 0b10000000;	// Вибро для третьего порога
+
+						/* Уровень порога 1 в uR/h */
+						level1.Uint[0] = p_Notification->DataTransfered.p_Payload[4];
+						level1.Uint[1] = p_Notification->DataTransfered.p_Payload[5];
+						level1.Uint[2] = p_Notification->DataTransfered.p_Payload[6];
+						level1.Uint[3] = p_Notification->DataTransfered.p_Payload[7];
+
+						/* Уровень порога 2 в uR/h */
+						level1.Uint[0] = p_Notification->DataTransfered.p_Payload[8];
+						level1.Uint[1] = p_Notification->DataTransfered.p_Payload[9];
+						level1.Uint[2] = p_Notification->DataTransfered.p_Payload[10];
+						level1.Uint[3] = p_Notification->DataTransfered.p_Payload[11];
+
+						/* Уровень порога 3 в uR/h */
+						level1.Uint[0] = p_Notification->DataTransfered.p_Payload[12];
+						level1.Uint[1] = p_Notification->DataTransfered.p_Payload[13];
+						level1.Uint[2] = p_Notification->DataTransfered.p_Payload[14];
+						level1.Uint[3] = p_Notification->DataTransfered.p_Payload[15];
+
+						/* Коэффициент пересчета CPS в uR/h */
+						calcCoeff.Uint[0] = p_Notification->DataTransfered.p_Payload[16];
+						calcCoeff.Uint[1] = p_Notification->DataTransfered.p_Payload[17];
+						calcCoeff.Uint[2] = p_Notification->DataTransfered.p_Payload[18];
+						calcCoeff.Uint[3] = p_Notification->DataTransfered.p_Payload[19];
+
+						/* Коэффициент A полинома преобразования канала в энергию */
+						enCoefA.Uint[0] = p_Notification->DataTransfered.p_Payload[21];
+						enCoefA.Uint[1] = p_Notification->DataTransfered.p_Payload[22];
+						enCoefA.Uint[2] = p_Notification->DataTransfered.p_Payload[23];
+						enCoefA.Uint[3] = p_Notification->DataTransfered.p_Payload[24];
+
+						/* Коэффициент B полинома преобразования канала в энергию */
+						enCoefB.Uint[0] = p_Notification->DataTransfered.p_Payload[25];
+						enCoefB.Uint[1] = p_Notification->DataTransfered.p_Payload[26];
+						enCoefB.Uint[2] = p_Notification->DataTransfered.p_Payload[27];
+						enCoefB.Uint[3] = p_Notification->DataTransfered.p_Payload[28];
+
+						/* Коэффициент C полинома преобразования канала в энергию */
+						enCoefC.Uint[0] = p_Notification->DataTransfered.p_Payload[29];
+						enCoefC.Uint[1] = p_Notification->DataTransfered.p_Payload[30];
+						enCoefC.Uint[2] = p_Notification->DataTransfered.p_Payload[31];
+						enCoefC.Uint[3] = p_Notification->DataTransfered.p_Payload[32];
+
+
+						/* Уровни компаратора и высокого напряжения */
+						HVoltage = p_Notification->DataTransfered.p_Payload[33] | p_Notification->DataTransfered.p_Payload[34] << 8;
+						comparatorLevel = p_Notification->DataTransfered.p_Payload[35] | p_Notification->DataTransfered.p_Payload[36] << 8;
+
+						/* Вывод конфига для отладки */
+						bzero((char *) uartBuffer, sizeof(uartBuffer));
+						sprintf(uartBuffer, "CompLev: %u, HVolt: %u, Koef: %f\n\r", comparatorLevel, HVoltage, calcCoeff.Float);
+						HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+						bzero((char *) uartBuffer, sizeof(uartBuffer));
+						sprintf(uartBuffer, "CoefA: %f, CoefB: %f, CoefC: %f\n\r", enCoefA.Float, enCoefB.Float, enCoefC.Float);
+						HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+						bzero((char *) uartBuffer, sizeof(uartBuffer));
+						sprintf(uartBuffer, "Lev1: %f, Lev2: %f, Lev3: %f\n\r", level1.Float, level2.Float, level3.Float);
+						HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+
 
 					/* Очистка буфера спектра */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 1) {

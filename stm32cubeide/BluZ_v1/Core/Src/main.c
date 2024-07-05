@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "LTC1662.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -85,8 +85,25 @@ uint16_t tmpSpecterBuffer[4096];
  * 5, 6 - Общее число импульсов от начала измерения uint32_t
  *
  */
+
+/* Настройки прибора */
 uint16_t specterBuffer[SIZE_BUF_4096] = {0,};
-bool SoundEnable = true, VibroEnable = true, LEDEnable = true;
+bool SoundEnable = true, VibroEnable = true, LEDEnable = true;		// Собровождение квантов
+bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активность звука для разных уровней
+bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
+
+/*
+union dataC {
+	float Float;
+	uint8_t Uint[4];
+};
+*/
+
+union dataC level1, level2, level3;										// Значения порогов
+union dataC calcCoeff;													// Коэффициент для пересчета CPS в uR/h
+union dataC enCoefA, enCoefB, enCoefC;									// Коэффициенты полинома для преобразования канала в энергию
+uint16_t HVoltage = 256, comparatorLevel = 256;						// Уровни настройки высокого напряжения и компаратора
+
 
 /* USER CODE END PV */
 

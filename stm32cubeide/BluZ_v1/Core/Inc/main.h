@@ -72,7 +72,21 @@ extern uint16_t specterBuffer[SIZE_BUF_4096];
 extern uint16_t tmpSpecterBuffer[MAX_RESOLUTION];
 extern uint32_t pulseCounter, pulseLevel;
 extern bool SoundEnable, VibroEnable, LEDEnable;
-void sendData(uint8_t *dataSpectrBufer);
+extern bool levelSound1, levelSound2, levelSound3;
+extern bool levelVibro1, levelVibro2, levelVibro3;
+extern uint16_t HVoltage, comparatorLevel;
+
+union dataC {
+	float Float;
+	uint8_t Uint[4];
+};
+
+extern union dataC calcCoeff;
+extern union dataC level1, level2, level3;
+extern union dataC calcCoeff;
+extern union dataC enCoefA, enCoefB, enCoefC;
+
+void sendData( uint8_t *dataSpectrBufer );
 
 /* USER CODE END ET */
 
