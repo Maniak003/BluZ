@@ -36,19 +36,29 @@ import java.util.UUID
 
 public val GO: globalObj = globalObj()
 public const val propADDRESS: String = "Address"
+public const val propSpectrGraphType: String = "SpecterGraphType"
 public const val propColorSpecterLin: String = "ColorLin"
 public const val propColorSpecterLog: String = "ColorLog"
 public const val propColorSpecterFone: String = "ColorFone"
+public const val propColorSpecterFoneLg: String = "ColorFoneLg"
 public const val propLevel1: String = "Level1"
 public const val propLevel2: String = "Level2"
 public const val propLevel3: String = "Level3"
+public const val propSoundLevel1: String = "soundLevel1"
+public const val propSoundLevel2: String = "soundLevel2"
+public const val propSoundLevel3: String = "soundLevel3"
+public const val propVibroLevel1: String = "vibroLevel1"
+public const val propVibroLevel2: String = "vibroLevel2"
+public const val propVibroLevel3: String = "vibroLevel3"
 public const val propCPS2UR: String = "CPS2UR"
 public const val propCoefA: String = "CoeffA"
 public const val propCoefB: String = "CoeffB"
 public const val propCoefC: String = "CoeffC"
-public const val propIndicator: String = "Indicator"
 public const val propHV: String = "HVoltage"
 public const val propComparator: String = "Comparator"
+public const val propSoundKvant: String = "SoundKvant"
+public const val propLedKvant: String = "LedKvant"
+public const val propResolution: String = "Resolution"
 
 
 //public lateinit var mainContext: Context
@@ -184,22 +194,32 @@ public class MainActivity : FragmentActivity() {
         GO.ColorLin = GO.PP.getPropInt(propColorSpecterLin)
         GO.ColorLog = GO.PP.getPropInt(propColorSpecterLog)
         GO.ColorFone = GO.PP.getPropInt(propColorSpecterFone)
+        GO.ColorFoneLg = GO.PP.getPropInt(propColorSpecterFoneLg)
+        GO.specterGraphType = GO.PP.getPropInt(propSpectrGraphType)
         GO.BTT = BluetoothInterface(GO.indicatorBT)
         /*
         *       Параметры прибора
         */
-        GO.propLevel1 = GO.PP.getPropFloat(propLevel1)
-        GO.propLevel2 = GO.PP.getPropFloat(propLevel2)
-        GO.propLevel3 = GO.PP.getPropFloat(propLevel3)
+        GO.propSoundKvant = GO.PP.getPropBoolean(propSoundKvant)
+        GO.propLedKvant = GO.PP.getPropBoolean(propLedKvant)
+        GO.propSoundLevel1 = GO.PP.getPropBoolean(propSoundLevel1)
+        GO.propSoundLevel2 = GO.PP.getPropBoolean(propSoundLevel2)
+        GO.propSoundLevel3 = GO.PP.getPropBoolean(propSoundLevel3)
+        GO.propVibroLevel1 = GO.PP.getPropBoolean(propVibroLevel1)
+        GO.propVibroLevel2 = GO.PP.getPropBoolean(propVibroLevel2)
+        GO.propVibroLevel3 = GO.PP.getPropBoolean(propVibroLevel3)
+        GO.propLevel1 = GO.PP.getPropInt(propLevel1)
+        GO.propLevel2 = GO.PP.getPropInt(propLevel2)
+        GO.propLevel3 = GO.PP.getPropInt(propLevel3)
         GO.propCoefA = GO.PP.getPropFloat(propCoefA)
         GO.propCoefB = GO.PP.getPropFloat(propCoefB)
         GO.propCoefC = GO.PP.getPropFloat(propCoefC)
         GO.propCPS2UR = GO.PP.getPropFloat(propCPS2UR)
-        GO.propIndicator = GO.PP.getPropByte(propIndicator)
         GO.propHVoltage = GO.PP.getPropInt(propHV).toUShort()
         GO.propComparator = GO.PP.getPropInt(propComparator).toUShort()
+        GO.spectrResolution = GO.PP.getPropInt(propResolution)
 
-        Log.d("BluZ-BT", "mac addr: " + GO.LEMAC)
+        Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())
     }
 }
 

@@ -10,6 +10,12 @@ import android.util.Log
 class propControl {
     var prop: SharedPreferences
 
+    fun setPropBoolean(key: String, value: Boolean) {
+        var ed: SharedPreferences.Editor = prop.edit()
+        ed.putBoolean(key, value)
+        ed.commit()
+    }
+
     fun setPropStr(key: String, value: String) {
         var ed: SharedPreferences.Editor = prop.edit()
         ed.putString(key, value)
@@ -32,6 +38,10 @@ class propControl {
         var ed: SharedPreferences.Editor = prop.edit()
         ed.putInt(key, value.toInt())
         ed.commit()
+    }
+
+    fun getPropBoolean(key: String): Boolean {
+        return prop.getBoolean(key, false)
     }
 
     fun getPropStr(key: String): String {

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/setupLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -89,7 +90,7 @@
                         android:orientation="horizontal">
 
                         <RadioButton
-                            android:id="@+id/radioButton"
+                            android:id="@+id/rbLine"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"
@@ -97,7 +98,7 @@
                             android:textColor="@color/editTextColor" />
 
                         <RadioButton
-                            android:id="@+id/radioButton2"
+                            android:id="@+id/rbGistogram"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Gisto"
@@ -114,12 +115,29 @@
                     android:text="@string/specterLinColor"
                     android:textColor="@color/labelTextColor" />
 
-                <TextView
-                    android:id="@+id/tvColor"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="0"
-                    android:background="@color/Green" />
+                    android:orientation="horizontal">
+
+                    <Space
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="3" />
+
+                    <TextView
+                        android:id="@+id/tvColor"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@color/Green" />
+
+                    <Space
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="3" />
+                </LinearLayout>
 
                 <RadioGroup
                     android:id="@+id/rbTypeGroup"
@@ -315,103 +333,89 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/textView14"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/textResolution"
-                        android:textColor="@color/labelTextColor" />
-
-                    <TextView
-                        android:id="@+id/textView23"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:paddingLeft="20dp"
-                        android:paddingRight="20dp"
-                        android:text="S"
-                        android:textAlignment="center"
-                        android:textColor="@color/editTextColor"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/textView24"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:paddingLeft="20dp"
-                        android:paddingRight="20dp"
-                        android:text="V"
-                        android:textAlignment="center"
-                        android:textColor="@color/editTextColor"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
                     android:gravity="right"
                     android:orientation="horizontal">
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
+                    <TableLayout
+                        android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:weightSum="1">
+                        android:layout_weight="2">
 
-                        <RadioGroup
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:verticalScrollbarPosition="left">
-
-                            <RadioButton
-                                android:id="@+id/radioButton3"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="-2dp"
-                                android:layout_marginBottom="-2dp"
-                                android:checked="true"
-                                android:text="@string/textRes1024"
-                                android:textColor="@color/editTextColor" />
-
-                            <RadioButton
-                                android:id="@+id/radioButton4"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="-2dp"
-                                android:layout_marginBottom="-2dp"
-                                android:text="@string/textRes2048"
-                                android:textColor="@color/editTextColor" />
-
-                            <RadioButton
-                                android:id="@+id/radioButton5"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="-2dp"
-                                android:layout_marginBottom="-2dp"
-                                android:text="@string/textRes4096"
-                                android:textColor="@color/editTextColor" />
-                        </RadioGroup>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:weightSum="1">
-
-                        <LinearLayout
+                        <TableRow
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="-5dp"
-                            android:layout_marginBottom="-5dp"
-                            android:orientation="horizontal">
+                            android:layout_height="match_parent" >
+
+                            <Space
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="0" />
+
+                            <TextView
+                                android:id="@+id/textView15"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0"
+                                android:paddingTop="2dp"
+                                android:text="@string/textPolinom"
+                                android:textColor="@color/labelTextColor"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/textView25"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0"
+                                android:text="@string/textAlarms"
+                                android:textColor="@color/labelTextColor" />
+
+                            <Space
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="3" />
+
+                            <TextView
+                                android:id="@+id/textView23"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0"
+                                android:text="S"
+                                android:textAlignment="center"
+                                android:textColor="@color/editTextColor"
+                                android:textSize="12sp"
+                                tools:visibility="visible" />
+
+                            <TextView
+                                android:id="@+id/textView24"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0"
+                                android:text="V"
+                                android:textAlignment="center"
+                                android:textColor="@color/editTextColor"
+                                android:textSize="12sp" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" >
+
+                            <TextView
+                                android:id="@+id/textView16"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0"
+                                android:text="@string/textPolinomA"
+                                android:textColor="@color/labelTextColor" />
+
+                            <EditText
+                                android:id="@+id/editPolA"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:ems="10"
+                                android:inputType="numberDecimal|numberSigned"
+                                android:textColor="@color/editTextColor"
+                                android:textSize="14sp" />
 
                             <TextView
                                 android:id="@+id/textView13"
@@ -423,33 +427,48 @@
 
                             <EditText
                                 android:id="@+id/editLevel1"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
+                                android:layout_weight="2"
                                 android:ems="10"
-                                android:inputType="numberDecimal"
+                                android:inputType="number"
                                 android:textColor="@color/editTextColor"
                                 android:textSize="14sp" />
 
                             <CheckBox
-                                android:id="@+id/checkBox"
+                                android:id="@+id/CBSoudLevel1"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="0" />
 
                             <CheckBox
-                                android:id="@+id/checkBox2"
+                                android:id="@+id/CBVibroLevel1"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="0" />
-                        </LinearLayout>
+                        </TableRow>
 
-                        <LinearLayout
+                        <TableRow
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="-5dp"
-                            android:layout_marginBottom="-5dp"
-                            android:orientation="horizontal">
+                            android:layout_height="match_parent" >
+
+                            <TextView
+                                android:id="@+id/textView17"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0"
+                                android:text="@string/textPolinomB"
+                                android:textColor="@color/labelTextColor" />
+
+                            <EditText
+                                android:id="@+id/editPolB"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="2"
+                                android:ems="10"
+                                android:inputType="numberDecimal|numberSigned"
+                                android:textColor="@color/editTextColor"
+                                android:textSize="14sp" />
 
                             <TextView
                                 android:id="@+id/textView9"
@@ -463,31 +482,46 @@
                                 android:id="@+id/editLevel2"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
+                                android:layout_weight="2"
                                 android:ems="10"
-                                android:inputType="numberDecimal"
+                                android:inputType="number"
                                 android:textColor="@color/editTextColor"
                                 android:textSize="14sp" />
 
                             <CheckBox
-                                android:id="@+id/checkBox3"
+                                android:id="@+id/CBSoudLevel2"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="0" />
 
                             <CheckBox
-                                android:id="@+id/checkBox4"
+                                android:id="@+id/CBVibroLevel2"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="0" />
-                        </LinearLayout>
+                        </TableRow>
 
-                        <LinearLayout
+                        <TableRow
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="-5dp"
-                            android:layout_marginBottom="-5dp"
-                            android:orientation="horizontal">
+                            android:layout_height="match_parent" >
+
+                            <TextView
+                                android:id="@+id/textView18"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0"
+                                android:text="@string/textPolinomC"
+                                android:textColor="@color/labelTextColor" />
+
+                            <EditText
+                                android:id="@+id/editPolC"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="2"
+                                android:ems="10"
+                                android:inputType="numberDecimal|numberSigned"
+                                android:textColor="@color/editTextColor"
+                                android:textSize="14sp" />
 
                             <TextView
                                 android:id="@+id/textView10"
@@ -498,116 +532,82 @@
                                 android:textSize="14sp" />
 
                             <EditText
-                                android:id="@+id/editTextNumberDecimal3"
+                                android:id="@+id/editLevel3"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
+                                android:layout_weight="2"
                                 android:ems="10"
-                                android:inputType="numberDecimal"
+                                android:inputType="number"
                                 android:textColor="@color/editTextColor"
                                 android:textSize="14sp" />
 
                             <CheckBox
-                                android:id="@+id/checkBox5"
+                                android:id="@+id/CBSoudLevel3"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="0" />
 
                             <CheckBox
-                                android:id="@+id/checkBox6"
+                                android:id="@+id/CBVibroLevel3"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="0" />
-                        </LinearLayout>
-                    </LinearLayout>
+                        </TableRow>
+                    </TableLayout>
 
                 </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/textView15"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingTop="2dp"
-                    android:text="@string/textPolinom"
-                    android:textColor="@color/labelTextColor" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="-10dp"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/textView16"
+                        android:id="@+id/textView14"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
-                        android:text="@string/textPolinomA"
-                        android:textColor="@color/labelTextColor" />
-
-                    <EditText
-                        android:id="@+id/editPolA"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:ems="10"
-                        android:inputType="numberDecimal|numberSigned"
-                        android:textColor="@color/editTextColor"
+                        android:text="@string/textResolution"
+                        android:textColor="@color/labelTextColor"
                         android:textSize="14sp" />
 
-                    <TextView
-                        android:id="@+id/textView17"
+                    <RadioGroup
+                        android:id="@+id/RGResolution"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:text="@string/textPolinomB"
-                        android:textColor="@color/labelTextColor" />
+                        android:orientation="horizontal"
+                        android:verticalScrollbarPosition="left">
 
-                    <EditText
-                        android:id="@+id/editPolB"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_weight="2"
-                        android:ems="10"
-                        android:inputType="numberDecimal|numberSigned"
-                        android:textColor="@color/editTextColor"
-                        android:textSize="14sp" />
+                        <RadioButton
+                            android:id="@+id/RBResol1024"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="-2dp"
+                            android:layout_marginBottom="-2dp"
+                            android:checked="true"
+                            android:text="@string/textRes1024"
+                            android:textColor="@color/editTextColor" />
 
-                    <TextView
-                        android:id="@+id/textView18"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:text="@string/textPolinomC"
-                        android:textColor="@color/labelTextColor" />
+                        <RadioButton
+                            android:id="@+id/RBResol2048"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="-2dp"
+                            android:layout_marginBottom="-2dp"
+                            android:text="@string/textRes2048"
+                            android:textColor="@color/editTextColor" />
 
-                    <EditText
-                        android:id="@+id/editPolC"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_weight="2"
-                        android:ems="10"
-                        android:inputType="numberDecimal|numberSigned"
-                        android:textColor="@color/editTextColor"
-                        android:textSize="14sp" />
-
+                        <RadioButton
+                            android:id="@+id/RBResol4096"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="-2dp"
+                            android:layout_marginBottom="-2dp"
+                            android:text="@string/textRes4096"
+                            android:textColor="@color/editTextColor" />
+                    </RadioGroup>
                 </LinearLayout>
-
-                <TextView
-                    android:id="@+id/textView20"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/textDACControl"
-                    android:textColor="@color/labelTextColor"
-                    android:textSize="12sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -616,13 +616,32 @@
                     android:orientation="horizontal">
 
                     <TextView
+                        android:id="@+id/textView20"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0"
+                        android:text="@string/textCPS2RH"
+                        android:textColor="@color/labelTextColor"
+                        android:textSize="14sp" />
+
+                    <EditText
+                        android:id="@+id/editCPS2RH"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="10"
+                        android:inputType="numberDecimal"
+                        android:textColor="@color/editTextColor"
+                        android:textSize="14sp" />
+
+                    <TextView
                         android:id="@+id/textView21"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
                         android:text="@string/textHVoltage"
                         android:textColor="@color/labelTextColor"
-                        android:textSize="12sp" />
+                        android:textSize="14sp" />
 
                     <EditText
                         android:id="@+id/editHvoltage"
@@ -641,7 +660,7 @@
                         android:layout_weight="0"
                         android:text="@string/textComparator"
                         android:textColor="@color/labelTextColor"
-                        android:textSize="12sp" />
+                        android:textSize="14sp" />
 
                     <EditText
                         android:id="@+id/editComparator"

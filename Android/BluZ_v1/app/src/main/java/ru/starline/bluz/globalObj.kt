@@ -30,20 +30,29 @@ class globalObj {
     public var ColorLin: Int = 0
     public var ColorLog: Int = 0
     public var ColorFone: Int = 0
-    public var specterType: Int = 0
+    public var ColorFoneLg: Int = 0
+    public var specterType: Int = 0                 // Разрешение спектра полученное из прибора
+    public var specterGraphType: Int = 0            // Тип отображаемого спектра 0 - Линия, 1 - Гистограмма
+    public var spectrResolution: Int = 0            // Разрешение спектра из настроек
+    public var sendCS: UShort = 0u
 
     /* Параметры для хранения в приборе */
-    public var propLevel1: Float = 0.0f
-    public var propLevel2: Float = 0.0f
-    public var propLevel3: Float = 0.0f
+    public var propSoundKvant: Boolean = false      // Озвучка прихода частицы
+    public var propLedKvant: Boolean = true         // Подсветка прихода частицы
+    public var propButtonInit: Boolean = false      // Флаг активности изменения состояния переключателей
+    public var propLevel1: Int = 0
+    public var propLevel2: Int = 0
+    public var propLevel3: Int = 0
+    public var propSoundLevel1: Boolean = true
+    public var propSoundLevel2: Boolean = true
+    public var propSoundLevel3: Boolean = true
+    public var propVibroLevel1: Boolean = true
+    public var propVibroLevel2: Boolean = true
+    public var propVibroLevel3: Boolean = true
     public var propCPS2UR: Float = 0.0f
     public var propCoefA: Float = 0.0f
     public var propCoefB: Float = 0.0f
     public var propCoefC: Float = 0.0f
-    public var propIndicator: UByte = 0u
     public var propComparator: UShort = 0u
     public var propHVoltage: UShort = 0u
-    public var sendCS: UShort = 0u
-
-
 }
