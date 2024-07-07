@@ -57,7 +57,7 @@ void PendSV_Handler(void);
 void SysTick_Handler(void);
 void EXTI15_IRQHandler(void);
 void GPDMA1_Channel0_IRQHandler(void);
-void TIM1_UP_IRQHandler(void);
+void LPTIM1_IRQHandler(void);
 void ADC4_IRQHandler(void);
 void RADIO_IRQHandler(void);
 void HASH_IRQHandler(void);

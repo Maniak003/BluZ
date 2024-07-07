@@ -11,7 +11,9 @@ import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanSettings
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -91,13 +93,11 @@ class BluetoothInterface(tv: TextView) {
     val leScanCallback = object: ScanCallback() {
         @SuppressLint("MissingPermission")
         override fun onScanResult(callbackType: Int, result: ScanResult) {
-            //Log.d("BluZ-BT", "onscanresult...")
             super.onScanResult(callbackType, result)
             if (result.getDevice() == null || TextUtils.isEmpty(result.getDevice().getName())) {
 
             } else {
-                Log.d("BluZ-BT", result.device.name)
-                Log.d("BluZ-BT", result.device.address)
+                Log.d("BluZ-BT", result.device.name + " " + result.device.address)
                 Log.d("BluZ-BT", result.scanRecord.toString())
                 if (result.device.name == "BluZ") {
                     LEMACADDRESS = result.device.address
@@ -114,13 +114,18 @@ class BluetoothInterface(tv: TextView) {
 
     @SuppressLint("MissingPermission")
     fun startScan(textMAC: EditText/*, startBTN: Button*/) {
+        val scanFilter: ScanFilter = ScanFilter.Builder().setDeviceName(BLEDeviceName).build()
+        val scanSetting: ScanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
+        val filterList = ArrayList<ScanFilter>()
+        filterList.add(scanFilter)
         //GO.adapter.fragment.let {
         //    it.btnSpecterSS
         //}
         txtMACADDRESS = textMAC // Установить текст для редактирования
         //startButton = startBTN
         textMAC.setText(GO.mainContext.getString(R.string.defaultMAC))
-        BTS.startScan(leScanCallback)
+        //BTS.startScan(leScanCallback)
+        BTS.startScan(filterList, scanSetting, leScanCallback)
         Log.d("BluZ-BT", "LE scanning.")
     }
     @SuppressLint("MissingPermission")

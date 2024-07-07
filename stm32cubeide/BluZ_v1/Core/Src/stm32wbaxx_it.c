@@ -66,7 +66,7 @@ extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
 extern DMA_QListTypeDef List_GPDMA1_Channel0;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern ADC_HandleTypeDef hadc4;
-extern TIM_HandleTypeDef htim1;
+extern LPTIM_HandleTypeDef hlptim1;
 /* USER CODE BEGIN EV */
 //extern TIM_HandleTypeDef htim3;
 extern LPTIM_HandleTypeDef hlptim2;
@@ -223,7 +223,7 @@ void EXTI15_IRQHandler(void)
   /* USER CODE BEGIN EXTI15_IRQn 1 */
   pulseCounter++;
 	/* Оповещение об импульсе */
-	NotifyAct(LED_NOTIFY);
+	//NotifyAct(LED_NOTIFY);
   /* USER CODE END EXTI15_IRQn 1 */
 }
 
@@ -269,31 +269,18 @@ void GPDMA1_Channel0_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles TIM1 Update interrupt.
+  * @brief This function handles LPTIM1 global interrupt.
   */
-void TIM1_UP_IRQHandler(void)
+void LPTIM1_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM1_UP_IRQn 0 */
+  /* USER CODE BEGIN LPTIM1_IRQn 0 */
 
-  /* USER CODE END TIM1_UP_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim1);
-  /* USER CODE BEGIN TIM1_UP_IRQn 1 */
-  if (LEDflag) {
-	  LEDflag = false;
-	  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-  }
-  if (VibroFlag) {
-	  VibroFlag = false;
-	  HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
-  }
-  if (SoundFlag) {
-	  SoundFlag = false;
-	  HAL_LPTIM_Counter_Stop(&hlptim2);
-	  //HAL_TIM_OC_Stop(&htim3, TIM_CHANNEL_2);
-  }
-  HAL_TIM_Base_Stop_IT(&htim1);
-
-  /* USER CODE END TIM1_UP_IRQn 1 */
+  /* USER CODE END LPTIM1_IRQn 0 */
+  HAL_LPTIM_IRQHandler(&hlptim1);
+  /* USER CODE BEGIN LPTIM1_IRQn 1 */
+  //HAL_LPTIM_PWM_Stop(&hlptim2, LPTIM_CHANNEL_2);
+  //HAL_LPTIM_OnePulse_Stop_IT(&hlptim1, LPTIM_CHANNEL_2);
+  /* USER CODE END LPTIM1_IRQn 1 */
 }
 
 /**

@@ -75,6 +75,7 @@ extern bool SoundEnable, VibroEnable, LEDEnable;
 extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
 extern uint16_t HVoltage, comparatorLevel;
+extern LPTIM_HandleTypeDef hlptim2;
 
 union dataC {
 	float Float;
@@ -134,9 +135,10 @@ void NotifyAct(uint8_t SRC);
 #define Sync_EXTI_IRQn EXTI15_IRQn
 
 /* USER CODE BEGIN Private defines */
-#define INTERVAL1 2000
+#define INTERVAL1 1000
 #define INTERVAL2 5000
 #define INTERVAL3 2000
+#define SOUND_TIME_NOTIFY 4096
 #define SOUND_NOTIFY 1
 #define VIBRO_NOTIFY 2
 #define LED_NOTIFY   4

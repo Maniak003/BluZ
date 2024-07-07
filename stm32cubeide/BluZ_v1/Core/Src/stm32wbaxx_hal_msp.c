@@ -280,7 +280,31 @@ void HAL_CRC_MspDeInit(CRC_HandleTypeDef* hcrc)
 void HAL_LPTIM_MspInit(LPTIM_HandleTypeDef* hlptim)
 {
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-  if(hlptim->Instance==LPTIM2)
+  if(hlptim->Instance==LPTIM1)
+  {
+  /* USER CODE BEGIN LPTIM1_MspInit 0 */
+
+  /* USER CODE END LPTIM1_MspInit 0 */
+
+  /** Initializes the peripherals clock
+  */
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPTIM1;
+    PeriphClkInit.Lptim1ClockSelection = RCC_LPTIM1CLKSOURCE_HSI;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    /* Peripheral clock enable */
+    __HAL_RCC_LPTIM1_CLK_ENABLE();
+    /* LPTIM1 interrupt Init */
+    HAL_NVIC_SetPriority(LPTIM1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(LPTIM1_IRQn);
+  /* USER CODE BEGIN LPTIM1_MspInit 1 */
+
+  /* USER CODE END LPTIM1_MspInit 1 */
+  }
+  else if(hlptim->Instance==LPTIM2)
   {
   /* USER CODE BEGIN LPTIM2_MspInit 0 */
 
@@ -338,7 +362,21 @@ void HAL_LPTIM_MspPostInit(LPTIM_HandleTypeDef* hlptim)
 */
 void HAL_LPTIM_MspDeInit(LPTIM_HandleTypeDef* hlptim)
 {
-  if(hlptim->Instance==LPTIM2)
+  if(hlptim->Instance==LPTIM1)
+  {
+  /* USER CODE BEGIN LPTIM1_MspDeInit 0 */
+
+  /* USER CODE END LPTIM1_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_LPTIM1_CLK_DISABLE();
+
+    /* LPTIM1 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(LPTIM1_IRQn);
+  /* USER CODE BEGIN LPTIM1_MspDeInit 1 */
+
+  /* USER CODE END LPTIM1_MspDeInit 1 */
+  }
+  else if(hlptim->Instance==LPTIM2)
   {
   /* USER CODE BEGIN LPTIM2_MspDeInit 0 */
 
@@ -496,56 +534,6 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* hrtc)
   /* USER CODE BEGIN RTC_MspDeInit 1 */
 
   /* USER CODE END RTC_MspDeInit 1 */
-  }
-
-}
-
-/**
-* @brief TIM_OC MSP Initialization
-* This function configures the hardware resources used in this example
-* @param htim_oc: TIM_OC handle pointer
-* @retval None
-*/
-void HAL_TIM_OC_MspInit(TIM_HandleTypeDef* htim_oc)
-{
-  if(htim_oc->Instance==TIM1)
-  {
-  /* USER CODE BEGIN TIM1_MspInit 0 */
-
-  /* USER CODE END TIM1_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_TIM1_CLK_ENABLE();
-    /* TIM1 interrupt Init */
-    HAL_NVIC_SetPriority(TIM1_UP_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
-  /* USER CODE BEGIN TIM1_MspInit 1 */
-
-  /* USER CODE END TIM1_MspInit 1 */
-  }
-
-}
-
-/**
-* @brief TIM_OC MSP De-Initialization
-* This function freeze the hardware resources used in this example
-* @param htim_oc: TIM_OC handle pointer
-* @retval None
-*/
-void HAL_TIM_OC_MspDeInit(TIM_HandleTypeDef* htim_oc)
-{
-  if(htim_oc->Instance==TIM1)
-  {
-  /* USER CODE BEGIN TIM1_MspDeInit 0 */
-
-  /* USER CODE END TIM1_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_TIM1_CLK_DISABLE();
-
-    /* TIM1 interrupt DeInit */
-    HAL_NVIC_DisableIRQ(TIM1_UP_IRQn);
-  /* USER CODE BEGIN TIM1_MspDeInit 1 */
-
-  /* USER CODE END TIM1_MspDeInit 1 */
   }
 
 }

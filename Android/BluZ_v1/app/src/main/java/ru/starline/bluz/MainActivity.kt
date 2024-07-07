@@ -36,6 +36,7 @@ import java.util.UUID
 
 public val GO: globalObj = globalObj()
 public const val propADDRESS: String = "Address"
+public const val BLEDeviceName: String = "BluZ"
 public const val propSpectrGraphType: String = "SpecterGraphType"
 public const val propColorSpecterLin: String = "ColorLin"
 public const val propColorSpecterLog: String = "ColorLog"

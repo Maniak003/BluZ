@@ -37,10 +37,10 @@ extern DMA_QListTypeDef List_GPDMA1_Channel0;
 extern ADC_HandleTypeDef hadc4;
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 extern CRC_HandleTypeDef hcrc;
+extern LPTIM_HandleTypeDef hlptim1;
 extern LPTIM_HandleTypeDef hlptim2;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern RNG_HandleTypeDef hrng;
-extern TIM_HandleTypeDef htim1;
 extern UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN EV */
@@ -73,10 +73,10 @@ void MX_StandbyExit_PeripharalInit(void)
   memset(&hadc4, 0, sizeof(hadc4));
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
   memset(&hcrc, 0, sizeof(hcrc));
+  memset(&hlptim1, 0, sizeof(hlptim1));
   memset(&hlptim2, 0, sizeof(hlptim2));
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&hrng, 0, sizeof(hrng));
-  memset(&htim1, 0, sizeof(htim1));
   memset(&huart2, 0, sizeof(huart2));
 
   CRCCTRL_Init();
