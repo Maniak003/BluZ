@@ -123,7 +123,7 @@ class NumberFragment : Fragment() {
                 }
                 /* Кнопка загрузки данных */
 
-                /* Кнопка буфера спектра */
+                /* Кнопка очистки буфера спектра */
                 val btnClearSpecter : Button = view.findViewById(R.id.buttonClearSpectr)
                 btnClearSpecter.setOnClickListener {
                     /*

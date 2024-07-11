@@ -11,6 +11,6 @@
 ../Core/Src/stm32wbaxx_hal_msp.c:437:6:HAL_RNG_MspInit	3
 ../Core/Src/stm32wbaxx_hal_msp.c:470:6:HAL_RNG_MspDeInit	2
 ../Core/Src/stm32wbaxx_hal_msp.c:492:6:HAL_RTC_MspInit	3
-../Core/Src/stm32wbaxx_hal_msp.c:525:6:HAL_RTC_MspDeInit	2
-../Core/Src/stm32wbaxx_hal_msp.c:547:6:HAL_UART_MspInit	3
-../Core/Src/stm32wbaxx_hal_msp.c:593:6:HAL_UART_MspDeInit	2
+../Core/Src/stm32wbaxx_hal_msp.c:528:6:HAL_RTC_MspDeInit	2
+../Core/Src/stm32wbaxx_hal_msp.c:553:6:HAL_UART_MspInit	3
+../Core/Src/stm32wbaxx_hal_msp.c:599:6:HAL_UART_MspDeInit	2

@@ -184,10 +184,11 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     * 29,30,31,32   - Коэффициент C полинома преобразования канала в энергию.
                     * 33,34         - Уровень высокого напряжения
                     * 35,36         - Уровень компаратора
+                    * 37			- Разрешение. 0 - 1024, 1 - 2048, 2 - 4096
                     *
                     * 242, 243      - Контрольная сумма
                     */
-					if (p_Notification->DataTransfered.p_Payload[3] == 0) {
+					if (p_Notification->DataTransfered.p_Payload[3] == 0) {							// 0 - Настройки
 						LEDEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000001;		// LED
 						SoundEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000010;	// Sound
 						levelSound1 = p_Notification->DataTransfered.p_Payload[20] & 0b00000100;	// Звук для первого порога
@@ -198,61 +199,64 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						levelVibro3 = p_Notification->DataTransfered.p_Payload[20] & 0b10000000;	// Вибро для третьего порога
 
 						/* Уровень порога 1 в uR/h */
-						level1.Uint[0] = p_Notification->DataTransfered.p_Payload[4];
-						level1.Uint[1] = p_Notification->DataTransfered.p_Payload[5];
-						level1.Uint[2] = p_Notification->DataTransfered.p_Payload[6];
-						level1.Uint[3] = p_Notification->DataTransfered.p_Payload[7];
+						level1 = p_Notification->DataTransfered.p_Payload[7]
+							| (((uint32_t) p_Notification->DataTransfered.p_Payload[6] << 8) & 0x0000FF00)
+							| (((uint32_t) p_Notification->DataTransfered.p_Payload[5] << 16) & 0x00FF0000)
+							| (((uint32_t) p_Notification->DataTransfered.p_Payload[4] << 24)  & 0xFF000000);
 
 						/* Уровень порога 2 в uR/h */
-						level1.Uint[0] = p_Notification->DataTransfered.p_Payload[8];
-						level1.Uint[1] = p_Notification->DataTransfered.p_Payload[9];
-						level1.Uint[2] = p_Notification->DataTransfered.p_Payload[10];
-						level1.Uint[3] = p_Notification->DataTransfered.p_Payload[11];
+						level2 = p_Notification->DataTransfered.p_Payload[11]
+							| (((uint32_t) p_Notification->DataTransfered.p_Payload[10] << 8) & 0x0000FF00)
+							| (((uint32_t) p_Notification->DataTransfered.p_Payload[9] << 16) & 0x00FF0000)
+							| (((uint32_t) p_Notification->DataTransfered.p_Payload[8] << 24)  & 0xFF000000);
 
 						/* Уровень порога 3 в uR/h */
-						level1.Uint[0] = p_Notification->DataTransfered.p_Payload[12];
-						level1.Uint[1] = p_Notification->DataTransfered.p_Payload[13];
-						level1.Uint[2] = p_Notification->DataTransfered.p_Payload[14];
-						level1.Uint[3] = p_Notification->DataTransfered.p_Payload[15];
+						level3 = p_Notification->DataTransfered.p_Payload[15]
+							| (((uint32_t) p_Notification->DataTransfered.p_Payload[14] << 8) & 0x0000FF00)
+							| (((uint32_t) p_Notification->DataTransfered.p_Payload[13] << 16) & 0x00FF0000)
+							| (((uint32_t) p_Notification->DataTransfered.p_Payload[12] << 24)  & 0xFF000000);
 
 						/* Коэффициент пересчета CPS в uR/h */
-						calcCoeff.Uint[0] = p_Notification->DataTransfered.p_Payload[16];
-						calcCoeff.Uint[1] = p_Notification->DataTransfered.p_Payload[17];
-						calcCoeff.Uint[2] = p_Notification->DataTransfered.p_Payload[18];
-						calcCoeff.Uint[3] = p_Notification->DataTransfered.p_Payload[19];
+						calcCoeff.Uint[3] = p_Notification->DataTransfered.p_Payload[16];
+						calcCoeff.Uint[2] = p_Notification->DataTransfered.p_Payload[17];
+						calcCoeff.Uint[1] = p_Notification->DataTransfered.p_Payload[18];
+						calcCoeff.Uint[0] = p_Notification->DataTransfered.p_Payload[19];
 
 						/* Коэффициент A полинома преобразования канала в энергию */
-						enCoefA.Uint[0] = p_Notification->DataTransfered.p_Payload[21];
-						enCoefA.Uint[1] = p_Notification->DataTransfered.p_Payload[22];
-						enCoefA.Uint[2] = p_Notification->DataTransfered.p_Payload[23];
-						enCoefA.Uint[3] = p_Notification->DataTransfered.p_Payload[24];
+						enCoefA.Uint[3] = p_Notification->DataTransfered.p_Payload[21];
+						enCoefA.Uint[2] = p_Notification->DataTransfered.p_Payload[22];
+						enCoefA.Uint[1] = p_Notification->DataTransfered.p_Payload[23];
+						enCoefA.Uint[0] = p_Notification->DataTransfered.p_Payload[24];
 
 						/* Коэффициент B полинома преобразования канала в энергию */
-						enCoefB.Uint[0] = p_Notification->DataTransfered.p_Payload[25];
-						enCoefB.Uint[1] = p_Notification->DataTransfered.p_Payload[26];
-						enCoefB.Uint[2] = p_Notification->DataTransfered.p_Payload[27];
-						enCoefB.Uint[3] = p_Notification->DataTransfered.p_Payload[28];
+						enCoefB.Uint[3] = p_Notification->DataTransfered.p_Payload[25];
+						enCoefB.Uint[2] = p_Notification->DataTransfered.p_Payload[26];
+						enCoefB.Uint[1] = p_Notification->DataTransfered.p_Payload[27];
+						enCoefB.Uint[0] = p_Notification->DataTransfered.p_Payload[28];
 
 						/* Коэффициент C полинома преобразования канала в энергию */
-						enCoefC.Uint[0] = p_Notification->DataTransfered.p_Payload[29];
-						enCoefC.Uint[1] = p_Notification->DataTransfered.p_Payload[30];
-						enCoefC.Uint[2] = p_Notification->DataTransfered.p_Payload[31];
-						enCoefC.Uint[3] = p_Notification->DataTransfered.p_Payload[32];
+						enCoefC.Uint[3] = p_Notification->DataTransfered.p_Payload[29];
+						enCoefC.Uint[2] = p_Notification->DataTransfered.p_Payload[30];
+						enCoefC.Uint[1] = p_Notification->DataTransfered.p_Payload[31];
+						enCoefC.Uint[0] = p_Notification->DataTransfered.p_Payload[32];
 
 
 						/* Уровни компаратора и высокого напряжения */
 						HVoltage = p_Notification->DataTransfered.p_Payload[33] | p_Notification->DataTransfered.p_Payload[34] << 8;
 						comparatorLevel = p_Notification->DataTransfered.p_Payload[35] | p_Notification->DataTransfered.p_Payload[36] << 8;
 
+						/* Разрешение спектра. 0 - 1024, 1 - 2048, 2 - 4096 */
+						resolution = p_Notification->DataTransfered.p_Payload[37];
+
 						/* Вывод конфига для отладки */
 						bzero((char *) uartBuffer, sizeof(uartBuffer));
-						sprintf(uartBuffer, "CompLev: %u, HVolt: %u, Koef: %f\n\r", comparatorLevel, HVoltage, calcCoeff.Float);
+						sprintf(uartBuffer, "CompLev: %u, HVolt: %u, Koef: %f, Res: %u\n\r", comparatorLevel, HVoltage, calcCoeff.Float, resolution);
 						HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 						bzero((char *) uartBuffer, sizeof(uartBuffer));
 						sprintf(uartBuffer, "CoefA: %f, CoefB: %f, CoefC: %f\n\r", enCoefA.Float, enCoefB.Float, enCoefC.Float);
 						HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 						bzero((char *) uartBuffer, sizeof(uartBuffer));
-						sprintf(uartBuffer, "Lev1: %f, Lev2: %f, Lev3: %f\n\r", level1.Float, level2.Float, level3.Float);
+						sprintf(uartBuffer, "Lev1: %d, Lev2: %d, Lev3: %d\n\r", level1, level2, level3);
 						HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
 
@@ -261,6 +265,8 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
 							tmpSpecterBuffer[iii] = 0;
 						}
+						pulseCounter = 0;
+						currentTime = 0;
 					}
 				} else {
 					bzero((char *) uartBuffer, sizeof(uartBuffer));

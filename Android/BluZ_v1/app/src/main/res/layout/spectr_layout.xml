@@ -37,7 +37,9 @@
                 android:id="@+id/textStatistics1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAllCaps="true"
+                android:gravity="center_horizontal"
+                android:text="@string/textTmp2"
+                android:textAllCaps="false"
                 android:textColor="@color/labelTextColor2"
                 android:textSize="12sp" />
 
@@ -45,6 +47,8 @@
                 android:id="@+id/textStatistics2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="@string/textTmp1"
                 android:textAllCaps="false"
                 android:textColor="@color/labelTextColor2"
                 android:textSize="12sp" />
@@ -53,13 +57,14 @@
                 android:id="@+id/textStatistics3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
                 android:textAllCaps="false"
                 android:textColor="@color/labelTextColor2"
                 android:textSize="12sp" />
 
             <ImageView
                 android:id="@+id/statisticView"
-                android:layout_width="200dp"
+                android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:layout_weight="0"
                 app:srcCompat="@android:drawable/screen_background_dark" />

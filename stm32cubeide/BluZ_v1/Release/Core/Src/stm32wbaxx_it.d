@@ -71,6 +71,8 @@ Core/Src/stm32wbaxx_it.o: ../Core/Src/stm32wbaxx_it.c ../Core/Inc/main.h \
  ../System/Config/Debug_GPIO/debug_config.h ../Core/Inc/app_conf.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
+ ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/flash_driver.h \
+ ../System/Modules/utilities_common.h ../Core/Inc/main.h \
  ../Core/Inc/stm32wbaxx_it.h
 ../Core/Inc/main.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h:
@@ -151,4 +153,8 @@ Core/Src/stm32wbaxx_it.o: ../Core/Src/stm32wbaxx_it.c ../Core/Inc/main.h \
 ../Core/Inc/app_conf.h:
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
+../Core/Inc/rw_FLASH.h:
+../System/Modules/Flash/flash_driver.h:
+../System/Modules/utilities_common.h:
+../Core/Inc/main.h:
 ../Core/Inc/stm32wbaxx_it.h:

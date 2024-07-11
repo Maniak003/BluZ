@@ -71,10 +71,11 @@ System/Interfaces/stm32_lpm_if.o: ../System/Interfaces/stm32_lpm_if.c \
  ../System/Config/Debug_GPIO/debug_config.h ../Core/Inc/app_conf.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
+ ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/flash_driver.h \
+ ../System/Modules/utilities_common.h ../Core/Inc/main.h \
  ../System/Modules/scm.h ../System/Interfaces/stm32_lpm_if.h \
  ../Utilities/lpm/tiny_lpm/stm32_lpm.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_icache.h \
- ../System/Modules/utilities_common.h \
  ../System/Config/LowPower/peripheral_init.h
 ../Core/Inc/main.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h:
@@ -155,9 +156,12 @@ System/Interfaces/stm32_lpm_if.o: ../System/Interfaces/stm32_lpm_if.c \
 ../Core/Inc/app_conf.h:
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
+../Core/Inc/rw_FLASH.h:
+../System/Modules/Flash/flash_driver.h:
+../System/Modules/utilities_common.h:
+../Core/Inc/main.h:
 ../System/Modules/scm.h:
 ../System/Interfaces/stm32_lpm_if.h:
 ../Utilities/lpm/tiny_lpm/stm32_lpm.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_icache.h:
-../System/Modules/utilities_common.h:
 ../System/Config/LowPower/peripheral_init.h:

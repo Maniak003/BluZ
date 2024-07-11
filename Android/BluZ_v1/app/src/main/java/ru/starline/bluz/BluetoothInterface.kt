@@ -33,6 +33,7 @@ import java.util.Arrays
 import java.util.UUID
 import ru.starline.bluz.globalObj
 import kotlin.concurrent.thread
+import kotlin.math.round
 
 /*
  The following 128bits UUIDs have been generated from the random UUID
@@ -81,11 +82,6 @@ class BluetoothInterface(tv: TextView) {
     public var sendBuffer = UByteArray(255)
     public var testIdx: Int = 0
     public var testIdx2: Int = 0
-    public var pulseCounter: UInt = 0u
-    public var cps: Float = 0.0f
-    public var messTime: ULong = 0u
-    public var battaryLevel: UByte = 0u
-    public var temperatureMC: Float = 0.0f
 
     /*
     *      Обработчик окончания сканирования, здесь получим результат
@@ -212,6 +208,8 @@ class BLUZDelegate  {
         private var indexData: Int = 0
         private var endOfData: Int = 0
         private var checkSumm: UShort = 0u
+        private var tmpBattery: Float = 0.0f
+        private var tmpTemperature: Float = 0.0f
         @SuppressLint("MissingPermission")
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             when (newState) {
@@ -363,8 +361,41 @@ class BLUZDelegate  {
                         idxArray = 0                    // Индекс результирующего массива с данными
                         numberMTU = data[3].toInt()     // Количество пакетов для передачи
                         dataType = data[4].toInt()      // Тип передаваемых данных
-                        pulseCounter = (data[10].toUByte() + data[11].toUByte() * 256u + data[12].toUByte() * 65536u + data[13].toUByte() * 16777216u).toUInt()
-                        Log.d("BluZ-BT", "Start sequence detect. Size: $numberMTU, Type: $dataType, Pulse: $pulseCounter")
+                        GO.PCounter = (data[10].toUByte() + data[11].toUByte() * 256u + data[12].toUByte() * 65536u + data[13].toUByte() * 16777216u).toUInt()
+                        GO.pulsePerSec  = (data[14].toUByte() + data[15].toUByte() * 256u + data[16].toUByte() * 65536u + data[17].toUByte() * 16777216u).toUInt()
+                        GO.messTm =  (data[18].toUByte() + data[19].toUByte() * 256u + data[20].toUByte() * 65536u + data[21].toUByte() * 16777216u).toUInt()
+                        var tmpInt = (data[22].toUByte() + data[23].toUByte() * 256u + data[24].toUByte() * 65536u + data[25].toUByte() * 16777216u).toUInt()
+                        GO.cps = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()) * 100) / 100
+                        tmpInt = (data[26].toUByte() + data[27].toUByte() * 256u + data[28].toUByte() * 65536u + data[29].toUByte() * 16777216u).toUInt()
+                        GO.tempMC = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()))
+                        tmpInt = (data[30].toUByte() + data[31].toUByte() * 256u + data[32].toUByte() * 65536u + data[33].toUByte() * 16777216u).toUInt()
+                        GO.battLevel = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()) * 100) / 100
+                        var pulseCounter = GO.PCounter
+                        Log.d("BluZ-BT", "Start sequence detect. Size: $numberMTU, Type: $dataType, Pulse: $pulseCounter, Temp:" + GO.tempMC.toString() + ", Volt:" + GO.battLevel .toString())
+
+                        /*
+                         * Значения заголовка и формат данных для передачи
+                         * 0,1,2 - Маркер начала <B>
+                         * 3 -  количество MTU
+                         *    1    - Параметры прибора
+                         *    3    - Даные лога
+                         *    4    - Данные дозиметра
+                         *    9    - Спектр 1024 разрядов
+                         *    17   - Спектр 2048 разрядов
+                         *    34   - Спектр 4096 разрядов
+                         *
+                         * 4 - Тип передаваемых данных
+                         *    0   - Текущий спектр
+                         *    1   - Исторический спектр
+                         *
+                         * 5, 6   - Общее число импульсов от начала измерения uint32_t
+                         * 7, 8   - Число импульсов за последнюю секунду. uint32_t
+                         * 9, 10  - Общее время в секундах uint32_t
+                         * 11, 12 - Среднее количество имльсов в секунду. float
+                         * 13, 14 - Температура в гр. цельсия
+                         * 15, 16 - Напряжение батареи в вольтах
+                         *
+                         */
 
                         /* Определим размер заголовка */
                         when(numberMTU) {
@@ -440,19 +471,19 @@ class BLUZDelegate  {
                             Log.d("BluZ-BT", "CS - correct: $checkSumm")
                             /* Накопление массива закончено можно вызывать обновление экрана */
 
-                            GO.drawSPECTER.init()
-                            if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
-                                /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
-                                MainScope().launch {
-                                     withContext(Dispatchers.Main) {
-                                         //Log.d("BluZ-BT", "call drawSPEC")
-                                         GO.drawSPECTER.clearSpecter()
-                                         GO.drawSPECTER.redrawSpecter(GO.specterType, pulseCounter, cps, messTime, battaryLevel, temperatureMC)
-                                     }
+                            MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
+                                withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                                    GO.drawSPECTER.init()
+                                    if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
+                                        /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
+                                        //Log.d("BluZ-BT", "call drawSPEC")
+                                        GO.drawSPECTER.clearSpecter()
+                                        GO.drawSPECTER.redrawSpecter(GO.specterType)
+                                    } else {
+                                        //GO.drawObjectInit = true
+                                        Log.e("BluZ-BT", "drawSPEC is null")
+                                    }
                                 }
-                            } else {
-                                //GO.drawObjectInit = true
-                                Log.e("BluZ-BT", "drawSPEC is null")
                             }
                         } else {
                             Log.e("BluZ-BT", "CS - incorrect. Found: $tmpCS calculate: $checkSumm")

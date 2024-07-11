@@ -71,6 +71,8 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
  ../System/Config/Debug_GPIO/debug_config.h ../Core/Inc/app_conf.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
+ ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/flash_driver.h \
+ ../System/Modules/utilities_common.h ../Core/Inc/main.h \
  ../Core/Inc/app_common.h ../STM32_WPAN/App/app_ble.h \
  ../STM32_WPAN/Target/ll_sys_if.h ../System/Modules/dbg_trace.h \
  ../Middlewares/ST/STM32_WPAN/ble/ble.h ../STM32_WPAN/App/ble_conf.h \
@@ -175,6 +177,10 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
 ../Core/Inc/app_conf.h:
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
+../Core/Inc/rw_FLASH.h:
+../System/Modules/Flash/flash_driver.h:
+../System/Modules/utilities_common.h:
+../Core/Inc/main.h:
 ../Core/Inc/app_common.h:
 ../STM32_WPAN/App/app_ble.h:
 ../STM32_WPAN/Target/ll_sys_if.h:

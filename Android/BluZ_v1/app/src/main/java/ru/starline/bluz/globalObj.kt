@@ -35,6 +35,12 @@ class globalObj {
     public var specterGraphType: Int = 0            // Тип отображаемого спектра 0 - Линия, 1 - Гистограмма
     public var spectrResolution: Int = 0            // Разрешение спектра из настроек
     public var sendCS: UShort = 0u
+    public var PCounter: UInt = 0u
+    public var cps: Float = 0.0f
+    public var messTm:UInt = 0u
+    public var battLevel: Float = 0.0f
+    public var tempMC: Float = 0.0f
+    public var pulsePerSec: UInt = 0u
 
     /* Параметры для хранения в приборе */
     public var propSoundKvant: Boolean = false      // Озвучка прихода частицы

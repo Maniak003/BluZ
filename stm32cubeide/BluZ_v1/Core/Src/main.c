@@ -61,35 +61,20 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 
 bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false;
-uint32_t interval1 = 0, interval2 = 0, interval3 = 0, intervalTmp = 0, pulseCounter = 0,  pulseLevel = 0;
+uint32_t currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalTmp = 0, pulseCounter = 0,  pulseCounterSecond = 0, pulseLevel[3] = {0}, currentTime = 0, CPS = 0;
 char uartBuffer[100] = {0,};
 uint8_t resolution = 0; /* 0 - 1024, 1 - 2048, 2 - 4096, 3 - Логи, 4 - Параметры, 5 - История дозиметра*/
 uint8_t tmpBTBuffer[DATA_NOTIFICATION_MAX_PACKET_SIZE] = {0,};
-uint16_t tmpSpecterBuffer[4096];
-/*
- * Значения заголовка и формат данных для передачи
- * 0,1,2 - Маркер начала <B>
- * 3 -  количество MTU
- *    1  - Параметры прибора
- *    3  - Даные лога
- *    4  - Данные дозиметра
- *    9  - Спектр 1024 разрядов
- *    17 - Спектр 2048 разрядов
- *    34 - Спектр 4096 разрядов
- *
- * 4 - Тип передаваемых данных
- *    0 - Текущий спектр
- *    1 - Исторический спектр
- *
- * 5, 6 - Общее число импульсов от начала измерения uint32_t
- *
- */
+uint16_t currTemterature, currVoltage, tmpSpecterBuffer[4096];
+uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
+int indexDozimetrBufer = 0;
 
 /* Настройки прибора */
 uint16_t specterBuffer[SIZE_BUF_4096] = {0,};
 bool SoundEnable = true, VibroEnable = true, LEDEnable = true;		// Собровождение квантов
 bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активность звука для разных уровней
 bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
+bool flagTemperatureMess = false;
 
 /*
 union dataC {
@@ -98,11 +83,18 @@ union dataC {
 };
 */
 
-union dataC level1, level2, level3;										// Значения порогов
-union dataC calcCoeff;													// Коэффициент для пересчета CPS в uR/h
-union dataC enCoefA, enCoefB, enCoefC;									// Коэффициенты полинома для преобразования канала в энергию
+/* Коэффициенты для коррекции температуры */
+float TK1, TK2;
+
+int level1, level2, level3;											// Значения порогов
+union dataC calcCoeff;												// Коэффициент для пересчета CPS в uR/h
+union dataC enCoefA, enCoefB, enCoefC;								// Коэффициенты полинома для преобразования канала в энергию
+union dataA Temperature, Voltage;									// Температура и напряжение батареи
+union dataA AvgCPS;													// Средний CPS за время с последнего старта.
+
 uint16_t HVoltage = 256, comparatorLevel = 256;						// Уровни настройки высокого напряжения и компаратора
 
+uint8_t notifyFlags = 0;											// 1 - Звук, 2 - Вибро, 4 - Led
 
 /* USER CODE END PV */
 
@@ -126,29 +118,29 @@ static void MX_LPTIM1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void NotifyAct(uint8_t SRC) {
-	if (SoundEnable) {
-		if (SRC & SOUND_NOTIFY) {
-			SoundFlag = true;
-			HAL_LPTIM_PWM_Start(&hlptim2, LPTIM_CHANNEL_2);
-		}
-	}
-
-	if (VibroEnable) {
-		if (SRC & VIBRO_NOTIFY) {
-			VibroFlag = true;
-			HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_SET);
-		}
-	}
-
-	if (LEDEnable) {
-		if (SRC & LED_NOTIFY) {
-			LEDflag = true;
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		}
-	}
+/*
+ * Управление оповещениями
+ *
+ * SRC 		- SOUND_NOTIFY | VIBRO_NOTIFY | LED_NOTIFY
+ * repCnt	- Количество повторов для звука и вибро
+ *
+ */
+void NotifyAct(uint8_t SRC, uint32_t repCnt) {
 	if (SoundEnable || VibroEnable || LEDEnable) {
-		HAL_LPTIM_TimeOut_Start_IT(&hlptim1, SOUND_TIME_NOTIFY);
+		/* Установим количество повторов */
+		hlptim1.Init.RepetitionCounter = repCnt;
+		if (HAL_LPTIM_Init(&hlptim1) == HAL_OK) {
+			notifyFlags = SRC;
+			/* Включаем звук и вибро */
+			HAL_LPTIM_OnePulse_Start_IT(&hlptim1, LPTIM_CHANNEL_1);
+		}
+		/*
+		if (LEDEnable) {
+			if (SRC & LED_NOTIFY) {
+				LEDflag = true;
+				HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+			}
+		}*/
 	}
 }
 /* USER CODE END 0 */
@@ -161,6 +153,10 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+	/* Настройка температурных коэффициентов */
+	TK1 = (float) (TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP) / (float)(*TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR);
+	TK2 = (float) TEMPSENSOR_CAL1_TEMP - TK1 * (float) ( *(__IO uint16_t*) TEMPSENSOR_CAL1_ADDR);
+	TK1 = TK1 * ADC_VREF / ((float)VREFINT_CAL_VREF / 1000.0f);
 
   /* USER CODE END 1 */
 
@@ -190,6 +186,7 @@ int main(void)
   MX_GPDMA1_Init();
   MX_ADC4_Init();
   MX_USART2_UART_Init();
+  MX_CRC_Init();
   MX_RAMCFG_Init();
   MX_RNG_Init();
   MX_RTC_Init();
@@ -198,19 +195,12 @@ int main(void)
   MX_LPTIM1_Init();
   /* USER CODE BEGIN 2 */
   //MX_GPIO_Init();
+  HAL_ADCEx_Calibration_Start(&hadc4);
+
   bzero((char *) uartBuffer, sizeof(uartBuffer));
   sprintf(uartBuffer, "\n\rStart.\n\r");
   HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
-  //HAL_LPTIM_PWM_Start(&hlptim2, LPTIM_CHANNEL_2);
-  //HAL_LPTIM_OnePulse_Start_IT(&hlptim1, LPTIM_CHANNEL_2);
-  //HAL_LPTIM_OnePulse_Start(&hlptim2, LPTIM_CHANNEL_2);
-  //HAL_LPTIM_Counter_Start(&hlptim2);
-  //HAL_LPTIM_SetOnce_Start(&hlptim2, LPTIM_CHANNEL_2);
-  //HAL_LPTIM_TimeOut_Start(&hlptim2, 100);
-
-
-  //HAL_GPIO_WritePin(SOUND_GPIO_Port, SOUND_Pin, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
@@ -219,10 +209,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   //__//HAL_TIM_CLEAR_FLAG(&htim1, TIM_SR_UIF); // Clear flags
-  /* Включим LED, Vibro, Sound */
-  NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY | LED_NOTIFY);
 
-  HAL_ADC_Start_DMA(&hadc4, &pulseLevel, 1);
   /*
    * Настройка ltc1662
    * порога компаратора
@@ -241,6 +228,54 @@ int main(void)
   //resolution = 2;			/* Тест разрешение 4096 */
 
 
+  /* Включим LED, Vibro, Sound */
+  /*
+  NotifyAct(
+		  SOUND_NOTIFY
+		//| VIBRO_NOTIFY
+		//| LED_NOTIFY
+		, 1);
+*/
+  /* Запуск набора спектра */
+  HAL_ADC_Start_DMA(&hadc4, pulseLevel, 3);
+
+  //HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 2, WakeUpClock, WakeUpAutoClr)
+
+  bzero((char *) uartBuffer, sizeof(uartBuffer));
+  sprintf(uartBuffer, "\n\rRead flash Ok. Address: %lx\n\r", MAGIC_KEY_ADDRESS);
+  HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+  if (readFlash() == HAL_OK) {
+  }
+
+  pulseCounter = 0;
+  pulseCounterSecond = 0;
+  currentTime = 0;
+
+  /*
+   * Значения заголовка и формат данных для передачи
+   * 0,1,2 - Маркер начала <B>
+   * 3 -  количество MTU
+   *    1    - Параметры прибора
+   *    3    - Даные лога
+   *    4    - Данные дозиметра
+   *    9    - Спектр 1024 разрядов
+   *    17   - Спектр 2048 разрядов
+   *    34   - Спектр 4096 разрядов
+   *
+   * 4 - Тип передаваемых данных
+   *    0   - Текущий спектр
+   *    1   - Исторический спектр
+   *
+   * 5, 6   - Общее число импульсов от начала измерения uint32_t
+   * 7, 8   - Число импульсов за последнюю секунду. uint32_t
+   * 9, 10  - Общее время в секундах uint32_t
+   * 11, 12 - Среднее количество имльсов в секунду. float
+   * 13, 14 - Температура в гр. цельсия
+   * 15, 16 - Напряжение батареи в вольтах
+   *
+   */
+
+
   while (1)
   {
     /* USER CODE END WHILE */
@@ -251,6 +286,7 @@ int main(void)
 
 	if (interval3 + INTERVAL3 < intervalTmp) {
 		interval3 = intervalTmp;
+
 
 	}
 
@@ -312,10 +348,42 @@ int main(void)
 	  specterBuffer[1] = (uint16_t) (hdr[2] | (((uint16_t) hdr[3] << 8) & 0xFF00));
 	  specterBuffer[2] = (uint16_t) (hdr[4] | (((uint16_t) hdr[5] << 8) & 0xFF00));
 	  specterBuffer[3] = (uint16_t) (hdr[6] | (((uint16_t) hdr[7] << 8) & 0xFF00));
-	  specterBuffer[5] = pulseCounter & 0xFFFF;
-	  specterBuffer[6] = ((uint32_t) pulseCounter >> 16 ) & 0xFFFF;
-	  //specterBuffer[5] = 0x0000;
-	  //specterBuffer[6] = 0x1000;
+
+	  /* Общее количество импульсов */
+	  specterBuffer[5] = pulseCounterAvg & 0xFFFF;
+	  specterBuffer[6] = ((uint32_t) pulseCounterAvg >> 16 ) & 0xFFFF;
+
+	  /* Импульсы за последнюю секунду */
+	  specterBuffer[7] = CPS & 0xFFFF;
+	  specterBuffer[8] = (CPS >> 16) & 0xFFFF;
+
+	  /* Общее время в секундах от последнего старта */
+	  specterBuffer[9] =  currentTimeAvg & 0xFFFF;
+	  specterBuffer[10] = (currentTimeAvg >> 16) & 0xFFFF;
+
+	  /* Среднее количество импульсов от последнего старта */
+	  AvgCPS.Float = (float) pulseCounterAvg / (float) currentTimeAvg;
+	  specterBuffer[11] = AvgCPS.Uint[0];
+	  specterBuffer[12] = AvgCPS.Uint[1];
+
+	 /*
+	  *	Расчет температуры
+	  *	 TS_CAL1 (30 °C VREF+ = 3.0 V)  0x0BF9 0710 - 0x0BF9 0711
+	  *	 TS_CAL2 (130 °C VREF+ = 3.0 V) 0x0BF9 0742 - 0x0BF9 0743
+	  *
+	  *	 T(°C) = (TS_CAL2_TEMP – TS_CAL1_TEMP) / (TS_CAL2 – TS_CAL1) * ( TS_DATA – TS_CAL1 ) + TS_CAL1_TEMP
+	  *
+	  *	 T(°C) = (130 - 30) / (*(__IO uint32_t*) 0x0BF9 0742 - *(__IO uint32_t*) 0x0BF9 0710) * (TS_DATA - *(__IO uint32_t*) 0x0BF9 0710) + 30
+	  */
+	  Temperature.Float = TK1 * (float) currTemterature + TK2;
+	  Voltage.Float = currVoltage * ADC_VREF_COEF;
+	  specterBuffer[13] = Temperature.Uint[0];
+	  specterBuffer[14] = Temperature.Uint[1];
+
+	  /* Температура МК */
+	  specterBuffer[15] = Voltage.Uint[0];
+	  specterBuffer[16] = Voltage.Uint[1];
+
 
 	  //
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
@@ -362,16 +430,23 @@ int main(void)
 		bzero((char *) uartBuffer, sizeof(uartBuffer));
 		sprintf(uartBuffer, "CS: %d, MTU: %d\n\r", tmpCS, MTUSizeValue);
 		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-	  /* Включение звука */
-	  SoundFlag = true;
 	}
     if (interval1 + INTERVAL1 < intervalTmp) {
     	interval1 = intervalTmp;
-    	//NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY);
+    	//NotifyAct(SOUND_NOTIFY, 2);
 		if (connectFlag) {
 			//NotifyAct(LED_NOTIFY);
 
 		}
+    }
+
+    /* Измерение напряжения батареи и температуры МК */
+    if (interval4 + INTERVAL4 < intervalTmp) {
+    	interval4 = intervalTmp;
+
+    	//HAL_ADC_Stop_DMA(&hadc4);						// Остановим набор спектр
+    	flagTemperatureMess = true;						// Для единичного измерения
+    	//HAL_ADC_Start_DMA(&hadc4, pulseLevel, 3);		// Запустим набор спектра, измерение напряжения и температуры.
     }
   }
   /* USER CODE END 3 */
@@ -475,20 +550,21 @@ static void MX_ADC4_Init(void)
   hadc4.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
   hadc4.Init.Resolution = ADC_RESOLUTION_12B;
   hadc4.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc4.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc4.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc4.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc4.Init.LowPowerAutoPowerOff = DISABLE;
   hadc4.Init.LowPowerAutonomousDPD = ADC_LP_AUTONOMOUS_DPD_DISABLE;
   hadc4.Init.LowPowerAutoWait = DISABLE;
   hadc4.Init.ContinuousConvMode = DISABLE;
-  hadc4.Init.NbrOfConversion = 1;
+  hadc4.Init.NbrOfConversion = 3;
+  hadc4.Init.DiscontinuousConvMode = ENABLE;
   hadc4.Init.ExternalTrigConv = ADC_EXTERNALTRIG_EXT_IT15;
   hadc4.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
   hadc4.Init.DMAContinuousRequests = ENABLE;
   hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
   hadc4.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
   hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_12CYCLES_5;
-  hadc4.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_1CYCLE_5;
+  hadc4.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_814CYCLES_5;
   hadc4.Init.OversamplingMode = DISABLE;
   if (HAL_ADC_Init(&hadc4) != HAL_OK)
   {
@@ -500,6 +576,25 @@ static void MX_ADC4_Init(void)
   sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
+  if (HAL_ADC_ConfigChannel(&hadc4, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_7;
+  sConfig.Rank = ADC_REGULAR_RANK_2;
+  sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_2;
+  if (HAL_ADC_ConfigChannel(&hadc4, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
+  sConfig.Rank = ADC_REGULAR_RANK_3;
   if (HAL_ADC_ConfigChannel(&hadc4, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -624,7 +719,7 @@ static void MX_LPTIM1_Init(void)
   hlptim1.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
   hlptim1.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV128;
   hlptim1.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
-  hlptim1.Init.Period = 4095;
+  hlptim1.Init.Period = 10000;
   hlptim1.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
   hlptim1.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
   hlptim1.Init.Input1Source = LPTIM_INPUT1SOURCE_GPIO;
@@ -767,15 +862,13 @@ void MX_RTC_Init(void)
   /** Initialize RTC Only
   */
   hrtc.Instance = RTC;
-  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
   hrtc.Init.AsynchPrediv = 127;
-  hrtc.Init.SynchPrediv = 255;
   hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
   hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
   hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
   hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
   hrtc.Init.OutPutPullUp = RTC_OUTPUT_PULLUP_NONE;
-  hrtc.Init.BinMode = RTC_BINARY_NONE;
+  hrtc.Init.BinMode = RTC_BINARY_ONLY;
   if (HAL_RTC_Init(&hrtc) != HAL_OK)
   {
     Error_Handler();
@@ -785,6 +878,13 @@ void MX_RTC_Init(void)
   privilegeState.backupRegisterStartZone2 = RTC_BKP_DR0;
   privilegeState.backupRegisterStartZone3 = RTC_BKP_DR0;
   if (HAL_RTCEx_PrivilegeModeSet(&hrtc, &privilegeState) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Enable the WakeUp
+  */
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_CK_SPRE_16BITS, 0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -904,18 +1004,50 @@ void HAL_LPTIM_CompareMatchCallback(LPTIM_HandleTypeDef *hlptim) {
 		  LEDflag = false;
 		  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 		}
-		if (VibroFlag) {
-		  VibroFlag = false;
-		  HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
+
+		/* Включение звука */
+		if (SoundEnable) {
+			if (notifyFlags & SOUND_NOTIFY) {
+				SoundFlag = true;
+				HAL_LPTIM_PWM_Start(&hlptim2, LPTIM_CHANNEL_2);
+			}
 		}
-		if (SoundFlag) {
-		  SoundFlag = false;
-		  HAL_LPTIM_PWM_Stop(&hlptim2, LPTIM_CHANNEL_2);
+
+		/* Включение вибро */
+		if (VibroEnable) {
+			if (notifyFlags & VIBRO_NOTIFY) {
+				VibroFlag = true;
+				HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_SET);
+			}
 		}
-		HAL_LPTIM_TimeOut_Stop_IT(&hlptim1);
 	}
 }
 
+void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim) {
+
+	/* Отключание звука */
+	if (SoundFlag) {
+	  SoundFlag = false;
+	  HAL_LPTIM_PWM_Stop(&hlptim2, LPTIM_CHANNEL_2);
+	}
+
+	/* Отключение вибро */
+	if (VibroFlag) {
+	  VibroFlag = false;
+	  HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
+	}
+}
+
+/*
+ *  Последнее событие в работе таймера
+ */
+void HAL_LPTIM_UpdateEventCallback(LPTIM_HandleTypeDef *hlptim) {
+
+		/* На всякий случай дополнительно выключим звук и вибро */
+		HAL_LPTIM_OnePulse_Stop_IT(&hlptim1, LPTIM_CHANNEL_1);
+		HAL_LPTIM_PWM_Stop(&hlptim2, LPTIM_CHANNEL_2);
+		HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
+}
 /* USER CODE END 4 */
 
 /**

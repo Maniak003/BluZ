@@ -67,6 +67,7 @@ extern DMA_QListTypeDef List_GPDMA1_Channel0;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern ADC_HandleTypeDef hadc4;
 extern LPTIM_HandleTypeDef hlptim1;
+extern RTC_HandleTypeDef hrtc;
 /* USER CODE BEGIN EV */
 //extern TIM_HandleTypeDef htim3;
 extern LPTIM_HandleTypeDef hlptim2;
@@ -212,6 +213,28 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles RTC non-secure interrupt.
+  */
+void RTC_IRQHandler(void)
+{
+  /* USER CODE BEGIN RTC_IRQn 0 */
+
+  /* USER CODE END RTC_IRQn 0 */
+  HAL_RTCEx_WakeUpTimerIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+  	  currentTimeAvg = currentTime++;
+  	  pulseCounterAvg = pulseCounter;
+  	  CPS = pulseCounterSecond;
+  	  /* Массив для гистограммы уровней */
+  	  if (indexDozimetrBufer >= SIZE_DOZIMETR_BUFER) {
+  		indexDozimetrBufer = 0;
+  	  }
+  	  dozimetrBuffer[indexDozimetrBufer++] = pulseCounterSecond;
+  	  pulseCounterSecond = 0;
+  /* USER CODE END RTC_IRQn 1 */
+}
+
+/**
   * @brief This function handles EXTI Line15 interrupt.
   */
 void EXTI15_IRQHandler(void)
@@ -222,6 +245,7 @@ void EXTI15_IRQHandler(void)
   HAL_GPIO_EXTI_IRQHandler(Sync_Pin);
   /* USER CODE BEGIN EXTI15_IRQn 1 */
   pulseCounter++;
+  pulseCounterSecond++;
 	/* Оповещение об импульсе */
 	//NotifyAct(LED_NOTIFY);
   /* USER CODE END EXTI15_IRQn 1 */
@@ -245,25 +269,33 @@ void GPDMA1_Channel0_IRQHandler(void)
 	switch (resolution) {
 		/* 1024 */
 		case 0:	{
-			if (tmpSpecterBuffer[((pulseLevel >> 2) & 0x3FF) + HEADER_OFFSET_2048] < 65535) {
-				tmpSpecterBuffer[((pulseLevel >> 2) & 0x3FF) + HEADER_OFFSET_2048]++;
+			if (tmpSpecterBuffer[((pulseLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET_2048] < 65535) {
+				tmpSpecterBuffer[((pulseLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET_2048]++;
 			}
 			break;
 		}
 		/* 2048 */
 		case 1: {
-			if (tmpSpecterBuffer[((pulseLevel >> 1) & 0x7FF) + HEADER_OFFSET_4096] < 65535) {
-				tmpSpecterBuffer[((pulseLevel >> 1) & 0x7FF) + HEADER_OFFSET_4096]++;
+			if (tmpSpecterBuffer[((pulseLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET_4096] < 65535) {
+				tmpSpecterBuffer[((pulseLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET_4096]++;
 			}
 			break;
 		}
 		/* 4096 */
 		case 2: {
-			if (tmpSpecterBuffer[(pulseLevel & 0xFFF) + HEADER_OFFSET_8192] < 65535) {
-				tmpSpecterBuffer[(pulseLevel & 0xFFF) + HEADER_OFFSET_8192]++;
+			if (tmpSpecterBuffer[(pulseLevel[0] & 0xFFF) + HEADER_OFFSET_8192] < 65535) {
+				tmpSpecterBuffer[(pulseLevel[0] & 0xFFF) + HEADER_OFFSET_8192]++;
 			}
 			break;
 		}
+	}
+
+	if (flagTemperatureMess) {
+		flagTemperatureMess = false;						// Сбросим флаг однократного выполнения.
+		currVoltage = (uint16_t) pulseLevel[2] & 0xFFF;		// Сохраним напряжение
+		currTemterature = (uint16_t) pulseLevel[1] & 0xFFF;	// Сохраним температуру
+		//HAL_ADC_Stop_DMA(&hadc4);							// Остановим измерение температуры и напряжени
+		//HAL_ADC_Start_DMA(&hadc4, pulseLevel, 1);			// Дальше набираем только спектр
 	}
   /* USER CODE END GPDMA1_Channel0_IRQn 1 */
 }
@@ -278,8 +310,6 @@ void LPTIM1_IRQHandler(void)
   /* USER CODE END LPTIM1_IRQn 0 */
   HAL_LPTIM_IRQHandler(&hlptim1);
   /* USER CODE BEGIN LPTIM1_IRQn 1 */
-  //HAL_LPTIM_PWM_Stop(&hlptim2, LPTIM_CHANNEL_2);
-  //HAL_LPTIM_OnePulse_Stop_IT(&hlptim1, LPTIM_CHANNEL_2);
   /* USER CODE END LPTIM1_IRQn 1 */
 }
 

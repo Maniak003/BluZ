@@ -74,6 +74,8 @@ System/Config/LowPower/peripheral_init.o: \
  ../System/Config/Debug_GPIO/debug_config.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
+ ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/flash_driver.h \
+ ../System/Modules/utilities_common.h ../Core/Inc/main.h \
  ../System/Modules/crc_ctrl.h ../System/Modules/utilities_common.h
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -155,5 +157,9 @@ System/Config/LowPower/peripheral_init.o: \
 ../System/Config/Debug_GPIO/debug_config.h:
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
+../Core/Inc/rw_FLASH.h:
+../System/Modules/Flash/flash_driver.h:
+../System/Modules/utilities_common.h:
+../Core/Inc/main.h:
 ../System/Modules/crc_ctrl.h:
 ../System/Modules/utilities_common.h:

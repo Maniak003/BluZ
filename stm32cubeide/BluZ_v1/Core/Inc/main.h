@@ -35,7 +35,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "rw_FLASH.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -64,28 +64,38 @@ extern "C" {
 #define SIZE_BUF_LOG 366
 #define SIZE_BUF_PARAM 122
 #define MAX_RESOLUTION 4096
+#define SIZE_DOZIMETR_BUFER 512
 
 #define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 extern uint16_t MTUSizeValue;
 extern uint8_t resolution;
 extern uint16_t specterBuffer[SIZE_BUF_4096];
-extern uint16_t tmpSpecterBuffer[MAX_RESOLUTION];
-extern uint32_t pulseCounter, pulseLevel;
+extern uint16_t currTemterature, currVoltage,tmpSpecterBuffer[MAX_RESOLUTION];
+extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, pulseLevel[3], currentTime, pulseCounterSecond, CPS;
 extern bool SoundEnable, VibroEnable, LEDEnable;
 extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
+extern bool flagTemperatureMess;
 extern uint16_t HVoltage, comparatorLevel;
 extern LPTIM_HandleTypeDef hlptim2;
+extern uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER];
+extern int indexDozimetrBufer;
 
 union dataC {
 	float Float;
 	uint8_t Uint[4];
 };
 
-extern union dataC calcCoeff;
-extern union dataC level1, level2, level3;
+union dataA {
+	float Float;
+	uint16_t Uint[2];
+};
+
+extern int level1, level2, level3;
 extern union dataC calcCoeff;
 extern union dataC enCoefA, enCoefB, enCoefC;
+extern union dataA Temperature, Voltage;
+extern union dataA AvgCPS;
 
 void sendData( uint8_t *dataSpectrBufer );
 
@@ -108,7 +118,7 @@ void Error_Handler(void);
 void MX_RTC_Init(void);
 
 /* USER CODE BEGIN EFP */
-void NotifyAct(uint8_t SRC);
+void NotifyAct(uint8_t SRC, uint32_t repCnt);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -138,10 +148,20 @@ void NotifyAct(uint8_t SRC);
 #define INTERVAL1 1000
 #define INTERVAL2 5000
 #define INTERVAL3 2000
+#define INTERVAL4 1000
+
 #define SOUND_TIME_NOTIFY 4096
 #define SOUND_NOTIFY 1
 #define VIBRO_NOTIFY 2
 #define LED_NOTIFY   4
+
+/*
+ * TODO -- Нужно получить реальное напряжение
+ *  Напряжение питания
+ */
+#define ADC_VREF 2.8f
+#define ADC_VREF_COEF 4.2f / 4080.0f
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

@@ -13,6 +13,8 @@ import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.internal.synchronized
 import ru.starline.bluz.MainActivity
 import java.lang.Math.log
+import java.lang.Math.round
+import java.lang.Math.sqrt
 import java.util.Locale
 
 
@@ -54,7 +56,7 @@ class drawSpecter {
         txtStat3.setText(saveStat3)
     }
 
-    fun redrawSpecter(spType: Int, PCounter: UInt, cps: Float, messTm:ULong, battLevel: UByte, tempMC: Float) {
+    fun redrawSpecter(spType: Int) {
         Log.d("BluZ-BT", "Type: " + spType.toString() + " HSize: " + HSize.toString() + " VSize: " + VSize.toString())
         //Log.d("BluZ-BT", "Draw specter.")
         var xSize: Double = 1.0
@@ -142,19 +144,35 @@ class drawSpecter {
         * "%.0f&#176C <font color=#ffff00> %.0f%%</font> total: %.0f cps: %.0f"
         */
         //var loc: Locale = Locale.US
-        if (battLevel < 11u) {
-            txtStat1.setText(Html.fromHtml("$tempMC&#176C   <font color=#C80000> $battLevel%</font>", HtmlCompat.FROM_HTML_MODE_LEGACY))
-        } else if (battLevel < 50u) {
-            txtStat1.setText(Html.fromHtml("$tempMC&#176C   <font color=#ffff00> $battLevel%</font>", HtmlCompat.FROM_HTML_MODE_LEGACY))
+        /* Перевод в дни, часы, минуты, секунды */
+        var dd: Int = GO.messTm.toInt() / 86400
+        var hh: Int = (GO.messTm.toInt() - dd * 86400) /  3600
+        var mm: Int = GO.messTm.toInt() / 60 % 60
+        var ss: Int = GO.messTm.toInt() / 1 % 60
+
+        var tmpStr = String.format("Time:%02d:%02d:%02d:%02d",  dd, hh, mm, ss)
+        Log.d("BluZ-BT", tmpStr)
+        var tmpMC: Int = GO.tempMC.toInt()
+        var tmpBL = GO.battLevel
+
+        if (GO.battLevel < 3.0f) {  // Уровень батареи низкий
+            txtStat1.setText(Html.fromHtml("$tmpMC&#176C   <font color=#C80000> $tmpBL v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
+        } else if (GO.battLevel < 3.5f) { // Уровнь батареи ниже 50%
+            txtStat1.setText(Html.fromHtml("$tmpMC&#176C   <font color=#ffff00> $tmpBL v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
         } else {
-            txtStat1.setText(Html.fromHtml("$tempMC&#176C   <font color=#00ff00> $battLevel%</font>", HtmlCompat.FROM_HTML_MODE_LEGACY))
+            txtStat1.setText(Html.fromHtml("$tmpMC&#176C   <font color=#00ff00> $tmpBL v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
         }
 
-        txtStat2.setText("Total: $PCounter")
-        txtStat3.setText("CPS: $cps")
-        //txtStat1.setText(Html.fromHtml(stat, HtmlCompat.FROM_HTML_MODE_LEGACY))
-        //stat = String.format(loc, "time: %.0f avg: %.2f (100", 0.0f, 0.0f) + "%)"
-        //txtStat2.setText(stat)
+        /* Расчет погрешности по трем сигмам */
+        var aquracy3S: Double = 300.0 / sqrt(GO.PCounter.toDouble())
+
+        txtStat2.setText(String.format("Total:%d(%.2f%%) Avg:%.2f", GO.PCounter.toInt(), aquracy3S, GO.cps))
+        var tmpPS = GO.pulsePerSec
+
+        /* Перевод CPS в uRh */
+        var doze: Float =  round(tmpPS.toFloat() * GO.propCPS2UR * 100.0f) / 100.0f
+        var avgDoze : Float = (round(GO.cps * GO.propCPS2UR * 100.0f) / 100.0f).toFloat()
+        txtStat3.setText("CPS:$tmpPS ($doze uRh) Avg:$avgDoze uRh")
 
         saveStat1 = txtStat1.text.toString()
         saveStat2 = txtStat2.text.toString()
