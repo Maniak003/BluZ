@@ -3013,7 +3013,7 @@
     (property "Reference" "R4" (id 0) (at 111.76 24.4942 90)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "470" (id 1) (at 111.76 27.0312 90))
+    (property "Value" "220" (id 1) (at 111.76 25.4 90))
     (property "Footprint" "Resistor_SMD:R_0402_1005Metric" (id 2) (at 111.76 30.988 90)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -4661,7 +4661,7 @@
       (reference "R3") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0402_1005Metric")
     )
     (path "/39b6b031-8eb7-439a-94fd-fbc783a3e92f"
-      (reference "R4") (unit 1) (value "470") (footprint "Resistor_SMD:R_0402_1005Metric")
+      (reference "R4") (unit 1) (value "220") (footprint "Resistor_SMD:R_0402_1005Metric")
     )
     (path "/ab507ed1-5da7-4da4-a2f6-067df73a6cac"
       (reference "R5") (unit 1) (value "1k") (footprint "Resistor_SMD:R_0402_1005Metric")
