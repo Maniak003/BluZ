@@ -433,7 +433,7 @@ int main(void)
 	}
     if (interval1 + INTERVAL1 < intervalTmp) {
     	interval1 = intervalTmp;
-    	//NotifyAct(VIBRO_NOTIFY, 2);
+    	NotifyAct(SOUND_NOTIFY, 2);
 		if (connectFlag) {
 			//NotifyAct(LED_NOTIFY);
 

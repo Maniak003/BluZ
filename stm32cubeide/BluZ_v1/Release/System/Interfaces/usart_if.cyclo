@@ -1,4 +1,0 @@
-../System/Interfaces/usart_if.c:122:25:UART_Init	1
-../System/Interfaces/usart_if.c:135:25:UART_DeInit	1
-../System/Interfaces/usart_if.c:161:25:UART_TransmitDMA	1
-../System/Interfaces/usart_if.c:148:25:UART_StartRx	1
