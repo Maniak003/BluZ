@@ -56,6 +56,8 @@ RNG_HandleTypeDef hrng;
 
 RTC_HandleTypeDef hrtc;
 
+TIM_HandleTypeDef htim17;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -71,7 +73,7 @@ int indexDozimetrBufer = 0;
 
 /* Настройки прибора */
 uint16_t specterBuffer[SIZE_BUF_4096] = {0,};
-bool SoundEnable = true, VibroEnable = true, LEDEnable = true;		// Собровождение квантов
+bool SoundEnable = true, VibroEnable = true, LEDEnable = false;		// Собровождение квантов
 bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активность звука для разных уровней
 bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
 bool flagTemperatureMess = false;
@@ -111,6 +113,7 @@ static void MX_RNG_Init(void);
 static void MX_ICACHE_Init(void);
 static void MX_LPTIM2_Init(void);
 static void MX_LPTIM1_Init(void);
+static void MX_TIM17_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -139,6 +142,7 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt) {
 			if (SRC & LED_NOTIFY) {
 				LEDflag = true;
 				HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+				HAL_TIM_Base_Start_IT(&htim17);
 			}
 		}*/
 	}
@@ -193,6 +197,7 @@ int main(void)
   MX_ICACHE_Init();
   MX_LPTIM2_Init();
   MX_LPTIM1_Init();
+  MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
   //MX_GPIO_Init();
   HAL_ADCEx_Calibration_Start(&hadc4);
@@ -215,13 +220,13 @@ int main(void)
    * порога компаратора
    *
    */
-  setLevelOnPort(0, 0x0F0);
+  setLevelOnPort(0, 0x1FF);
 
   /*
    * Настройка высокого напряжения
    * Чем выше значение тем ниже напряжение.
    */
-  setLevelOnPort(1, 0x200);
+  setLevelOnPort(1, 0x010);
 
   resolution = 0;			/* Тест разрешение 1024 */
   //resolution = 1;			/* Тест разрешение 2048 */
@@ -433,6 +438,7 @@ int main(void)
 	}
     if (interval1 + INTERVAL1 < intervalTmp) {
     	interval1 = intervalTmp;
+    	//HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
     	//NotifyAct(SOUND_NOTIFY, 2);
 		if (connectFlag) {
 			//NotifyAct(LED_NOTIFY);
@@ -891,6 +897,72 @@ void MX_RTC_Init(void)
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
+
+}
+
+/**
+  * @brief TIM17 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM17_Init(void)
+{
+
+  /* USER CODE BEGIN TIM17_Init 0 */
+
+  /* USER CODE END TIM17_Init 0 */
+
+  TIM_OC_InitTypeDef sConfigOC = {0};
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
+
+  /* USER CODE BEGIN TIM17_Init 1 */
+
+  /* USER CODE END TIM17_Init 1 */
+  htim17.Instance = TIM17;
+  htim17.Init.Prescaler = 15;
+  htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim17.Init.Period = 65535;
+  htim17.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim17.Init.RepetitionCounter = 0;
+  htim17.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim17) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_OC_Init(&htim17) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_OnePulse_Init(&htim17, TIM_OPMODE_SINGLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+  if (HAL_TIM_OC_ConfigChannel(&htim17, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+  sBreakDeadTimeConfig.BreakFilter = 0;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim17, &sBreakDeadTimeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM17_Init 2 */
+
+  /* USER CODE END TIM17_Init 2 */
 
 }
 

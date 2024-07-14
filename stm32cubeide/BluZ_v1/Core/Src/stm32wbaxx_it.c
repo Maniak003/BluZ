@@ -68,6 +68,7 @@ extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern ADC_HandleTypeDef hadc4;
 extern LPTIM_HandleTypeDef hlptim1;
 extern RTC_HandleTypeDef hrtc;
+extern TIM_HandleTypeDef htim17;
 /* USER CODE BEGIN EV */
 //extern TIM_HandleTypeDef htim3;
 extern LPTIM_HandleTypeDef hlptim2;
@@ -247,7 +248,11 @@ void EXTI15_IRQHandler(void)
   pulseCounter++;
   pulseCounterSecond++;
 	/* Оповещение об импульсе */
-	//NotifyAct(LED_NOTIFY);
+  if (LEDEnable) {
+  	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+	HAL_TIM_Base_Start_IT(&htim17);
+  }
+	//NotifyAct(LED_NOTIFY, 1);
   /* USER CODE END EXTI15_IRQn 1 */
 }
 
@@ -311,6 +316,20 @@ void LPTIM1_IRQHandler(void)
   HAL_LPTIM_IRQHandler(&hlptim1);
   /* USER CODE BEGIN LPTIM1_IRQn 1 */
   /* USER CODE END LPTIM1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM17 global interrupt.
+  */
+void TIM17_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM17_IRQn 0 */
+
+  /* USER CODE END TIM17_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim17);
+  /* USER CODE BEGIN TIM17_IRQn 1 */
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+  /* USER CODE END TIM17_IRQn 1 */
 }
 
 /**
