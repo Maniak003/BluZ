@@ -73,8 +73,13 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
  ../System/Config/Debug_GPIO/debug_config.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/flash_driver.h \
- ../System/Modules/utilities_common.h ../Core/Inc/main.h \
+ ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/simple_nvm_arbiter.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h \
+ ../System/Modules/utilities_common.h \
+ ../System/Config/Flash/simple_nvm_arbiter_conf.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h \
+ ../System/Modules/Flash/rf_timing_synchro.h \
+ ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h \
  ../Core/Inc/app_entry.h ../Utilities/sequencer/stm32_seq.h \
  ../Utilities/tim_serv/stm32_timer.h \
  ../System/Modules/MemoryManager/stm32_mm.h ../STM32_WPAN/App/app_ble.h \
@@ -84,11 +89,7 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
  ../System/Modules/MemoryManager/advanced_memory_manager.h \
  ../System/Modules/stm_list.h \
  ../Middlewares/ST/STM32_WPAN/stm32_wpan_common.h \
- ../System/Modules/Flash/flash_manager.h \
- ../System/Modules/Flash/simple_nvm_arbiter.h \
- ../System/Modules/Flash/simple_nvm_arbiter_common.h \
- ../System/Config/Flash/simple_nvm_arbiter_conf.h \
- ../System/Modules/Flash/simple_nvm_arbiter_common.h
+ ../System/Modules/Flash/flash_manager.h
 ../Core/Inc/app_common.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -172,8 +173,13 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
 ../Core/Inc/rw_FLASH.h:
-../System/Modules/Flash/flash_driver.h:
+../System/Modules/Flash/simple_nvm_arbiter.h:
+../System/Modules/Flash/simple_nvm_arbiter_common.h:
 ../System/Modules/utilities_common.h:
+../System/Config/Flash/simple_nvm_arbiter_conf.h:
+../System/Modules/Flash/simple_nvm_arbiter_common.h:
+../System/Modules/Flash/rf_timing_synchro.h:
+../System/Modules/Flash/flash_driver.h:
 ../Core/Inc/main.h:
 ../Core/Inc/app_entry.h:
 ../Utilities/sequencer/stm32_seq.h:
@@ -189,7 +195,3 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
 ../System/Modules/stm_list.h:
 ../Middlewares/ST/STM32_WPAN/stm32_wpan_common.h:
 ../System/Modules/Flash/flash_manager.h:
-../System/Modules/Flash/simple_nvm_arbiter.h:
-../System/Modules/Flash/simple_nvm_arbiter_common.h:
-../System/Config/Flash/simple_nvm_arbiter_conf.h:
-../System/Modules/Flash/simple_nvm_arbiter_common.h:

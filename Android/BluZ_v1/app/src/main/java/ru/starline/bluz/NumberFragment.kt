@@ -196,7 +196,7 @@ class NumberFragment : Fragment() {
                 val rbLineSpectr: RadioButton = view.findViewById(R.id.rbLine)
                 val cbSoundKvant: CheckBox = view.findViewById(R.id.CBsoundKvant)
                 val cbLedKvant: CheckBox = view.findViewById(R.id.CBledKvant)
-                val cbMarker: CheckBox = view.findViewById(R.id.CBMarker)
+                val cbMarker: CheckBox = view.findViewById(R.id.CBSpectrometer)
                 val editPolinomA: EditText = view.findViewById(R.id.editPolA)
                 val editPolinomB: EditText = view.findViewById(R.id.editPolB)
                 val editPolinomC: EditText = view.findViewById(R.id.editPolC)
@@ -215,15 +215,17 @@ class NumberFragment : Fragment() {
                 val rbResolution4096: RadioButton = view.findViewById(R.id.RBResol4096)
                 val editHVoltage: EditText = view.findViewById(R.id.editHvoltage)
                 val editComparator: EditText = view.findViewById(R.id.editComparator)
+                val cbSpectrometr: CheckBox = view.findViewById(R.id.CBSpectrometer)
 
                 when (GO.specterGraphType) {
                     0 -> rbLineSpectr.isChecked = true
                     1 -> rbGistogramSpectr.isChecked = true
                 }
                 /* Заполненние элементов управления из текущей конфигурации */
-                GO.propButtonInit = false                   // Отключим реакцию в листенерах компонентов
-                cbSoundKvant.isChecked = GO.propSoundKvant  // Звук прихода частицы
-                cbLedKvant.isChecked = GO.propLedKvant      // Подсветка прихода частицы
+                GO.propButtonInit = false                               // Отключим реакцию в листенерах компонентов
+                cbSoundKvant.isChecked = GO.propSoundKvant              // Звук прихода частицы
+                cbLedKvant.isChecked = GO.propLedKvant                  // Подсветка прихода частицы
+                cbSpectrometr.isChecked = GO.propAutoStartSpectrometr   // Запуск набора спектра при включении прибора
 
                 /* Разрешение в конфигурации */
                 when (GO.spectrResolution) {
@@ -293,6 +295,9 @@ class NumberFragment : Fragment() {
 
                     GO.propLedKvant = cbLedKvant.isChecked
                     GO.PP.setPropBoolean(propLedKvant, GO.propLedKvant)
+
+                    GO.propAutoStartSpectrometr = cbSpectrometr.isChecked
+                    GO.PP.setPropBoolean(propStartSpectrometr, GO.propAutoStartSpectrometr)
 
                     GO.propLevel1 = editLevel1.text.toString().toInt()              // Значение первого порога из редактора
                     GO.propLevel2 = editLevel2.text.toString().toInt()              // Значение второго порога из редактора
@@ -398,6 +403,15 @@ class NumberFragment : Fragment() {
                     * 33,34         - Уровень высокого напряжения
                     * 35,36         - Уровень компаратора
                     * 37            - Разрешение спектра 0 - 1024, 1 - 2048, 2 - 4096
+                    * 38            - Битовые флаги управления прибором
+                    *                   0 - Автоматический запуск набора спектра (1 - будет так же как в DoZer)
+                    *                   1 -
+                    *                   2 -
+                    *                   3 -
+                    *                   4 -
+                    *                   5 -
+                    *                   6 -
+                    *                   7 -
                     *
                     * 242, 243      - Контрольная сумма
                     */
@@ -521,6 +535,13 @@ class NumberFragment : Fragment() {
                         GO.BTT.sendBuffer[37] = 0u
                     }
 
+                    /* Запуск спектрометра при включении прибора */
+                    if (cbSpectrometr.isChecked) {
+                        GO.BTT.sendBuffer[38] = 1u
+                    } else {
+                        GO.BTT.sendBuffer[38] = 0u
+                    }
+
                     /*
                     *   Подсчет контрольной суммы
                     */
@@ -539,7 +560,7 @@ class NumberFragment : Fragment() {
 
                 /* Radiobuttons для выбора элемента настройки цвета */
                 /*
-                * TODO -- Нужно сделать imageView с тремя графиками для наглядности
+                * TODO -- Нужно сделать imageView с четырьмя графиками для наглядности
                 * Панель для отображения цвета
                 */
                 tvColor = view.findViewById(R.id.tvColor)

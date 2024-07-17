@@ -31,12 +31,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "LTC1662.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-extern char uartBuffer[100];
+extern char uartBuffer[400];
 typedef struct
 {
   BLUZ_Data_t TxData;
@@ -185,18 +185,28 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     * 33,34         - Уровень высокого напряжения
                     * 35,36         - Уровень компаратора
                     * 37			- Разрешение. 0 - 1024, 1 - 2048, 2 - 4096
+                    * 38			- Битовые флаги управления прибором
+                    * 					0 - Запуск набора спектра при включении.
+                    * 					1 -
+                    * 					2 -
+                    * 					3 -
+                    * 					4 -
+                    * 					5 -
+                    * 					6 -
+                    * 					7 -
                     *
                     * 242, 243      - Контрольная сумма
                     */
-					if (p_Notification->DataTransfered.p_Payload[3] == 0) {							// 0 - Настройки
-						LEDEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000001;		// LED
-						SoundEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000010;	// Sound
-						levelSound1 = p_Notification->DataTransfered.p_Payload[20] & 0b00000100;	// Звук для первого порога
-						levelSound2 = p_Notification->DataTransfered.p_Payload[20] & 0b00001000;	// Звук для второго порога
-						levelSound3 = p_Notification->DataTransfered.p_Payload[20] & 0b00010000;	// Звук для третьего порога
-						levelVibro1 = p_Notification->DataTransfered.p_Payload[20] & 0b00100000;	// Вибро для первого порога
-						levelVibro2 = p_Notification->DataTransfered.p_Payload[20] & 0b01000000;	// Вибро для второго порога
-						levelVibro3 = p_Notification->DataTransfered.p_Payload[20] & 0b10000000;	// Вибро для третьего порога
+					if (p_Notification->DataTransfered.p_Payload[3] == 0) {									// 0 - Настройки
+						LEDEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000001;				// LED
+						SoundEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000010;			// Sound
+						levelSound1 = p_Notification->DataTransfered.p_Payload[20] & 0b00000100;			// Звук для первого порога
+						levelSound2 = p_Notification->DataTransfered.p_Payload[20] & 0b00001000;			// Звук для второго порога
+						levelSound3 = p_Notification->DataTransfered.p_Payload[20] & 0b00010000;			// Звук для третьего порога
+						levelVibro1 = p_Notification->DataTransfered.p_Payload[20] & 0b00100000;			// Вибро для первого порога
+						levelVibro2 = p_Notification->DataTransfered.p_Payload[20] & 0b01000000;			// Вибро для второго порога
+						levelVibro3 = p_Notification->DataTransfered.p_Payload[20] & 0b10000000;			// Вибро для третьего порога
+						autoStartSpecrometr = p_Notification->DataTransfered.p_Payload[38] & 0b00000001;	// Запуск набора спектра при включении
 
 						/* Уровень порога 1 в uR/h */
 						level1 = p_Notification->DataTransfered.p_Payload[7]
@@ -258,7 +268,20 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						bzero((char *) uartBuffer, sizeof(uartBuffer));
 						sprintf(uartBuffer, "Lev1: %d, Lev2: %d, Lev3: %d\n\r", level1, level2, level3);
 						HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+						bzero((char *) uartBuffer, sizeof(uartBuffer));
+						sprintf(uartBuffer, "calcCoeff: %f\n\r", calcCoeff.Float);
+						HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
+						/* Установка уровней для компаратора и высокого напряжения */
+						setLevelOnPort(CHANNEL_A, comparatorLevel);
+						setLevelOnPort(CHANNEL_B, HVoltage);
+						/*
+						 * TODO -- не получается разобраться, почему запись выполняется со второго раза.
+						 * Первый вызов стирает Flash и только на втором происходит запись.
+						 *
+						 */
+						writeFlash();
+						//writeFlash();
 
 					/* Очистка буфера спектра */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 1) {
@@ -276,6 +299,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 			}
 
 			/* Вывод приемного буфера */
+			/*
 			bzero((char *) uartBuffer, sizeof(uartBuffer));
 			sprintf(uartBuffer, "bz_rx_app: DataTransfered\n\r");
 			HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
@@ -284,6 +308,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, 3, 100);
 			}
 			HAL_UART_Transmit(&huart2, (uint8_t *) "\n\r", 2, 100);
+			*/
 		}
       /* USER CODE END Service1Char2_WRITE_NO_RESP_EVT */
       break;

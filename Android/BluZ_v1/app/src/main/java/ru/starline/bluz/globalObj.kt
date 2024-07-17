@@ -55,6 +55,7 @@ class globalObj {
     public var propVibroLevel1: Boolean = true
     public var propVibroLevel2: Boolean = true
     public var propVibroLevel3: Boolean = true
+    public var propAutoStartSpectrometr: Boolean = false
     public var propCPS2UR: Float = 0.0f
     public var propCoefA: Float = 0.0f
     public var propCoefB: Float = 0.0f

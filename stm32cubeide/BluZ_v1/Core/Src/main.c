@@ -62,9 +62,11 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
-bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false;
+bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false;
 uint32_t currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalTmp = 0, pulseCounter = 0,  pulseCounterSecond = 0, pulseLevel[3] = {0}, currentTime = 0, CPS = 0;
-char uartBuffer[100] = {0,};
+char uartBuffer[400] = {0,};
+/* Буфер для работы с flash */
+uint64_t PL[8] = {0,};
 uint8_t resolution = 0; /* 0 - 1024, 1 - 2048, 2 - 4096, 3 - Логи, 4 - Параметры, 5 - История дозиметра*/
 uint8_t tmpBTBuffer[DATA_NOTIFICATION_MAX_PACKET_SIZE] = {0,};
 uint16_t currTemterature, currVoltage, tmpSpecterBuffer[4096];
@@ -129,7 +131,7 @@ static void MX_TIM17_Init(void);
  *
  */
 void NotifyAct(uint8_t SRC, uint32_t repCnt) {
-	if (SoundEnable || VibroEnable || LEDEnable) {
+	if (SoundEnable || VibroEnable ) {
 		/* Установим количество повторов */
 		hlptim1.Init.RepetitionCounter = repCnt;
 		if (HAL_LPTIM_Init(&hlptim1) == HAL_OK) {
@@ -137,13 +139,13 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt) {
 			/* Включаем звук и вибро */
 			HAL_LPTIM_OnePulse_Start_IT(&hlptim1, LPTIM_CHANNEL_1);
 		}
+	}
+	if (LEDEnable) {
 		/*
-		if (LEDEnable) {
-			if (SRC & LED_NOTIFY) {
-				LEDflag = true;
-				HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-				HAL_TIM_Base_Start_IT(&htim17);
-			}
+		if (SRC & LED_NOTIFY) {
+			LEDflag = true;
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+			HAL_TIM_Base_Start_IT(&htim17);
 		}*/
 	}
 }
@@ -215,20 +217,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   //__//HAL_TIM_CLEAR_FLAG(&htim1, TIM_SR_UIF); // Clear flags
 
-  /*
-   * Настройка ltc1662
-   * порога компаратора
-   *
-   */
-  setLevelOnPort(0, 0x1FF);
 
-  /*
-   * Настройка высокого напряжения
-   * Чем выше значение тем ниже напряжение.
-   */
-  setLevelOnPort(1, 0x010);
-
-  resolution = 0;			/* Тест разрешение 1024 */
+  //resolution = 0;			/* Тест разрешение 1024 */
   //resolution = 1;			/* Тест разрешение 2048 */
   //resolution = 2;			/* Тест разрешение 4096 */
 
@@ -241,17 +231,29 @@ int main(void)
 		//| LED_NOTIFY
 		, 1);
 */
-  /* Запуск набора спектра */
-  HAL_ADC_Start_DMA(&hadc4, pulseLevel, 3);
 
   //HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 2, WakeUpClock, WakeUpAutoClr)
 
-  bzero((char *) uartBuffer, sizeof(uartBuffer));
-  sprintf(uartBuffer, "\n\rRead flash Ok. Address: %lx\n\r", MAGIC_KEY_ADDRESS);
-  HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
   if (readFlash() == HAL_OK) {
+	  bzero((char *) uartBuffer, sizeof(uartBuffer));
+	  sprintf(uartBuffer, "\n\rRead flash Ok. Address: %lx\n\r", MAGIC_KEY_ADDRESS);
+	  HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
   }
+  /*
+   * Настройка порога компаратора
+   */
+  setLevelOnPort(CHANNEL_A, comparatorLevel);
 
+  /*
+   * Настройка высокого напряжения
+   * Чем выше значение тем ниже напряжение.
+   */
+  setLevelOnPort(CHANNEL_B, HVoltage);
+
+  /* Запуск набора спектра при активном автостарте */
+  if (autoStartSpecrometr) {
+	  HAL_ADC_Start_DMA(&hadc4, pulseLevel, 3);
+  }
   pulseCounter = 0;
   pulseCounterSecond = 0;
   currentTime = 0;

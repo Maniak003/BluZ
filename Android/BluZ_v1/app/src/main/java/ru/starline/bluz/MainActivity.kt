@@ -60,6 +60,7 @@ public const val propComparator: String = "Comparator"
 public const val propSoundKvant: String = "SoundKvant"
 public const val propLedKvant: String = "LedKvant"
 public const val propResolution: String = "Resolution"
+public const val propStartSpectrometr: String = "AutoStartSpectrometr"
 
 
 //public lateinit var mainContext: Context
@@ -203,6 +204,7 @@ public class MainActivity : FragmentActivity() {
         */
         GO.propSoundKvant = GO.PP.getPropBoolean(propSoundKvant)
         GO.propLedKvant = GO.PP.getPropBoolean(propLedKvant)
+        GO.propAutoStartSpectrometr = GO.PP.getPropBoolean(propStartSpectrometr)
         GO.propSoundLevel1 = GO.PP.getPropBoolean(propSoundLevel1)
         GO.propSoundLevel2 = GO.PP.getPropBoolean(propSoundLevel2)
         GO.propSoundLevel3 = GO.PP.getPropBoolean(propSoundLevel3)

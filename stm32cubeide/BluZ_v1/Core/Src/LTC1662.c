@@ -1,8 +1,8 @@
 /*
  *	Управление DAC.
  *	port:
- *	0 - A
- *	1 - B
+ *	CHANNEL_A -- Компаратор
+ *	CHANNEL_B -- Высокое напряжение
  *
  *	level:
  *	0 - 0x3FF
@@ -13,14 +13,26 @@
 
 uint16_t currentLevelPortA = 0;
 uint16_t currentLevelPortB = 0;
-void setLevelOnPort(uint8_t port, uint16_t level) {
+void setLevelOnPort(LTC1662_channel port, uint16_t level) {
 
 	/* Подготовим данные для загрузки в DAC */
 	uint16_t loadData = (level << 2) & 0x0FFC ;
-	if (port == 0) { 			// Порт А с выводом напряжения
-		loadData = loadData | 0x9000;
-	} else  if (port == 1) { 	// Порт B с выводом напряжения
-		loadData = loadData | 0xA000;
+	if (port == CHANNEL_A) { 				// Порт А с выводом напряжения
+		if (currentLevelPortA != level) {
+			currentLevelPortA = level;
+			loadData = loadData | 0x9000;
+		} else {
+			return;							// Если нет изменений - выходим
+		}
+	} else  if (port == CHANNEL_B) { 		// Порт B с выводом напряжения
+		if (currentLevelPortB != level) {
+			currentLevelPortB = level;
+			loadData = loadData | 0xA000;
+		} else {
+			return;							// Если нет изменений - выходим
+		}
+	} else {
+		return;								// Указан неправильный канал - выходим
 	}
 
 	/* Последовательность для начала изменения уровня */

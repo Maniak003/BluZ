@@ -9,8 +9,14 @@
 #ifndef INC_LTC1662_H_
 #define INC_LTC1662_H_
 
-extern uint16_t currentLevelPortA;
-extern uint16_t currentLevelPortB;
+//extern uint16_t currentLevelPortA;
+//extern uint16_t currentLevelPortB;
+
+typedef enum
+{
+  CHANNEL_A,
+  CHANNEL_B
+}LTC1662_channel;
 
 void setLevelOnPort(uint8_t port, uint16_t level);
 

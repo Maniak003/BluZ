@@ -244,6 +244,9 @@ void APP_BLE_Init(void)
   /* Realize a restore */
   SNVMA_Restore (APP_BLE_NvmBuffer);
   /* USER CODE BEGIN APP_BLE_Init_Buffers */
+	NVM_Init(PL, 8, 8);
+	SNVMA_Register (APP_BLE_NvmBuffer, (uint32_t *)PL, sizeof(PL) / 4);
+
 
   /* USER CODE END APP_BLE_Init_Buffers */
 

@@ -37,6 +37,7 @@
     <string name="soundKvant">Sound of kvant</string>
     <string name="ledKvant">Led of kvant</string>
     <string name="ledMarker">Marker</string>
+    <string name="autoStart">Spectrometer</string>
     <string name="readFromDevice">Read</string>
     <string name="writeToDevice">Write</string>
     <string name="textLevel_1">Level 1:</string>

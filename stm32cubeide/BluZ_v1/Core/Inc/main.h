@@ -75,11 +75,12 @@ extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, pulseLevel[3], cu
 extern bool SoundEnable, VibroEnable, LEDEnable;
 extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
-extern bool flagTemperatureMess;
+extern bool flagTemperatureMess, autoStartSpecrometr;
 extern uint16_t HVoltage, comparatorLevel;
 extern LPTIM_HandleTypeDef hlptim2;
 extern uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER];
 extern int indexDozimetrBufer;
+extern uint64_t PL[8];
 
 union dataC {
 	float Float;

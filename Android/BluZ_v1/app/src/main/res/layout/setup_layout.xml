@@ -322,11 +322,11 @@
                         android:textColor="@color/editTextColor" />
 
                     <CheckBox
-                        android:id="@+id/CBMarker"
+                        android:id="@+id/CBSpectrometer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="@string/ledMarker"
+                        android:text="@string/autoStart"
                         android:textColor="@color/editTextColor" />
                 </LinearLayout>
 

@@ -73,8 +73,13 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
  ../System/Config/Debug_GPIO/debug_config.h ../Core/Inc/app_conf.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/flash_driver.h \
- ../System/Modules/utilities_common.h ../Core/Inc/main.h \
+ ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/simple_nvm_arbiter.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h \
+ ../System/Modules/utilities_common.h \
+ ../System/Config/Flash/simple_nvm_arbiter_conf.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h \
+ ../System/Modules/Flash/rf_timing_synchro.h \
+ ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h \
  ../Core/Inc/app_common.h ../Middlewares/ST/STM32_WPAN/ble/ble.h \
  ../STM32_WPAN/App/ble_conf.h ../STM32_WPAN/App/ble_dbg_conf.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_core.h \
@@ -104,11 +109,8 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
  ../System/Modules/MemoryManager/advanced_memory_manager.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/blestack.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_types.h \
- ../System/Modules/Nvm/nvm.h ../System/Modules/Flash/simple_nvm_arbiter.h \
- ../System/Modules/Flash/simple_nvm_arbiter_common.h \
- ../System/Config/Flash/simple_nvm_arbiter_conf.h \
- ../System/Modules/Flash/simple_nvm_arbiter_common.h \
- ../STM32_WPAN/App/bluz.h ../STM32_WPAN/App/bluz_app.h
+ ../System/Modules/Nvm/nvm.h ../STM32_WPAN/App/bluz.h \
+ ../STM32_WPAN/App/bluz_app.h
 ../Core/Inc/main.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h:
 ../Core/Inc/stm32wbaxx_hal_conf.h:
@@ -191,8 +193,13 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
 ../Core/Inc/rw_FLASH.h:
-../System/Modules/Flash/flash_driver.h:
+../System/Modules/Flash/simple_nvm_arbiter.h:
+../System/Modules/Flash/simple_nvm_arbiter_common.h:
 ../System/Modules/utilities_common.h:
+../System/Config/Flash/simple_nvm_arbiter_conf.h:
+../System/Modules/Flash/simple_nvm_arbiter_common.h:
+../System/Modules/Flash/rf_timing_synchro.h:
+../System/Modules/Flash/flash_driver.h:
 ../Core/Inc/main.h:
 ../Core/Inc/app_common.h:
 ../Middlewares/ST/STM32_WPAN/ble/ble.h:
@@ -229,9 +236,5 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
 ../Middlewares/ST/STM32_WPAN/ble/stack/include/blestack.h:
 ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_types.h:
 ../System/Modules/Nvm/nvm.h:
-../System/Modules/Flash/simple_nvm_arbiter.h:
-../System/Modules/Flash/simple_nvm_arbiter_common.h:
-../System/Config/Flash/simple_nvm_arbiter_conf.h:
-../System/Modules/Flash/simple_nvm_arbiter_common.h:
 ../STM32_WPAN/App/bluz.h:
 ../STM32_WPAN/App/bluz_app.h:

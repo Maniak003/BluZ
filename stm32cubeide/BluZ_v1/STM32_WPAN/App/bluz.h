@@ -97,7 +97,7 @@ typedef struct
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
 
-extern char uartBuffer[100];
+extern char uartBuffer[400];
 extern UART_HandleTypeDef huart2;
 /* USER CODE END EV */
 
