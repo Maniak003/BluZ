@@ -28,6 +28,7 @@ import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.content.ContentProviderCompat.requireContext
@@ -42,6 +43,10 @@ public const val propColorSpecterLin: String = "ColorLin"
 public const val propColorSpecterLog: String = "ColorLog"
 public const val propColorSpecterFone: String = "ColorFone"
 public const val propColorSpecterFoneLg: String = "ColorFoneLg"
+public const val propColorSpecterLinGisto: String = "ColorLinGisto"
+public const val propColorSpecterLogGisto: String = "ColorLogGisto"
+public const val propColorSpecterFoneGisto: String = "ColorFoneGisto"
+public const val propColorSpecterFoneLgGisto: String = "ColorFoneLgGisto"
 public const val propLevel1: String = "Level1"
 public const val propLevel2: String = "Level2"
 public const val propLevel3: String = "Level3"
@@ -134,7 +139,7 @@ public class MainActivity : FragmentActivity() {
         */
 
         /* Завершение приложения */
-        var btnExit: Button = findViewById(R.id.buttonExit)
+        var btnExit: ImageButton = findViewById(R.id.buttonExit)
         btnExit.setOnClickListener {
             //activity.finish()
             //finishAffinity()
@@ -146,7 +151,7 @@ public class MainActivity : FragmentActivity() {
         }
 
         /* Окно со спектром */
-        var btnSpecter: Button = findViewById(R.id.buttonSpecter)
+        var btnSpecter: ImageButton = findViewById(R.id.buttonSpecter)
         btnSpecter.setOnClickListener {
             GO.viewPager.setCurrentItem(0, false)
             GO.bColor.resetToDefault()
@@ -154,7 +159,7 @@ public class MainActivity : FragmentActivity() {
         }
 
         /* Окно с историей */
-        var btnHistory: Button = findViewById(R.id.buttonHistory)
+        var btnHistory: ImageButton = findViewById(R.id.buttonHistory)
         btnHistory.setOnClickListener {
             GO.viewPager.setCurrentItem(1, false)
             GO.bColor.resetToDefault()
@@ -162,7 +167,7 @@ public class MainActivity : FragmentActivity() {
         }
 
         /* Окно дозиметра */
-        var btnDozimeter: Button = findViewById(R.id.buttonDosimeter)
+        var btnDozimeter: ImageButton = findViewById(R.id.buttonDosimeter)
         btnDozimeter.setOnClickListener {
             GO.viewPager.setCurrentItem(2, false)
             GO.bColor.resetToDefault()
@@ -170,7 +175,7 @@ public class MainActivity : FragmentActivity() {
         }
 
         /* Окно c логами */
-        var btnLog: Button = findViewById(R.id.buttonLog)
+        var btnLog: ImageButton = findViewById(R.id.buttonLog)
         btnLog.setOnClickListener {
             GO.viewPager.setCurrentItem(3, false)
             GO.bColor.resetToDefault()
@@ -178,7 +183,7 @@ public class MainActivity : FragmentActivity() {
         }
 
         /* Окно с настройками */
-        var btnSetup: Button = findViewById(R.id.buttonSetup)
+        var btnSetup: ImageButton = findViewById(R.id.buttonSetup)
         btnSetup.setOnClickListener {
             GO.viewPager.setCurrentItem(4, false)
             GO.bColor.resetToDefault()
@@ -193,10 +198,18 @@ public class MainActivity : FragmentActivity() {
         */
         GO.PP = propControl()
         GO.LEMAC = GO.PP.getPropStr(propADDRESS)
+        /* Цвета для линейного графика */
         GO.ColorLin = GO.PP.getPropInt(propColorSpecterLin)
         GO.ColorLog = GO.PP.getPropInt(propColorSpecterLog)
         GO.ColorFone = GO.PP.getPropInt(propColorSpecterFone)
         GO.ColorFoneLg = GO.PP.getPropInt(propColorSpecterFoneLg)
+        /* Цвета для гистограммы */
+        GO.ColorLinGisto = GO.PP.getPropInt(propColorSpecterLinGisto)
+        GO.ColorLogGisto = GO.PP.getPropInt(propColorSpecterLogGisto)
+        GO.ColorFoneGisto = GO.PP.getPropInt(propColorSpecterFoneGisto)
+        GO.ColorFoneLgGisto = GO.PP.getPropInt(propColorSpecterFoneLgGisto)
+
+        /* Тип графика спектра: линейный, гистограмма */
         GO.specterGraphType = GO.PP.getPropInt(propSpectrGraphType)
         GO.BTT = BluetoothInterface(GO.indicatorBT)
         /*

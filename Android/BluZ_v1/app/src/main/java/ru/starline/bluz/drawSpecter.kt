@@ -80,8 +80,13 @@ class drawSpecter {
             }
         }
 
-        paintLin.color = GO.ColorLin        // Цвет для отображения линейного спектра
-        paintLog.color = GO.ColorLog        // Цвет для отображения логарифмического спектра
+        if (GO.specterGraphType == 0) {         // Линейный стиль графика
+            paintLin.color = GO.ColorLin        // Цвет для отображения линейного спектра
+            paintLog.color = GO.ColorLog        // Цвет для отображения логарифмического спектра
+        } else {                                // Стиль гистограмма
+            paintLin.color = GO.ColorLinGisto   // Цвет для отображения линейного спектра
+            paintLog.color = GO.ColorLogGisto   // Цвет для отображения логарифмического спектра
+        }
         var oldYlin: Double = VSize.toDouble()
         var oldYlog: Double = VSize.toDouble()
         var oldX: Double = 0.0
@@ -111,25 +116,32 @@ class drawSpecter {
             } else {
                 Ylog = VSize.toFloat()
             }
-            /* Прорисовка линейного графика */
-            if ( ! (oldYlin == VSize.toDouble() && spectrData[idx] == 0.0)) {
-                specCanvas.drawLine(
-                    (oldX * xSize).toFloat(),   // Начальный X
-                    oldYlin.toFloat(),          // Начальный Y
-                    (idx * xSize).toFloat(),    // Конечный X
-                    Ylin,                       // Конечный Y
-                    paintLin
-                )
-            }
-            /* Прорисовка логарифмического графика */
-            if ( ! (oldYlog == VSize.toDouble() /*&& spectrData[idx] == 0.0*/ && Ylog == VSize.toFloat())) {
-                specCanvas.drawLine(
-                    (oldX * xSize).toFloat(),   // Начальный X
-                    oldYlog.toFloat(),          // Начальный Y
-                    (idx * xSize).toFloat(),    // Конечный X
-                    Ylog,                       // Конечный Y
-                    paintLog
-                )
+            if (GO.specterGraphType == 0) {         // Стиль графика - линия
+                /* Прорисовка линейного графика */
+                if ( ! (oldYlin == VSize.toDouble() && spectrData[idx] == 0.0)) {
+                    specCanvas.drawLine(
+                        (oldX * xSize).toFloat(),   // Начальный X
+                        oldYlin.toFloat(),          // Начальный Y
+                        (idx * xSize).toFloat(),    // Конечный X
+                        Ylin,                       // Конечный Y
+                        paintLin
+                    )
+                }
+                /* Прорисовка логарифмического графика */
+                if ( ! (oldYlog == VSize.toDouble() /*&& spectrData[idx] == 0.0*/ && Ylog == VSize.toFloat())) {
+                    specCanvas.drawLine(
+                        (oldX * xSize).toFloat(),   // Начальный X
+                        oldYlog.toFloat(),          // Начальный Y
+                        (idx * xSize).toFloat(),    // Конечный X
+                        Ylog,                       // Конечный Y
+                        paintLog
+                    )
+                }
+            } else {                                // Стиль графика - гистограмма
+                /* Линейный график */
+                specCanvas.drawLine((idx * xSize).toFloat(), Ylin, (idx * xSize).toFloat(),VSize.toFloat(), paintLin )
+                /* Логарифмический график */
+                specCanvas.drawLine((idx * xSize).toFloat(), Ylog, (idx * xSize).toFloat(),VSize.toFloat(), paintLog )
             }
             oldYlin = Ylin.toDouble()
             oldYlog = Ylog.toDouble()

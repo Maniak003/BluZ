@@ -4,19 +4,20 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageButton
 
 /**
  * Created by ed on 21,июнь,2024
  */
 class buttonColor {
-    lateinit var bSpectr: Button
-    lateinit var bHistory: Button
-    lateinit var bDosimetr: Button
-    lateinit var bLog: Button
-    lateinit var bSetup: Button
+    lateinit var bSpectr: ImageButton
+    lateinit var bHistory: ImageButton
+    lateinit var bDosimetr: ImageButton
+    lateinit var bLog: ImageButton
+    lateinit var bSetup: ImageButton
 
     /* Настройка указателей на кнопки */
-    fun initColor(b1: Button, b2: Button, b3: Button, b4: Button, b5: Button) {
+    fun initColor(b1: ImageButton, b2: ImageButton, b3: ImageButton, b4: ImageButton, b5: ImageButton) {
         bSpectr = b1
         bHistory = b2
         bDosimetr = b3
@@ -34,7 +35,7 @@ class buttonColor {
     }
 
     /* Установка активной кнопки */
-    fun setToActive(b: Button) {
+    fun setToActive(b: ImageButton) {
         b.setBackgroundTintList(ColorStateList.valueOf(GO.mainContext.getResources().getColor(R.color.activeButtonColor, GO.mainContext.theme)))
     }
 

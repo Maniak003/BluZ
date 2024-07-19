@@ -42,81 +42,72 @@
             android:foregroundGravity="right"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/indicatorBT"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/Red"
-                android:maxHeight="5dp"
-                android:minHeight="5dp" />
+                android:orientation="horizontal">
 
-            <Button
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2" />
+
+                <TextView
+                    android:id="@+id/indicatorBT"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/Red"
+                    android:maxHeight="5dp"
+                    android:minHeight="5dp" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2" />
+            </LinearLayout>
+
+            <ImageButton
                 android:id="@+id/buttonSpecter"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
-                android:minWidth="50dp"
-                android:text="@string/textSpecter"
-                android:textAlignment="center"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp"
-                app:cornerRadius="20dp" />
+                android:src="@drawable/ic_action_spectrapp" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/buttonHistory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
-                android:text="@string/textHistory"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp"
-                app:cornerRadius="20dp" />
+                android:src="@drawable/ic_action_historyapp" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/buttonDosimeter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
-                android:text="@string/textDosimetr"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp"
-                app:cornerRadius="20dp" />
+                android:src="@drawable/ic_action_dosimetrapp" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/buttonLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
-                android:text="@string/textLog"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp"
-                app:cornerRadius="20dp" />
+                android:src="@drawable/ic_action_logapp" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/buttonSetup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
-                android:text="@string/textSetup"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp"
-                app:cornerRadius="20dp" />
+                android:src="@drawable/ic_action_optionapp" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/buttonExit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="-5dp"
                 android:backgroundTint="@color/buttonColor"
-                android:text="@string/textExit"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp"
-                app:cornerRadius="20dp" />
+                android:src="@drawable/ic_action_closeapp" />
 
         </LinearLayout>
 

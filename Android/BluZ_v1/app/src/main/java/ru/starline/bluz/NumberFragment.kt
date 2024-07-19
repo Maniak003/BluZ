@@ -32,6 +32,7 @@ class NumberFragment : Fragment() {
     private lateinit var selR: SeekBar
     private lateinit var selG: SeekBar
     private lateinit var selB: SeekBar
+    private lateinit var rgTypeSpec: RadioGroup
 /*
     override fun onResume() {
         super.onResume()
@@ -278,12 +279,16 @@ class NumberFragment : Fragment() {
                 btnSaveSetup.setOnClickListener {
                     /* Сохраняем MAC адрес */
                     GO.LEMAC = GO.textMACADR.text.toString()
-                    GO.PP.setPropStr(propADDRESS, GO.LEMAC)                         // Сохраним MAC адрес устройства
-                    GO.PP.setPropInt(propColorSpecterLin, GO.ColorLin)              // Сохраним цвет линейного графика
-                    GO.PP.setPropInt(propColorSpecterLog, GO.ColorLog)              // Сохраним цвет логарифмического графика
-                    GO.PP.setPropInt(propColorSpecterFone, GO.ColorFone)            // Сохранним цвет графика фона
-                    GO.PP.setPropInt(propColorSpecterFoneLg, GO.ColorFoneLg)        // Сохранним цвет логарифмического графика фона
-                    if (rbLineSpectr.isChecked) {                                   // Сохраним тип графика для вывода спектра
+                    GO.PP.setPropStr(propADDRESS, GO.LEMAC)                             // Сохраним MAC адрес устройства
+                    GO.PP.setPropInt(propColorSpecterLin, GO.ColorLin)                  // Сохраним цвет линейного графика
+                    GO.PP.setPropInt(propColorSpecterLog, GO.ColorLog)                  // Сохраним цвет логарифмического графика
+                    GO.PP.setPropInt(propColorSpecterFone, GO.ColorFone)                // Сохранним цвет графика фона
+                    GO.PP.setPropInt(propColorSpecterFoneLg, GO.ColorFoneLg)            // Сохранним цвет логарифмического графика фона
+                    GO.PP.setPropInt(propColorSpecterLinGisto, GO.ColorLinGisto)        // Сохраним цвет линейного графика гистограммы
+                    GO.PP.setPropInt(propColorSpecterLogGisto, GO.ColorLogGisto)        // Сохраним цвет логарифмического графика  гистограммы
+                    GO.PP.setPropInt(propColorSpecterFoneGisto, GO.ColorFoneGisto)      // Сохранним цвет графика фона гистограммы
+                    GO.PP.setPropInt(propColorSpecterFoneLgGisto, GO.ColorFoneLgGisto)  // Сохранним цвет логарифмического графика фона гистограммы
+                    if (rbLineSpectr.isChecked) {                                       // Сохраним тип графика для вывода спектра
                         GO.specterGraphType = 0
                     } else {
                         GO.specterGraphType = 1
@@ -564,6 +569,8 @@ class NumberFragment : Fragment() {
                 * Панель для отображения цвета
                 */
                 tvColor = view.findViewById(R.id.tvColor)
+
+                /* Установка цветов по умолчанию если не нашли в конфигурации */
                 if (GO.ColorLin == 0) {
                     GO.ColorLin = getResources().getColor(R.color.specterColorLin, GO.mainContext.theme)
                 }
@@ -576,6 +583,19 @@ class NumberFragment : Fragment() {
                 if (GO.ColorFoneLg == 0) {
                     GO.ColorFoneLg = getResources().getColor(R.color.specterColorFoneLg, GO.mainContext.theme)
                 }
+                if (GO.ColorLinGisto == 0) {
+                    GO.ColorLinGisto = getResources().getColor(R.color.specterColorLinGisto, GO.mainContext.theme)
+                }
+                if (GO.ColorLogGisto == 0) {
+                    GO.ColorLogGisto = getResources().getColor(R.color.specterColorLogGisto, GO.mainContext.theme)
+                }
+                if (GO.ColorFoneGisto == 0) {
+                    GO.ColorFoneGisto = getResources().getColor(R.color.specterColorFoneGisto, GO.mainContext.theme)
+                }
+                if (GO.ColorFoneLgGisto == 0) {
+                    GO.ColorFoneLgGisto = getResources().getColor(R.color.specterColorFoneLgGisto, GO.mainContext.theme)
+                }
+
                 var noChange: Boolean = true
                 tvColor.setBackgroundColor(GO.ColorLin)
                 rbLine = view.findViewById(R.id.RBLin)
@@ -583,6 +603,71 @@ class NumberFragment : Fragment() {
                 rbFoneLin = view.findViewById(R.id.RBFoneLin)
                 rbFoneLg = view.findViewById(R.id.RBFoneLg)
                 rbGroup = view.findViewById(R.id.rbTypeGroup)
+                rgTypeSpec = view.findViewById(R.id.rgTypeSpectr)
+
+                /*
+                * Выбор типа отображения спектра. Линейный, гистограмма
+                */
+                rgTypeSpec.setOnCheckedChangeListener { _, checkedId -> view.findViewById<RadioButton>(checkedId)?.apply {
+                        noChange = false
+                        if (checkedId == rbLineSpectr.id) {
+                            GO.specterGraphType = 0
+                            if (rbLine.isChecked) {                                   // Цвет для линейного графика
+                                tvColor.setBackgroundColor(GO.ColorLin)
+                                selA.setProgress(Color.alpha(GO.ColorLin), false)
+                                selR.setProgress(Color.red(GO.ColorLin), false)
+                                selG.setProgress(Color.green(GO.ColorLin), false)
+                                selB.setProgress(Color.blue(GO.ColorLin), false)
+                            } else if (rbLg.isChecked) {                              // Цвет для логарифмического графика
+                                tvColor.setBackgroundColor(GO.ColorLog)
+                                selA.setProgress(Color.alpha(GO.ColorLog), false)
+                                selR.setProgress(Color.red(GO.ColorLog), false)
+                                selG.setProgress(Color.green(GO.ColorLog), false)
+                                selB.setProgress(Color.blue(GO.ColorLog), false)
+                            } else if (rbFoneLin.isChecked) {                         // Цвет для линейного графика фона
+                                tvColor.setBackgroundColor(GO.ColorFone)
+                                selA.setProgress(Color.alpha(GO.ColorFone), false)
+                                selR.setProgress(Color.red(GO.ColorFone), false)
+                                selG.setProgress(Color.green(GO.ColorFone), false)
+                                selB.setProgress(Color.blue(GO.ColorFone), false)
+                            } else if (rbFoneLg.isChecked) {                          // Цвет для логарифмического графика фона
+                                tvColor.setBackgroundColor(GO.ColorFoneLg)
+                                selA.setProgress(Color.alpha(GO.ColorFoneLg), false)
+                                selR.setProgress(Color.red(GO.ColorFoneLg), false)
+                                selG.setProgress(Color.green(GO.ColorFoneLg), false)
+                                selB.setProgress(Color.blue(GO.ColorFoneLg), false)
+                            }
+                        } else if (checkedId == rbGistogramSpectr.id) {
+                            GO.specterGraphType = 1
+                            if (rbLine.isChecked) {                                   // Цвет для линейного графика
+                                tvColor.setBackgroundColor(GO.ColorLinGisto)
+                                selA.setProgress(Color.alpha(GO.ColorLinGisto), false)
+                                selR.setProgress(Color.red(GO.ColorLinGisto), false)
+                                selG.setProgress(Color.green(GO.ColorLinGisto), false)
+                                selB.setProgress(Color.blue(GO.ColorLinGisto), false)
+                            } else if (rbLg.isChecked) {                              // Цвет для логарифмического графика
+                                tvColor.setBackgroundColor(GO.ColorLogGisto)
+                                selA.setProgress(Color.alpha(GO.ColorLogGisto), false)
+                                selR.setProgress(Color.red(GO.ColorLogGisto), false)
+                                selG.setProgress(Color.green(GO.ColorLogGisto), false)
+                                selB.setProgress(Color.blue(GO.ColorLogGisto), false)
+                            } else if (rbFoneLin.isChecked) {                         // Цвет для линейного графика фона
+                                tvColor.setBackgroundColor(GO.ColorFoneGisto)
+                                selA.setProgress(Color.alpha(GO.ColorFoneGisto), false)
+                                selR.setProgress(Color.red(GO.ColorFoneGisto), false)
+                                selG.setProgress(Color.green(GO.ColorFoneGisto), false)
+                                selB.setProgress(Color.blue(GO.ColorFoneGisto), false)
+                            } else if (rbFoneLg.isChecked) {                          // Цвет для логарифмического графика фона
+                                tvColor.setBackgroundColor(GO.ColorFoneLgGisto)
+                                selA.setProgress(Color.alpha(GO.ColorFoneLgGisto), false)
+                                selR.setProgress(Color.red(GO.ColorFoneLgGisto), false)
+                                selG.setProgress(Color.green(GO.ColorFoneLgGisto), false)
+                                selB.setProgress(Color.blue(GO.ColorFoneLgGisto), false)
+                            }
+                        }
+                    noChange = true
+                    }
+                }
 
                 /*
                  *  Выбор графика для изменения
@@ -591,30 +676,58 @@ class NumberFragment : Fragment() {
                 rbGroup.setOnCheckedChangeListener  { _, checkedId ->
                     view.findViewById<RadioButton>(checkedId)?.apply {
                         noChange = false
-                        if (checkedId == rbLine.id) {               // Цвет для линейного графика
-                            tvColor.setBackgroundColor(GO.ColorLin)
-                            selA.setProgress(Color.alpha(GO.ColorLin), false)
-                            selR.setProgress(Color.red(GO.ColorLin), false)
-                            selG.setProgress(Color.green(GO.ColorLin), false)
-                            selB.setProgress(Color.blue(GO.ColorLin), false)
-                        } else if (checkedId == rbLg.id) {          // Цвет для логарифмического графика
-                            tvColor.setBackgroundColor(GO.ColorLog)
-                            selA.setProgress(Color.alpha(GO.ColorLog), false)
-                            selR.setProgress(Color.red(GO.ColorLog), false)
-                            selG.setProgress(Color.green(GO.ColorLog), false)
-                            selB.setProgress(Color.blue(GO.ColorLog), false)
-                        } else if (checkedId == rbFoneLin.id) {     // Цвет для графика фона
-                            tvColor.setBackgroundColor(GO.ColorFone)
-                            selA.setProgress(Color.alpha(GO.ColorFone), false)
-                            selR.setProgress(Color.red(GO.ColorFone), false)
-                            selG.setProgress(Color.green(GO.ColorFone), false)
-                            selB.setProgress(Color.blue(GO.ColorFone), false)
-                        } else if (checkedId == rbFoneLg.id) {
-                            tvColor.setBackgroundColor(GO.ColorFoneLg)
-                            selA.setProgress(Color.alpha(GO.ColorFoneLg), false)
-                            selR.setProgress(Color.red(GO.ColorFoneLg), false)
-                            selG.setProgress(Color.green(GO.ColorFoneLg), false)
-                            selB.setProgress(Color.blue(GO.ColorFoneLg), false)
+                        if (rbLineSpectr.isChecked) {
+                            if (checkedId == rbLine.id) {                                   // Цвет для линейного графика
+                                tvColor.setBackgroundColor(GO.ColorLin)
+                                selA.setProgress(Color.alpha(GO.ColorLin), false)
+                                selR.setProgress(Color.red(GO.ColorLin), false)
+                                selG.setProgress(Color.green(GO.ColorLin), false)
+                                selB.setProgress(Color.blue(GO.ColorLin), false)
+                            } else if (checkedId == rbLg.id) {                              // Цвет для логарифмического графика
+                                tvColor.setBackgroundColor(GO.ColorLog)
+                                selA.setProgress(Color.alpha(GO.ColorLog), false)
+                                selR.setProgress(Color.red(GO.ColorLog), false)
+                                selG.setProgress(Color.green(GO.ColorLog), false)
+                                selB.setProgress(Color.blue(GO.ColorLog), false)
+                            } else if (checkedId == rbFoneLin.id) {                         // Цвет для линейного графика фона
+                                tvColor.setBackgroundColor(GO.ColorFone)
+                                selA.setProgress(Color.alpha(GO.ColorFone), false)
+                                selR.setProgress(Color.red(GO.ColorFone), false)
+                                selG.setProgress(Color.green(GO.ColorFone), false)
+                                selB.setProgress(Color.blue(GO.ColorFone), false)
+                            } else if (checkedId == rbFoneLg.id) {                          // Цвет для логарифмического графика фона
+                                tvColor.setBackgroundColor(GO.ColorFoneLg)
+                                selA.setProgress(Color.alpha(GO.ColorFoneLg), false)
+                                selR.setProgress(Color.red(GO.ColorFoneLg), false)
+                                selG.setProgress(Color.green(GO.ColorFoneLg), false)
+                                selB.setProgress(Color.blue(GO.ColorFoneLg), false)
+                            }
+                        } else if (rbGistogramSpectr.isChecked) {
+                            if (checkedId == rbLine.id) {                                   // Цвет для линейного графика
+                                tvColor.setBackgroundColor(GO.ColorLinGisto)
+                                selA.setProgress(Color.alpha(GO.ColorLinGisto), false)
+                                selR.setProgress(Color.red(GO.ColorLinGisto), false)
+                                selG.setProgress(Color.green(GO.ColorLinGisto), false)
+                                selB.setProgress(Color.blue(GO.ColorLinGisto), false)
+                            } else if (checkedId == rbLg.id) {                              // Цвет для логарифмического графика
+                                tvColor.setBackgroundColor(GO.ColorLogGisto)
+                                selA.setProgress(Color.alpha(GO.ColorLogGisto), false)
+                                selR.setProgress(Color.red(GO.ColorLogGisto), false)
+                                selG.setProgress(Color.green(GO.ColorLogGisto), false)
+                                selB.setProgress(Color.blue(GO.ColorLogGisto), false)
+                            } else if (checkedId == rbFoneLin.id) {                         // Цвет для линейного графика фона
+                                tvColor.setBackgroundColor(GO.ColorFoneGisto)
+                                selA.setProgress(Color.alpha(GO.ColorFoneGisto), false)
+                                selR.setProgress(Color.red(GO.ColorFoneGisto), false)
+                                selG.setProgress(Color.green(GO.ColorFoneGisto), false)
+                                selB.setProgress(Color.blue(GO.ColorFoneGisto), false)
+                            } else if (checkedId == rbFoneLg.id) {                          // Цвет для логарифмического графика фона
+                                tvColor.setBackgroundColor(GO.ColorFoneLgGisto)
+                                selA.setProgress(Color.alpha(GO.ColorFoneLgGisto), false)
+                                selR.setProgress(Color.red(GO.ColorFoneLgGisto), false)
+                                selG.setProgress(Color.green(GO.ColorFoneLgGisto), false)
+                                selB.setProgress(Color.blue(GO.ColorFoneLgGisto), false)
+                            }
                         }
                         noChange = true
                     }
@@ -627,18 +740,34 @@ class NumberFragment : Fragment() {
                     override fun onProgressChanged(
                         seekBar: SeekBar, progress: Int, fromUser: Boolean ) {
                         if (noChange) {
-                            if (rbLine.isChecked) {
-                                GO.ColorLin = GO.bColor.setSpecterColor(0, progress, GO.ColorLin)
-                                tvColor.setBackgroundColor(GO.ColorLin)
-                            } else if (rbLg.isChecked) {
-                                GO.ColorLog = GO.bColor.setSpecterColor(0, progress, GO.ColorLog)
-                                tvColor.setBackgroundColor(GO.ColorLog)
-                            } else if (rbFoneLin.isChecked) {
-                                GO.ColorFone = GO.bColor.setSpecterColor(0, progress, GO.ColorFone)
-                                tvColor.setBackgroundColor(GO.ColorFone)
-                            } else if (rbFoneLg.isChecked) {
-                                GO.ColorFoneLg = GO.bColor.setSpecterColor(0, progress, GO.ColorFoneLg)
-                                tvColor.setBackgroundColor(GO.ColorFoneLg)
+                            if (rbLineSpectr.isChecked) {
+                                if (rbLine.isChecked) {
+                                    GO.ColorLin = GO.bColor.setSpecterColor(0, progress, GO.ColorLin)
+                                    tvColor.setBackgroundColor(GO.ColorLin)
+                                } else if (rbLg.isChecked) {
+                                    GO.ColorLog = GO.bColor.setSpecterColor(0, progress, GO.ColorLog)
+                                    tvColor.setBackgroundColor(GO.ColorLog)
+                                } else if (rbFoneLin.isChecked) {
+                                    GO.ColorFone = GO.bColor.setSpecterColor(0, progress, GO.ColorFone)
+                                    tvColor.setBackgroundColor(GO.ColorFone)
+                                } else if (rbFoneLg.isChecked) {
+                                    GO.ColorFoneLg = GO.bColor.setSpecterColor(0, progress, GO.ColorFoneLg)
+                                    tvColor.setBackgroundColor(GO.ColorFoneLg)
+                                }
+                            } else if (rbGistogramSpectr.isChecked) {
+                                if (rbLine.isChecked) {
+                                    GO.ColorLinGisto = GO.bColor.setSpecterColor(0, progress, GO.ColorLinGisto)
+                                    tvColor.setBackgroundColor(GO.ColorLinGisto)
+                                } else if (rbLg.isChecked) {
+                                    GO.ColorLogGisto = GO.bColor.setSpecterColor(0, progress, GO.ColorLogGisto)
+                                    tvColor.setBackgroundColor(GO.ColorLogGisto)
+                                } else if (rbFoneLin.isChecked) {
+                                    GO.ColorFoneGisto = GO.bColor.setSpecterColor(0, progress, GO.ColorFoneGisto)
+                                    tvColor.setBackgroundColor(GO.ColorFoneGisto)
+                                } else if (rbFoneLg.isChecked) {
+                                    GO.ColorFoneLgGisto = GO.bColor.setSpecterColor(0, progress, GO.ColorFoneLgGisto)
+                                    tvColor.setBackgroundColor(GO.ColorFoneLgGisto)
+                                }
                             }
                         }
                     }
@@ -653,18 +782,34 @@ class NumberFragment : Fragment() {
                     override fun onProgressChanged(
                         seekBar: SeekBar, progress: Int, fromUser: Boolean ) {
                         if (noChange) {
-                            if (rbLine.isChecked) {
-                                GO.ColorLin = GO.bColor.setSpecterColor(1, progress, GO.ColorLin)
-                                tvColor.setBackgroundColor(GO.ColorLin)
-                            } else if (rbLg.isChecked) {
-                                GO.ColorLog = GO.bColor.setSpecterColor(1, progress, GO.ColorLog)
-                                tvColor.setBackgroundColor(GO.ColorLog)
-                            } else if (rbFoneLin.isChecked) {
-                                GO.ColorFone = GO.bColor.setSpecterColor(1, progress, GO.ColorFone)
-                                tvColor.setBackgroundColor(GO.ColorFone)
-                            } else if (rbFoneLg.isChecked) {
-                                GO.ColorFoneLg = GO.bColor.setSpecterColor(1, progress, GO.ColorFoneLg)
-                                tvColor.setBackgroundColor(GO.ColorFoneLg)
+                            if (rbLineSpectr.isChecked) {
+                                if (rbLine.isChecked) {
+                                    GO.ColorLin = GO.bColor.setSpecterColor(1, progress, GO.ColorLin)
+                                    tvColor.setBackgroundColor(GO.ColorLin)
+                                } else if (rbLg.isChecked) {
+                                    GO.ColorLog = GO.bColor.setSpecterColor(1, progress, GO.ColorLog)
+                                    tvColor.setBackgroundColor(GO.ColorLog)
+                                } else if (rbFoneLin.isChecked) {
+                                    GO.ColorFone = GO.bColor.setSpecterColor(1, progress, GO.ColorFone)
+                                    tvColor.setBackgroundColor(GO.ColorFone)
+                                } else if (rbFoneLg.isChecked) {
+                                    GO.ColorFoneLg = GO.bColor.setSpecterColor(1, progress, GO.ColorFoneLg)
+                                    tvColor.setBackgroundColor(GO.ColorFoneLg)
+                                }
+                            } else if (rbGistogramSpectr.isChecked) {
+                                if (rbLine.isChecked) {
+                                    GO.ColorLinGisto = GO.bColor.setSpecterColor(1, progress, GO.ColorLinGisto)
+                                    tvColor.setBackgroundColor(GO.ColorLinGisto)
+                                } else if (rbLg.isChecked) {
+                                    GO.ColorLogGisto = GO.bColor.setSpecterColor(1, progress, GO.ColorLogGisto)
+                                    tvColor.setBackgroundColor(GO.ColorLogGisto)
+                                } else if (rbFoneLin.isChecked) {
+                                    GO.ColorFoneGisto = GO.bColor.setSpecterColor(1, progress, GO.ColorFoneGisto)
+                                    tvColor.setBackgroundColor(GO.ColorFoneGisto)
+                                } else if (rbFoneLg.isChecked) {
+                                    GO.ColorFoneLgGisto = GO.bColor.setSpecterColor(1, progress, GO.ColorFoneLgGisto)
+                                    tvColor.setBackgroundColor(GO.ColorFoneLgGisto)
+                                }
                             }
                         }
                     }
@@ -679,18 +824,34 @@ class NumberFragment : Fragment() {
                     override fun onProgressChanged(
                         seekBar: SeekBar, progress: Int, fromUser: Boolean ) {
                         if (noChange) {
-                            if (rbLine.isChecked) {
-                                GO.ColorLin = GO.bColor.setSpecterColor(2, progress, GO.ColorLin)
-                                tvColor.setBackgroundColor(GO.ColorLin)
-                            } else if (rbLg.isChecked) {
-                                GO.ColorLog = GO.bColor.setSpecterColor(2, progress, GO.ColorLog)
-                                tvColor.setBackgroundColor(GO.ColorLog)
-                            } else if (rbFoneLin.isChecked) {
-                                GO.ColorFone = GO.bColor.setSpecterColor(2, progress, GO.ColorFone)
-                                tvColor.setBackgroundColor(GO.ColorFone)
-                            } else if (rbFoneLg.isChecked) {
-                                GO.ColorFoneLg = GO.bColor.setSpecterColor(2, progress, GO.ColorFoneLg)
-                                tvColor.setBackgroundColor(GO.ColorFoneLg)
+                            if(rbLineSpectr.isChecked) {
+                                if (rbLine.isChecked) {
+                                    GO.ColorLin = GO.bColor.setSpecterColor(2, progress, GO.ColorLin)
+                                    tvColor.setBackgroundColor(GO.ColorLin)
+                                } else if (rbLg.isChecked) {
+                                    GO.ColorLog = GO.bColor.setSpecterColor(2, progress, GO.ColorLog)
+                                    tvColor.setBackgroundColor(GO.ColorLog)
+                                } else if (rbFoneLin.isChecked) {
+                                    GO.ColorFone = GO.bColor.setSpecterColor(2, progress, GO.ColorFone)
+                                    tvColor.setBackgroundColor(GO.ColorFone)
+                                } else if (rbFoneLg.isChecked) {
+                                    GO.ColorFoneLg = GO.bColor.setSpecterColor(2, progress, GO.ColorFoneLg)
+                                    tvColor.setBackgroundColor(GO.ColorFoneLg)
+                                }
+                            } else if (rbGistogramSpectr.isChecked) {
+                                if (rbLine.isChecked) {
+                                    GO.ColorLinGisto = GO.bColor.setSpecterColor(2, progress, GO.ColorLinGisto)
+                                    tvColor.setBackgroundColor(GO.ColorLinGisto)
+                                } else if (rbLg.isChecked) {
+                                    GO.ColorLogGisto = GO.bColor.setSpecterColor(2, progress, GO.ColorLogGisto)
+                                    tvColor.setBackgroundColor(GO.ColorLogGisto)
+                                } else if (rbFoneLin.isChecked) {
+                                    GO.ColorFoneGisto = GO.bColor.setSpecterColor(2, progress, GO.ColorFoneGisto)
+                                    tvColor.setBackgroundColor(GO.ColorFoneGisto)
+                                } else if (rbFoneLg.isChecked) {
+                                    GO.ColorFoneLgGisto = GO.bColor.setSpecterColor(2, progress, GO.ColorFoneLgGisto)
+                                    tvColor.setBackgroundColor(GO.ColorFoneLgGisto)
+                                }
                             }
                         }
                     }
@@ -705,18 +866,34 @@ class NumberFragment : Fragment() {
                     override fun onProgressChanged(
                         seekBar: SeekBar, progress: Int, fromUser: Boolean ) {
                         if (noChange) {
-                            if (rbLine.isChecked) {
-                                GO.ColorLin = GO.bColor.setSpecterColor(3, progress, GO.ColorLin)
-                                tvColor.setBackgroundColor(GO.ColorLin)
-                            } else if (rbLg.isChecked) {
-                                GO.ColorLog = GO.bColor.setSpecterColor(3, progress, GO.ColorLog)
-                                tvColor.setBackgroundColor(GO.ColorLog)
-                            } else if (rbFoneLin.isChecked) {
-                                GO.ColorFone = GO.bColor.setSpecterColor(3, progress, GO.ColorFone)
-                                tvColor.setBackgroundColor(GO.ColorFone)
-                            } else if (rbFoneLg.isChecked) {
-                                GO.ColorFoneLg = GO.bColor.setSpecterColor(3, progress, GO.ColorFoneLg)
-                                tvColor.setBackgroundColor(GO.ColorFoneLg)
+                            if (rbLineSpectr.isChecked) {
+                                if (rbLine.isChecked) {
+                                    GO.ColorLin = GO.bColor.setSpecterColor(3, progress, GO.ColorLin)
+                                    tvColor.setBackgroundColor(GO.ColorLin)
+                                } else if (rbLg.isChecked) {
+                                    GO.ColorLog = GO.bColor.setSpecterColor(3, progress, GO.ColorLog)
+                                    tvColor.setBackgroundColor(GO.ColorLog)
+                                } else if (rbFoneLin.isChecked) {
+                                    GO.ColorFone = GO.bColor.setSpecterColor(3, progress, GO.ColorFone)
+                                    tvColor.setBackgroundColor(GO.ColorFone)
+                                } else if (rbFoneLg.isChecked) {
+                                    GO.ColorFoneLg = GO.bColor.setSpecterColor(3, progress, GO.ColorFoneLg)
+                                    tvColor.setBackgroundColor(GO.ColorFoneLg)
+                                }
+                            } else if (rbGistogramSpectr.isChecked) {
+                                if (rbLine.isChecked) {
+                                    GO.ColorLinGisto = GO.bColor.setSpecterColor(2, progress, GO.ColorLinGisto)
+                                    tvColor.setBackgroundColor(GO.ColorLinGisto)
+                                } else if (rbLg.isChecked) {
+                                    GO.ColorLogGisto = GO.bColor.setSpecterColor(2, progress, GO.ColorLogGisto)
+                                    tvColor.setBackgroundColor(GO.ColorLogGisto)
+                                } else if (rbFoneLin.isChecked) {
+                                    GO.ColorFoneGisto = GO.bColor.setSpecterColor(2, progress, GO.ColorFoneGisto)
+                                    tvColor.setBackgroundColor(GO.ColorFoneGisto)
+                                } else if (rbFoneLg.isChecked) {
+                                    GO.ColorFoneLgGisto = GO.bColor.setSpecterColor(2, progress, GO.ColorFoneLgGisto)
+                                    tvColor.setBackgroundColor(GO.ColorFoneLgGisto)
+                                }
                             }
                         }
                     }

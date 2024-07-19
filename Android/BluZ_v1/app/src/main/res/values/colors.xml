@@ -6,7 +6,7 @@
     <color name="Green">#FF00FF00</color>
     <color name="buttonColor">#5E5904</color>
     <color name="activeButtonColor">#9E7C06</color>
-    <color name="buttonTextColor">#EAB105</color>
+    <color name="buttonTextColor">#EAB100</color>
     <color name="labelTextColor">#058EEA</color>
     <color name="labelTextColor2">#707171</color>
     <color name="editTextColor">#FFEB3B</color>
@@ -14,4 +14,8 @@
     <color name="specterColorLog">#0C7DAA</color>
     <color name="specterColorFone">#3AB305</color>
     <color name="specterColorFoneLg">#277704</color>
+    <color name="specterColorLinGisto">#F4A621</color>
+    <color name="specterColorLogGisto">#8F5908</color>
+    <color name="specterColorFoneGisto">#3F9A17</color>
+    <color name="specterColorFoneLgGisto">#277704</color>
 </resources>

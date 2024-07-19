@@ -27,10 +27,21 @@ class globalObj {
     public lateinit var scanButton: Button
     public lateinit var btnReadFromDevice: Button
     public lateinit var btnWriteToDevice: Button
+    /*
+     *  Цвета для графика типа линия
+     */
     public var ColorLin: Int = 0
     public var ColorLog: Int = 0
     public var ColorFone: Int = 0
     public var ColorFoneLg: Int = 0
+    /*
+     *  Цвета для графика типа гистограмма
+     */
+    public var ColorLinGisto: Int = 0
+    public var ColorLogGisto: Int = 0
+    public var ColorFoneGisto: Int = 0
+    public var ColorFoneLgGisto: Int = 0
+
     public var specterType: Int = 0                 // Разрешение спектра полученное из прибора
     public var specterGraphType: Int = 0            // Тип отображаемого спектра 0 - Линия, 1 - Гистограмма
     public var spectrResolution: Int = 0            // Разрешение спектра из настроек
