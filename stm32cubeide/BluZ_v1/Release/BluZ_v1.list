@@ -10351,7 +10351,7 @@ Disassembly of section .text:
  80067b0:	f8ad 002a 	strh.w	r0, [sp, #42]	@ 0x2a
  80067b4:	f8ad 0024 	strh.w	r0, [sp, #36]	@ 0x24
  80067b8:	f001 fb37 	bl	8007e2a <Log_Module_Print>
- 80067bc:	2334      	movs	r3, #52	@ 0x34
+ 80067bc:	2335      	movs	r3, #53	@ 0x35
  80067be:	4ca5      	ldr	r4, [pc, #660]	@ (8006a54 <APP_BLE_Init+0x350>)
  80067c0:	2206      	movs	r2, #6
  80067c2:	7023      	strb	r3, [r4, #0]
