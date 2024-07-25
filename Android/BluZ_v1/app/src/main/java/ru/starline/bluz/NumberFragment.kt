@@ -118,9 +118,23 @@ class NumberFragment : Fragment() {
                 /* Сохранение спектра в файл */
                 val btnSaveBQ: Button = view.findViewById(R.id.buttonSaveBQ)
                 btnSaveBQ.setOnClickListener {
+                    val saveBqMon = SaveBqMon()
+                    when (GO.specterType) {
+                        0 -> {  /* Разрешение 1024 */
+                            saveBqMon.saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
+                        }
+                        1 -> {  /* Разрешение 2048 */
+                            saveBqMon.saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 2048)
+                        }
+                        2 -> {  /* Разрешение 4096 */
+                            saveBqMon.saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 4096)
+                        }
+                        else -> {
+                            saveBqMon.saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
+                        }
+                    }
+
                     Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
-                    //GO.drawSPECTER.init()
-                    //GO.drawSPECTER.clearSpecter()
                 }
                 /* Кнопка загрузки данных */
 

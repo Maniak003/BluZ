@@ -59,26 +59,27 @@ class drawSpecter {
     fun redrawSpecter(spType: Int) {
         Log.d("BluZ-BT", "Type: " + spType.toString() + " HSize: " + HSize.toString() + " VSize: " + VSize.toString())
         //Log.d("BluZ-BT", "Draw specter.")
+        var ResolutionSpectr: Int = 1024;
         var xSize: Double = 1.0
         var paintLin: Paint = Paint()
         var paintLog: Paint = Paint()
         when (spType) {
             /* разрешение 1024 */
             0 -> {
-                xSize = 2.0
-                paintLin.strokeWidth = 2f
+                ResolutionSpectr = 1024
             }
             /* разрешение 2048 */
             1 -> {
-                xSize = 1.0
-                paintLin.strokeWidth = 1f
+                ResolutionSpectr = 2048
             }
             /* разрешение 4096 */
             2 -> {
-                xSize = 0.5
-                paintLin.strokeWidth = 0.5f
+                ResolutionSpectr = 4096
             }
         }
+        xSize = HSize.toDouble() / ResolutionSpectr
+        paintLin.strokeWidth = xSize.toFloat()
+        paintLog.strokeWidth = xSize.toFloat()
 
         if (GO.specterGraphType == 0) {         // Линейный стиль графика
             paintLin.color = GO.ColorLin        // Цвет для отображения линейного спектра
@@ -96,7 +97,7 @@ class drawSpecter {
         var koefLin: Double
         var koefLog: Double
         /* Поиск максимального значения для масштабирования */
-        for (idx in 0..HSize) {
+        for (idx in 0..ResolutionSpectr - 1) {
             if (maxYlin < spectrData[idx]) {
                 maxYlin = spectrData[idx]
             }
@@ -109,7 +110,7 @@ class drawSpecter {
         koefLog = VSize / maxYlog
         var Ylin: Float
         var Ylog: Float
-        for (idx in 0..HSize) {
+        for (idx in 0..ResolutionSpectr - 1) {
             Ylin = (VSize - spectrData[idx] * koefLin).toFloat()
             if (spectrData[idx] != 0.0) {
                 Ylog = (VSize - log(spectrData[idx]) * koefLog).toFloat()
