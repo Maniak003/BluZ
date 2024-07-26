@@ -27,13 +27,15 @@ class drawSpecter {
     private lateinit var specBitmap: Bitmap
     private lateinit var specCanvas: Canvas
     public lateinit var imgView : ImageView
-    public var spectrData: DoubleArray = DoubleArray(4096)
+    public var spectrData: DoubleArray = DoubleArray(4296)
+    private var tmpSpecterData: DoubleArray = DoubleArray(4296)
     public lateinit var txtStat1: TextView
     public lateinit var txtStat2: TextView
     public lateinit var txtStat3: TextView
     private var saveStat1: String = ""
     private var saveStat2: String = ""
     private var saveStat3: String = ""
+    public var flagSMA: Boolean = false
 
     /* Установка рабочих параметров и создание необходимых объектов */
     fun init() {
@@ -63,6 +65,26 @@ class drawSpecter {
         var xSize: Double = 1.0
         var paintLin: Paint = Paint()
         var paintLog: Paint = Paint()
+
+        /*
+         *  Подготовка массива для отрисовки данных
+         *  Функии фильтрации
+         */
+        var tmpSM: Double
+        for (ttt: Int in 0 until tmpSpecterData.size - GO.windowSMA) {
+            if (flagSMA) {
+                /* SMA */
+                tmpSM = 0.0
+                for(k in 0 until GO.windowSMA) {
+                    tmpSM += spectrData[ttt + k]
+                }
+                tmpSpecterData[ttt] = tmpSM / GO.windowSMA
+            } else {
+                /* Без преобразования */
+                tmpSpecterData[ttt] = spectrData[ttt]
+            }
+        }
+
         when (spType) {
             /* разрешение 1024 */
             0 -> {
@@ -98,10 +120,10 @@ class drawSpecter {
         var koefLog: Double
         /* Поиск максимального значения для масштабирования */
         for (idx in 0..ResolutionSpectr - 1) {
-            if (maxYlin < spectrData[idx]) {
-                maxYlin = spectrData[idx]
+            if (maxYlin < tmpSpecterData[idx]) {
+                maxYlin = tmpSpecterData[idx]
             }
-            tmpLog = log(spectrData[idx])
+            tmpLog = log(tmpSpecterData[idx])
             if (maxYlog < tmpLog) {
                 maxYlog = tmpLog
             }
@@ -111,15 +133,15 @@ class drawSpecter {
         var Ylin: Float
         var Ylog: Float
         for (idx in 0..ResolutionSpectr - 1) {
-            Ylin = (VSize - spectrData[idx] * koefLin).toFloat()
+            Ylin = (VSize - tmpSpecterData[idx] * koefLin).toFloat()
             if (spectrData[idx] != 0.0) {
-                Ylog = (VSize - log(spectrData[idx]) * koefLog).toFloat()
+                Ylog = (VSize - log(tmpSpecterData[idx]) * koefLog).toFloat()
             } else {
                 Ylog = VSize.toFloat()
             }
             if (GO.specterGraphType == 0) {         // Стиль графика - линия
                 /* Прорисовка линейного графика */
-                if ( ! (oldYlin == VSize.toDouble() && spectrData[idx] == 0.0)) {
+                if ( ! (oldYlin == VSize.toDouble() && tmpSpecterData[idx] == 0.0)) {
                     specCanvas.drawLine(
                         (oldX * xSize).toFloat(),   // Начальный X
                         oldYlin.toFloat(),          // Начальный Y
@@ -148,15 +170,14 @@ class drawSpecter {
             oldYlog = Ylog.toDouble()
             oldX = idx.toDouble()
         }
+        /* Тестовая диния */
+        //specCanvas.drawLine(0.0f, VSize.toFloat(), HSize.toFloat(),VSize.toFloat(), paintLin )
+
         imgView.setImageBitmap(specBitmap)
 
         /*
         *  Вывод статистики
         */
-        /*
-        * "%.0f&#176C <font color=#ffff00> %.0f%%</font> total: %.0f cps: %.0f"
-        */
-        //var loc: Locale = Locale.US
         /* Перевод в дни, часы, минуты, секунды */
         var dd: Int = GO.messTm.toInt() / 86400
         var hh: Int = (GO.messTm.toInt() - dd * 86400) /  3600

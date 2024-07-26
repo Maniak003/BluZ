@@ -66,6 +66,7 @@ public const val propSoundKvant: String = "SoundKvant"
 public const val propLedKvant: String = "LedKvant"
 public const val propResolution: String = "Resolution"
 public const val propStartSpectrometr: String = "AutoStartSpectrometr"
+public const val propSMAWindow: String = "SMAWindow"
 
 
 //public lateinit var mainContext: Context
@@ -234,6 +235,10 @@ public class MainActivity : FragmentActivity() {
         GO.propHVoltage = GO.PP.getPropInt(propHV).toUShort()
         GO.propComparator = GO.PP.getPropInt(propComparator).toUShort()
         GO.spectrResolution = GO.PP.getPropInt(propResolution)
+        GO.windowSMA = GO.PP.getPropInt(propSMAWindow)
+        if (GO.windowSMA < 3) {
+            GO.windowSMA = 3
+        }
 
         Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())
     }

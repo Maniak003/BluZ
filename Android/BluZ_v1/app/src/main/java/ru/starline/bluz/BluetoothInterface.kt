@@ -371,7 +371,7 @@ class BLUZDelegate  {
                         tmpInt = (data[30].toUByte() + data[31].toUByte() * 256u + data[32].toUByte() * 65536u + data[33].toUByte() * 16777216u).toUInt()
                         GO.battLevel = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()) * 100) / 100
                         var pulseCounter = GO.PCounter
-                        Log.d("BluZ-BT", "Start sequence detect. Size: $numberMTU, Type: $dataType, Pulse: $pulseCounter, Temp:" + GO.tempMC.toString() + ", Volt:" + GO.battLevel .toString())
+                        Log.d("BluZ-BT", "Start detect. Size: $numberMTU, Type: $dataType, Pulse: $pulseCounter, Temp:" + GO.tempMC.toString() + ", Volt:" + GO.battLevel .toString())
 
                         /*
                          * Значения заголовка и формат данных для передачи
@@ -405,25 +405,25 @@ class BLUZDelegate  {
                             3 -> {                      // Логи
                                 indexData = 8
                             }
-                            9 -> {                      // Спектр с разрешеним 1024
-                                indexData = 146
+                            9 -> {                      // Спектр с разрешением 1024
+                                indexData = 55
                                 endOfData = data.size - 5
                                 GO.specterType = 0         // Определяет размер по горизонтали
                             }
-                            17 -> {                     // Спектр с разрешеним 2048
-                                indexData = 50
+                            17 -> {                     // Спектр с разрешением 2048
+                                indexData = 55
                                 endOfData = data.size - 5
                                 GO.specterType = 1
                             }
-                            34 -> {                     // Спектр с разрешеним 4096
-                                indexData = 102
+                            34 -> {                     // Спектр с разрешением 4096
+                                indexData = 55
                                 endOfData = data.size - 5
                                 GO.specterType = 2
                             }
                         }
                         /* Считаем контрольную сумму заголовка*/
                         checkSumm = 0u
-                        for (idxH in 0 .. indexData - 1) {
+                        for (idxH in 0 ..<indexData) {
                             checkSumm = (checkSumm + data[idxH].toUByte()).toUShort()
                             receiveBuffer[idxH] = data[idxH].toUByte()
                             testIdx++
@@ -439,6 +439,11 @@ class BLUZDelegate  {
                             endOfData = data.size - 5
                         }
                     }
+                    /*
+                    Log.d("BluZ-BT", "Receive: " + data.size.toString()+ " real size: " + testIdx2.toString() + " "
+                            + data[48] + " idx:" + idxArray + " " + data[2] + " " + data[3] + " " + data[4] + " " + data[240] + " " + data[241] + " " + data[242].toUByte() + " " + data[243].toUByte()
+                            + " numMTU: " + numberMTU.toString() + " indexData: " + indexData.toString() + " endOfData: " + endOfData.toString())
+                    */
                     when(dataType) {
                         /* Данные спектра */
                         0, 1 -> {
@@ -459,11 +464,11 @@ class BLUZDelegate  {
                     }
                     /*
                     Log.d("BluZ-BT", "Receive: " + data.size.toString()+ " real size: " + testIdx2.toString() + " "
-                            + data[0] + " " + data[1] + " " + data[2] + " " + data[3] + " " + data[4] + " " + data[240] + " " + data[241] + " " + data[242].toUByte() + " " + data[243].toUByte()
+                            + data[48] + " idx:" + idxArray + " " + data[2] + " " + data[3] + " " + data[4] + " " + data[240] + " " + data[241] + " " + data[242].toUByte() + " " + data[243].toUByte()
                             + " numMTU: " + numberMTU.toString() + " indexData: " + indexData.toString() + " endOfData: " + endOfData.toString())
                     */
 
-                    if (numberMTU == 0) {
+                    if (numberMTU == 0) {       // Прием последнего блока
                         var tmpCS: UShort
                         tmpCS = (data[242].toUByte() + (data[243].toUByte() * 256u)).toUShort()
                         Log.d("BluZ-BT", "Total data size: $testIdx")

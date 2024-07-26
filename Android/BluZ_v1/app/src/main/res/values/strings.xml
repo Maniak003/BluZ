@@ -52,6 +52,7 @@
     <string name="textPolinomA">A:</string>
     <string name="textPolinomB">B:</string>
     <string name="textPolinomC">C:</string>
+    <string name="textSMA">SMA</string>
     <string name="textHVoltage">HV:</string>
     <string name="textComparator">Comp:</string>
     <string name="textCPS2RH">uRh/cps:</string>

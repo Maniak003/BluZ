@@ -88,6 +88,25 @@ class NumberFragment : Fragment() {
                 GO.drawSPECTER.txtStat1 = view.findViewById(R.id.textStatistics1)
                 GO.drawSPECTER.txtStat2 = view.findViewById(R.id.textStatistics2)
                 GO.drawSPECTER.txtStat3 = view.findViewById(R.id.textStatistics3)
+                val CBSMA: CheckBox = view.findViewById(R.id.cbSMA)
+                GO.propButtonInit = false
+                CBSMA.isChecked = GO.drawSPECTER.flagSMA
+                GO.propButtonInit = true
+
+                CBSMA.setOnCheckedChangeListener {buttonView, isChecked ->
+                    if (GO.propButtonInit) {
+                        GO.drawSPECTER.flagSMA = isChecked
+                        if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
+                            /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
+                            //Log.d("BluZ-BT", "call drawSPEC")
+                            GO.drawSPECTER.clearSpecter()
+                            GO.drawSPECTER.redrawSpecter(GO.specterType)
+                        } else {
+                            //GO.drawObjectInit = true
+                            Log.e("BluZ-BT", "drawSPEC is null")
+                        }
+                    }
+                }
 
                 /* Старт набора спектра */
                 btnSpecterSS = view.findViewById(R.id.buttonSpecterSS)
@@ -231,6 +250,7 @@ class NumberFragment : Fragment() {
                 val editHVoltage: EditText = view.findViewById(R.id.editHvoltage)
                 val editComparator: EditText = view.findViewById(R.id.editComparator)
                 val cbSpectrometr: CheckBox = view.findViewById(R.id.CBSpectrometer)
+                val editSMA: EditText = view.findViewById(R.id.editTextSMAWindow)
 
                 when (GO.specterGraphType) {
                     0 -> rbLineSpectr.isChecked = true
@@ -276,6 +296,9 @@ class NumberFragment : Fragment() {
                 /* Значения DAC */
                 editHVoltage.setText(GO.propHVoltage.toString())
                 editComparator.setText(GO.propComparator.toString())
+
+                /* SMA window */
+                editSMA.setText(GO.windowSMA.toString())
 
                 GO.propButtonInit = true                   // Включим реакцию в листенерах компонентов
 
@@ -348,6 +371,10 @@ class NumberFragment : Fragment() {
                     GO.PP.setPropFloat(propCoefA, GO.propCoefA)                     // A - полинома пересчета канала в энергию
                     GO.PP.setPropFloat(propCoefB, GO.propCoefB)                     // B - полинома пересчета канала в энергию
                     GO.PP.setPropFloat(propCoefC, GO.propCoefC)                     // C - полинома пересчета канала в энергию
+
+                    /* SMA window сформируем нечетное число */
+                    GO.windowSMA = (editSMA.text.toString().toInt() / 2).toInt() * 2 + 1
+                    GO.PP.setPropInt(propSMAWindow, GO.windowSMA)
 
                     GO.propHVoltage = editHVoltage.text.toString().toUShort()
                     GO.PP.setPropInt(propHV, GO.propHVoltage.toInt())               // Уровень высокого напряжения

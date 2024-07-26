@@ -274,22 +274,22 @@ void GPDMA1_Channel0_IRQHandler(void)
 	switch (resolution) {
 		/* 1024 */
 		case 0:	{
-			if (tmpSpecterBuffer[((pulseLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET_2048] < 65535) {
-				tmpSpecterBuffer[((pulseLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET_2048]++;
+			if (tmpSpecterBuffer[((pulseLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET] < 65535) {
+				tmpSpecterBuffer[((pulseLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET]++;
 			}
 			break;
 		}
 		/* 2048 */
 		case 1: {
-			if (tmpSpecterBuffer[((pulseLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET_4096] < 65535) {
-				tmpSpecterBuffer[((pulseLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET_4096]++;
+			if (tmpSpecterBuffer[((pulseLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET] < 65535) {
+				tmpSpecterBuffer[((pulseLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET]++;
 			}
 			break;
 		}
 		/* 4096 */
 		case 2: {
-			if (tmpSpecterBuffer[(pulseLevel[0] & 0xFFF) + HEADER_OFFSET_8192] < 65535) {
-				tmpSpecterBuffer[(pulseLevel[0] & 0xFFF) + HEADER_OFFSET_8192]++;
+			if (tmpSpecterBuffer[(pulseLevel[0] & 0xFFF) + HEADER_OFFSET] < 65535) {
+				tmpSpecterBuffer[(pulseLevel[0] & 0xFFF) + HEADER_OFFSET]++;
 			}
 			break;
 		}

@@ -73,4 +73,5 @@ class globalObj {
     public var propCoefC: Float = 0.0f
     public var propComparator: UShort = 0u
     public var propHVoltage: UShort = 0u
+    public var windowSMA: Int = 5
 }

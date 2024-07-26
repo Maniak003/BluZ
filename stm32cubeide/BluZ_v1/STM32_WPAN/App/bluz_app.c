@@ -476,13 +476,13 @@ void sendData( uint8_t *dataSpectrBufer )
 		status = BLUZ_UpdateValue(BLUZ_RX, (BLUZ_Data_t *) &BZ_Context.TxData);
 
 		if (status == BLE_STATUS_INSUFFICIENT_RESOURCES) {
-			//bzero((char *) uartBuffer, sizeof(uartBuffer));
-			//sprintf(uartBuffer, "bz_rx_app: Error transfer with status: %d\n\r", status);
-			//HAL_UART_Transmit(&huart1, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
+			bzero((char *) uartBuffer, sizeof(uartBuffer));
+			sprintf(uartBuffer, "bz_rx_app: Error transfer with status: %d\n\r", status);
+			HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
 		} else {
 			//bzero((char *) uartBuffer, sizeof(uartBuffer));
 			//sprintf(uartBuffer, "bz_rx_app: Send complete\n\r");
-			//HAL_UART_Transmit(&huart1, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
+			//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
 		}
 
 	  BleStackCB_Process();

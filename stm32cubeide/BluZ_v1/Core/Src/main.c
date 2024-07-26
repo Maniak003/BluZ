@@ -306,27 +306,23 @@ int main(void)
 
 	  uint16_t countMTU = 0;
 	  uint16_t idxCS = 0 ;
-	  uint16_t headerOffset = 0;
 	  switch (resolution) {
 		  case 0: {
 			  countMTU = NUMBER_MTU_1024;
 			  idxCS = SIZE_BUF_1024 - 1 ;
 			  hdr[4] = 0;					/* Тип передаваемых данных */
-			  headerOffset = HEADER_OFFSET_2048;
 			  break;
 		  }
 		  case 1: {
 			  countMTU = NUMBER_MTU_2048;
 			  idxCS = SIZE_BUF_2048 - 1;
 			  hdr[4] = 0;
-			  headerOffset = HEADER_OFFSET_4096;
 			  break;
 		  }
 		  case 2: {
 			  countMTU = NUMBER_MTU_4096;
 			  idxCS = SIZE_BUF_4096 - 1;
 			  hdr[4] = 0;
-			  headerOffset = HEADER_OFFSET_8192;
 			  break;
 		  }
 		  case 3: {
@@ -400,7 +396,7 @@ int main(void)
 	   *
 	   */
 	  int kkk = 0;
-	  for (int jjj = headerOffset; jjj < idxCS; jjj++) {
+	  for (int jjj = HEADER_OFFSET; jjj < idxCS; jjj++) {
 		  specterBuffer[jjj] = tmpSpecterBuffer[kkk++];
 		  /* Тестовые данные */
 		  //specterBuffer[jjj] = 0;
@@ -413,8 +409,14 @@ int main(void)
 	  /* End test */
 	  kkk = 0;
 	  for (int iii = 0; iii < countMTU; iii++) {
+		  if ( ! connectFlag) {
+			  break;
+		  }
 		  for (int jjj = 0; jjj < MTUSizeValue; jjj++) {
 			  uint16_t dataSpectr = specterBuffer[kkk++];
+			  /*if(jjj == 48) {
+				  dataSpectr = iii;
+			  }*/
 			  uint8_t tmpByte;
 			  tmpByte  = (uint8_t) (dataSpectr & 0xFF);
 			  tmpBTBuffer[jjj++] = tmpByte;
@@ -433,6 +435,9 @@ int main(void)
 		   * TODO -- требуется задержка в передаче, иначе не все пакеты принимаются
 		   */
 		  HAL_Delay(40);
+			//bzero((char *) uartBuffer, sizeof(uartBuffer));
+			//sprintf(uartBuffer, "MTU: %d\n\r", iii);
+			//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 	  }
 		bzero((char *) uartBuffer, sizeof(uartBuffer));
 		sprintf(uartBuffer, "CS: %d, MTU: %d\n\r", tmpCS, MTUSizeValue);
