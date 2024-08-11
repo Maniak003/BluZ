@@ -1,0 +1,2 @@
+../System/Interfaces/hw_otp.c:26:5:HW_OTP_Read	4
+../System/Interfaces/hw_otp.c:53:5:HW_OTP_Write	8

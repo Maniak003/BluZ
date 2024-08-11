@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="Red">#FFFF0000</color>
+    <color name="Green">#FF00FF00</color>
+    <color name="buttonColor">#5E5904</color>
+    <color name="activeButtonColor">#9E7C06</color>
+    <color name="buttonTextColor">#EAB100</color>
+    <color name="labelTextColor">#058EEA</color>
+    <color name="labelTextColor2">#707171</color>
+    <color name="editTextColor">#FFEB3B</color>
+    <color name="specterColorLin">#4677F1</color>
+    <color name="specterColorLog">#185A75</color>
+    <color name="specterColorFone">#3AB305</color>
+    <color name="specterColorFoneLg">#277704</color>
+    <color name="specterColorLinGisto">#F4A621</color>
+    <color name="specterColorLogGisto">#8F5908</color>
+    <color name="specterColorFoneGisto">#3F9A17</color>
+    <color name="specterColorFoneLgGisto">#277704</color>
+    <color name="eraseColorCursor">#000000</color>
+    <color name="activeColorCursor">#81FF4A</color>
+</resources>

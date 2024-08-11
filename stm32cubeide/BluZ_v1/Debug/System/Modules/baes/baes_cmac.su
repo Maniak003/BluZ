@@ -1,0 +1,4 @@
+../System/Modules/baes/baes_cmac.c:48:13:BAES_CmacKeyRoll	24	static
+../System/Modules/baes/baes_cmac.c:64:13:BAES_CmacRawEncrypt	16	static
+../System/Modules/baes/baes_cmac.c:87:6:BAES_CmacSetKey	24	static
+../System/Modules/baes/baes_cmac.c:123:6:BAES_CmacCompute	104	static

@@ -1,0 +1,12 @@
+../System/Interfaces/stm32_lpm_if.c:398:6:PWR_EnterSleepMode	1
+../System/Interfaces/stm32_lpm_if.c:412:6:PWR_ExitSleepMode	1
+../System/Interfaces/stm32_lpm_if.c:178:13:Enter_Stop_Standby_Mode	2
+../System/Interfaces/stm32_lpm_if.c:199:13:Exit_Stop_Standby_Mode	3
+../System/Interfaces/stm32_lpm_if.c:380:6:PWR_ExitStopMode	1
+../System/Interfaces/stm32_lpm_if.c:215:6:PWR_EnterOffMode	2
+../System/Interfaces/stm32_lpm_if.c:356:6:PWR_EnterStopMode	1
+../System/Interfaces/stm32_lpm_if.c:113:13:Standby_Restore_GPIO	1
+../System/Interfaces/stm32_lpm_if.c:281:6:PWR_ExitOffMode	2
+../System/Interfaces/stm32_lpm_if.c:419:10:is_boot_from_standby	3
+../System/Interfaces/stm32_lpm_if.c:449:13:enter_standby_notification	1
+../System/Interfaces/stm32_lpm_if.c:454:13:exit_standby_notification	1

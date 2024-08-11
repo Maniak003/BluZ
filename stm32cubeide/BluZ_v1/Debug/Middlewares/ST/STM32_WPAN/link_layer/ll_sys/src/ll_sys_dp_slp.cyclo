@@ -1,0 +1,5 @@
+../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c:40:17:ll_sys_dp_slp_init	2
+../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c:60:23:ll_sys_dp_slp_get_state	1
+../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c:70:17:ll_sys_dp_slp_enter	4
+../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c:116:17:ll_sys_dp_slp_exit	4
+../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c:166:6:ll_sys_dp_slp_wakeup_evt_clbk	2

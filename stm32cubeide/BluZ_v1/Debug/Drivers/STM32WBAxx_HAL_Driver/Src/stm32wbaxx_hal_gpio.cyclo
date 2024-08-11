@@ -1,0 +1,10 @@
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c:168:6:HAL_GPIO_Init	12
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c:295:6:HAL_GPIO_DeInit	4
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c:376:15:HAL_GPIO_ReadPin	2
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c:408:6:HAL_GPIO_WritePin	2
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c:436:6:HAL_GPIO_WriteMultipleStatePin	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c:456:6:HAL_GPIO_TogglePin	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c:481:19:HAL_GPIO_LockPin	2
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c:516:6:HAL_GPIO_EXTI_IRQHandler	3
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c:537:13:HAL_GPIO_EXTI_Rising_Callback	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c:552:13:HAL_GPIO_EXTI_Falling_Callback	1

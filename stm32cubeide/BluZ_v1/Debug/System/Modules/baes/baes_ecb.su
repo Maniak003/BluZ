@@ -1,0 +1,2 @@
+../System/Modules/baes/baes_ecb.c:25:6:BAES_Reset	8	static
+../System/Modules/baes/baes_ecb.c:36:6:BAES_EcbCrypt	48	static

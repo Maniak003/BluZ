@@ -1,0 +1,10 @@
+../System/Config/Log/log_module.c:141:6:Log_Module_PrintWithArg	4
+../System/Config/Log/log_module.c:216:6:Log_Module_Print	1
+../System/Config/Log/log_module.c:247:6:Log_Module_DeInit	1
+../System/Config/Log/log_module.c:255:6:Log_Module_Set_Verbose_Level	1
+../System/Config/Log/log_module.c:263:6:Log_Module_Set_Region	2
+../System/Config/Log/log_module.c:234:6:Log_Module_Init	1
+../System/Config/Log/log_module.c:271:6:Log_Module_Add_Region	2
+../System/Config/Log/log_module.c:279:6:Log_Module_Enable_All_Regions	1
+../System/Config/Log/log_module.c:304:6:Log_Module_Set_Color	2
+../System/Config/Log/log_module.c:315:6:Log_Module_RegisterTimeStampFunction	1
