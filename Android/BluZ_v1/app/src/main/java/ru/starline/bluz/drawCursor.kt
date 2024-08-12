@@ -26,7 +26,7 @@ class drawCursor {
             if ((HSize == 0) or (VSize == 0)) {
                 Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize")
             } else {
-                Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize")
+                //Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize")
                 /* Подготавливаем bitmap для рисования */
                 cursorBitmap = Bitmap.createBitmap(HSize, VSize, Bitmap.Config.ARGB_8888)
                 cursorCanvas = Canvas(cursorBitmap)

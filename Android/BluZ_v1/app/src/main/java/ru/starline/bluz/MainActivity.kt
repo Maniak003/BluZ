@@ -1,39 +1,14 @@
 package ru.starline.bluz
 
-import android.content.Context
-import android.content.pm.PackageManager
-import android.content.res.Resources
-import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.fragment.app.FragmentActivity
-import androidx.viewpager2.widget.ViewPager2
-import android.widget.Button
-import android.widget.TextView
-import androidx.core.app.ActivityCompat
-import com.google.android.material.internal.ViewUtils.getContentView
-import kotlin.system.exitProcess
 import android.Manifest
-import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothManager
-import android.bluetooth.le.BluetoothLeScanner
-import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
-import android.bluetooth.le.ScanResult
-import android.content.SharedPreferences
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.os.Handler
-import android.text.TextUtils
+import android.content.pm.PackageManager
+import android.os.Bundle
 import android.util.Log
-import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.Toast
-import androidx.core.content.ContentProviderCompat.requireContext
-import java.nio.charset.Charset
-import java.util.UUID
+import androidx.activity.enableEdgeToEdge
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.FragmentActivity
+import kotlin.system.exitProcess
 
 public val GO: globalObj = globalObj()
 public const val propADDRESS: String = "Address"
@@ -248,6 +223,8 @@ public class MainActivity : FragmentActivity() {
         }
 
         Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())
+        val tmFull = intervalTimer()
+        tmFull.startTimer();
     }
 }
 

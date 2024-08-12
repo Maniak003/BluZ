@@ -17,6 +17,7 @@ import android.bluetooth.le.ScanSettings
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.provider.Settings.Global.getString
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Button
@@ -34,6 +35,8 @@ import java.util.UUID
 import ru.starline.bluz.globalObj
 import kotlin.concurrent.thread
 import kotlin.math.round
+import androidx.fragment.app.Fragment
+
 
 /*
  The following 128bits UUIDs have been generated from the random UUID
@@ -215,6 +218,8 @@ class BLUZDelegate  {
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     tv.setBackgroundColor(GO.mainContext.getColor(R.color.Green))
+                    GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
+                    GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
                     Log.i("BluZ-BT", "Gatt connect success.")
                     if (!gatt.discoverServices()) {
                         Log.e("BluZ-BT", "Error: Discover service failed.")
@@ -227,6 +232,8 @@ class BLUZDelegate  {
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     tv.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
+                    GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop)
+                    GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.buttonTextColor))
                     connected = false
                     writePending = false
                     Log.i("BluZ-BT", "Disconnect.")

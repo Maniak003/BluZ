@@ -23,7 +23,6 @@ import java.nio.ByteBuffer
 const val ARG_OBJECT = "oblect"
 
 class NumberFragment : Fragment() {
-    private lateinit var btnSpecterSS: Button
     private  lateinit var rbGroup: RadioGroup
     private lateinit var rbLine: RadioButton
     private lateinit var rbLg: RadioButton
@@ -94,21 +93,13 @@ class NumberFragment : Fragment() {
                     val x: Float = event.x
                     val y: Float = event.y
                     if ((event.getAction() == MotionEvent.ACTION_DOWN)|| (event.getAction() == MotionEvent.ACTION_MOVE)) {
-                        if ((GO.drawCURSOR.oldX != x) || (GO.drawCURSOR.oldY != y))  {
+                        if ((GO.drawCURSOR.oldX != x) /*|| (GO.drawCURSOR.oldY != y)*/)  {
                             GO.drawCURSOR.showCorsor(x, y)
-                            Log.i("BluZ-BT", "X: $x, Y: $y")
+                            //Log.i("BluZ-BT", "X: $x, Y: $y")
                         }
                     }
                     true
                 }
-
-                /*GO.drawSPECTER.imgView.onPointerCaptureChange(true)
-                GO.drawSPECTER.imgView.setOnCapturedPointerListener { view, event ->
-                    val x: Float = event.x
-                    val y: Float = event.y
-                    Log.i("BluZ-BT", "X: $x, Y: $y")
-                    true
-                }*/
 
                 GO.drawSPECTER.txtStat1 = view.findViewById(R.id.textStatistics1)
                 GO.drawSPECTER.txtStat2 = view.findViewById(R.id.textStatistics2)
@@ -134,28 +125,27 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Старт набора спектра */
-                btnSpecterSS = view.findViewById(R.id.buttonSpecterSS)
+                GO.btnSpecterSS = view.findViewById(R.id.buttonSpecterSS)
                 /* Проверяем была ли инициализация ранее */
                 if (GO.initBT) {
                     if (GO.BTT.connected) {         // Восстанавливаем кнопку запуска
-                        btnSpecterSS.setText(getString(R.string.textStartStop2))
-                        btnSpecterSS.setTextColor(getResources().getColor(R.color.Red, GO.mainContext.theme))
+                        GO.btnSpecterSS.text = getString(R.string.textStartStop2)
+                        GO.btnSpecterSS.setTextColor(resources.getColor(R.color.Red, GO.mainContext.theme))
                     }
                     GO.drawSPECTER.init()
-                    GO.drawCURSOR.init()
                 } else {
                     GO.initBT = true
                 }
 
                 /* Обработка нажатия на кнопку Start/Stop */
-                btnSpecterSS.setOnClickListener {
-                    if (btnSpecterSS.text == getString(R.string.textStartStop)) {
-                        btnSpecterSS.setText(getString(R.string.textStartStop2))
-                        btnSpecterSS.setTextColor(getResources().getColor(R.color.Red, GO.mainContext.theme))
+                GO.btnSpecterSS.setOnClickListener {
+                    if (GO.btnSpecterSS.text == getString(R.string.textStartStop)) {
+                        GO.btnSpecterSS.text = getString(R.string.textStartStop2)
+                        GO.btnSpecterSS.setTextColor(resources.getColor(R.color.Red, GO.mainContext.theme))
                         GO.BTT.initLeDevice()
                     } else {
-                        btnSpecterSS.setText(getString(R.string.textStartStop))
-                        btnSpecterSS.setTextColor(getResources().getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                        GO.btnSpecterSS.text = getString(R.string.textStartStop)
+                        GO.btnSpecterSS.setTextColor(resources.getColor(R.color.buttonTextColor, GO.mainContext.theme))
                         GO.BTT.destroyDevice()
                     }
                 }

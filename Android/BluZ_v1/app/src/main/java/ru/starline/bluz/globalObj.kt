@@ -26,6 +26,7 @@ class globalObj {
     public lateinit var viewPager: ViewPager2
     public lateinit var PP: propControl
     public lateinit var scanButton: Button
+    public lateinit var btnSpecterSS: Button
     public lateinit var btnReadFromDevice: Button
     public lateinit var btnWriteToDevice: Button
 
