@@ -204,6 +204,7 @@ class BLUZDelegate  {
     }
 
     // Сюда попадаем после завершения работы connectGatt
+    @OptIn(ExperimentalUnsignedTypes::class)
     private val gattCallback = object : BluetoothGattCallback() {
         private var idxArray: Int = 0
         private var numberMTU: Int = 0
@@ -217,9 +218,13 @@ class BLUZDelegate  {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
-                    tv.setBackgroundColor(GO.mainContext.getColor(R.color.Green))
-                    GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
-                    GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
+                    MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
+                        withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                            tv.setBackgroundColor(GO.mainContext.getColor(R.color.Green))
+                            GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
+                            GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
+                        }
+                    }
                     Log.i("BluZ-BT", "Gatt connect success.")
                     if (!gatt.discoverServices()) {
                         Log.e("BluZ-BT", "Error: Discover service failed.")
@@ -231,9 +236,13 @@ class BLUZDelegate  {
                     }
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    tv.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
-                    GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop)
-                    GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.buttonTextColor))
+                    MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
+                        withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                            tv.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
+                            GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop)
+                            GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.buttonTextColor))
+                        }
+                    }
                     connected = false
                     writePending = false
                     Log.i("BluZ-BT", "Disconnect.")
@@ -252,31 +261,19 @@ class BLUZDelegate  {
                 if (gattService.uuid == BLUETOOTH_BLUZ_SERVICE) {
                     wrCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_W)
                     rdCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_R)
-                    //delegate = BLUZDelegate()
                 }
-                //if (delegate != null) {
-                //    sync = delegate.connectCharacteristics(gattService)
-                //    break
-                //}
             }
-            //if (sync) {
-                if (!gatt.requestMtu(MAX_MTU)) Log.d("BluZ-BT", "Error set MTU.")
-            //}
+            if (!gatt.requestMtu(MAX_MTU)) Log.d("BluZ-BT", "Error set MTU.")
         }
 
         override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor, status: Int) {
-            //delegate!!.onDescriptorWrite(gatt, descriptor, status)
             if (descriptor.characteristic === rdCharacteristic) {
-                Log.d("BluZ-BT", "writing read characteristic descriptor finished, status=$status")
+                Log.i("BluZ-BT", "writing read characteristic descriptor finished, status=$status")
                 if (status != BluetoothGatt.GATT_SUCCESS) {
-                    Log.d("BluZ-BT", "Error: Write characteristic failed.")
+                    Log.e("BluZ-BT", "Error: Write characteristic failed.")
                 } else {
                     Log.i("BluZ-BT", "Connect success.")
                     connected = true
-                    //if (DA != null) {
-                    //    DA.connectIndicator()
-                    //}
-                    Log.d("BluZ-BT", "Write descriptor Ok.")
                 }
             }
         }
@@ -284,19 +281,19 @@ class BLUZDelegate  {
         override fun onCharacteristicWrite( gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int ) {
             if ( !connected || wrCharacteristic == null) return
             if (status != BluetoothGatt.GATT_SUCCESS) {
-                Log.d("BluZ-BT", "write finished, status=" + status);
+                Log.i("BluZ-BT", "write finished, status=$status");
                 return
             }
             //delegate!!.onCharacteristicWrite(gatt, characteristic, status)
             if (characteristic === wrCharacteristic) { // NOPMD - test object identity
-                Log.d("BluZ-BT", "write finished, status=" + status);
+                Log.d("BluZ-BT", "write finished, status=$status");
                 writeNext()
             }
         }
 
         @SuppressLint("MissingPermission")
         override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
-            Log.d("BluZ-BT", "mtu size $mtu, status = $status")
+            Log.d("BluZ-BT", "mtu size $mtu, status $status")
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 var payloadSize: Int = mtu - 3
                 Log.d("BluZ-BT", "payload size $payloadSize")
@@ -440,10 +437,10 @@ class BLUZDelegate  {
                     } else {
                         numberMTU--
                         indexData = 0
-                        if (numberMTU == 0) {           // Последний буфер, не считаем последние 2 байта
-                            endOfData = data.size - 7
+                        endOfData = if (numberMTU == 0) {           // Последний буфер, не считаем последние 2 байта
+                            data.size - 7
                         } else {
-                            endOfData = data.size - 5
+                            data.size - 5
                         }
                     }
                     /*

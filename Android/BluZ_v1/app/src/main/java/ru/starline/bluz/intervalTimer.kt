@@ -5,11 +5,11 @@ import java.util.TimerTask
 
 
 internal class intervalTimer {
-    var timer: Timer = Timer()
-    var mTimerTask: TimerTask = MyTimerTask()
+    private var timer: Timer = Timer()
+    private var mTimerTask: TimerTask = MyTimerTask()
 
     fun startTimer() {
-        timer.schedule(mTimerTask, 1000, 30000)
+        timer.schedule(mTimerTask, 2000, 10000)
     }
 }
 
