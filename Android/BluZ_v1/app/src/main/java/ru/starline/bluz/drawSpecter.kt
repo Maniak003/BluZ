@@ -28,7 +28,7 @@ class drawSpecter {
     private lateinit var specCanvas: Canvas
     public lateinit var imgView : ImageView
     public var spectrData: DoubleArray = DoubleArray(4296)
-    private var tmpSpecterData: DoubleArray = DoubleArray(4296)
+    public var tmpSpecterData: DoubleArray = DoubleArray(4296)
     public lateinit var txtStat1: TextView
     public lateinit var txtStat2: TextView
     public lateinit var txtStat3: TextView
@@ -36,6 +36,10 @@ class drawSpecter {
     private var saveStat2: String = ""
     private var saveStat3: String = ""
     public var flagSMA: Boolean = false
+    public var maxYlog: Double = 0.0
+    public var ResolutionSpectr: Int = 1024;
+    public var koefLog: Double = 1.0
+    public var xSize: Double = 1.0
 
     /* Установка рабочих параметров и создание необходимых объектов */
     fun init() {
@@ -61,8 +65,6 @@ class drawSpecter {
     fun redrawSpecter(spType: Int) {
         Log.d("BluZ-BT", "Type: " + spType.toString() + " HSize: " + HSize.toString() + " VSize: " + VSize.toString())
         //Log.d("BluZ-BT", "Draw specter.")
-        var ResolutionSpectr: Int = 1024;
-        var xSize: Double = 1.0
         var paintLin: Paint = Paint()
         var paintLog: Paint = Paint()
 
@@ -114,10 +116,8 @@ class drawSpecter {
         var oldYlog: Double = VSize.toDouble()
         var oldX: Double = 0.0
         var maxYlin: Double = 0.0
-        var maxYlog: Double = 0.0
         var tmpLog: Double
         var koefLin: Double
-        var koefLog: Double
         /* Поиск максимального значения для масштабирования */
         for (idx in 0..ResolutionSpectr - 1) {
             if (maxYlin < tmpSpecterData[idx]) {
@@ -134,7 +134,7 @@ class drawSpecter {
         var Ylog: Float
         for (idx in 0..ResolutionSpectr - 1) {
             Ylin = (VSize - tmpSpecterData[idx] * koefLin).toFloat()
-            if (spectrData[idx] != 0.0) {
+            if (tmpSpecterData[idx] != 0.0) {
                 Ylog = (VSize - log(tmpSpecterData[idx]) * koefLog).toFloat()
             } else {
                 Ylog = VSize.toFloat()
