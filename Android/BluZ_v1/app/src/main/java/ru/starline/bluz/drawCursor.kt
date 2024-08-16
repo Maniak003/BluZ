@@ -19,6 +19,8 @@ class drawCursor {
     private lateinit var cursorCanvas: Canvas
     private var drawCursorInit: Boolean = false
     private var Ylog: Float = 0.0f
+    private var tmpCounts: Int = 0
+    private var tmpEnergy: Int = 0
 
     /* Инициализация */
     public fun init() {
@@ -51,8 +53,18 @@ class drawCursor {
             hCursor.isDither = false;
             cursorCanvas.drawLine(oldX, 0.0f, oldX, VSize.toFloat(), hCursor);
             //cursorCanvas.drawLine(oldX - 5, Ylog, oldX + 5, Ylog, hCursor);
-            hCursor.setStyle(Paint.Style.STROKE);
+            hCursor.style = Paint.Style.STROKE;
             cursorCanvas.drawCircle(oldX, Ylog, 10.0f, hCursor)
+            hCursor.style = Paint.Style.FILL;
+            cursorCanvas.drawText(tmpCounts.toString(), oldX + 10, Ylog + 4, hCursor) //Erase counts text
+            cursorCanvas.save()
+            cursorCanvas.rotate(90f, oldX + 3, Ylog + 10 /*HSize - textVShift*/)
+            if(GO.propCoefA == 0.0f) {
+                cursorCanvas.drawText(tmpEnergy.toString(),oldX + 3,Ylog + 10,  /*HSize - textVShift*/ hCursor)
+            } else {
+                cursorCanvas.drawText(tmpEnergy.toString() + "keV",oldX + 3,Ylog + 10,  /*HSize - textVShift*/ hCursor)
+            }
+            cursorCanvas.restore()
         }
     }
 
@@ -72,14 +84,32 @@ class drawCursor {
             /* Горизонтальный курсор */
             var idx: Int
             idx = (x / GO.drawSPECTER.xSize).toInt()
+            if (GO.propCoefA == 0.0f) {
+                tmpEnergy = idx
+            } else {
+                /* Пересчет канала в энергию */
+                tmpEnergy = (GO.propCoefA * idx * idx + GO.propCoefB * idx + GO.propCoefC).toInt()
+            }
+            tmpCounts = GO.drawSPECTER.tmpSpecterData[idx].toInt()
             if (GO.drawSPECTER.tmpSpecterData[idx] != 0.0) {
                 Ylog = (VSize - log(GO.drawSPECTER.tmpSpecterData[idx]) * GO.drawSPECTER.koefLog).toFloat()
             } else {
                 Ylog = VSize.toFloat()
             }
             //cursorCanvas.drawLine(x - 5, Ylog, x + 5, Ylog, aCursor);
-            aCursor.setStyle(Paint.Style.STROKE);
+            aCursor.style = Paint.Style.STROKE;
             cursorCanvas.drawCircle(x, Ylog, 10.0f, aCursor)
+            aCursor.style = Paint.Style.FILL;
+            cursorCanvas.drawText(tmpCounts.toString(), x + 10, Ylog + 4, aCursor) // Counts
+            cursorCanvas.save()
+            cursorCanvas.rotate(90f, x + 3, Ylog + 10 /*HSize - textVShift*/)
+            if(GO.propCoefA == 0.0f) {
+                cursorCanvas.drawText(tmpEnergy.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
+            } else {
+                cursorCanvas.drawText(tmpEnergy.toString() + "keV", x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
+            }
+            cursorCanvas.restore();
+
 
             oldX = x
             oldY = y
