@@ -1,13 +1,16 @@
 package ru.starline.bluz
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -34,6 +37,8 @@ class NumberFragment : Fragment() {
     private lateinit var selG: SeekBar
     private lateinit var selB: SeekBar
     private lateinit var rgTypeSpec: RadioGroup
+    private lateinit var btnCalibrate: Button
+    private lateinit var btnConfirmCalibrate: Button
 /*
     override fun onResume() {
         super.onResume()
@@ -105,6 +110,51 @@ class NumberFragment : Fragment() {
                 GO.drawSPECTER.txtStat2 = view.findViewById(R.id.textStatistics2)
                 GO.drawSPECTER.txtStat3 = view.findViewById(R.id.textStatistics3)
                 val CBSMA: CheckBox = view.findViewById(R.id.cbSMA)
+
+                /*
+                *   Калибровка
+                */
+                var calState: Int = 0
+                val matrx = Mtrx()
+                btnConfirmCalibrate = view.findViewById(R.id.buttonConfirmCalibrate)
+                btnConfirmCalibrate.setOnClickListener {
+                    if (btnConfirmCalibrate.text == "V") {
+                        GO.viewPager.setCurrentItem(4, false)
+                        GO.bColor.resetToDefault()
+                        GO.bColor.setToActive(GO.btnSetup)
+                    }
+                    btnConfirmCalibrate.text = "X"
+                    btnCalibrate.text = "1"
+                }
+                btnCalibrate = view.findViewById(R.id.buttonCalibrate)
+                btnCalibrate.setOnClickListener {
+                    if (GO.drawCURSOR.drawCursorInit) {
+                        val builder: AlertDialog.Builder = AlertDialog.Builder(it.context)
+                        builder.setTitle("Enter energy for chanal " + GO.drawCURSOR.curChan.toString() + ", point: " + (calState + 1).toString())
+                        val inEnergy = EditText(context)
+                        inEnergy.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+                        inEnergy.inputType = InputType.TYPE_CLASS_NUMBER
+                        builder.setView(inEnergy)
+                        builder.setPositiveButton("Add") { dialog, which ->
+                            matrx.sysArray[calState][1] = inEnergy.text.toString().toDouble()
+                            matrx.sysArray[calState][0] = GO.drawCURSOR.curChan.toDouble()
+                            calState++
+                            if (calState > 2) {
+                                calState = 0
+                                btnConfirmCalibrate.text = "V"
+                                btnCalibrate.text = "1"
+                                matrx.sysEq()
+                            } else {
+                                btnCalibrate.text = (calState + 1).toString()
+                            }
+                        }
+                            .setNegativeButton("Cancel") { dialog, which ->
+                                // Do something else.
+                        }
+                        builder.create()
+                        builder.show()
+                    }
+                }
                 GO.propButtonInit = false
                 CBSMA.isChecked = GO.drawSPECTER.flagSMA
                 GO.propButtonInit = true

@@ -4,6 +4,7 @@ import android.content.ClipData.Item
 import android.content.Context
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.viewpager2.widget.ViewPager2
 
@@ -29,6 +30,7 @@ class globalObj {
     public lateinit var btnSpecterSS: Button
     public lateinit var btnReadFromDevice: Button
     public lateinit var btnWriteToDevice: Button
+    public lateinit var btnSetup: ImageButton
 
     /*
     *   Цвета для курсора

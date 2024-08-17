@@ -166,13 +166,13 @@ public class MainActivity : FragmentActivity() {
         }
 
         /* Окно с настройками */
-        var btnSetup: ImageButton = findViewById(R.id.buttonSetup)
-        btnSetup.setOnClickListener {
+        GO.btnSetup = findViewById(R.id.buttonSetup)
+        GO.btnSetup.setOnClickListener {
             GO.viewPager.setCurrentItem(4, false)
             GO.bColor.resetToDefault()
-            GO.bColor.setToActive(btnSetup)
+            GO.bColor.setToActive(GO.btnSetup)
         }
-        GO.bColor.initColor(btnSpecter, btnHistory, btnDozimeter, btnLog, btnSetup)
+        GO.bColor.initColor(btnSpecter, btnHistory, btnDozimeter, btnLog, GO.btnSetup)
         GO.bColor.resetToDefault()
         GO.bColor.setToActive(btnSpecter)  // Активная закладка.
 

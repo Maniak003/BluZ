@@ -12,12 +12,13 @@ import java.lang.Math.log
 class drawCursor {
     public var oldX: Float = 0.0f
     public var oldY: Float = 0.0f
+    public var curChan: Int = 0
     public lateinit var cursorView: ImageView
     private var HSize: Int = 0
     private var VSize: Int = 0
     private lateinit var cursorBitmap: Bitmap
     private lateinit var cursorCanvas: Canvas
-    private var drawCursorInit: Boolean = false
+    public var drawCursorInit: Boolean = false
     private var Ylog: Float = 0.0f
     private var tmpCounts: Int = 0
     private var tmpEnergy: Int = 0
@@ -82,17 +83,16 @@ class drawCursor {
             cursorCanvas.drawLine(x, 0.0f, x, HSize.toFloat(), aCursor);
 
             /* Горизонтальный курсор */
-            var idx: Int
-            idx = (x / GO.drawSPECTER.xSize).toInt()
+            curChan = (x / GO.drawSPECTER.xSize).toInt()
             if (GO.propCoefA == 0.0f) {
-                tmpEnergy = idx
+                tmpEnergy = curChan
             } else {
                 /* Пересчет канала в энергию */
-                tmpEnergy = (GO.propCoefA * idx * idx + GO.propCoefB * idx + GO.propCoefC).toInt()
+                tmpEnergy = (GO.propCoefA * curChan * curChan + GO.propCoefB * curChan + GO.propCoefC).toInt()
             }
-            tmpCounts = GO.drawSPECTER.tmpSpecterData[idx].toInt()
-            if (GO.drawSPECTER.tmpSpecterData[idx] != 0.0) {
-                Ylog = (VSize - log(GO.drawSPECTER.tmpSpecterData[idx]) * GO.drawSPECTER.koefLog).toFloat()
+            tmpCounts = GO.drawSPECTER.tmpSpecterData[curChan].toInt()
+            if (GO.drawSPECTER.tmpSpecterData[curChan] != 0.0) {
+                Ylog = (VSize - log(GO.drawSPECTER.tmpSpecterData[curChan]) * GO.drawSPECTER.koefLog).toFloat()
             } else {
                 Ylog = VSize.toFloat()
             }
