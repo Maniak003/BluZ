@@ -6,6 +6,10 @@ import android.util.Log
 *   Решение системы урарвнений
 */
 class Mtrx {
+    public var cA: Float = 0.0f
+    public var cB: Float = 1.0f
+    public var cC: Float = 0.0f
+
 
     public var sysArray:Array<DoubleArray> = Array(3) {DoubleArray(2)}
 
@@ -45,21 +49,21 @@ class Mtrx {
             detArray[0][0] = sysArray[0][1]
             detArray[1][0] = sysArray[1][1]
             detArray[2][0] = sysArray[2][1]
-            GO.propCoefA = (determinant(detArray) / mainDet).toFloat()
+            cA = (determinant(detArray) / mainDet).toFloat()
             detArray[0][0] = sysArray[0][0] * sysArray[0][0]
             detArray[1][0] = sysArray[1][0] * sysArray[1][0]
             detArray[2][0] = sysArray[2][0] * sysArray[2][0]
             detArray[0][1] = sysArray[0][1]
             detArray[1][1] = sysArray[1][1]
             detArray[2][1] = sysArray[2][1]
-            GO.propCoefB = (determinant(detArray) / mainDet).toFloat()
+            cB = (determinant(detArray) / mainDet).toFloat()
             detArray[0][1] = sysArray[0][0]
             detArray[1][1] = sysArray[1][0]
             detArray[2][1] = sysArray[2][0]
             detArray[0][2] = sysArray[0][1]
             detArray[1][2] = sysArray[1][1]
             detArray[2][2] = sysArray[2][1]
-            GO.propCoefC = (determinant(detArray) / mainDet).toFloat()
+            cC = (determinant(detArray) / mainDet).toFloat()
         }
         Log.i("BluZ-BT", "det: $mainDet A: " + GO.propCoefA + " B: " + GO.propCoefB + " C: " + GO.propCoefC)
     }

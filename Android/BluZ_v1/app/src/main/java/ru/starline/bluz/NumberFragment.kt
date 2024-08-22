@@ -39,6 +39,7 @@ class NumberFragment : Fragment() {
     private lateinit var rgTypeSpec: RadioGroup
     private lateinit var btnCalibrate: Button
     private lateinit var btnConfirmCalibrate: Button
+    private lateinit var rbResolution: RadioGroup
 /*
     override fun onResume() {
         super.onResume()
@@ -144,6 +145,23 @@ class NumberFragment : Fragment() {
                                 btnConfirmCalibrate.text = "V"
                                 btnCalibrate.text = "1"
                                 matrx.sysEq()
+                                when (GO.spectrResolution) {
+                                    0 -> {  // 1024
+                                        GO.propCoefA = matrx.cA
+                                        GO.propCoefB = matrx.cB
+                                        GO.propCoefC = matrx.cC
+                                    }
+                                    1 -> {  // 2048
+                                        GO.propCoef2048A = matrx.cA
+                                        GO.propCoef2048B = matrx.cB
+                                        GO.propCoef2048C = matrx.cC
+                                    }
+                                    2 -> {  // 4096
+                                        GO.propCoef4096A = matrx.cA
+                                        GO.propCoef4096B = matrx.cB
+                                        GO.propCoef4096C = matrx.cC
+                                    }
+                                }
                             } else {
                                 btnCalibrate.text = (calState + 1).toString()
                             }
@@ -330,10 +348,18 @@ class NumberFragment : Fragment() {
 
                 /* Разрешение в конфигурации */
                 when (GO.spectrResolution) {
-                    0 -> rbResolution1024.isChecked = true
-                    1 -> rbResolution2048.isChecked = true
-                    2 -> rbResolution4096.isChecked = true
-                    else -> rbResolution1024.isChecked = true
+                    0 -> {
+                        rbResolution1024.isChecked = true
+                    }
+                    1 -> {
+                        rbResolution2048.isChecked = true
+                    }
+                    2 -> {
+                        rbResolution4096.isChecked = true
+                    }
+                    else -> {
+                        rbResolution1024.isChecked = true
+                    }
                 }
 
                 /* Значения порогов */
@@ -352,9 +378,23 @@ class NumberFragment : Fragment() {
                 cbVibroLevel3.isChecked = GO.propVibroLevel3
 
                 /* Значения коэффициентов полинома */
-                editPolinomA.setText(GO.propCoefA.toString())
-                editPolinomB.setText(GO.propCoefB.toString())
-                editPolinomC.setText(GO.propCoefC.toString())
+                when (GO.spectrResolution) {
+                    0 -> {
+                        editPolinomA.setText(GO.propCoefA.toString())
+                        editPolinomB.setText(GO.propCoefB.toString())
+                        editPolinomC.setText(GO.propCoefC.toString())
+                    }
+                    1 -> {
+                        editPolinomA.setText(GO.propCoef2048A.toString())
+                        editPolinomB.setText(GO.propCoef2048B.toString())
+                        editPolinomC.setText(GO.propCoef2048C.toString())
+                    }
+                    2 -> {
+                        editPolinomA.setText(GO.propCoef4096A.toString())
+                        editPolinomB.setText(GO.propCoef4096B.toString())
+                        editPolinomC.setText(GO.propCoef4096C.toString())
+                    }
+                }
 
                 /* CPS в uRh */
                 editCPS2Rh.setText(GO.propCPS2UR.toString())
@@ -431,12 +471,33 @@ class NumberFragment : Fragment() {
                     GO.propCPS2UR = editCPS2Rh.text.toString().toFloat()
                     GO.PP.setPropFloat(propCPS2UR, GO.propCPS2UR)                   // Коэффициент пересчета cps в uRh
 
-                    GO.propCoefA = editPolinomA.text.toString().toFloat()
-                    GO.propCoefB = editPolinomB.text.toString().toFloat()
-                    GO.propCoefC = editPolinomC.text.toString().toFloat()
+                    when (GO.spectrResolution) {
+                        0 -> {
+                            GO.propCoefA = editPolinomA.text.toString().toFloat()
+                            GO.propCoefB = editPolinomB.text.toString().toFloat()
+                            GO.propCoefC = editPolinomC.text.toString().toFloat()
+                            }
+                        1 -> {
+                            GO.propCoef2048A = editPolinomA.text.toString().toFloat()
+                            GO.propCoef2048B = editPolinomB.text.toString().toFloat()
+                            GO.propCoef2048C = editPolinomC.text.toString().toFloat()
+                        }
+                        2 -> {
+                            GO.propCoef4096A = editPolinomA.text.toString().toFloat()
+                            GO.propCoef4096B = editPolinomB.text.toString().toFloat()
+                            GO.propCoef4096C = editPolinomC.text.toString().toFloat()
+                        }
+                    }
                     GO.PP.setPropFloat(propCoefA, GO.propCoefA)                     // A - полинома пересчета канала в энергию
                     GO.PP.setPropFloat(propCoefB, GO.propCoefB)                     // B - полинома пересчета канала в энергию
                     GO.PP.setPropFloat(propCoefC, GO.propCoefC)                     // C - полинома пересчета канала в энергию
+                    GO.PP.setPropFloat(propCoef2048A, GO.propCoef2048A)             // A - полинома пересчета канала в энергию
+                    GO.PP.setPropFloat(propCoef2048B, GO.propCoef2048B)             // B - полинома пересчета канала в энергию
+                    GO.PP.setPropFloat(propCoef2048C, GO.propCoef2048C)             // C - полинома пересчета канала в энергию
+                    GO.PP.setPropFloat(propCoef4096A, GO.propCoef4096A)             // A - полинома пересчета канала в энергию
+                    GO.PP.setPropFloat(propCoef4096B, GO.propCoef4096B)             // B - полинома пересчета канала в энергию
+                    GO.PP.setPropFloat(propCoef4096C, GO.propCoef4096C)             // C - полинома пересчета канала в энергию
+
 
                     /* SMA window сформируем нечетное число */
                     GO.windowSMA = (editSMA.text.toString().toInt() / 2).toInt() * 2 + 1
@@ -509,9 +570,9 @@ class NumberFragment : Fragment() {
                     *                   5 - Вибро сигнализация 1 порог   (1 - включено, 0 - выключено)
                     *                   6 - Вибро сигнализация 2 порог   (1 - включено, 0 - выключено)
                     *                   7 - Вибро сигнализация 3 порог   (1 - включено, 0 - выключено)
-                    * 21,22,23,24   - Коэффициент A полинома преобразования канала в энергию.
-                    * 25,26,27,28   - Коэффициент B полинома преобразования канала в энергию.
-                    * 29,30,31,32   - Коэффициент C полинома преобразования канала в энергию.
+                    * 21,22,23,24   - Коэффициент A полинома преобразования канала в энергию для 1024.
+                    * 25,26,27,28   - Коэффициент B полинома преобразования канала в энергию для 1024.
+                    * 29,30,31,32   - Коэффициент C полинома преобразования канала в энергию для 1024.
                     * 33,34         - Уровень высокого напряжения
                     * 35,36         - Уровень компаратора
                     * 37            - Разрешение спектра 0 - 1024, 1 - 2048, 2 - 4096
@@ -524,6 +585,12 @@ class NumberFragment : Fragment() {
                     *                   5 -
                     *                   6 -
                     *                   7 -
+                    * 39,40,41,42   - Коэффициент A полинома преобразования канала в энергию для 2048.
+                    * 43,44,45,46   - Коэффициент B полинома преобразования канала в энергию для 2048.
+                    * 47,48,49,50   - Коэффициент C полинома преобразования канала в энергию для 2048.
+                    * 51,52,53,54   - Коэффициент A полинома преобразования канала в энергию для 4096.
+                    * 55,56,57,58   - Коэффициент B полинома преобразования канала в энергию для 4096.
+                    * 59,60,61,62   - Коэффициент C полинома преобразования канала в энергию для 4096.
                     *
                     * 242, 243      - Контрольная сумма
                     */
@@ -711,7 +778,33 @@ class NumberFragment : Fragment() {
                 rbFoneLg = view.findViewById(R.id.RBFoneLg)
                 rbGroup = view.findViewById(R.id.rbTypeGroup)
                 rgTypeSpec = view.findViewById(R.id.rgTypeSpectr)
+                rbResolution = view.findViewById(R.id.RGResolution)
 
+                /*
+                * Выбор разрешения
+                */
+                rbResolution.setOnCheckedChangeListener { _, checkedId -> view.findViewById<RadioButton>(checkedId)?.apply {
+                        noChange = false
+                        when (checkedId) {
+                            rbResolution1024.id -> {
+                                editPolinomA.setText(GO.propCoefA.toString())
+                                editPolinomB.setText(GO.propCoefB.toString())
+                                editPolinomC.setText(GO.propCoefC.toString())
+                            }
+                            rbResolution2048.id -> {
+                                editPolinomA.setText(GO.propCoef2048A.toString())
+                                editPolinomB.setText(GO.propCoef2048B.toString())
+                                editPolinomC.setText(GO.propCoef2048C.toString())
+                            }
+                            rbResolution4096.id -> {
+                                editPolinomA.setText(GO.propCoef4096A.toString())
+                                editPolinomB.setText(GO.propCoef4096B.toString())
+                                editPolinomC.setText(GO.propCoef4096C.toString())
+                            }
+                        }
+                        noChange = true
+                    }
+                }
                 /*
                 * Выбор типа отображения спектра. Линейный, гистограмма
                 */

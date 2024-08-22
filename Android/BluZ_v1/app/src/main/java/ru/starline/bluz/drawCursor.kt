@@ -22,6 +22,9 @@ class drawCursor {
     private var Ylog: Float = 0.0f
     private var tmpCounts: Int = 0
     private var tmpEnergy: Int = 0
+    private var cfA : Float = 0.0f
+    private var cfB : Float = 0.0f
+    private var cfC : Float = 0.0f
 
     /* Инициализация */
     public fun init() {
@@ -60,7 +63,7 @@ class drawCursor {
             cursorCanvas.drawText(tmpCounts.toString(), oldX + 10, Ylog + 4, hCursor) //Erase counts text
             cursorCanvas.save()
             cursorCanvas.rotate(90f, oldX + 3, Ylog + 10 /*HSize - textVShift*/)
-            if(GO.propCoefA == 0.0f) {
+            if(cfA == 0.0f) {
                 cursorCanvas.drawText(tmpEnergy.toString(),oldX + 3,Ylog + 10,  /*HSize - textVShift*/ hCursor)
             } else {
                 cursorCanvas.drawText(tmpEnergy.toString() + "keV",oldX + 3,Ylog + 10,  /*HSize - textVShift*/ hCursor)
@@ -84,11 +87,28 @@ class drawCursor {
 
             /* Горизонтальный курсор */
             curChan = (x / GO.drawSPECTER.xSize).toInt()
-            if (GO.propCoefA == 0.0f) {
+            when (GO.spectrResolution) {
+                0 -> {  // 1024
+                    cfA = GO.propCoefA
+                    cfB = GO.propCoefB
+                    cfC = GO.propCoefC
+                }
+                1 -> {  // 2048
+                    cfA = GO.propCoef2048A
+                    cfB = GO.propCoef2048B
+                    cfC = GO.propCoef2048C
+                }
+                2 -> {  // 4096
+                    cfA = GO.propCoef4096A
+                    cfB = GO.propCoef4096B
+                    cfC = GO.propCoef4096C
+                }
+            }
+            if (cfA == 0.0f) {
                 tmpEnergy = curChan
             } else {
                 /* Пересчет канала в энергию */
-                tmpEnergy = (GO.propCoefA * curChan * curChan + GO.propCoefB * curChan + GO.propCoefC).toInt()
+                tmpEnergy = (cfA * curChan * curChan + cfB * curChan + cfC).toInt()
             }
             tmpCounts = GO.drawSPECTER.tmpSpecterData[curChan].toInt()
             if (GO.drawSPECTER.tmpSpecterData[curChan] != 0.0) {

@@ -1,11 +1,5 @@
 <resources>
-    <string name="app_name">BluZ</string>
-    <string name="textSpecter">S</string>
-    <string name="textHistory">H</string>
-    <string name="textDosimetr">D</string>
-    <string name="textSetup">O</string>
-    <string name="textLog">L</string>
-    <string name="textExit">E</string>
+    <string name="app_name" translatable="false">BluZ</string>
     <string name="textSaveSetup">Save</string>
     <string name="textScan">Scan</string>
     <string name="textScan2">Stop</string>
@@ -56,7 +50,7 @@
     <string name="textHVoltage">HV:</string>
     <string name="textComparator">Comp:</string>
     <string name="textCPS2RH">uRh/cps:</string>
-    <string name="textTmp1">Total:0000000(100.00%) AvgCPS:100000.00</string>
+    <string name="textTmp1">Total:0000000(100.00%) AvgCPS:000000.00</string>
     <string name="textTmp2">00 C 0.00v Time:00:00:00:00</string>
     <!-- TODO: Remove or change this placeholder text
     <string name="hello_blank_fragment">Hello blank fragment</string> -->

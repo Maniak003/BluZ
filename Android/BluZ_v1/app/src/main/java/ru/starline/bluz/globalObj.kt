@@ -82,6 +82,12 @@ class globalObj {
     public var propCoefA: Float = 0.0f
     public var propCoefB: Float = 0.0f
     public var propCoefC: Float = 0.0f
+    public var propCoef2048A: Float = 0.0f
+    public var propCoef2048B: Float = 0.0f
+    public var propCoef2048C: Float = 0.0f
+    public var propCoef4096A: Float = 0.0f
+    public var propCoef4096B: Float = 0.0f
+    public var propCoef4096C: Float = 0.0f
     public var propComparator: UShort = 0u
     public var propHVoltage: UShort = 0u
     public var windowSMA: Int = 5
