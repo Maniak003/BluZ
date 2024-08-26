@@ -521,6 +521,11 @@ class NumberFragment : Fragment() {
                     Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())
                     GO.PP.setPropInt(propResolution, GO.spectrResolution)
                     Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
+                    if (GO.LEMAC.length == 17 &&  GO.LEMAC[0] != 'X') { // MAC адрес настроен, продолжаем работу.
+                        GO.tmFull.startTimer();
+                    } else {
+                        //GO.tmFull.stopTimer()
+                    }
                 }
 
                 /* Сканирование bluetooth устройств */

@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentActivity
@@ -110,7 +111,7 @@ public class MainActivity : FragmentActivity() {
                 Manifest.permission.NEARBY_WIFI_DEVICES
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-
+            /* Все нужные разрешения имеются */
         } else {
             val permissionsRq = arrayOf(
                 Manifest.permission.BLUETOOTH,
@@ -234,9 +235,17 @@ public class MainActivity : FragmentActivity() {
             GO.windowSMA = 3
         }
 
+        GO.needTerminate = false
         Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())
-        val tmFull = intervalTimer()
-        tmFull.startTimer();
+
+        if (GO.LEMAC.length == 17 &&  GO.LEMAC[0] != 'X') { // MAC адрес настроен, продолжаем работу.
+            GO.tmFull.startTimer();
+        } else {                                            // MAC адрес не настроен, переходим к настройкам
+            GO.viewPager.setCurrentItem(4, false)
+            GO.bColor.resetToDefault()
+            GO.bColor.setToActive(GO.btnSetup)
+            Toast.makeText(GO.mainContext, "MAC address not set.\nScan your device.", Toast.LENGTH_LONG ).show()
+        }
     }
 }
 

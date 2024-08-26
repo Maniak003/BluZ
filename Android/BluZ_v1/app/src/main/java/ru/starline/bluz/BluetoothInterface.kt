@@ -122,7 +122,11 @@ class BluetoothInterface(tv: TextView) {
         //}
         txtMACADDRESS = textMAC // Установить текст для редактирования
         //startButton = startBTN
-        textMAC.setText(GO.mainContext.getString(R.string.defaultMAC))
+        MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
+            withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                textMAC.setText(GO.mainContext.getString(R.string.defaultMAC))
+            }
+        }
         //BTS.startScan(leScanCallback)
         BTS.startScan(filterList, scanSetting, leScanCallback)
         Log.d("BluZ-BT", "LE scanning.")
@@ -133,45 +137,6 @@ class BluetoothInterface(tv: TextView) {
     }
 
     /*
-     * delegate device specific behaviour to inner class
-     */
-/*
-    class DeviceDelegate {
-        fun connectCharacteristics(s: BluetoothGattService?): Boolean { return true }
-        // following methods only overwritten for Telit devices
-        fun onDescriptorWrite(g: BluetoothGatt?, d: BluetoothGattDescriptor?, status: Int) { }
-        fun onCharacteristicChanged(g: BluetoothGatt?, c: BluetoothGattCharacteristic?) { }
-        fun onCharacteristicWrite(g: BluetoothGatt?, c: BluetoothGattCharacteristic?, status: Int ) { }
-        fun canWrite(): Boolean { return true }
-        fun disconnect() { }
-    }
-*/
-/*
-    class BLUZDelegate : DeviceDelegate() {
-        fun connectCharacteristics(gattService: BluetoothGattService): Boolean {
-            Log.i("BluZ-BT", "Service BLUZ")
-            readCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_R)
-            writeCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_W)
-            return true
-        }
-    }
-*/
-    /*
-class BLUZDelegate  {
-    fun connectCharacteristics(gattService: BluetoothGattService): Boolean {
-        Log.i("BluZ-BT", "Service BLUZ")
-        readCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_R)
-        writeCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_W)
-        return true
-    }
-    fun disconnect() { }
-    fun onDescriptorWrite(g: BluetoothGatt?, d: BluetoothGattDescriptor?, status: Int) { }
-    fun onCharacteristicChanged(g: BluetoothGatt?, c: BluetoothGattCharacteristic?) { }
-    fun onCharacteristicWrite(g: BluetoothGatt?, c: BluetoothGattCharacteristic?, status: Int ) { }
-    fun canWrite(): Boolean { return true }
-}*/
-
-    /*
      *    Start BLE.
      */
     @SuppressLint("MissingPermission")
@@ -180,9 +145,12 @@ class BLUZDelegate  {
             writeBuffer = ArrayList() // Буфер для передачи.
             Log.d("BluZ-BT", "Accept connect...")
             if (!BTA.isEnabled()) {
-                //Log.d(TAG, "Bluetooth disabled. Exit.");
-                Toast.makeText(GO.mainContext, "BlueTooth disable ? \nProgram terminated.", Toast.LENGTH_LONG ).show()
-                //finish()
+                MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
+                    withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                        Toast.makeText(GO.mainContext, "BlueTooth disable ?\nProgram terminated.", Toast.LENGTH_LONG ).show()
+                    }
+                }
+                GO.needTerminate = true
             }
             device = BTA.getRemoteDevice(GO.LEMAC) // Подключаемся по MAC адресу.
             Log.d("BluZ-BT", "Status: " + BTA.getState());
@@ -199,7 +167,11 @@ class BLUZDelegate  {
                 }
             }
         } else {
-            Toast.makeText(GO.mainContext, "MAC address not setting.\nScan BT device.", Toast.LENGTH_LONG ).show()
+            MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
+                withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                    Toast.makeText(GO.mainContext,"MAC address not setting.\nScan BT device.", Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
 
@@ -508,15 +480,17 @@ class BLUZDelegate  {
     @SuppressLint("MissingPermission")
     fun destroyDevice() {
         connected = false
-        indBT.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
+        MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
+            withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                indBT.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
+            }
+        }
         if (gatt == null) {
             //Toast.makeText(getBaseContext(), "BlueTooth disabled ?.", Toast.LENGTH_LONG).show();
             //finish()
         } else {
             gatt!!.disconnect()
             gatt!!.close()
-            //delegate?.disconnect()
-            //delegate = null
             device = null
             writeBuffer!!.clear()
         }
@@ -539,7 +513,7 @@ class BLUZDelegate  {
         data?.let {
             wrCharacteristic!!.value = it
             if (!gatt!!.writeCharacteristic(wrCharacteristic)) {
-                Log.d("BluZ-BT", "Write Characteristic error")
+                Log.e("BluZ-BT", "Write Characteristic error")
                 // onSerialIoError(IOException("write failed"))
             } else {
                 Log.d("BluZ-BT", "write started from next, len=${it.size}")
@@ -548,7 +522,7 @@ class BLUZDelegate  {
     }
 
 
-    /*
+        /*
          *  Передача данных
          */
     @SuppressLint("MissingPermission")
@@ -588,15 +562,7 @@ class BLUZDelegate  {
             } else {
                 Log.d("BluZ-BT", "write started, len=" + data0!!.size)
             }
-            /*
-            val ddd = data0
-            if (!gatt!!.writeCharacteristic(wrCharacteristic, ddd!!, WRITE_TYPE_NO_RESPONSE)) {
-                Log.d("BluZ-BT", "Write Characteristic error")
-            } else {
-                Log.d("BluZ-BT", "write started, len=" + data0!!.size)
-            }*/
         }
-        // continues asynchronously in onCharacteristicWrite()
     }
 
     // Broadcast приемник
@@ -606,9 +572,4 @@ class BLUZDelegate  {
             Log.i("BluZ-BT", "Broadcast.")
         }
     }
-
-
-    //fun connect() {
-    //    initLeDevice()
-    //}
 }

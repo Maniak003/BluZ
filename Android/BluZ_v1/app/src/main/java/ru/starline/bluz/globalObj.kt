@@ -31,6 +31,8 @@ class globalObj {
     public lateinit var btnReadFromDevice: Button
     public lateinit var btnWriteToDevice: Button
     public lateinit var btnSetup: ImageButton
+    public var needTerminate: Boolean = false
+    public val tmFull = intervalTimer()
 
     /*
     *   Цвета для курсора
