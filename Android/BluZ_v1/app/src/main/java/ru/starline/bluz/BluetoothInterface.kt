@@ -142,6 +142,12 @@ class BluetoothInterface(tv: TextView) {
     @SuppressLint("MissingPermission")
     fun initLeDevice() {
         if ((GO.LEMAC.length == 17) &&  GO.LEMAC[0] != 'X') {
+            MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
+                withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                    GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop)
+                    GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.buttonTextColor))
+                }
+            }
             writeBuffer = ArrayList() // Буфер для передачи.
             Log.d("BluZ-BT", "Accept connect...")
             if (!BTA.isEnabled()) {
@@ -159,7 +165,7 @@ class BluetoothInterface(tv: TextView) {
                 Log.i("BluZ-BT", "Error: Device: $tmpmac not connected.")
                 return
             } else {
-                //Log.i(TAG, "Try gatt connect.");
+                Log.i("BluZ-BT", "Try gatt connect.");
                 gatt = device!!.connectGatt(GO.mainContext,false, gattCallback, BluetoothDevice.TRANSPORT_LE)
                 if (gatt == null) {
                     Log.i("BluZ-BT", "Error: Gatt create failed.");
@@ -193,8 +199,10 @@ class BluetoothInterface(tv: TextView) {
                     MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                         withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
                             tv.setBackgroundColor(GO.mainContext.getColor(R.color.Green))
-                            GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
-                            GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
+                            if (GO.btnSpecterSSisInit) {
+                                GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
+                                GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
+                            }
                         }
                     }
                     Log.i("BluZ-BT", "Gatt connect success.")
@@ -205,14 +213,18 @@ class BluetoothInterface(tv: TextView) {
                     if (!gatt.requestMtu(MAX_MTU)) {  // Изменяем MTU
                         Log.i("BluZ-BT", "MTU set failed.")
                         //finish()
+                    } else {
+                        GO.initBT = true
                     }
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                         withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
                             tv.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
-                            GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop)
-                            GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.buttonTextColor))
+                            if (GO.btnSpecterSSisInit) {
+                                GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop)
+                                GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.buttonTextColor))
+                            }
                         }
                     }
                     connected = false

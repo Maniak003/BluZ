@@ -194,6 +194,7 @@ class NumberFragment : Fragment() {
 
                 /* Старт набора спектра */
                 GO.btnSpecterSS = view.findViewById(R.id.buttonSpecterSS)
+                GO.btnSpecterSSisInit = true
                 /* Проверяем была ли инициализация ранее */
                 if (GO.initBT) {
                     if (GO.BTT.connected) {         // Восстанавливаем кнопку запуска
@@ -210,11 +211,11 @@ class NumberFragment : Fragment() {
                     if (GO.btnSpecterSS.text == getString(R.string.textStartStop)) {
                         GO.btnSpecterSS.text = getString(R.string.textStartStop2)
                         GO.btnSpecterSS.setTextColor(resources.getColor(R.color.Red, GO.mainContext.theme))
-                        GO.BTT.initLeDevice()
+                        //GO.BTT.initLeDevice()
                     } else {
                         GO.btnSpecterSS.text = getString(R.string.textStartStop)
                         GO.btnSpecterSS.setTextColor(resources.getColor(R.color.buttonTextColor, GO.mainContext.theme))
-                        GO.BTT.destroyDevice()
+                        //GO.BTT.destroyDevice()
                     }
                 }
 
@@ -524,7 +525,7 @@ class NumberFragment : Fragment() {
                     if (GO.LEMAC.length == 17 &&  GO.LEMAC[0] != 'X') { // MAC адрес настроен, продолжаем работу.
                         GO.tmFull.startTimer();
                     } else {
-                        //GO.tmFull.stopTimer()
+                        GO.tmFull.stopTimer()
                     }
                 }
 

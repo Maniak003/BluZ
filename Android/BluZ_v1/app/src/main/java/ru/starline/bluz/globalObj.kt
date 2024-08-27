@@ -28,6 +28,7 @@ class globalObj {
     public lateinit var PP: propControl
     public lateinit var scanButton: Button
     public lateinit var btnSpecterSS: Button
+    public var btnSpecterSSisInit: Boolean = false
     public lateinit var btnReadFromDevice: Button
     public lateinit var btnWriteToDevice: Button
     public lateinit var btnSetup: ImageButton
