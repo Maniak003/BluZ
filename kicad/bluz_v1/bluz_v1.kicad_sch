@@ -3526,7 +3526,7 @@
     (property "Reference" "L2" (id 0) (at 164.465 25.6372 90)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "47uH" (id 1) (at 164.465 28.1741 90))
+    (property "Value" "47uH LQH31CN470K03L" (id 1) (at 159.385 27.305 90))
     (property "Footprint" "Inductor_SMD:L_1206_3216Metric" (id 2) (at 164.465 29.845 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -3651,7 +3651,7 @@
     (property "Reference" "#PWR0109" (id 0) (at 160.655 29.845 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "+BATT" (id 1) (at 151.765 27.94 90)
+    (property "Value" "+BATT" (id 1) (at 147.955 29.845 90)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Footprint" "" (id 2) (at 156.845 29.845 0)
@@ -4640,7 +4640,7 @@
       (reference "L1") (unit 1) (value "10uH") (footprint "Inductor_SMD:L_0603_1608Metric")
     )
     (path "/77373934-a013-4003-ae17-82edd2463c24"
-      (reference "L2") (unit 1) (value "47uH") (footprint "Inductor_SMD:L_1206_3216Metric")
+      (reference "L2") (unit 1) (value "47uH LQH31CN470K03L") (footprint "Inductor_SMD:L_1206_3216Metric")
     )
     (path "/fd18f754-2e4f-4eb7-a1de-4025462c7606"
       (reference "M1") (unit 1) (value "VibroMotor") (footprint "My-library:VibroMotor")
