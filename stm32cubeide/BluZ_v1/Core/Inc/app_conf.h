@@ -65,9 +65,9 @@
  */
 #define CFG_BLE_ADDRESS_TYPE              (GAP_PUBLIC_ADDR)
 
-#define ADV_INTERVAL_MIN                  (0x0140)
-#define ADV_INTERVAL_MAX                  (0x01E0)
-#define ADV_LP_INTERVAL_MIN               (0x0640)
+#define ADV_INTERVAL_MIN                  (0x0C80)
+#define ADV_INTERVAL_MAX                  (0x12C0)
+#define ADV_LP_INTERVAL_MIN               (0x12C0)
 #define ADV_LP_INTERVAL_MAX               (0x0FA0)
 #define ADV_TYPE                          ADV_IND
 #define ADV_FILTER                        NO_WHITE_LIST_USE

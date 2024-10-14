@@ -253,6 +253,10 @@ int main(void)
   /* Запуск набора спектра при активном автостарте */
   if (autoStartSpecrometr) {
 	  HAL_ADC_Start_DMA(&hadc4, pulseLevel, 3);
+	  //__HAL_DMA_DISABLE_IT(hadc4.DMA_Handle, DMA_IT_HT);
+	  hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
+
+	  //hadc4.DMA_Handle &= ~DMA_IT_HT;
   }
   pulseCounter = 0;
   pulseCounterSecond = 0;
@@ -383,7 +387,7 @@ int main(void)
 	  specterBuffer[13] = Temperature.Uint[0];
 	  specterBuffer[14] = Temperature.Uint[1];
 
-	  /* Температура МК */
+	  /* Напряжение батареи */
 	  specterBuffer[15] = Voltage.Uint[0];
 	  specterBuffer[16] = Voltage.Uint[1];
 
