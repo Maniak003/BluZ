@@ -82,7 +82,8 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
  ../System/Config/Flash/simple_nvm_arbiter_conf.h \
  ../System/Modules/Flash/simple_nvm_arbiter_common.h \
  ../System/Modules/Flash/rf_timing_synchro.h \
- ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h
+ ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h \
+ ../Utilities/lpm/tiny_lpm/stm32_lpm.h
 ../Core/Inc/app_common.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -176,3 +177,4 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
 ../System/Modules/Flash/rf_timing_synchro.h:
 ../System/Modules/Flash/flash_driver.h:
 ../Core/Inc/main.h:
+../Utilities/lpm/tiny_lpm/stm32_lpm.h:

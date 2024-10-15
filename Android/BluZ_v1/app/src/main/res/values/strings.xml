@@ -49,6 +49,7 @@
     <string name="textSMA">SMA</string>
     <string name="textHVoltage">HV:</string>
     <string name="textComparator">Comp:</string>
+    <string name="textRejectChann">Reject channels:</string>
     <string name="textCPS2RH">uRh/cps:</string>
     <string name="textTmp1">Total:0000000(100.00%) AvgCPS:000000.00</string>
     <string name="textTmp2">00 C 0.00v Time:00:00:00:00</string>

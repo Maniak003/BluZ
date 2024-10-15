@@ -49,6 +49,7 @@ public const val propLedKvant: String = "LedKvant"
 public const val propResolution: String = "Resolution"
 public const val propStartSpectrometr: String = "AutoStartSpectrometr"
 public const val propSMAWindow: String = "SMAWindow"
+public const val propRejectCann: String = "RejectConn"
 
 
 //public lateinit var mainContext: Context
@@ -201,6 +202,8 @@ public class MainActivity : FragmentActivity() {
 
         /* Тип графика спектра: линейный, гистограмма */
         GO.specterGraphType = GO.PP.getPropInt(propSpectrGraphType)
+        GO.rejectChann = GO.PP.getPropInt(propRejectCann)
+        //Log.d("BluZ-BT", "Reject chann: " +GO.rejectCann )
         GO.BTT = BluetoothInterface(GO.indicatorBT)
         /*
         *       Параметры прибора

@@ -66,6 +66,7 @@ class globalObj {
     public var battLevel: Float = 0.0f              // Уровень батареии
     public var tempMC: Float = 0.0f                 // Температура МК
     public var pulsePerSec: UInt = 0u               // CPS за короткий интервал.
+    public var rejectChann: Int = 10                 // Количество каналов от начала, не отображаемых на гистограмме
 
     /* Параметры для хранения в приборе */
     public var propSoundKvant: Boolean = false      // Озвучка прихода частицы

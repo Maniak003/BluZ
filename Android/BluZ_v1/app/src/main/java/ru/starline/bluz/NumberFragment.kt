@@ -336,6 +336,7 @@ class NumberFragment : Fragment() {
                 val editComparator: EditText = view.findViewById(R.id.editComparator)
                 val cbSpectrometr: CheckBox = view.findViewById(R.id.CBSpectrometer)
                 val editSMA: EditText = view.findViewById(R.id.editTextSMAWindow)
+                val editRejectChann: EditText = view.findViewById(R.id.editTextRejectCann)
 
                 when (GO.specterGraphType) {
                     0 -> rbLineSpectr.isChecked = true
@@ -346,6 +347,7 @@ class NumberFragment : Fragment() {
                 cbSoundKvant.isChecked = GO.propSoundKvant              // Звук прихода частицы
                 cbLedKvant.isChecked = GO.propLedKvant                  // Подсветка прихода частицы
                 cbSpectrometr.isChecked = GO.propAutoStartSpectrometr   // Запуск набора спектра при включении прибора
+                editRejectChann.setText(GO.rejectChann.toString())       // Количество не отображаемых каналов от начала
 
                 /* Разрешение в конфигурации */
                 when (GO.spectrResolution) {
@@ -423,6 +425,9 @@ class NumberFragment : Fragment() {
                 btnSaveSetup.setOnClickListener {
                     /* Сохраняем MAC адрес */
                     GO.LEMAC = GO.textMACADR.text.toString()
+                    GO.rejectChann = editRejectChann.text.toString().toInt();
+                    //Log.d("BluZ-BT", "Reject chann: " + GO.rejectChann )
+                    GO.PP.setPropInt(propRejectCann, GO.rejectChann)                     // Сохраним количество не отображаемых каналов
                     GO.PP.setPropStr(propADDRESS, GO.LEMAC)                             // Сохраним MAC адрес устройства
                     GO.PP.setPropInt(propColorSpecterLin, GO.ColorLin)                  // Сохраним цвет линейного графика
                     GO.PP.setPropInt(propColorSpecterLog, GO.ColorLog)                  // Сохраним цвет логарифмического графика

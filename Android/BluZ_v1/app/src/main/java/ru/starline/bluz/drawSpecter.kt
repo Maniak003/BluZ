@@ -74,16 +74,20 @@ class drawSpecter {
          */
         var tmpSM: Double
         for (ttt: Int in 0 until tmpSpecterData.size - GO.windowSMA) {
-            if (flagSMA) {
-                /* SMA */
-                tmpSM = 0.0
-                for(k in 0 until GO.windowSMA) {
-                    tmpSM += spectrData[ttt + k]
+            if (ttt > GO.rejectChann) {
+                if (flagSMA) {
+                    /* SMA */
+                    tmpSM = 0.0
+                    for (k in 0 until GO.windowSMA) {
+                        tmpSM += spectrData[ttt + k]
+                    }
+                    tmpSpecterData[ttt] = tmpSM / GO.windowSMA
+                } else {
+                    /* Без преобразования */
+                    tmpSpecterData[ttt] = spectrData[ttt]
                 }
-                tmpSpecterData[ttt] = tmpSM / GO.windowSMA
             } else {
-                /* Без преобразования */
-                tmpSpecterData[ttt] = spectrData[ttt]
+                tmpSpecterData[ttt] = 0.0
             }
         }
 
@@ -118,8 +122,9 @@ class drawSpecter {
         var maxYlin: Double = 0.0
         var tmpLog: Double
         var koefLin: Double
+
         /* Поиск максимального значения для масштабирования */
-        for (idx in 0..ResolutionSpectr - 1) {
+        for (idx in GO.rejectChann..ResolutionSpectr - 1) {
             if (maxYlin < tmpSpecterData[idx]) {
                 maxYlin = tmpSpecterData[idx]
             }
