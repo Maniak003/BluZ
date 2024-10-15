@@ -231,7 +231,10 @@ void RTC_IRQHandler(void)
   		indexDozimetrBufer = 0;
   	  }
   	  dozimetrBuffer[indexDozimetrBufer++] = pulseCounterSecond;
+  	  /* Обработка порогов */
+  	  if (pulseCounterSecond )
   	  pulseCounterSecond = 0;
+
   /* USER CODE END RTC_IRQn 1 */
 }
 

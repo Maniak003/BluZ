@@ -91,6 +91,7 @@ union dataC {
 float TK1, TK2;
 
 int level1, level2, level3;											// Значения порогов
+uint32_t level1_cps, level2_cps, level3_cps;						// Значения порогов в CPS
 union dataC calcCoeff;												// Коэффициент для пересчета CPS в uR/h
 union dataC enCoefA, enCoefB, enCoefC;								// Коэффициенты полинома для преобразования канала в энергию
 union dataA Temperature, Voltage;									// Температура и напряжение батареи
@@ -149,6 +150,8 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt) {
 		}*/
 	}
 }
+
+void
 /* USER CODE END 0 */
 
 /**
@@ -255,7 +258,8 @@ int main(void)
 	  HAL_ADC_Start_DMA(&hadc4, pulseLevel, 3);
 	  //__HAL_DMA_DISABLE_IT(hadc4.DMA_Handle, DMA_IT_HT);
 	  hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
-
+	  /* Включим ADC для одного канала */
+	  MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
 	  //hadc4.DMA_Handle &= ~DMA_IT_HT;
   }
   pulseCounter = 0;
@@ -418,9 +422,6 @@ int main(void)
 		  }
 		  for (int jjj = 0; jjj < MTUSizeValue; jjj++) {
 			  uint16_t dataSpectr = specterBuffer[kkk++];
-			  /*if(jjj == 48) {
-				  dataSpectr = iii;
-			  }*/
 			  uint8_t tmpByte;
 			  tmpByte  = (uint8_t) (dataSpectr & 0xFF);
 			  tmpBTBuffer[jjj++] = tmpByte;
@@ -460,10 +461,11 @@ int main(void)
     /* Измерение напряжения батареи и температуры МК */
     if (interval4 + INTERVAL4 < intervalTmp) {
     	interval4 = intervalTmp;
-
-    	//HAL_ADC_Stop_DMA(&hadc4);						// Остановим набор спектр
-    	flagTemperatureMess = true;						// Для единичного измерения
-    	//HAL_ADC_Start_DMA(&hadc4, pulseLevel, 3);		// Запустим набор спектра, измерение напряжения и температуры.
+    	if (! flagTemperatureMess) {
+    		/* Включим ADC для трех каналов */
+    		MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((3UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
+			flagTemperatureMess = true;						// Для единичного измерения
+    	}
     }
   }
   /* USER CODE END 3 */
