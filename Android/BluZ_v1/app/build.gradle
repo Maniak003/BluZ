@@ -4,6 +4,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        BluZ {
+            storeFile file('/home/ed/Documents/Certificat/MyCerts/BluZ/BluZ.jks')
+            storePassword 'Vfnfljh123'
+            keyAlias 'key0'
+            keyPassword 'Vfnfljh123'
+        }
+    }
     namespace 'ru.starline.bluz'
     compileSdk 35
 
