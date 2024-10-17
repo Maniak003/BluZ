@@ -231,9 +231,23 @@ void RTC_IRQHandler(void)
   		indexDozimetrBufer = 0;
   	  }
   	  dozimetrBuffer[indexDozimetrBufer++] = pulseCounterSecond;
-  	  /* Обработка порогов */
-  	  if (pulseCounterSecond )
   	  pulseCounterSecond = 0;
+  	/*
+  	 * Анализ CPS для управления порогами срабатывания сигнализации
+  	 */
+  	tmp_level = 0;
+  	if ((level1 > 0) && (CPS > level1_cps)) {
+  		tmp_level = 1;
+  	}
+  	if ((level2 > 0) && (CPS > level2_cps)) {
+  		tmp_level = 2;
+  	}
+  	if ((level3 > 0) && (CPS > level3_cps)) {
+  		tmp_level = 3;
+  	}
+  	if (tmp_level > 0) {
+  		NotifyAct(SOUND_NOTIFY, tmp_level);
+  	}
 
   /* USER CODE END RTC_IRQn 1 */
 }
@@ -300,6 +314,7 @@ void GPDMA1_Channel0_IRQHandler(void)
 
 	if (flagTemperatureMess) {
 		flagTemperatureMess = false;						// Сбросим флаг однократного выполнения.
+		MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
 		currVoltage = (uint16_t) pulseLevel[2] & 0xFFF;		// Сохраним напряжение
 		currTemterature = (uint16_t) pulseLevel[1] & 0xFFF;	// Сохраним температуру
 		//HAL_ADC_Stop_DMA(&hadc4);							// Остановим измерение температуры и напряжени

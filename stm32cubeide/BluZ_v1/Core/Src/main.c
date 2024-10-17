@@ -63,7 +63,7 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 
 bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false;
-uint32_t currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalTmp = 0, pulseCounter = 0,  pulseCounterSecond = 0, pulseLevel[3] = {0}, currentTime = 0, CPS = 0;
+uint32_t tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalTmp = 0, pulseCounter = 0,  pulseCounterSecond = 0, pulseLevel[3] = {0}, currentTime = 0, CPS = 0;
 char uartBuffer[400] = {0,};
 /* Буфер для работы с flash */
 uint64_t PL[8] = {0,};
@@ -151,7 +151,11 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt) {
 	}
 }
 
-void
+void calcPulseLevel() {
+	level1_cps = level1 / calcCoeff.Float;
+	level2_cps = level2 / calcCoeff.Float;
+	level3_cps = level3 / calcCoeff.Float;
+}
 /* USER CODE END 0 */
 
 /**
@@ -207,9 +211,15 @@ int main(void)
   //MX_GPIO_Init();
   HAL_ADCEx_Calibration_Start(&hadc4);
 
+#ifndef DEBUG_USER
+  HAL_UART_DeInit(&huart2);
+#endif
+
+#ifdef DEBUG_USER
   bzero((char *) uartBuffer, sizeof(uartBuffer));
   sprintf(uartBuffer, "\n\rStart.\n\r");
   HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+#endif
 
   /* USER CODE END 2 */
 
@@ -238,10 +248,14 @@ int main(void)
   //HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 2, WakeUpClock, WakeUpAutoClr)
 
   if (readFlash() == HAL_OK) {
+	#ifdef DEBUG_USER
 	  bzero((char *) uartBuffer, sizeof(uartBuffer));
 	  sprintf(uartBuffer, "\n\rRead flash Ok. Address: %lx\n\r", MAGIC_KEY_ADDRESS);
 	  HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+	#endif
   }
+  /* Пересчет уровней в uint32_t для ускорения обработки */
+  calcPulseLevel();
   /*
    * Настройка порога компаратора
    */
@@ -301,8 +315,6 @@ int main(void)
 
 	if (interval3 + INTERVAL3 < intervalTmp) {
 		interval3 = intervalTmp;
-
-
 	}
 
 
@@ -444,9 +456,11 @@ int main(void)
 			//sprintf(uartBuffer, "MTU: %d\n\r", iii);
 			//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 	  }
+		#ifdef DEBUG_USER
 		bzero((char *) uartBuffer, sizeof(uartBuffer));
 		sprintf(uartBuffer, "CS: %d, MTU: %d\n\r", tmpCS, MTUSizeValue);
 		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#endif
 	}
     if (interval1 + INTERVAL1 < intervalTmp) {
     	interval1 = intervalTmp;

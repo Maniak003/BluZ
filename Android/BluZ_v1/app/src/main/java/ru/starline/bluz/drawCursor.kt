@@ -22,6 +22,7 @@ class drawCursor {
     private var Ylog: Float = 0.0f
     private var tmpCounts: Int = 0
     private var tmpEnergy: Int = 0
+    private var tmpChann: Int = 0
     private var cfA : Float = 0.0f
     private var cfB : Float = 0.0f
     private var cfC : Float = 0.0f
@@ -66,7 +67,7 @@ class drawCursor {
             if(cfA == 0.0f) {
                 cursorCanvas.drawText(tmpEnergy.toString(),oldX + 3,Ylog + 10,  /*HSize - textVShift*/ hCursor)
             } else {
-                cursorCanvas.drawText(tmpEnergy.toString() + "keV",oldX + 3,Ylog + 10,  /*HSize - textVShift*/ hCursor)
+                cursorCanvas.drawText(tmpEnergy.toString() + "keV/" + tmpChann.toString(),oldX + 3,Ylog + 10,  /*HSize - textVShift*/ hCursor)
             }
             cursorCanvas.restore()
         }
@@ -104,6 +105,7 @@ class drawCursor {
                     cfC = GO.propCoef4096C
                 }
             }
+            tmpChann = curChan
             if (cfA == 0.0f) {
                 tmpEnergy = curChan
             } else {
@@ -126,7 +128,7 @@ class drawCursor {
             if(GO.propCoefA == 0.0f) {
                 cursorCanvas.drawText(tmpEnergy.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
             } else {
-                cursorCanvas.drawText(tmpEnergy.toString() + "keV", x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
+                cursorCanvas.drawText(tmpEnergy.toString() + "keV/" + tmpChann.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
             }
             cursorCanvas.restore();
 
