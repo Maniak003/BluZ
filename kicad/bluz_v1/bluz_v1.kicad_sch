@@ -5359,7 +5359,7 @@
     (property "Reference" "C19" (id 0) (at 181.991 36.6303 0)
       (effects (font (size 1.27 1.27)) (justify right) hide)
     )
-    (property "Value" "10u" (id 1) (at 179.705 40.005 0)
+    (property "Value" "22u C3216X5R1V226MTJ00E" (id 1) (at 180.34 40.005 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Footprint" "Capacitor_SMD:C_1206_3216Metric" (id 2) (at 178.1048 33.655 0)
@@ -5396,7 +5396,7 @@
     (property "Reference" "C16" (id 0) (at 173.101 36.6303 0)
       (effects (font (size 1.27 1.27)) (justify right) hide)
     )
-    (property "Value" "10u" (id 1) (at 170.815 40.005 0)
+    (property "Value" "22u C3216X5R1V226MTJ00E" (id 1) (at 180.34 41.91 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Footprint" "Capacitor_SMD:C_1206_3216Metric" (id 2) (at 169.2148 33.655 0)
@@ -7256,7 +7256,7 @@
       (reference "C15") (unit 1) (value "10u") (footprint "Capacitor_SMD:C_0402_1005Metric")
     )
     (path "/16bbbb75-6154-486b-84f6-0c1483bc5f51"
-      (reference "C16") (unit 1) (value "10u") (footprint "Capacitor_SMD:C_1206_3216Metric")
+      (reference "C16") (unit 1) (value "22u C3216X5R1V226MTJ00E") (footprint "Capacitor_SMD:C_1206_3216Metric")
     )
     (path "/980a06c5-1cd4-4fc4-8a8a-5c3f1f1b59b0"
       (reference "C17") (unit 1) (value "4.7u") (footprint "Capacitor_SMD:C_0402_1005Metric")
@@ -7265,7 +7265,7 @@
       (reference "C18") (unit 1) (value ".1") (footprint "Capacitor_SMD:C_0402_1005Metric")
     )
     (path "/134867a7-9699-4483-af4a-0e90ac8f8405"
-      (reference "C19") (unit 1) (value "10u") (footprint "Capacitor_SMD:C_1206_3216Metric")
+      (reference "C19") (unit 1) (value "22u C3216X5R1V226MTJ00E") (footprint "Capacitor_SMD:C_1206_3216Metric")
     )
     (path "/6916de32-6e66-4bee-aa98-6c0b14bb45bd"
       (reference "C20") (unit 1) (value "4.7u") (footprint "Capacitor_SMD:C_0402_1005Metric")
