@@ -103,10 +103,11 @@ static uint8_t Notification_Data_Buffer[DATA_NOTIFICATION_MAX_PACKET_SIZE]; /* D
 void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 {
   /* USER CODE BEGIN Service1_Notification_1 */
+	#ifdef DEBUG_USER
 	bzero((char *) uartBuffer, sizeof(uartBuffer));
 	sprintf(uartBuffer, "Service1_Notification_1\n\r");
 	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-
+	#endif
   /* USER CODE END Service1_Notification_1 */
   switch(p_Notification->EvtOpcode)
   {
@@ -121,26 +122,32 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
     case BLUZ_RX_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char1_NOTIFY_ENABLED_EVT */
     	connectFlag = true;
+		#ifdef DEBUG_USER
     	bzero((char *) uartBuffer, sizeof(uartBuffer));
     	sprintf(uartBuffer, "Service1Char1_NOTIFY_ENABLED_EVT\n\r");
     	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#endif
       /* USER CODE END Service1Char1_NOTIFY_ENABLED_EVT */
       break;
 
     case BLUZ_RX_NOTIFY_DISABLED_EVT:
       /* USER CODE BEGIN Service1Char1_NOTIFY_DISABLED_EVT */
+		#ifdef DEBUG_USER
     	bzero((char *) uartBuffer, sizeof(uartBuffer));
     	sprintf(uartBuffer, "Service1Char1_NOTIFY_DISABLED_EVT\n\r");
     	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#endif
       /* USER CODE END Service1Char1_NOTIFY_DISABLED_EVT */
       break;
 
     case BLUZ_TX_WRITE_NO_RESP_EVT:
       /* USER CODE BEGIN Service1Char2_WRITE_NO_RESP_EVT */
     	/* Прием данных со смартфона */
+		#ifdef DEBUG_USER
     	bzero((char *) uartBuffer, sizeof(uartBuffer));
     	sprintf(uartBuffer, "Service1Char2_WRITE_NO_RESP_EVT\n\r");
     	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#endif
 		if (p_Notification->DataTransfered.Length > 10) {
 			/* Прием данных */
 			if (p_Notification->DataTransfered.p_Payload[0] == (uint8_t) '<'
@@ -156,9 +163,11 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 
 				/* Сравниваем контрольные суммы */
 				if (checkSummTest == checkSumm) {
+					#ifdef DEBUG_USER
 					bzero((char *) uartBuffer, sizeof(uartBuffer));
 					sprintf(uartBuffer, "CS correct: %u, Ln: %u\n\r", checkSumm, p_Notification->DataTransfered.Length);
 					HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+					#endif
                     /*
                     * Формат буфера настроек
                     *
@@ -259,6 +268,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						resolution = p_Notification->DataTransfered.p_Payload[37];
 
 						/* Вывод конфига для отладки */
+						#ifdef DEBUG_USER
 						bzero((char *) uartBuffer, sizeof(uartBuffer));
 						sprintf(uartBuffer, "CompLev: %u, HVolt: %u, Koef: %f, Res: %u\n\r", comparatorLevel, HVoltage, calcCoeff.Float, resolution);
 						HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
@@ -271,6 +281,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						bzero((char *) uartBuffer, sizeof(uartBuffer));
 						sprintf(uartBuffer, "calcCoeff: %f\n\r", calcCoeff.Float);
 						HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+						#endif
 
 						/* Установка уровней для компаратора и высокого напряжения */
 						setLevelOnPort(CHANNEL_A, comparatorLevel);
@@ -281,6 +292,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						 *
 						 */
 						writeFlash();
+						calcPulseLevel();	 // Обновление порогов
 						//writeFlash();
 
 					/* Очистка буфера спектра */
@@ -292,9 +304,11 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						currentTime = 0;
 					}
 				} else {
+					#ifdef DEBUG_USER
 					bzero((char *) uartBuffer, sizeof(uartBuffer));
 					sprintf(uartBuffer, "CS incorrect, calcCS: %u, CS: %u Ln: %u\n\r", checkSumm, checkSummTest, p_Notification->DataTransfered.Length);
 					HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+					#endif
 				}
 			}
 
@@ -315,17 +329,21 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 
     case BLUZ_TX_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char2_NOTIFY_ENABLED_EVT */
+		#ifdef DEBUG_USER
     	bzero((char *) uartBuffer, sizeof(uartBuffer));
     	sprintf(uartBuffer, "Service1Char2_NOTIFY_ENABLED_EVT\n\r");
     	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#endif
       /* USER CODE END Service1Char2_NOTIFY_ENABLED_EVT */
       break;
 
     case BLUZ_TX_NOTIFY_DISABLED_EVT:
       /* USER CODE BEGIN Service1Char2_NOTIFY_DISABLED_EVT */
+		#ifdef DEBUG_USER
     	bzero((char *) uartBuffer, sizeof(uartBuffer));
     	sprintf(uartBuffer, "Service1Char2_NOTIFY_DISABLED_EVT\n\r");
     	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#endif
       /* USER CODE END Service1Char2_NOTIFY_DISABLED_EVT */
       break;
 
@@ -344,9 +362,11 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 void BLUZ_APP_EvtRx(BLUZ_APP_ConnHandleNotEvt_t *p_Notification)
 {
   /* USER CODE BEGIN Service1_APP_EvtRx_1 */
+	#ifdef DEBUG_USER
 	bzero((char *) uartBuffer, sizeof(uartBuffer));
 	sprintf(uartBuffer, "Service1_APP_EvtRx_1\n\r");
 	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+	#endif
 
   /* USER CODE END Service1_APP_EvtRx_1 */
 
@@ -357,18 +377,22 @@ void BLUZ_APP_EvtRx(BLUZ_APP_ConnHandleNotEvt_t *p_Notification)
     /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case BLUZ_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
+		#ifdef DEBUG_USER
     	bzero((char *) uartBuffer, sizeof(uartBuffer));
     	sprintf(uartBuffer, "Service1_APP_CONN_HANDLE_EVT\n\r");
     	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#endif
 
       /* USER CODE END Service1_APP_CONN_HANDLE_EVT */
       break;
 
     case BLUZ_DISCON_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_DISCON_HANDLE_EVT */
+		#ifdef DEBUG_USER
     	bzero((char *) uartBuffer, sizeof(uartBuffer));
     	sprintf(uartBuffer, "Service1_APP_DISCON_HANDLE_EVT\n\r");
     	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#endif
 
       /* USER CODE END Service1_APP_DISCON_HANDLE_EVT */
       break;
@@ -476,9 +500,11 @@ void sendData( uint8_t *dataSpectrBufer )
 		status = BLUZ_UpdateValue(BLUZ_RX, (BLUZ_Data_t *) &BZ_Context.TxData);
 
 		if (status == BLE_STATUS_INSUFFICIENT_RESOURCES) {
+			#ifdef DEBUG_USER
 			bzero((char *) uartBuffer, sizeof(uartBuffer));
 			sprintf(uartBuffer, "bz_rx_app: Error transfer with status: %d\n\r", status);
 			HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, sizeof(uartBuffer), 100);
+			#endif
 		} else {
 			//bzero((char *) uartBuffer, sizeof(uartBuffer));
 			//sprintf(uartBuffer, "bz_rx_app: Send complete\n\r");

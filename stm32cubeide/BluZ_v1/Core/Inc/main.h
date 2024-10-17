@@ -90,6 +90,7 @@ union dataA {
 	uint16_t Uint[2];
 };
 
+extern uint32_t level1_cps, level2_cps, level3_cps, tmp_level;
 extern int level1, level2, level3;
 extern union dataC calcCoeff;
 extern union dataC enCoefA, enCoefB, enCoefC;
@@ -118,6 +119,7 @@ void MX_RTC_Init(void);
 
 /* USER CODE BEGIN EFP */
 void NotifyAct(uint8_t SRC, uint32_t repCnt);
+void calcPulseLevel();
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -153,6 +155,8 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define SOUND_NOTIFY 1
 #define VIBRO_NOTIFY 2
 #define LED_NOTIFY   4
+
+//#define DEBUG_USER
 
 /*
  * TODO -- Нужно получить реальное напряжение

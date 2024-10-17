@@ -144,9 +144,11 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
         case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE:
         {
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
+			#ifdef DEBUG_USER
             bzero((char *) uartBuffer, sizeof(uartBuffer));
             sprintf(uartBuffer, "ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE\n\r");
             HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+			#endif
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
           p_attribute_modified = (aci_gatt_attribute_modified_event_rp0*)p_blecore_evt->data;
@@ -173,9 +175,11 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
               /* Disabled Notification management */
               case (!(COMSVC_Notification)):
                 /* USER CODE BEGIN Service1_Char_1_Disabled_BEGIN */
+				#ifdef DEBUG_USER
 				bzero((char *) uartBuffer, sizeof(uartBuffer));
 				sprintf(uartBuffer, "Service1_Char_1_Disabled_BEGIN\n\r");
 				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+				#endif
 
                 /* USER CODE END Service1_Char_1_Disabled_BEGIN */
                 notification.EvtOpcode = BLUZ_RX_NOTIFY_DISABLED_EVT;
@@ -188,9 +192,11 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
               /* Enabled Notification management */
               case COMSVC_Notification:
                 /* USER CODE BEGIN Service1_Char_1_COMSVC_Notification_BEGIN */
+				#ifdef DEBUG_USER
   				bzero((char *) uartBuffer, sizeof(uartBuffer));
   				sprintf(uartBuffer, "Service1_Char_1_COMSVC_Notification_BEGIN\n\r");
   				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+				#endif
 
                 /* USER CODE END Service1_Char_1_COMSVC_Notification_BEGIN */
                 notification.EvtOpcode = BLUZ_RX_NOTIFY_ENABLED_EVT;
@@ -202,9 +208,11 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
 
               default:
                 /* USER CODE BEGIN Service1_Char_1_default */
+					#ifdef DEBUG_USER
     				bzero((char *) uartBuffer, sizeof(uartBuffer));
     				sprintf(uartBuffer, "Service1_Char_1_default\n\r");
     				HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+					#endif
 
                 /* USER CODE END Service1_Char_1_default */
                 break;
@@ -311,9 +319,11 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
           UNUSED(p_exchange_mtu);
 
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
+		#ifdef DEBUG_USER
           bzero((char *) uartBuffer, sizeof(uartBuffer));
           sprintf(uartBuffer, "ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE\n\r");
           HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#endif
           if (p_exchange_mtu->Server_RX_MTU < DATA_NOTIFICATION_MAX_PACKET_SIZE)
           {
             MTUSizeValue = p_exchange_mtu->Server_RX_MTU - 3;
@@ -514,6 +524,7 @@ tBleStatus BLUZ_UpdateValue(BLUZ_CharOpcode_t CharOpcode, BLUZ_Data_t *pData)
 		//bzero((char *) uartBuffer, sizeof(uartBuffer));
 		//sprintf(uartBuffer, "Service1_Char_Value_1\n\r");
 		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#ifdef DEBUG_USER
 		bzero((char *) uartBuffer, sizeof(uartBuffer));
 		if (ret != BLE_STATUS_SUCCESS) {
 			sprintf(uartBuffer, "NO SUCCESS\n\r");
@@ -521,6 +532,7 @@ tBleStatus BLUZ_UpdateValue(BLUZ_CharOpcode_t CharOpcode, BLUZ_Data_t *pData)
 			sprintf(uartBuffer, "SUCCESS\n\r");
 		}
 		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#endif
 		/*
 		bzero((char *) uartBuffer, sizeof(uartBuffer));
 		sprintf(uartBuffer, "DATA [%d]: \n\r", pData->Length);
@@ -549,9 +561,11 @@ tBleStatus BLUZ_UpdateValue(BLUZ_CharOpcode_t CharOpcode, BLUZ_Data_t *pData)
         LOG_INFO_APP("  Success: aci_gatt_update_char_value TX command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2*/
+		#ifdef DEBUG_USER
 		bzero((char *) uartBuffer, sizeof(uartBuffer));
 		sprintf(uartBuffer, "Service1_Char_Value_2\n\r");
 		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		#endif
       /* USER CODE END Service1_Char_Value_2*/
       break;
 
