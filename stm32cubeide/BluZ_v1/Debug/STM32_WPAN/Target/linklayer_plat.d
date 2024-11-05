@@ -75,7 +75,14 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
  ../System/Config/Debug_GPIO/app_debug.h \
  ../System/Modules/RTDebug/RTDebug.h \
  ../System/Config/Debug_GPIO/debug_config.h \
- ../System/Modules/RTDebug/debug_signals.h
+ ../System/Modules/RTDebug/debug_signals.h ../Core/Inc/rw_FLASH.h \
+ ../System/Modules/Flash/simple_nvm_arbiter.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h \
+ ../System/Modules/utilities_common.h \
+ ../System/Config/Flash/simple_nvm_arbiter_conf.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h \
+ ../System/Modules/Flash/rf_timing_synchro.h \
+ ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h
 ../Core/Inc/app_common.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -160,3 +167,12 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
 ../System/Modules/RTDebug/RTDebug.h:
 ../System/Config/Debug_GPIO/debug_config.h:
 ../System/Modules/RTDebug/debug_signals.h:
+../Core/Inc/rw_FLASH.h:
+../System/Modules/Flash/simple_nvm_arbiter.h:
+../System/Modules/Flash/simple_nvm_arbiter_common.h:
+../System/Modules/utilities_common.h:
+../System/Config/Flash/simple_nvm_arbiter_conf.h:
+../System/Modules/Flash/simple_nvm_arbiter_common.h:
+../System/Modules/Flash/rf_timing_synchro.h:
+../System/Modules/Flash/flash_driver.h:
+../Core/Inc/main.h:

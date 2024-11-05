@@ -73,6 +73,13 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
  ../System/Config/Debug_GPIO/debug_config.h ../Core/Inc/app_conf.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
+ ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/simple_nvm_arbiter.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h \
+ ../System/Modules/utilities_common.h \
+ ../System/Config/Flash/simple_nvm_arbiter_conf.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h \
+ ../System/Modules/Flash/rf_timing_synchro.h \
+ ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h \
  ../Core/Inc/app_common.h ../STM32_WPAN/App/app_ble.h \
  ../STM32_WPAN/Target/ll_sys_if.h ../System/Modules/dbg_trace.h \
  ../Middlewares/ST/STM32_WPAN/ble/ble.h ../STM32_WPAN/App/ble_conf.h \
@@ -97,7 +104,7 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
  ../Middlewares/ST/STM32_WPAN/ble/svc/Inc/svc_ctl.h \
  ../Middlewares/ST/STM32_WPAN/ble/svc/Inc/uuid.h \
  ../STM32_WPAN/App/bluz_app.h ../STM32_WPAN/App/bluz.h \
- ../Utilities/sequencer/stm32_seq.h
+ ../Utilities/sequencer/stm32_seq.h ../Core/Inc/LTC1662.h
 ../Core/Inc/main.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h:
 ../Core/Inc/stm32wbaxx_hal_conf.h:
@@ -179,6 +186,15 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
 ../Core/Inc/app_conf.h:
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
+../Core/Inc/rw_FLASH.h:
+../System/Modules/Flash/simple_nvm_arbiter.h:
+../System/Modules/Flash/simple_nvm_arbiter_common.h:
+../System/Modules/utilities_common.h:
+../System/Config/Flash/simple_nvm_arbiter_conf.h:
+../System/Modules/Flash/simple_nvm_arbiter_common.h:
+../System/Modules/Flash/rf_timing_synchro.h:
+../System/Modules/Flash/flash_driver.h:
+../Core/Inc/main.h:
 ../Core/Inc/app_common.h:
 ../STM32_WPAN/App/app_ble.h:
 ../STM32_WPAN/Target/ll_sys_if.h:
@@ -208,3 +224,4 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
 ../STM32_WPAN/App/bluz_app.h:
 ../STM32_WPAN/App/bluz.h:
 ../Utilities/sequencer/stm32_seq.h:
+../Core/Inc/LTC1662.h:

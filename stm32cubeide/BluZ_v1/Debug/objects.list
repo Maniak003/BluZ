@@ -1,5 +1,7 @@
+"./Core/Src/LTC1662.o"
 "./Core/Src/app_entry.o"
 "./Core/Src/main.o"
+"./Core/Src/rw_FLASH.o"
 "./Core/Src/stm32wbaxx_hal_msp.o"
 "./Core/Src/stm32wbaxx_it.o"
 "./Core/Src/syscalls.o"
