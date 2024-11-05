@@ -107,7 +107,7 @@ void CB_SMA (SNVMA_Callback_Status_t os) {
 
 /* Запись параметров во flash контроллера */
 HAL_StatusTypeDef writeFlash() {
-	FD_FlashOp_Status_t stat_ok;
+	FD_FlashOp_Status_t stat_ok = FD_FLASHOP_SUCCESS;
 	SNVMA_Cmd_Status_t stat_cmd;
 	PL[0] = MAGIC_KEY;				// 0, 1
 

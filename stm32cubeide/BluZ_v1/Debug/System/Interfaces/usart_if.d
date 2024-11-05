@@ -73,6 +73,13 @@ System/Interfaces/usart_if.o: ../System/Interfaces/usart_if.c \
  ../System/Config/Debug_GPIO/debug_config.h ../Core/Inc/app_conf.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
+ ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/simple_nvm_arbiter.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h \
+ ../System/Modules/utilities_common.h \
+ ../System/Config/Flash/simple_nvm_arbiter_conf.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h \
+ ../System/Modules/Flash/rf_timing_synchro.h \
+ ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h \
  ../Utilities/trace/adv_trace/stm32_adv_trace.h \
  ../System/Interfaces/usart_if.h
 ../Core/Inc/main.h:
@@ -156,5 +163,14 @@ System/Interfaces/usart_if.o: ../System/Interfaces/usart_if.c \
 ../Core/Inc/app_conf.h:
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
+../Core/Inc/rw_FLASH.h:
+../System/Modules/Flash/simple_nvm_arbiter.h:
+../System/Modules/Flash/simple_nvm_arbiter_common.h:
+../System/Modules/utilities_common.h:
+../System/Config/Flash/simple_nvm_arbiter_conf.h:
+../System/Modules/Flash/simple_nvm_arbiter_common.h:
+../System/Modules/Flash/rf_timing_synchro.h:
+../System/Modules/Flash/flash_driver.h:
+../Core/Inc/main.h:
 ../Utilities/trace/adv_trace/stm32_adv_trace.h:
 ../System/Interfaces/usart_if.h:

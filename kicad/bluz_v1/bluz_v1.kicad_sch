@@ -6227,7 +6227,7 @@
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "47uH LQH31CN470K03L" (id 1) (at 147.32 21.59 90))
-    (property "Footprint" "Inductor_SMD:L_1206_3216Metric" (id 2) (at 152.4 24.13 0)
+    (property "Footprint" "Inductor_SMD:L_1206_3216Metric_Pad1.42x1.75mm_HandSolder" (id 2) (at 152.4 24.13 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "LQH31CN470K03L" (id 3) (at 152.4 24.13 0)
@@ -6586,7 +6586,7 @@
     (property "Reference" "R14" (id 0) (at 173.7903 22.352 0)
       (effects (font (size 1.27 1.27)) (justify left) hide)
     )
-    (property "Value" "470" (id 1) (at 174.625 22.225 90))
+    (property "Value" "1k" (id 1) (at 174.625 22.225 90))
     (property "Footprint" "Resistor_SMD:R_0402_1005Metric" (id 2) (at 174.625 25.908 90)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -7340,7 +7340,7 @@
       (reference "L1") (unit 1) (value "10uH") (footprint "Inductor_SMD:L_0603_1608Metric")
     )
     (path "/77373934-a013-4003-ae17-82edd2463c24"
-      (reference "L2") (unit 1) (value "47uH LQH31CN470K03L") (footprint "Inductor_SMD:L_1206_3216Metric")
+      (reference "L2") (unit 1) (value "47uH LQH31CN470K03L") (footprint "Inductor_SMD:L_1206_3216Metric_Pad1.42x1.75mm_HandSolder")
     )
     (path "/fd18f754-2e4f-4eb7-a1de-4025462c7606"
       (reference "M1") (unit 1) (value "VibroMotor") (footprint "My-library:VibroMotor")
@@ -7391,7 +7391,7 @@
       (reference "R13") (unit 1) (value "100M") (footprint "Resistor_SMD:R_0402_1005Metric")
     )
     (path "/adf52942-5a78-4ce6-9f92-ba8f0b0fdf88"
-      (reference "R14") (unit 1) (value "470") (footprint "Resistor_SMD:R_0402_1005Metric")
+      (reference "R14") (unit 1) (value "1k") (footprint "Resistor_SMD:R_0402_1005Metric")
     )
     (path "/c8dd2620-be56-4c2f-bce2-f222bc17d9b2"
       (reference "R15") (unit 1) (value "4.3M") (footprint "Resistor_SMD:R_0402_1005Metric")
