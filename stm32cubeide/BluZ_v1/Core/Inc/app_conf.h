@@ -230,7 +230,7 @@
  *
  ******************************************************************************/
 #define CFG_LPM_LEVEL            (1)
-#define CFG_LPM_STDBY_SUPPORTED  (0)
+#define CFG_LPM_STDBY_SUPPORTED  (1)
 
 /* USER CODE BEGIN Low_Power 0 */
 
