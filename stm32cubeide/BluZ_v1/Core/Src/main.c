@@ -132,7 +132,7 @@ static void MX_TIM17_Init(void);
  *
  */
 void NotifyAct(uint8_t SRC, uint32_t repCnt) {
-	if (SoundEnable || VibroEnable ) {
+	if (SoundEnable || VibroEnable || 1) {
 		/* Установим количество повторов */
 		hlptim1.Init.RepetitionCounter = repCnt;
 		if (HAL_LPTIM_Init(&hlptim1) == HAL_OK) {
@@ -244,8 +244,7 @@ int main(void)
 		//| LED_NOTIFY
 		, 1);
 */
-
-  //HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 2, WakeUpClock, WakeUpAutoClr)
+  //HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 2000, 1000, RTC_WAKEUPCLOCK_RTCCLK_DIV16);
 
   if (readFlash() == HAL_OK) {
 	#ifdef DEBUG_USER
@@ -315,6 +314,8 @@ int main(void)
 
 	if (interval3 + INTERVAL3 < intervalTmp) {
 		interval3 = intervalTmp;
+		NotifyAct(SOUND_NOTIFY, 2);
+		//HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	}
 
 
@@ -907,6 +908,7 @@ void MX_RTC_Init(void)
     Error_Handler();
   }
   privilegeState.rtcPrivilegeFull = RTC_PRIVILEGE_FULL_NO;
+  privilegeState.rtcPrivilegeFeatures = RTC_PRIVILEGE_FEATURE_WUT;
   privilegeState.backupRegisterPrivZone = RTC_PRIVILEGE_BKUP_ZONE_NONE;
   privilegeState.backupRegisterStartZone2 = RTC_BKP_DR0;
   privilegeState.backupRegisterStartZone3 = RTC_BKP_DR0;
@@ -917,7 +919,7 @@ void MX_RTC_Init(void)
 
   /** Enable the WakeUp
   */
-  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_CK_SPRE_16BITS, 0) != HAL_OK)
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 100, RTC_WAKEUPCLOCK_CK_SPRE_16BITS, 0) != HAL_OK)
   {
     Error_Handler();
   }

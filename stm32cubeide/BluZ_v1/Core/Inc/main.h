@@ -148,7 +148,7 @@ void calcPulseLevel();
 /* USER CODE BEGIN Private defines */
 #define INTERVAL1 1000
 #define INTERVAL2 5000
-#define INTERVAL3 2000
+#define INTERVAL3 1000
 #define INTERVAL4 1000
 
 #define SOUND_TIME_NOTIFY 4096

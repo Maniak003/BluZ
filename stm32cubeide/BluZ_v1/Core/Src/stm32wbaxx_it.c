@@ -223,6 +223,7 @@ void RTC_IRQHandler(void)
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTCEx_WakeUpTimerIRQHandler(&hrtc);
   /* USER CODE BEGIN RTC_IRQn 1 */
+  	  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
   	  currentTimeAvg = currentTime++;
   	  pulseCounterAvg = pulseCounter;
   	  CPS = pulseCounterSecond;
