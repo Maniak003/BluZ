@@ -69,7 +69,7 @@ extern uint16_t MTUSizeValue;
 extern uint8_t resolution;
 extern uint16_t specterBuffer[SIZE_BUF_4096];
 extern uint16_t currTemterature, currVoltage,tmpSpecterBuffer[MAX_RESOLUTION];
-extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, pulseLevel[3], currentTime, pulseCounterSecond, CPS;
+extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, pulseLevel[3], currentTime, pulseCounterSecond, CPS, intervalNow;
 extern bool SoundEnable, VibroEnable, LEDEnable;
 extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
@@ -146,23 +146,23 @@ void calcPulseLevel();
 #define Sync_EXTI_IRQn EXTI15_IRQn
 
 /* USER CODE BEGIN Private defines */
-#define INTERVAL1 1000
-#define INTERVAL2 5000
-#define INTERVAL3 1000
-#define INTERVAL4 1000
+#define INTERVAL1 1
+#define INTERVAL2 5
+#define INTERVAL3 1
+#define INTERVAL4 1
 
 #define SOUND_TIME_NOTIFY 4096
-#define SOUND_NOTIFY 1
-#define VIBRO_NOTIFY 2
-#define LED_NOTIFY   4
+#define SOUND_NOTIFY 	1
+#define VIBRO_NOTIFY 	2
+#define LED_NOTIFY   	4
+#define TEST_LED		0
 
 //#define DEBUG_USER
 
 /*
- * TODO -- Нужно получить реальное напряжение
- *  Напряжение питания
+ * TODO -- Нужно получить реальное напряжение питания
  */
-#define ADC_VREF 2.8f
+#define ADC_VREF 2.8f					// Напряжение питания.
 #define ADC_VREF_COEF 4.2f / 4080.0f
 
 /* USER CODE END Private defines */

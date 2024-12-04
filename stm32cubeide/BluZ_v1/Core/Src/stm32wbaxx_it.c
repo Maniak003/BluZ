@@ -223,7 +223,8 @@ void RTC_IRQHandler(void)
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTCEx_WakeUpTimerIRQHandler(&hrtc);
   /* USER CODE BEGIN RTC_IRQn 1 */
-  	  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+  	  //NotifyAct(LED_NOTIFY, 0);
+  	  intervalNow++;
   	  currentTimeAvg = currentTime++;
   	  pulseCounterAvg = pulseCounter;
   	  CPS = pulseCounterSecond;
@@ -247,7 +248,7 @@ void RTC_IRQHandler(void)
   		tmp_level = 3;
   	}
   	if (tmp_level > 0) {
-  		NotifyAct(SOUND_NOTIFY, tmp_level);
+  		NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, tmp_level - 1);
   	}
 
   /* USER CODE END RTC_IRQn 1 */
@@ -267,10 +268,8 @@ void EXTI15_IRQHandler(void)
   pulseCounterSecond++;
 	/* Оповещение об импульсе */
   if (LEDEnable) {
-  	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-	HAL_TIM_Base_Start_IT(&htim17);
+	  NotifyAct(LED_NOTIFY, 0);
   }
-	//NotifyAct(LED_NOTIFY, 1);
   /* USER CODE END EXTI15_IRQn 1 */
 }
 
@@ -347,7 +346,11 @@ void TIM17_IRQHandler(void)
   /* USER CODE END TIM17_IRQn 0 */
   HAL_TIM_IRQHandler(&htim17);
   /* USER CODE BEGIN TIM17_IRQn 1 */
-  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+  if (LEDflag) {
+	  LEDflag = false;
+	  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+  }
+  HAL_TIM_Base_Stop_IT(&htim17);
   /* USER CODE END TIM17_IRQn 1 */
 }
 
