@@ -63,7 +63,7 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 
 bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false;
-uint32_t tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalTmp = 0, pulseCounter = 0,  pulseCounterSecond = 0, pulseLevel[3] = {0}, currentTime = 0, CPS = 0;
+uint32_t tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0, pulseCounter = 0,  pulseCounterSecond = 0, pulseLevel[3] = {0}, currentTime = 0, CPS = 0;
 char uartBuffer[400] = {0,};
 /* Буфер для работы с flash */
 uint64_t PL[8] = {0,};
@@ -132,22 +132,23 @@ static void MX_TIM17_Init(void);
  *
  */
 void NotifyAct(uint8_t SRC, uint32_t repCnt) {
-	if (SoundEnable || VibroEnable || 1) {
+	if (SoundEnable || VibroEnable || TEST_LED) {
+		if (SRC & (SOUND_NOTIFY | VIBRO_NOTIFY)) {
 		/* Установим количество повторов */
-		hlptim1.Init.RepetitionCounter = repCnt;
-		if (HAL_LPTIM_Init(&hlptim1) == HAL_OK) {
-			notifyFlags = SRC;
-			/* Включаем звук и вибро */
-			HAL_LPTIM_OnePulse_Start_IT(&hlptim1, LPTIM_CHANNEL_1);
+			hlptim1.Init.RepetitionCounter = repCnt;
+			if (HAL_LPTIM_Init(&hlptim1) == HAL_OK) {
+				notifyFlags = SRC;
+				/* Включаем звук и вибро */
+				HAL_LPTIM_OnePulse_Start_IT(&hlptim1, LPTIM_CHANNEL_1);
+			}
 		}
 	}
-	if (LEDEnable) {
-		/*
+	if (LEDEnable || TEST_LED) {
 		if (SRC & LED_NOTIFY) {
 			LEDflag = true;
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			HAL_TIM_Base_Start_IT(&htim17);
-		}*/
+		}
 	}
 }
 
@@ -236,14 +237,6 @@ int main(void)
   //resolution = 2;			/* Тест разрешение 4096 */
 
 
-  /* Включим LED, Vibro, Sound */
-/*
-  NotifyAct(
-		 // SOUND_NOTIFY
-		 VIBRO_NOTIFY
-		//| LED_NOTIFY
-		, 1);
-*/
   //HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 2000, 1000, RTC_WAKEUPCLOCK_RTCCLK_DIV16);
 
   if (readFlash() == HAL_OK) {
@@ -302,25 +295,31 @@ int main(void)
    * 15, 16 - Напряжение батареи в вольтах
    *
    */
+  /* Включим Vibro, Sound */
+
+  NotifyAct(SOUND_NOTIFY /*| VIBRO_NOTIFY*/, 1);
 
 
   while (1)
   {
     /* USER CODE END WHILE */
     MX_APPE_Process();
+	HAL_SuspendTick();
+	HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+	HAL_ResumeTick();
 
     /* USER CODE BEGIN 3 */
-    intervalTmp = HAL_GetTick();
+    //intervalTmp = HAL_GetTick();
 
-	if (interval3 + INTERVAL3 < intervalTmp) {
-		interval3 = intervalTmp;
-		NotifyAct(SOUND_NOTIFY, 2);
+	if (interval3 + INTERVAL3 < intervalNow) {
+		interval3 = intervalNow;
+		//NotifyAct(SOUND_NOTIFY, 2);
 		//HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	}
 
 
-    if ( connectFlag && (interval2 + INTERVAL2 < intervalTmp) /*&& system_startup_done*/) {
-	  interval2 = intervalTmp;
+    if ( connectFlag && (interval2 + INTERVAL2 < intervalNow) /*&& system_startup_done*/) {
+	  interval2 = intervalNow;
 
 	  /* Шаблон заголовка */
 	  uint8_t hdr[] = {'<', 'B', '>', 0, 0, 0, 0, 0};
@@ -463,8 +462,8 @@ int main(void)
 		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 		#endif
 	}
-    if (interval1 + INTERVAL1 < intervalTmp) {
-    	interval1 = intervalTmp;
+    if (interval1 + INTERVAL1 < intervalNow) {
+    	interval1 = intervalNow;
     	//HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
     	//NotifyAct(SOUND_NOTIFY, 2);
 		if (connectFlag) {
@@ -474,8 +473,8 @@ int main(void)
     }
 
     /* Измерение напряжения батареи и температуры МК */
-    if (interval4 + INTERVAL4 < intervalTmp) {
-    	interval4 = intervalTmp;
+    if (interval4 + INTERVAL4 < intervalNow) {
+    	interval4 = intervalNow;
     	if (! flagTemperatureMess) {
     		/* Включим ADC для трех каналов */
     		MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((3UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
@@ -533,7 +532,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB7CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.AHB5_PLL1_CLKDivider = RCC_SYSCLK_PLL1_DIV1;
-  RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV2;
+  RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
@@ -908,7 +907,6 @@ void MX_RTC_Init(void)
     Error_Handler();
   }
   privilegeState.rtcPrivilegeFull = RTC_PRIVILEGE_FULL_NO;
-  privilegeState.rtcPrivilegeFeatures = RTC_PRIVILEGE_FEATURE_WUT;
   privilegeState.backupRegisterPrivZone = RTC_PRIVILEGE_BKUP_ZONE_NONE;
   privilegeState.backupRegisterStartZone2 = RTC_BKP_DR0;
   privilegeState.backupRegisterStartZone3 = RTC_BKP_DR0;
@@ -919,7 +917,7 @@ void MX_RTC_Init(void)
 
   /** Enable the WakeUp
   */
-  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 100, RTC_WAKEUPCLOCK_CK_SPRE_16BITS, 0) != HAL_OK)
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_CK_SPRE_16BITS, 0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -950,7 +948,7 @@ static void MX_TIM17_Init(void)
   htim17.Instance = TIM17;
   htim17.Init.Prescaler = 15;
   htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim17.Init.Period = 65535;
+  htim17.Init.Period = 1000;
   htim17.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim17.Init.RepetitionCounter = 0;
   htim17.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -990,7 +988,7 @@ static void MX_TIM17_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM17_Init 2 */
-
+  __HAL_TIM_CLEAR_FLAG(&htim17, TIM_SR_UIF); // Clear flags
   /* USER CODE END TIM17_Init 2 */
 
 }
@@ -1099,13 +1097,10 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+
 void HAL_LPTIM_CompareMatchCallback(LPTIM_HandleTypeDef *hlptim) {
 	if (hlptim->Channel == HAL_LPTIM_ACTIVE_CHANNEL_1) {
-		if (LEDflag) {
-		  LEDflag = false;
-		  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-		}
-
 		/* Включение звука */
 		if (SoundEnable) {
 			if (notifyFlags & SOUND_NOTIFY) {
