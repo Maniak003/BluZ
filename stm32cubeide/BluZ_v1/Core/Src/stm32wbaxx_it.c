@@ -289,27 +289,24 @@ void GPDMA1_Channel0_IRQHandler(void)
    * 2 - 4096 каналов
    */
 	switch (resolution) {
-		/* 1024 */
-		case 0:	{
-			if (tmpSpecterBuffer[((pulseLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET] < 65535) {
-				tmpSpecterBuffer[((pulseLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET]++;
-			}
-			break;
+	/* 1024 */
+	case 0:
+		if (tmpSpecterBuffer[((pulseLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET] < 65535) {
+			tmpSpecterBuffer[((pulseLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET]++;
 		}
-		/* 2048 */
-		case 1: {
-			if (tmpSpecterBuffer[((pulseLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET] < 65535) {
-				tmpSpecterBuffer[((pulseLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET]++;
-			}
-			break;
+		break;
+	/* 2048 */
+	case 1:
+		if (tmpSpecterBuffer[((pulseLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET] < 65535) {
+			tmpSpecterBuffer[((pulseLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET]++;
 		}
-		/* 4096 */
-		case 2: {
-			if (tmpSpecterBuffer[(pulseLevel[0] & 0xFFF) + HEADER_OFFSET] < 65535) {
-				tmpSpecterBuffer[(pulseLevel[0] & 0xFFF) + HEADER_OFFSET]++;
-			}
-			break;
+		break;
+	/* 4096 */
+	case 2:
+		if (tmpSpecterBuffer[(pulseLevel[0] & 0xFFF) + HEADER_OFFSET] < 65535) {
+			tmpSpecterBuffer[(pulseLevel[0] & 0xFFF) + HEADER_OFFSET]++;
 		}
+		break;
 	}
 
 	if (flagTemperatureMess) {
@@ -317,7 +314,7 @@ void GPDMA1_Channel0_IRQHandler(void)
 		MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
 		currVoltage = (uint16_t) pulseLevel[2] & 0xFFF;		// Сохраним напряжение
 		currTemterature = (uint16_t) pulseLevel[1] & 0xFFF;	// Сохраним температуру
-		//HAL_ADC_Stop_DMA(&hadc4);							// Остановим измерение температуры и напряжени
+		//HAL_ADC_Stop_DMA(&hadc4);							// Остановим измерение температуры и напряжения
 		//HAL_ADC_Start_DMA(&hadc4, pulseLevel, 1);			// Дальше набираем только спектр
 	}
   /* USER CODE END GPDMA1_Channel0_IRQn 1 */

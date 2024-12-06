@@ -67,7 +67,8 @@ uint32_t tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 
 char uartBuffer[400] = {0,};
 /* Буфер для работы с flash */
 uint64_t PL[8] = {0,};
-uint8_t resolution = 0; /* 0 - 1024, 1 - 2048, 2 - 4096, 3 - Логи, 4 - Параметры, 5 - История дозиметра*/
+uint8_t resolution = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
+uint8_t dataType = 0;	/* 0 - Спектр, 1 - История, 2 - Логи, 3 - Параметры, 4 - История дозиметра*/
 uint8_t tmpBTBuffer[DATA_NOTIFICATION_MAX_PACKET_SIZE] = {0,};
 uint16_t currTemterature, currVoltage, tmpSpecterBuffer[4096];
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
@@ -78,7 +79,7 @@ uint16_t specterBuffer[SIZE_BUF_4096] = {0,};
 bool SoundEnable = true, VibroEnable = true, LEDEnable = false;		// Собровождение квантов
 bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активность звука для разных уровней
 bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
-bool flagTemperatureMess = false;
+bool flagTemperatureMess = false, startSpecrometr = false;
 
 /*
 union dataC {
@@ -212,6 +213,8 @@ int main(void)
   //MX_GPIO_Init();
   HAL_ADCEx_Calibration_Start(&hadc4);
 
+
+
 #ifndef DEBUG_USER
   HAL_UART_DeInit(&huart2);
 #endif
@@ -304,12 +307,18 @@ int main(void)
   {
     /* USER CODE END WHILE */
     MX_APPE_Process();
-	HAL_SuspendTick();
-	HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-	HAL_ResumeTick();
 
     /* USER CODE BEGIN 3 */
-    //intervalTmp = HAL_GetTick();
+    /*
+     * 	Засыпаем если нет подключения и нет набора спектра.
+     */
+    if (! connectFlag && ! startSpecrometr) {
+		HAL_SuspendTick();
+		HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+		//PWR_EnterSleepMode();
+		HAL_ResumeTick();
+		//LL_PWR_SetPowerMode(Mode);
+    }
 
 	if (interval3 + INTERVAL3 < intervalNow) {
 		interval3 = intervalNow;
@@ -318,51 +327,65 @@ int main(void)
 	}
 
 
-    if ( connectFlag && (interval2 + INTERVAL2 < intervalNow) /*&& system_startup_done*/) {
-	  interval2 = intervalNow;
+    if ( connectFlag && (interval2 < intervalNow) /*&& system_startup_done*/) {
+	  interval2 = intervalNow + INTERVAL2;
 
 	  /* Шаблон заголовка */
 	  uint8_t hdr[] = {'<', 'B', '>', 0, 0, 0, 0, 0};
 
 	  uint16_t countMTU = 0;
 	  uint16_t idxCS = 0 ;
-	  switch (resolution) {
-		  case 0: {
-			  countMTU = NUMBER_MTU_1024;
-			  idxCS = SIZE_BUF_1024 - 1 ;
-			  hdr[4] = 0;					/* Тип передаваемых данных */
-			  break;
+	  int kkk = 0;
+	  switch (dataType) {
+  	  case 0:									/* Передача данных спектрометра */
+  	  case 1:									/* Передача данных истории спектрометра */
+		  switch (resolution) {
+		  case 0:								/* Передача спектра с разрешением 1024 */
+				countMTU = NUMBER_MTU_1024;
+				idxCS = SIZE_BUF_1024 - 1 ;
+				hdr[4] = 0;					/* Тип передаваемых данных */
+				break;
+		  case 1: 								/* Передача спектра с разрешением 2048 */
+				countMTU = NUMBER_MTU_2048;
+				idxCS = SIZE_BUF_2048 - 1;
+				hdr[4] = 0;
+				break;
+		  case 2: 								/* Передача спектра с разрешением 4096 */
+				countMTU = NUMBER_MTU_4096;
+				idxCS = SIZE_BUF_4096 - 1;
+				hdr[4] = 0;
+				break;
 		  }
-		  case 1: {
-			  countMTU = NUMBER_MTU_2048;
-			  idxCS = SIZE_BUF_2048 - 1;
-			  hdr[4] = 0;
-			  break;
+		  /*
+		   * Загрузка спектра в буфер,
+		   * что бы исключить изменение данных на время передачи
+		   *
+		   */
+		  for (int jjj = HEADER_OFFSET; jjj < idxCS; jjj++) {
+			  specterBuffer[jjj] = tmpSpecterBuffer[kkk++];
+			  /* Тестовые данные */
+			  //specterBuffer[jjj] = 0;
+			  //specterBuffer[jjj] = log(jjj) * 400;
 		  }
-		  case 2: {
-			  countMTU = NUMBER_MTU_4096;
-			  idxCS = SIZE_BUF_4096 - 1;
-			  hdr[4] = 0;
-			  break;
-		  }
-		  case 3: {
-			  countMTU = NUMBER_MTU_LOG;
-			  idxCS = SIZE_BUF_LOG - 1;
-			  hdr[4] = 0;
-			  break;
-		  }
-		  case 4: {
-			  countMTU = NUMBER_MTU_PARAM;
-			  idxCS = SIZE_BUF_PARAM - 1;
-			  hdr[4] = 0;
-			  break;
-		  }
-		  case 5: {
-			  countMTU = NUMBER_MTU_DOZR;
-			  idxCS = SIZE_BUF_DOZR - 1;
-			  hdr[4] = 0;
-			  break;
-		  }
+		  break;
+	  case 2:								/* Передача лога */
+		  countMTU = NUMBER_MTU_LOG;
+		  idxCS = SIZE_BUF_LOG - 1;
+		  hdr[4] = 0;
+		  break;
+	  case 3:								/* Передача параметров */
+		  countMTU = NUMBER_MTU_PARAM;
+		  idxCS = SIZE_BUF_PARAM - 1;
+		  hdr[4] = 0;
+		  break;
+	  case 4:								/* Передача статистики дозиметра */
+		  countMTU = NUMBER_MTU_DOZR;
+		  idxCS = SIZE_BUF_DOZR - 1;
+		  hdr[4] = 0;
+  		  for (int jjj = HEADER_OFFSET; jjj < HEADER_OFFSET + SIZE_DOZIMETR_BUFER; jjj++) {
+  			  specterBuffer[jjj] = dozimetrBuffer[kkk++];
+  		  }
+		  break;
 	  }
 
 	  /* Подготовка заголовка */
@@ -408,25 +431,8 @@ int main(void)
 	  specterBuffer[16] = Voltage.Uint[1];
 
 
-	  //
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
-	  /*
-	   * Загрузка спектра в буфер,
-	   * что бы исключить изменение данных на время передачи
-	   *
-	   */
-	  int kkk = 0;
-	  for (int jjj = HEADER_OFFSET; jjj < idxCS; jjj++) {
-		  specterBuffer[jjj] = tmpSpecterBuffer[kkk++];
-		  /* Тестовые данные */
-		  //specterBuffer[jjj] = 0;
-		  //specterBuffer[jjj] = log(jjj) * 400;
-	  }
-	  //specterBuffer[2048] = 10;
-	  //specterBuffer[idxCS - 1] = 1;
 	  specterBuffer[idxCS] = 0;
-	  //specterBuffer[SIZE_BUF_1024 - 1 ] = 0;
-	  /* End test */
 	  kkk = 0;
 	  for (int iii = 0; iii < countMTU; iii++) {
 		  if ( ! connectFlag) {
@@ -462,8 +468,8 @@ int main(void)
 		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 		#endif
 	}
-    if (interval1 + INTERVAL1 < intervalNow) {
-    	interval1 = intervalNow;
+    if (interval1 < intervalNow) {
+    	interval1 = intervalNow + INTERVAL1;
     	//HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
     	//NotifyAct(SOUND_NOTIFY, 2);
 		if (connectFlag) {
@@ -473,8 +479,8 @@ int main(void)
     }
 
     /* Измерение напряжения батареи и температуры МК */
-    if (interval4 + INTERVAL4 < intervalNow) {
-    	interval4 = intervalNow;
+    if (interval4 < intervalNow) {
+    	interval4 = intervalNow + INTERVAL4;
     	if (! flagTemperatureMess) {
     		/* Включим ADC для трех каналов */
     		MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((3UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
@@ -1060,7 +1066,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(A_DATA_GPIO_Port, A_DATA_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, A_DATA_Pin|NC_Pin|NCB8_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, A_SCK_Pin|A_CS_Pin|VIBRO_Pin|LED_Pin, GPIO_PIN_RESET);
@@ -1078,6 +1084,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : NC_Pin NCB8_Pin */
+  GPIO_InitStruct.Pin = NC_Pin|NCB8_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : Sync_Pin */
   GPIO_InitStruct.Pin = Sync_Pin;
