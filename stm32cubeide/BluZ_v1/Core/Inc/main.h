@@ -46,27 +46,27 @@ extern "C" {
  * для разрешения 4096
  * 8192 + 104 =  34 * 244(MTU)
  */
-#define CRC_SIZE 1								/* размер в uint16_t */
-#define MTU_SIZE 244							/* Размер mtu в uint8_t */
-#define HEADER_OFFSET 56 - CRC_SIZE				/* Начало спектра в буфере в uint16_t */
-#define NUMBER_MTU_1024 9						/* Количество MTU для передачи спектра разрешением 1024 */
-#define NUMBER_MTU_2048 17						/* Количество MTU для передачи спектра разрешением 2048 */
-#define NUMBER_MTU_4096 34						/* Количество MTU для передачи спектра разрешением 4096 */
-#define NUMBER_MTU_DOZR 4						/* Количество MTU для передачи накоплений дозиметра */
-#define NUMBER_MTU_LOG 3						/* Количество MTU для передачи логов */
-#define NUMBER_MTU_PARAM 1						/* Количество MTU для передачи текущих параметров прибора */
-#define SIZE_BUF_1024 NUMBER_MTU_1024 * 244 / 2	/* Итоговый размер буфера в uint16_t*/
+#define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
+#define CRC_SIZE 1									/* размер в uint16_t */
+#define MTU_SIZE 244								/* Размер mtu в uint8_t */
+#define HEADER_OFFSET 56 - CRC_SIZE					/* Начало спектра в буфере в uint16_t */
+#define NUMBER_MTU_1024 9							/* Количество MTU для передачи спектра разрешением 1024 */
+#define NUMBER_MTU_2048 17							/* Количество MTU для передачи спектра разрешением 2048 */
+#define NUMBER_MTU_4096 34							/* Количество MTU для передачи спектра разрешением 4096 */
+#define NUMBER_MTU_DOZR 4							/* Количество MTU для передачи накоплений дозиметра */
+#define NUMBER_MTU_LOG 3							/* Количество MTU для передачи логов */
+#define NUMBER_MTU_PARAM 1							/* Количество MTU для передачи текущих параметров прибора */
+#define SIZE_BUF_1024 NUMBER_MTU_1024 * 244 / 2		/* Итоговый размер буфера в uint16_t*/
 #define SIZE_BUF_2048 NUMBER_MTU_2048 * 244 / 2
 #define SIZE_BUF_4096 NUMBER_MTU_4096 * 244 / 2
-#define SIZE_BUF_DOZR 488
-#define SIZE_BUF_LOG 366
-#define SIZE_BUF_PARAM 122
+#define SIZE_BUF_DOZR NUMBER_MTU_DOZR * 244 / 2		/* Размер буфера для передачи накоплений дозиметра */
+#define SIZE_BUF_LOG NUMBER_MTU_LOG * 244 / 2		/* Размер буфера для передачи лога */
+#define SIZE_BUF_PARAM NUMBER_MTU_PARAM * 244 / 2	/* Размер буфера для передачи параметров */
 #define MAX_RESOLUTION 4096
 #define SIZE_DOZIMETR_BUFER 512
 
-#define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 extern uint16_t MTUSizeValue;
-extern uint8_t resolution;
+extern uint8_t resolution, dataType;
 extern uint16_t specterBuffer[SIZE_BUF_4096];
 extern uint16_t currTemterature, currVoltage,tmpSpecterBuffer[MAX_RESOLUTION];
 extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, pulseLevel[3], currentTime, pulseCounterSecond, CPS, intervalNow;
@@ -139,6 +139,10 @@ void calcPulseLevel();
 #define SOUND_GPIO_Port GPIOA
 #define AIn_Pin GPIO_PIN_0
 #define AIn_GPIO_Port GPIOA
+#define NC_Pin GPIO_PIN_9
+#define NC_GPIO_Port GPIOB
+#define NCB8_Pin GPIO_PIN_8
+#define NCB8_GPIO_Port GPIOB
 #define TX_Pin GPIO_PIN_12
 #define TX_GPIO_Port GPIOA
 #define Sync_Pin GPIO_PIN_15
