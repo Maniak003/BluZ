@@ -1,6 +1,8 @@
 STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
- ../Core/Inc/app_common.h ../Core/Inc/app_conf.h \
- ../System/Interfaces/hw_if.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h \
+ ../Core/Inc/stm32wbaxx_hal_conf.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_dma.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h \
  ../Drivers/CMSIS/Device/ST/STM32WBAxx/Include/stm32wbaxx.h \
  ../Drivers/CMSIS/Device/ST/STM32WBAxx/Include/stm32wba54xx.h \
  ../Drivers/CMSIS/Include/core_cm33.h \
@@ -9,10 +11,6 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
  ../Drivers/CMSIS/Include/cmsis_gcc.h \
  ../Drivers/CMSIS/Include/mpu_armv8.h \
  ../Drivers/CMSIS/Device/ST/STM32WBAxx/Include/system_stm32wbaxx.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h \
- ../Core/Inc/stm32wbaxx_hal_conf.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_dma.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_dma_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_adc.h \
@@ -26,6 +24,7 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h \
@@ -43,10 +42,12 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart_ex.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rcc.h \
+ ../Core/Inc/app_common.h ../Core/Inc/app_conf.h \
+ ../System/Interfaces/hw_if.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_exti.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_system.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rcc.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pwr.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_cortex.h \
@@ -55,8 +56,7 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
  ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
  ../Utilities/misc/stm32_mem.h ../Core/Inc/utilities_conf.h \
- ../Utilities/misc/stm32_tiny_vsnprintf.h \
- ../System/Config/Log/log_module.h ../System/Interfaces/hw.h \
+ ../Utilities/misc/stm32_tiny_vsnprintf.h ../System/Interfaces/hw.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h \
@@ -68,11 +68,11 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/pta.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/hci.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
+ ../Core/Inc/app_conf.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/linklayer_plat.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../Core/Inc/app_conf.h ../System/Modules/scm.h ../Core/Inc/main.h \
- ../Core/Inc/app_entry.h ../Core/Inc/app_common.h \
- ../System/Config/Debug_GPIO/app_debug.h \
+ ../System/Modules/scm.h ../Core/Inc/main.h ../Core/Inc/app_entry.h \
+ ../Core/Inc/app_common.h ../System/Config/Debug_GPIO/app_debug.h \
  ../System/Modules/RTDebug/RTDebug.h \
  ../System/Config/Debug_GPIO/debug_config.h \
  ../System/Modules/RTDebug/debug_signals.h ../Core/Inc/rw_FLASH.h \
@@ -82,10 +82,13 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
  ../System/Config/Flash/simple_nvm_arbiter_conf.h \
  ../System/Modules/Flash/simple_nvm_arbiter_common.h \
  ../System/Modules/Flash/rf_timing_synchro.h \
- ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h
-../Core/Inc/app_common.h:
-../Core/Inc/app_conf.h:
-../System/Interfaces/hw_if.h:
+ ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_tim.h \
+ ../System/Config/Log/log_module.h ../System/Config/Log/log_module_conf.h
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h:
+../Core/Inc/stm32wbaxx_hal_conf.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_dma.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h:
 ../Drivers/CMSIS/Device/ST/STM32WBAxx/Include/stm32wbaxx.h:
 ../Drivers/CMSIS/Device/ST/STM32WBAxx/Include/stm32wba54xx.h:
 ../Drivers/CMSIS/Include/core_cm33.h:
@@ -94,10 +97,6 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
 ../Drivers/CMSIS/Include/cmsis_gcc.h:
 ../Drivers/CMSIS/Include/mpu_armv8.h:
 ../Drivers/CMSIS/Device/ST/STM32WBAxx/Include/system_stm32wbaxx.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h:
-../Core/Inc/stm32wbaxx_hal_conf.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_dma.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_dma_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_adc.h:
@@ -111,6 +110,7 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h:
@@ -128,10 +128,13 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart_ex.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rcc.h:
+../Core/Inc/app_common.h:
+../Core/Inc/app_conf.h:
+../System/Interfaces/hw_if.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_exti.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_system.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rcc.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pwr.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_cortex.h:
@@ -143,7 +146,6 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
 ../Utilities/misc/stm32_mem.h:
 ../Core/Inc/utilities_conf.h:
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
-../System/Config/Log/log_module.h:
 ../System/Interfaces/hw.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h:
@@ -156,9 +158,9 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/pta.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/hci.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h:
+../Core/Inc/app_conf.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/linklayer_plat.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
-../Core/Inc/app_conf.h:
 ../System/Modules/scm.h:
 ../Core/Inc/main.h:
 ../Core/Inc/app_entry.h:
@@ -176,3 +178,6 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
 ../System/Modules/Flash/rf_timing_synchro.h:
 ../System/Modules/Flash/flash_driver.h:
 ../Core/Inc/main.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_tim.h:
+../System/Config/Log/log_module.h:
+../System/Config/Log/log_module_conf.h:

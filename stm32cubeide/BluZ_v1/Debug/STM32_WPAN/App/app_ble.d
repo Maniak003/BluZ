@@ -24,6 +24,7 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h \
@@ -54,8 +55,7 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
  ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
  ../Utilities/misc/stm32_mem.h ../Core/Inc/utilities_conf.h \
- ../Utilities/misc/stm32_tiny_vsnprintf.h \
- ../System/Config/Log/log_module.h ../Core/Inc/app_entry.h \
+ ../Utilities/misc/stm32_tiny_vsnprintf.h ../Core/Inc/app_entry.h \
  ../Core/Inc/app_common.h ../System/Interfaces/hw.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
@@ -80,8 +80,10 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
  ../System/Modules/Flash/simple_nvm_arbiter_common.h \
  ../System/Modules/Flash/rf_timing_synchro.h \
  ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h \
- ../Core/Inc/app_common.h ../Middlewares/ST/STM32_WPAN/ble/ble.h \
- ../STM32_WPAN/App/ble_conf.h ../STM32_WPAN/App/ble_dbg_conf.h \
+ ../Core/Inc/app_common.h ../System/Config/Log/log_module.h \
+ ../System/Config/Log/log_module_conf.h \
+ ../Middlewares/ST/STM32_WPAN/ble/ble.h ../STM32_WPAN/App/ble_conf.h \
+ ../STM32_WPAN/App/ble_dbg_conf.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_core.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_std.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_defs.h \
@@ -102,9 +104,9 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
  ../Middlewares/ST/STM32_WPAN/ble/svc/Inc/svc_ctl.h \
  ../Middlewares/ST/STM32_WPAN/ble/svc/Inc/uuid.h \
  ../STM32_WPAN/App/app_ble.h ../STM32_WPAN/Target/host_stack_if.h \
- ../STM32_WPAN/Target/ll_sys_if.h ../Utilities/sequencer/stm32_seq.h \
- ../System/Modules/otp.h ../Utilities/tim_serv/stm32_timer.h \
- ../System/Modules/stm_list.h \
+ ../STM32_WPAN/Target/ll_sys_if.h ../Core/Inc/stm32_rtos.h \
+ ../Utilities/sequencer/stm32_seq.h ../System/Modules/otp.h \
+ ../Utilities/tim_serv/stm32_timer.h ../System/Modules/stm_list.h \
  ../Middlewares/ST/STM32_WPAN/stm32_wpan_common.h \
  ../System/Modules/MemoryManager/advanced_memory_manager.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/blestack.h \
@@ -137,6 +139,7 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h:
@@ -171,7 +174,6 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
 ../Utilities/misc/stm32_mem.h:
 ../Core/Inc/utilities_conf.h:
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
-../System/Config/Log/log_module.h:
 ../Core/Inc/app_entry.h:
 ../Core/Inc/app_common.h:
 ../System/Interfaces/hw.h:
@@ -202,6 +204,8 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
 ../System/Modules/Flash/flash_driver.h:
 ../Core/Inc/main.h:
 ../Core/Inc/app_common.h:
+../System/Config/Log/log_module.h:
+../System/Config/Log/log_module_conf.h:
 ../Middlewares/ST/STM32_WPAN/ble/ble.h:
 ../STM32_WPAN/App/ble_conf.h:
 ../STM32_WPAN/App/ble_dbg_conf.h:
@@ -227,6 +231,7 @@ STM32_WPAN/App/app_ble.o: ../STM32_WPAN/App/app_ble.c ../Core/Inc/main.h \
 ../STM32_WPAN/App/app_ble.h:
 ../STM32_WPAN/Target/host_stack_if.h:
 ../STM32_WPAN/Target/ll_sys_if.h:
+../Core/Inc/stm32_rtos.h:
 ../Utilities/sequencer/stm32_seq.h:
 ../System/Modules/otp.h:
 ../Utilities/tim_serv/stm32_timer.h:

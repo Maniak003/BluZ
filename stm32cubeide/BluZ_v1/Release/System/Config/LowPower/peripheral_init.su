@@ -1,1 +1,1 @@
-../System/Config/LowPower/peripheral_init.c:58:6:MX_StandbyExit_PeripharalInit	56	static
+../System/Config/LowPower/peripheral_init.c:55:6:MX_StandbyExit_PeripheralInit	56	static

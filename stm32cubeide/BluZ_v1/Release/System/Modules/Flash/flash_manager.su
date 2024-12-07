@@ -1,5 +1,5 @@
-../System/Modules/Flash/flash_manager.c:506:13:FM_WindowAllowed_Callback	8	static
+../System/Modules/Flash/flash_manager.c:506:13:FM_WindowAllowed_Callback	0	static
 ../System/Modules/Flash/flash_manager.c:431:24:FM_CheckFlashManagerState	16	static,ignoring_inline_asm
 ../System/Modules/Flash/flash_manager.c:133:17:FM_Write	24	static
 ../System/Modules/Flash/flash_manager.c:184:17:FM_Erase	16	static
-../System/Modules/Flash/flash_manager.c:231:6:FM_BackgroundProcess	32	static,ignoring_inline_asm
+../System/Modules/Flash/flash_manager.c:231:6:FM_BackgroundProcess	24	static,ignoring_inline_asm

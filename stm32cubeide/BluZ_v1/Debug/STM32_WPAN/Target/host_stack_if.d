@@ -26,6 +26,7 @@ STM32_WPAN/Target/host_stack_if.o: ../STM32_WPAN/Target/host_stack_if.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h \
@@ -54,9 +55,8 @@ STM32_WPAN/Target/host_stack_if.o: ../STM32_WPAN/Target/host_stack_if.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
  ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
- ../Utilities/misc/stm32_mem.h ../Core/Inc/utilities_conf.h \
- ../Utilities/misc/stm32_tiny_vsnprintf.h \
- ../System/Config/Log/log_module.h \
+ ../Core/Inc/app_conf.h ../Utilities/misc/stm32_mem.h \
+ ../Core/Inc/utilities_conf.h ../Utilities/misc/stm32_tiny_vsnprintf.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h \
@@ -68,7 +68,13 @@ STM32_WPAN/Target/host_stack_if.o: ../STM32_WPAN/Target/host_stack_if.c \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/pta.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/hci.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
- ../STM32_WPAN/App/app_ble.h ../Utilities/sequencer/stm32_seq.h
+ ../STM32_WPAN/App/app_ble.h \
+ ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_raw_api.h \
+ ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_types.h \
+ ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_const.h \
+ ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_std.h \
+ ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_defs.h \
+ ../Utilities/sequencer/stm32_seq.h
 ../STM32_WPAN/Target/host_stack_if.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -97,6 +103,7 @@ STM32_WPAN/Target/host_stack_if.o: ../STM32_WPAN/Target/host_stack_if.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h:
@@ -126,10 +133,10 @@ STM32_WPAN/Target/host_stack_if.o: ../STM32_WPAN/Target/host_stack_if.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h:
 ../Core/Inc/utilities_conf.h:
 ../Drivers/CMSIS/Include/cmsis_compiler.h:
+../Core/Inc/app_conf.h:
 ../Utilities/misc/stm32_mem.h:
 ../Core/Inc/utilities_conf.h:
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
-../System/Config/Log/log_module.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h:
@@ -142,4 +149,9 @@ STM32_WPAN/Target/host_stack_if.o: ../STM32_WPAN/Target/host_stack_if.c \
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/hci.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h:
 ../STM32_WPAN/App/app_ble.h:
+../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_raw_api.h:
+../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_types.h:
+../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_const.h:
+../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_std.h:
+../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_defs.h:
 ../Utilities/sequencer/stm32_seq.h:

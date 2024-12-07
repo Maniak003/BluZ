@@ -59,9 +59,12 @@ void RTC_IRQHandler(void);
 void EXTI15_IRQHandler(void);
 void GPDMA1_Channel0_IRQHandler(void);
 void LPTIM1_IRQHandler(void);
+void TIM16_IRQHandler(void);
 void TIM17_IRQHandler(void);
 void ADC4_IRQHandler(void);
 void RADIO_IRQHandler(void);
+void WKUP_IRQHandler(void);
+void HSEM_IRQHandler(void);
 void HASH_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 

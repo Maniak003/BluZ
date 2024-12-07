@@ -1,3 +1,3 @@
-../STM32_WPAN/App/bluz.c:124:30:BLUZ_EventHandler	13
-../STM32_WPAN/App/bluz.c:378:6:BLUZ_Init	4
-../STM32_WPAN/App/bluz.c:497:12:BLUZ_UpdateValue	5
+../STM32_WPAN/App/bluz.c:125:30:BLUZ_EventHandler	13
+../STM32_WPAN/App/bluz.c:379:6:BLUZ_Init	1
+../STM32_WPAN/App/bluz.c:498:12:BLUZ_UpdateValue	3

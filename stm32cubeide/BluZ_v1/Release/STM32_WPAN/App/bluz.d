@@ -1,8 +1,6 @@
 STM32_WPAN/App/bluz.o: ../STM32_WPAN/App/bluz.c \
- ../Middlewares/ST/STM32_WPAN/ble/svc/Inc/common_blesvc.h \
- ../Middlewares/ST/STM32_WPAN/ble/ble_common.h \
- ../STM32_WPAN/App/ble_conf.h ../Core/Inc/app_conf.h \
- ../System/Interfaces/hw_if.h \
+ ../System/Config/Log/log_module.h ../System/Config/Log/log_module_conf.h \
+ ../Core/Inc/app_conf.h ../System/Interfaces/hw_if.h \
  ../Drivers/CMSIS/Device/ST/STM32WBAxx/Include/stm32wbaxx.h \
  ../Drivers/CMSIS/Device/ST/STM32WBAxx/Include/stm32wba54xx.h \
  ../Drivers/CMSIS/Include/core_cm33.h \
@@ -28,6 +26,7 @@ STM32_WPAN/App/bluz.o: ../STM32_WPAN/App/bluz.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h \
@@ -56,9 +55,11 @@ STM32_WPAN/App/bluz.o: ../STM32_WPAN/App/bluz.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
  ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
- ../Utilities/misc/stm32_mem.h ../Core/Inc/utilities_conf.h \
- ../Utilities/misc/stm32_tiny_vsnprintf.h \
- ../System/Config/Log/log_module.h ../STM32_WPAN/App/ble_dbg_conf.h \
+ ../Core/Inc/app_conf.h ../Utilities/misc/stm32_mem.h \
+ ../Core/Inc/utilities_conf.h ../Utilities/misc/stm32_tiny_vsnprintf.h \
+ ../Middlewares/ST/STM32_WPAN/ble/svc/Inc/common_blesvc.h \
+ ../Middlewares/ST/STM32_WPAN/ble/ble_common.h \
+ ../STM32_WPAN/App/ble_conf.h ../STM32_WPAN/App/ble_dbg_conf.h \
  ../Middlewares/ST/STM32_WPAN/ble/ble.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_core.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_std.h \
@@ -80,8 +81,8 @@ STM32_WPAN/App/bluz.o: ../STM32_WPAN/App/bluz.c \
  ../Middlewares/ST/STM32_WPAN/ble/svc/Inc/svc_ctl.h \
  ../Middlewares/ST/STM32_WPAN/ble/svc/Inc/uuid.h \
  ../System/Modules/dbg_trace.h ../STM32_WPAN/App/bluz.h \
- ../Core/Inc/main.h ../Core/Inc/app_conf.h ../Core/Inc/app_entry.h \
- ../Core/Inc/app_common.h ../System/Interfaces/hw.h \
+ ../Core/Inc/main.h ../Core/Inc/app_entry.h ../Core/Inc/app_common.h \
+ ../System/Interfaces/hw.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h \
@@ -105,9 +106,8 @@ STM32_WPAN/App/bluz.o: ../STM32_WPAN/App/bluz.c \
  ../System/Modules/Flash/simple_nvm_arbiter_common.h \
  ../System/Modules/Flash/rf_timing_synchro.h \
  ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h
-../Middlewares/ST/STM32_WPAN/ble/svc/Inc/common_blesvc.h:
-../Middlewares/ST/STM32_WPAN/ble/ble_common.h:
-../STM32_WPAN/App/ble_conf.h:
+../System/Config/Log/log_module.h:
+../System/Config/Log/log_module_conf.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
 ../Drivers/CMSIS/Device/ST/STM32WBAxx/Include/stm32wbaxx.h:
@@ -135,6 +135,7 @@ STM32_WPAN/App/bluz.o: ../STM32_WPAN/App/bluz.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h:
@@ -164,10 +165,13 @@ STM32_WPAN/App/bluz.o: ../STM32_WPAN/App/bluz.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h:
 ../Core/Inc/utilities_conf.h:
 ../Drivers/CMSIS/Include/cmsis_compiler.h:
+../Core/Inc/app_conf.h:
 ../Utilities/misc/stm32_mem.h:
 ../Core/Inc/utilities_conf.h:
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
-../System/Config/Log/log_module.h:
+../Middlewares/ST/STM32_WPAN/ble/svc/Inc/common_blesvc.h:
+../Middlewares/ST/STM32_WPAN/ble/ble_common.h:
+../STM32_WPAN/App/ble_conf.h:
 ../STM32_WPAN/App/ble_dbg_conf.h:
 ../Middlewares/ST/STM32_WPAN/ble/ble.h:
 ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_core.h:
@@ -192,7 +196,6 @@ STM32_WPAN/App/bluz.o: ../STM32_WPAN/App/bluz.c \
 ../System/Modules/dbg_trace.h:
 ../STM32_WPAN/App/bluz.h:
 ../Core/Inc/main.h:
-../Core/Inc/app_conf.h:
 ../Core/Inc/app_entry.h:
 ../Core/Inc/app_common.h:
 ../System/Interfaces/hw.h:
