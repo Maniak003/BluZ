@@ -20,10 +20,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <math.h>
-#include "stm32wbaxx_hal.h"
+#include "main.h" /*for Mx generated RTC_N_PREDIV_S and RTC_N_PREDIV_A*/
+#include "timer_if.h"
 #include "stm32wbaxx_hal_conf.h"
 #include "stm32wbaxx_ll_rtc.h"
-#include "timer_if.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -192,6 +192,9 @@ UTIL_TIMER_Status_t TIMER_IF_Init(void)
 
   if (RTC_Initialized == false)
   {
+    /* Init RTC */
+    MX_RTC_Init();
+
     /* Stop Timer */
     TIMER_IF_StopTimer();
 
@@ -246,7 +249,7 @@ UTIL_TIMER_Status_t TIMER_IF_StartTimer(uint32_t timeout)
   if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
   {
     /* Initialization Error */
-    while(1);
+    Error_Handler();
   }
 
   /* USER CODE BEGIN TIMER_IF_StartTimer_2 */

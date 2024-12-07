@@ -1,5 +1,5 @@
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:462:22:LL_AHB2_GRP1_EnableClock	1
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:536:22:LL_AHB2_GRP1_DisableClock	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:453:22:LL_AHB2_GRP1_EnableClock	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:527:22:LL_AHB2_GRP1_DisableClock	1
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pka.h:203:22:LL_PKA_Config	1
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pka.h:214:22:LL_PKA_Enable	1
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_pka.h:225:22:LL_PKA_Disable	1

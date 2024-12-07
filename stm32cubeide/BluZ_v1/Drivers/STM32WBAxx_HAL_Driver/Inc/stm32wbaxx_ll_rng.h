@@ -230,8 +230,7 @@ __STATIC_INLINE uint32_t LL_RNG_IsEnabled(const RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE void LL_RNG_EnableClkErrorDetect(RNG_TypeDef *RNGx)
 {
-  MODIFY_REG(RNGx->CR, RNG_CR_CED | RNG_CR_CONDRST, LL_RNG_CED_ENABLE | RNG_CR_CONDRST);
-  CLEAR_BIT(RNGx->CR, RNG_CR_CONDRST);
+  CLEAR_BIT(RNGx->CR, RNG_CR_CED);
 }
 
 /**
@@ -242,8 +241,7 @@ __STATIC_INLINE void LL_RNG_EnableClkErrorDetect(RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE void LL_RNG_DisableClkErrorDetect(RNG_TypeDef *RNGx)
 {
-  MODIFY_REG(RNGx->CR, RNG_CR_CED | RNG_CR_CONDRST, LL_RNG_CED_DISABLE | RNG_CR_CONDRST);
-  CLEAR_BIT(RNGx->CR, RNG_CR_CONDRST);
+  SET_BIT(RNGx->CR, RNG_CR_CED);
 }
 
 /**
@@ -333,7 +331,7 @@ __STATIC_INLINE void LL_RNG_EnableNistCompliance(RNG_TypeDef *RNGx)
 __STATIC_INLINE void LL_RNG_DisableNistCompliance(RNG_TypeDef *RNGx)
 {
   MODIFY_REG(RNGx->CR, RNG_CR_NISTC | RNG_CR_CONDRST, LL_RNG_CUSTOM_NIST | RNG_CR_CONDRST);
-  CLEAR_BIT(RNGx->CR, RNG_CR_CONDRST);
+  CLEAR_BIT(RNGx->CR, RNG_CR_CONDRST);;
 }
 
 /**
@@ -444,7 +442,7 @@ __STATIC_INLINE uint32_t LL_RNG_GetConfig3(const RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE void LL_RNG_SetClockDivider(RNG_TypeDef *RNGx, uint32_t Divider)
 {
-  MODIFY_REG(RNGx->CR, RNG_CR_CLKDIV | RNG_CR_CONDRST, Divider | RNG_CR_CONDRST);
+  MODIFY_REG(RNGx->CR, RNG_CR_CLKDIV | RNG_CR_CONDRST, (Divider << RNG_CR_CLKDIV_Pos) | RNG_CR_CONDRST);
   CLEAR_BIT(RNGx->CR, RNG_CR_CONDRST);
 }
 
@@ -674,9 +672,6 @@ __STATIC_INLINE uint32_t LL_RNG_IsEnabledArdis(const RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE void LL_RNG_SetHealthConfig(RNG_TypeDef *RNGx, uint32_t HTCFG)
 {
-#if defined(RNG_HTCR_NIST_VALUE)
-  /* For NIST compliance we can fin the recommended value in the application note AN4230 */
-#endif /* defined(RNG_HTCR_NIST_VALUE) */
   WRITE_REG(RNGx->HTCR, HTCFG);
 }
 
@@ -698,7 +693,7 @@ __STATIC_INLINE uint32_t LL_RNG_GetHealthConfig(const RNG_TypeDef *RNGx)
 /** @defgroup RNG_LL_EF_Init Initialization and de-initialization functions
   * @{
   */
-ErrorStatus LL_RNG_Init(RNG_TypeDef *RNGx, const LL_RNG_InitTypeDef *RNG_InitStruct);
+ErrorStatus LL_RNG_Init(RNG_TypeDef *RNGx, LL_RNG_InitTypeDef *RNG_InitStruct);
 void LL_RNG_StructInit(LL_RNG_InitTypeDef *RNG_InitStruct);
 ErrorStatus LL_RNG_DeInit(const RNG_TypeDef *RNGx);
 

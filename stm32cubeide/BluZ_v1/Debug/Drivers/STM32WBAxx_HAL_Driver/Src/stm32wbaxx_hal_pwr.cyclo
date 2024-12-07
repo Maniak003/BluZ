@@ -26,5 +26,5 @@
 ../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c:917:13:HAL_PWR_WKUP6_Callback	1
 ../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c:928:13:HAL_PWR_WKUP7_Callback	1
 ../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c:939:13:HAL_PWR_WKUP8_Callback	1
-../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c:1042:6:HAL_PWR_ConfigAttributes	3
-../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c:1105:19:HAL_PWR_GetConfigAttributes	3
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c:1035:6:HAL_PWR_ConfigAttributes	3
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c:1098:19:HAL_PWR_GetConfigAttributes	3

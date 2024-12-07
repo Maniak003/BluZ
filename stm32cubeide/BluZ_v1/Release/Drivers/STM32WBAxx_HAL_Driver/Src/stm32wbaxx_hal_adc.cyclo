@@ -1,5 +1,5 @@
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_adc.h:3635:22:LL_ADC_SetAnalogWDMonitChannels	2
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_adc.h:4342:26:LL_ADC_REG_IsConversionOngoing	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_adc.h:3638:22:LL_ADC_SetAnalogWDMonitChannels	2
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_adc.h:4345:26:LL_ADC_REG_IsConversionOngoing	1
 ../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.c:885:13:HAL_ADC_MspInit	1
 ../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.c:379:19:HAL_ADC_Init	18
 ../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.c:902:13:HAL_ADC_MspDeInit	1

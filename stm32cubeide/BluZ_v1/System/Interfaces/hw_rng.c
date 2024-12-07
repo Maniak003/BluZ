@@ -25,9 +25,6 @@
 
 __weak void RNG_KERNEL_CLK_ON(void)
 {
-  /* NOTE : This function should not be modified, when the callback is needed,
-            the RNG_KERNEL_CLK_ON could be implemented in the user file
-  */
   LL_RCC_HSI_Enable();
   while(LL_RCC_HSI_IsReady() == 0)
   {
@@ -37,9 +34,7 @@ __weak void RNG_KERNEL_CLK_ON(void)
 
 __weak void RNG_KERNEL_CLK_OFF(void)
 {
-  /* NOTE : This function should not be modified, when the callback is needed,
-            the RNG_KERNEL_CLK_OFF could be implemented in the user file
-  */
+
 }
 
 /*****************************************************************************/

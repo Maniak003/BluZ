@@ -11,7 +11,7 @@
 ../Utilities/sequencer/stm32_seq.c:500:13:UTIL_SEQ_Idle	1
 ../Utilities/sequencer/stm32_seq.c:505:13:UTIL_SEQ_PreIdle	1
 ../Utilities/sequencer/stm32_seq.c:513:13:UTIL_SEQ_PostIdle	1
-../Utilities/sequencer/stm32_seq.c:555:9:SEQ_BitPosition	2
+../Utilities/sequencer/stm32_seq.c:536:9:SEQ_BitPosition	4
 ../Utilities/sequencer/stm32_seq.c:207:6:UTIL_SEQ_Run	8
 ../Utilities/sequencer/stm32_seq.c:493:13:UTIL_SEQ_EvtIdle	1
 ../Utilities/sequencer/stm32_seq.c:434:6:UTIL_SEQ_WaitEvt	3

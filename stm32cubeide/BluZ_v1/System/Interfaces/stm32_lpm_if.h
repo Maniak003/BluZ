@@ -106,14 +106,28 @@ void PWR_EnterSleepMode( void );
 void PWR_ExitSleepMode( void );
 
 /**
-  * @brief Check if the system is waking-up from standby low power mode.
+  * @brief will restore MCU context if wakeup from standby
+  * @note called in startup_stm32wl55xx_cm4.s
   */
 uint32_t is_boot_from_standby(void);
 
 /**
   * @brief will save MCU context if before standby entry
+  * @note detined in startup_stm32wl55xx_cm4.s
   */
 void CPUcontextSave(void);
+
+/**
+  * @brief User notification for standby entry
+  * @note called from stm32wbaxx_ResetHandler.s
+  */
+void enter_standby_notification(void);
+
+/**
+  * @brief User notification for standby exit
+  * @note called from stm32wbaxx_ResetHandler.s
+  */
+void exit_standby_notification(void);
 
 /**
   * @brief Backup CPU peripheral registers selected in @ref register_backup_table
@@ -126,11 +140,6 @@ void backup_system_register(void);
   * @note Implemented in stm32wbaxx_ResetHandler.s
   */
 void restore_system_register(void);
-
-/**
-  * @brief Restore GPIOs configuration at standby exit
-  */
-void Standby_Restore_GPIO(void);
 
 /* USER CODE BEGIN EFP */
 

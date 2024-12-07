@@ -1,5 +1,6 @@
 /*****************************************************************************
  * @file    ble_bufsize.h
+ * @author  MDG
  * @brief   Definition of BLE stack buffers size
  *****************************************************************************
  * @attention
@@ -48,7 +49,7 @@
  */
 #define BLE_MEM_BLOCK_SIZE                   32
 
-#if ((BASIC_FEATURES != 0)||(PERIPHERAL_ONLY != 0))
+#if (BASIC_FEATURES != 0)
 #define BLE_MEM_BLOCK_X_PTX(n_link)           0
 #else
 #define BLE_MEM_BLOCK_X_PTX(n_link)           (n_link)
@@ -95,24 +96,19 @@
  * - a part, that may be considered "fixed", i.e. independent from the above
  *   mentioned parameters.
 */
-#if (PERIPHERAL_ONLY != 0)
-#define BLE_FIXED_BUFFER_SIZE_BYTES  4   /* Peripheral Only */
-#elif (BASIC_FEATURES != 0)
-#define BLE_FIXED_BUFFER_SIZE_BYTES  260   /* Basic Features */
+#if (BASIC_FEATURES != 0)
+#define BLE_FIXED_BUFFER_SIZE_BYTES  244   /* Basic Features */
 #else
-#define BLE_FIXED_BUFFER_SIZE_BYTES  676   /* Full stack / Basic Plus */
+#define BLE_FIXED_BUFFER_SIZE_BYTES  660   /* Full stack */
 #endif
 
 /*
  * BLE_PER_LINK_SIZE_BYTES: additional memory size used per link
  */
-
-#if (PERIPHERAL_ONLY != 0)
-#define BLE_PER_LINK_SIZE_BYTES       148   /* Peripheral Only */
-#elif (BASIC_FEATURES != 0)
+#if (BASIC_FEATURES != 0)
 #define BLE_PER_LINK_SIZE_BYTES       176   /* Basic Features */
 #else
-#define BLE_PER_LINK_SIZE_BYTES       188   /* Full stack / Basic Plus */
+#define BLE_PER_LINK_SIZE_BYTES       188   /* Full stack */
 #endif
 
 /*

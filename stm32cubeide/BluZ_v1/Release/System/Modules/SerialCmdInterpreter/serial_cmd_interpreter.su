@@ -1,3 +1,2 @@
+../System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c:86:13:UART_Rx_Callback	4	static
 ../System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c:75:6:Serial_CMD_Interpreter_Init	0	static
-../System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c:81:13:Serial_CMD_Interpreter_CmdExecute	0	static
-../System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c:112:13:UART_Rx_Callback	8	static

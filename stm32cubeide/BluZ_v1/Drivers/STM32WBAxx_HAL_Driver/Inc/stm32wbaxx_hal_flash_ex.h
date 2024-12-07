@@ -65,7 +65,6 @@ typedef struct
 } FLASH_BBAttributesTypeDef;
 #endif /* FLASH_SECBBR1_SECBB0 || FLASH_PRIVBBR1_PRIVBB0 */
 
-
 /**
   * @brief  FLASHEx Operation structure definition
   */
@@ -158,7 +157,6 @@ typedef struct
 /**
   * @}
   */
-
 
 /** @defgroup FLASHEx_ECC_Area FLASH ECC Area
   * @{
@@ -303,7 +301,6 @@ void FLASH_PageErase(uint32_t Page);
 
 #define IS_FLASH_CFGLPM(CFG)               (((CFG) == FLASH_LPM_DISABLE) || \
                                             ((CFG) == FLASH_LPM_ENABLE))
-
 
 #define IS_FLASH_SUSPEND_REQ(VALUE)        (((VALUE) == FLASH_SUSPEND_PROGRAM) || \
                                             ((VALUE) == FLASH_SUSPEND_ERASE)   || \
