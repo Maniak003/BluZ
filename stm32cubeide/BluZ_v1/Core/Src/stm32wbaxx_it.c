@@ -24,6 +24,7 @@
 #include "stm32wbaxx_hal.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "/home/ed/work/github/BluZ/stm32cubeide/BluZ_v1/Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_tim.h"
 /* USER CODE END Includes */
 
 /* External functions --------------------------------------------------------*/
@@ -68,6 +69,7 @@ extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern ADC_HandleTypeDef hadc4;
 extern LPTIM_HandleTypeDef hlptim1;
 extern RTC_HandleTypeDef hrtc;
+extern TIM_HandleTypeDef htim16;
 extern TIM_HandleTypeDef htim17;
 /* USER CODE BEGIN EV */
 //extern TIM_HandleTypeDef htim3;
@@ -334,6 +336,32 @@ void LPTIM1_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles TIM16 global interrupt.
+  */
+void TIM16_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM16_IRQn 0 */
+
+  /* USER CODE END TIM16_IRQn 0 */
+  /* Check whether update interrupt is pending */
+  if(LL_TIM_IsActiveFlag_UPDATE(TIM16) == 1)
+  {
+    /* Clear the update interrupt flag */
+    LL_TIM_ClearFlag_UPDATE(TIM16);
+
+#if (CFG_SCM_SUPPORTED == 1)
+    /* SCM HSE BEGIN */
+    /* Update interrupt processing */
+    SCM_HSE_SW_HSERDY_isr();
+    /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
+  }
+  /* USER CODE BEGIN TIM16_IRQn 1 */
+
+  /* USER CODE END TIM16_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM17 global interrupt.
   */
 void TIM17_IRQHandler(void)
@@ -384,6 +412,34 @@ void RADIO_IRQHandler(void)
   /* USER CODE BEGIN RADIO_IRQn 1 */
 
   /* USER CODE END RADIO_IRQn 1 */
+}
+
+/**
+  * @brief This function handles PWR global WKUP pin interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* USER CODE BEGIN WKUP_IRQn 0 */
+
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
+}
+
+/**
+  * @brief This function handles HSEM non-secure global interrupt.
+  */
+void HSEM_IRQHandler(void)
+{
+  /* USER CODE BEGIN HSEM_IRQn 0 */
+
+  /* USER CODE END HSEM_IRQn 0 */
+  HAL_HSEM_IRQHandler();
+  /* USER CODE BEGIN HSEM_IRQn 1 */
+
+  /* USER CODE END HSEM_IRQn 1 */
 }
 
 /**

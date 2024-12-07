@@ -1,0 +1,15 @@
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:155:20:HAL_HSEM_Take	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:186:20:HAL_HSEM_FastTake	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:206:10:HAL_HSEM_IsSemTaken	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:224:7:HAL_HSEM_Release	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:247:7:HAL_HSEM_ReleaseAll	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:279:7:HAL_HSEM_SetClearKey	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:291:10:HAL_HSEM_GetClearKey	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:318:6:HAL_HSEM_ActivateNotification	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:332:6:HAL_HSEM_DeactivateNotification	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:376:13:HAL_HSEM_FreeCallback	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:345:6:HAL_HSEM_IRQHandler	8	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:426:10:HAL_HSEM_GetSemaphoreSecure	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:438:6:HAL_HSEM_SetSemaphorePrivilege	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:448:6:HAL_HSEM_SetSemaphoreNonPrivilege	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c:457:10:HAL_HSEM_GetSemaphorePrivilege	0	static

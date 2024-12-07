@@ -26,6 +26,7 @@ System/Modules/app_sys.o: ../System/Modules/app_sys.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h \
@@ -54,11 +55,10 @@ System/Modules/app_sys.o: ../System/Modules/app_sys.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
  ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
- ../Utilities/misc/stm32_mem.h ../Core/Inc/utilities_conf.h \
- ../Utilities/misc/stm32_tiny_vsnprintf.h \
- ../System/Config/Log/log_module.h ../System/Interfaces/timer_if.h \
- ../Utilities/tim_serv/stm32_timer.h ../Utilities/misc/stm32_systime.h \
- ../Utilities/lpm/tiny_lpm/stm32_lpm.h \
+ ../Core/Inc/app_conf.h ../Utilities/misc/stm32_mem.h \
+ ../Core/Inc/utilities_conf.h ../Utilities/misc/stm32_tiny_vsnprintf.h \
+ ../System/Interfaces/timer_if.h ../Utilities/tim_serv/stm32_timer.h \
+ ../Utilities/misc/stm32_systime.h ../Utilities/lpm/tiny_lpm/stm32_lpm.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files/DWC_ble154combo.h \
@@ -69,7 +69,18 @@ System/Modules/app_sys.o: ../System/Modules/app_sys.c \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/pta.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/hci.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ral.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/mac_host_intf.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/rfd_dev_config.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/error.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/toolchain.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/instance.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/error.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/logging.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/radio.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/instance.h \
+ ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/crypto.h
 ../System/Config/LowPower/app_sys.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -98,6 +109,7 @@ System/Modules/app_sys.o: ../System/Modules/app_sys.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h:
@@ -127,10 +139,10 @@ System/Modules/app_sys.o: ../System/Modules/app_sys.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h:
 ../Core/Inc/utilities_conf.h:
 ../Drivers/CMSIS/Include/cmsis_compiler.h:
+../Core/Inc/app_conf.h:
 ../Utilities/misc/stm32_mem.h:
 ../Core/Inc/utilities_conf.h:
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
-../System/Config/Log/log_module.h:
 ../System/Interfaces/timer_if.h:
 ../Utilities/tim_serv/stm32_timer.h:
 ../Utilities/misc/stm32_systime.h:
@@ -146,3 +158,14 @@ System/Modules/app_sys.o: ../System/Modules/app_sys.c \
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/hci.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ral.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/mac_host_intf.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/rfd_dev_config.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/error.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/toolchain.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/instance.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/error.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/logging.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/radio.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/instance.h:
+../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc/crypto.h:

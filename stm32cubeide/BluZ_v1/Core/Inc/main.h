@@ -36,6 +36,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "rw_FLASH.h"
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -115,7 +116,16 @@ void HAL_LPTIM_MspPostInit(LPTIM_HandleTypeDef *hlptim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+void MX_ADC4_Init(void);
+void MX_USART2_UART_Init(void);
+void MX_CRC_Init(void);
+void MX_RAMCFG_Init(void);
+void MX_RNG_Init(void);
 void MX_RTC_Init(void);
+void MX_ICACHE_Init(void);
+void MX_LPTIM2_Init(void);
+void MX_LPTIM1_Init(void);
+void MX_TIM17_Init(void);
 
 /* USER CODE BEGIN EFP */
 void NotifyAct(uint8_t SRC, uint32_t repCnt);

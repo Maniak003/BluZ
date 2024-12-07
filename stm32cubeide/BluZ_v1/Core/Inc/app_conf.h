@@ -25,7 +25,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
 #include "utilities_conf.h"
-#include "log_module.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -50,7 +49,7 @@
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
  */
-#define CFG_BD_ADDRESS_TYPE               (GAP_PUBLIC_ADDR)
+#define CFG_BD_ADDRESS_DEVICE             (GAP_PUBLIC_ADDR)
 
 /**
  * Define privacy: PRIVACY_DISABLED or PRIVACY_ENABLED
@@ -63,11 +62,11 @@
  * if CFG_PRIVACY equals PRIVACY_DISABLED, CFG_BLE_ADDRESS_TYPE has 2 allowed values: GAP_PUBLIC_ADDR or GAP_STATIC_RANDOM_ADDR
  * if CFG_PRIVACY equals PRIVACY_ENABLED, CFG_BLE_ADDRESS_TYPE has 2 allowed values: GAP_RESOLVABLE_PRIVATE_ADDR or GAP_NON_RESOLVABLE_PRIVATE_ADDR
  */
-#define CFG_BLE_ADDRESS_TYPE              (GAP_PUBLIC_ADDR)
+#define CFG_BD_ADDRESS_TYPE               (GAP_PUBLIC_ADDR)
 
-#define ADV_INTERVAL_MIN                  (0x0C80)
-#define ADV_INTERVAL_MAX                  (0x12C0)
-#define ADV_LP_INTERVAL_MIN               (0x12C0)
+#define ADV_INTERVAL_MIN                  (0x01E0)
+#define ADV_INTERVAL_MAX                  (0x0320)
+#define ADV_LP_INTERVAL_MIN               (0x0640)
 #define ADV_LP_INTERVAL_MAX               (0x0FA0)
 #define ADV_TYPE                          ADV_IND
 #define ADV_FILTER                        NO_WHITE_LIST_USE
@@ -75,31 +74,31 @@
 /**
  * Define IO Authentication
  */
-#define CFG_BONDING_MODE                 (0)
-#define CFG_USED_FIXED_PIN               (1) /* 0->fixed pin is used ; 1->No fixed pin used*/
-#define CFG_FIXED_PIN                    (111111)
-#define CFG_ENCRYPTION_KEY_SIZE_MAX      (16)
-#define CFG_ENCRYPTION_KEY_SIZE_MIN      (8)
+#define CFG_BONDING_MODE                  (0)
+#define CFG_USED_FIXED_PIN                (1) /* 0->fixed pin is used ; 1->No fixed pin used*/
+#define CFG_FIXED_PIN                     (111111)
+#define CFG_ENCRYPTION_KEY_SIZE_MAX       (16)
+#define CFG_ENCRYPTION_KEY_SIZE_MIN       (8)
 
 /**
  * Define Input Output capabilities
  */
-#define CFG_IO_CAPABILITY                ( IO_CAP_NO_INPUT_NO_OUTPUT)
+#define CFG_IO_CAPABILITY                 ( IO_CAP_NO_INPUT_NO_OUTPUT)
 
 /**
  * Define Man In The Middle modes
  */
-#define CFG_MITM_PROTECTION              (MITM_PROTECTION_NOT_REQUIRED)
+#define CFG_MITM_PROTECTION               (MITM_PROTECTION_NOT_REQUIRED)
 
 /**
  * Define Secure Connections Support
  */
-#define CFG_SC_SUPPORT                   (SC_PAIRING_UNSUPPORTED)
+#define CFG_SC_SUPPORT                    (SC_PAIRING_UNSUPPORTED)
 
 /**
  * Define Keypress Notification Support
  */
-#define CFG_KEYPRESS_NOTIFICATION_SUPPORT     (KEYPRESS_NOT_SUPPORTED)
+#define CFG_KEYPRESS_NOTIFICATION_SUPPORT (KEYPRESS_NOT_SUPPORTED)
 
 /**
 *   Identity root key used to derive IRK and DHK(Legacy)
@@ -232,6 +231,9 @@
 #define CFG_LPM_LEVEL            (0)
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
+/* Defines time to wake up from standby before radio event to meet timings */
+#define CFG_LPM_STDBY_WAKEUP_TIME (1600)
+
 /* USER CODE BEGIN Low_Power 0 */
 
 /* USER CODE END Low_Power 0 */
@@ -244,6 +246,8 @@ typedef enum
 {
   CFG_LPM_APP,
   CFG_LPM_LOG,
+  CFG_LPM_LL_DEEPSLEEP,
+  CFG_LPM_LL_HW_RCO_CLBR,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -256,9 +260,6 @@ typedef enum
 /******************************************************************************
  * RTC
  ******************************************************************************/
-#define RTC_N_PREDIV_S (10)
-#define RTC_PREDIV_S ((1<<RTC_N_PREDIV_S)-1)
-#define RTC_PREDIV_A ((1<<(15-RTC_N_PREDIV_S))-1)
 
 /* USER CODE BEGIN RTC */
 
@@ -281,10 +282,15 @@ typedef enum
  */
 #define CFG_LOG_SUPPORTED           (0U)
 
+/* Usart used by LOG */
+
 /* Configure Log display settings */
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (0U)
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
 #define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (0U)
+
+#define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
+#define CFG_LOG_TRACE_BUF_SIZE      (256U)
 
 /* macro ensuring retrocompatibility with old applications */
 #define APP_DBG                     LOG_INFO_APP
@@ -298,7 +304,7 @@ typedef enum
  * Configure Log level for Application
  ******************************************************************************/
 #define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_INFO
-
+#define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
 /* USER CODE END Log_level */
@@ -313,15 +319,16 @@ typedef enum
  */
 typedef enum
 {
-  CFG_TASK_HW_RNG,                /* Task linked to chip internal peripheral. */
-  CFG_TASK_LINK_LAYER,            /* Tasks linked to Communications Layers. */
+  CFG_TASK_HW_RNG,
+  CFG_TASK_LINK_LAYER,
   CFG_TASK_HCI_ASYNCH_EVT_ID,
   CFG_TASK_BLE_HOST,
+  CFG_TASK_AMM,
   CFG_TASK_BPKA,
-  CFG_TASK_AMM_BCKGND,
-  CFG_TASK_FLASH_MANAGER_BCKGND,
+  CFG_TASK_FLASH_MANAGER,
   CFG_TASK_BLE_TIMER_BCKGND,
   /* USER CODE BEGIN CFG_Task_Id_t */
+  CFG_TASK_ADV_LP_REQ_ID,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -344,6 +351,9 @@ typedef enum
   CFG_SEQ_PRIO_NBR /* Shall be LAST in the list */
 } CFG_SEQ_Prio_Id_t;
 
+/* Sequencer configuration */
+#define UTIL_SEQ_CONF_PRIO_NBR              CFG_SEQ_PRIO_NBR
+
 /**
  * This is a bit mapping over 32bits listing all events id supported in the application
  */
@@ -354,16 +364,6 @@ typedef enum
 
   /* USER CODE END CFG_IdleEvt_Id_t */
 } CFG_IdleEvt_Id_t;
-
-/* Sequencer priorities by default  */
-#define CFG_TASK_PRIO_HW_RNG                CFG_SEQ_PRIO_0
-#define CFG_TASK_PRIO_LINK_LAYER            CFG_SEQ_PRIO_0
-/* USER CODE BEGIN TASK_Priority_Define */
-
-/* USER CODE END TASK_Priority_Define */
-
-/* Used by Sequencer */
-#define UTIL_SEQ_CONF_PRIO_NBR              CFG_SEQ_PRIO_NBR
 
 /**
  * These are the lists of events id registered to the sequencer
@@ -378,12 +378,15 @@ typedef enum
 } CFG_Event_Id_t;
 
 /**< Events defines */
+/* USER CODE BEGIN EVENT_ID_Define */
+
+/* USER CODE END EVENT_ID_Define */
 
 /******************************************************************************
  * NVM configuration
  ******************************************************************************/
 
-#define CFG_SNVMA_START_SECTOR_ID     (FLASH_PAGE_NB - 2u)
+#define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - 2u)
 
 #define CFG_SNVMA_START_ADDRESS       (FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))
 
@@ -410,20 +413,20 @@ typedef enum
  *   - 2 : Debugger available in low power mode.
  *
  ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL           (0)
+#define CFG_DEBUGGER_LEVEL                  (0)
 
 /******************************************************************************
  * RealTime GPIO debug module configuration
  ******************************************************************************/
 
-#define CFG_RT_DEBUG_GPIO_MODULE         (0)
-#define CFG_RT_DEBUG_DTB                 (0)
+#define CFG_RT_DEBUG_GPIO_MODULE            (0)
+#define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
  * System Clock Manager module configuration
  ******************************************************************************/
 
-#define CFG_SCM_SUPPORTED            (1)
+#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
@@ -454,6 +457,12 @@ typedef enum
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
 
+/* Custom LSE sleep clock accuracy to use if both conditions are met:
+ * - LSE is selected as Link Layer sleep clock source
+ * - the LSE used is different from the default one.
+ */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
+
 /* USER CODE BEGIN Radio_Configuration */
 
 /* USER CODE END Radio_Configuration */
@@ -479,8 +488,8 @@ typedef enum
 #define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (400U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
 #define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (400U)  /* words (32 bits) */
-#define CFG_AMM_POOL_SIZE                                 DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
+#define CFG_AMM_POOL_SIZE                                 ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
+                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
 
 /* USER CODE BEGIN MEMORY_MANAGER_Configuration */
 

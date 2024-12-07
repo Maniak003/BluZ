@@ -29,6 +29,7 @@ System/Modules/Flash/simple_nvm_arbiter.o: \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h \
@@ -57,16 +58,16 @@ System/Modules/Flash/simple_nvm_arbiter.o: \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
  ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
- ../Utilities/misc/stm32_mem.h ../Core/Inc/utilities_conf.h \
- ../Utilities/misc/stm32_tiny_vsnprintf.h \
- ../System/Config/Log/log_module.h \
+ ../Core/Inc/app_conf.h ../Utilities/misc/stm32_mem.h \
+ ../Core/Inc/utilities_conf.h ../Utilities/misc/stm32_tiny_vsnprintf.h \
  ../System/Config/Flash/simple_nvm_arbiter_conf.h \
  ../System/Modules/Flash/simple_nvm_arbiter_common.h \
+ ../System/Modules/Flash/flash_driver.h \
  ../System/Modules/Flash/flash_manager.h ../System/Modules/stm_list.h \
  ../Middlewares/ST/STM32_WPAN/stm32_wpan_common.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h \
  ../System/Modules/crc_ctrl.h ../System/Modules/utilities_common.h \
- ../System/Config/CRC_Ctrl/crc_ctrl_conf.h
+ ../System/Config/CRC_Ctrl/crc_ctrl_conf.h \
+ ../System/Config/Log/log_module.h ../System/Config/Log/log_module_conf.h
 ../System/Modules/Flash/simple_nvm_arbiter.h:
 ../System/Modules/Flash/simple_nvm_arbiter_common.h:
 ../System/Modules/utilities_common.h:
@@ -97,6 +98,7 @@ System/Modules/Flash/simple_nvm_arbiter.o: \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h:
@@ -126,16 +128,18 @@ System/Modules/Flash/simple_nvm_arbiter.o: \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h:
 ../Core/Inc/utilities_conf.h:
 ../Drivers/CMSIS/Include/cmsis_compiler.h:
+../Core/Inc/app_conf.h:
 ../Utilities/misc/stm32_mem.h:
 ../Core/Inc/utilities_conf.h:
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
-../System/Config/Log/log_module.h:
 ../System/Config/Flash/simple_nvm_arbiter_conf.h:
 ../System/Modules/Flash/simple_nvm_arbiter_common.h:
+../System/Modules/Flash/flash_driver.h:
 ../System/Modules/Flash/flash_manager.h:
 ../System/Modules/stm_list.h:
 ../Middlewares/ST/STM32_WPAN/stm32_wpan_common.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h:
 ../System/Modules/crc_ctrl.h:
 ../System/Modules/utilities_common.h:
 ../System/Config/CRC_Ctrl/crc_ctrl_conf.h:
+../System/Config/Log/log_module.h:
+../System/Config/Log/log_module_conf.h:

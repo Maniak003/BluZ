@@ -56,6 +56,7 @@ RNG_HandleTypeDef hrng;
 
 RTC_HandleTypeDef hrtc;
 
+TIM_HandleTypeDef htim16;
 TIM_HandleTypeDef htim17;
 
 UART_HandleTypeDef huart2;
@@ -107,17 +108,10 @@ uint8_t notifyFlags = 0;											// 1 - Звук, 2 - Вибро, 4 - Led
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
+static void SystemPower_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_GPDMA1_Init(void);
-static void MX_ADC4_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_CRC_Init(void);
-static void MX_RAMCFG_Init(void);
-static void MX_RNG_Init(void);
-static void MX_ICACHE_Init(void);
-static void MX_LPTIM2_Init(void);
-static void MX_LPTIM1_Init(void);
-static void MX_TIM17_Init(void);
+static void MX_TIM16_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -189,8 +183,11 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-/* Configure the peripherals common clocks */
+  /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
+
+  /* Configure the System Power */
+  SystemPower_Config();
 
   /* USER CODE BEGIN SysInit */
 
@@ -264,12 +261,15 @@ int main(void)
 
   /* Запуск набора спектра при активном автостарте */
   if (autoStartSpecrometr) {
+	  startSpecrometr = false;
 	  HAL_ADC_Start_DMA(&hadc4, pulseLevel, 3);
 	  //__HAL_DMA_DISABLE_IT(hadc4.DMA_Handle, DMA_IT_HT);
 	  hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
 	  /* Включим ADC для одного канала */
 	  MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
 	  //hadc4.DMA_Handle &= ~DMA_IT_HT;
+  } else {
+	  HAL_ADC_DeInit(&hadc4);
   }
   pulseCounter = 0;
   pulseCounterSecond = 0;
@@ -313,10 +313,12 @@ int main(void)
      * 	Засыпаем если нет подключения и нет набора спектра.
      */
     if (! connectFlag && ! startSpecrometr) {
-		HAL_SuspendTick();
-		HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+		//HAL_SuspendTick();
+		//HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFE);
+		//HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+		//HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 		//PWR_EnterSleepMode();
-		HAL_ResumeTick();
+		//HAL_ResumeTick();
 		//LL_PWR_SetPowerMode(Mode);
     }
 
@@ -481,7 +483,7 @@ int main(void)
     /* Измерение напряжения батареи и температуры МК */
     if (interval4 < intervalNow) {
     	interval4 = intervalNow + INTERVAL4;
-    	if (! flagTemperatureMess) {
+    	if (startSpecrometr && (! flagTemperatureMess)) {
     		/* Включим ADC для трех каналов */
     		MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((3UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
 			flagTemperatureMess = true;						// Для единичного измерения
@@ -532,7 +534,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
                               |RCC_CLOCKTYPE_PCLK7|RCC_CLOCKTYPE_HCLK5;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
@@ -541,6 +543,15 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+   /* Select SysTick source clock */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
+
+   /* Re-Initialize Tick with new clock source */
+  if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
   {
     Error_Handler();
   }
@@ -566,11 +577,24 @@ void PeriphCommonClock_Config(void)
 }
 
 /**
+  * @brief Power Configuration
+  * @retval None
+  */
+static void SystemPower_Config(void)
+{
+  /* WKUP_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(WKUP_IRQn);
+/* USER CODE BEGIN PWR */
+/* USER CODE END PWR */
+}
+
+/**
   * @brief ADC4 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_ADC4_Init(void)
+void MX_ADC4_Init(void)
 {
 
   /* USER CODE BEGIN ADC4_Init 0 */
@@ -649,7 +673,7 @@ static void MX_ADC4_Init(void)
   * @param None
   * @retval None
   */
-static void MX_CRC_Init(void)
+void MX_CRC_Init(void)
 {
 
   /* USER CODE BEGIN CRC_Init 0 */
@@ -710,7 +734,7 @@ static void MX_GPDMA1_Init(void)
   * @param None
   * @retval None
   */
-static void MX_ICACHE_Init(void)
+void MX_ICACHE_Init(void)
 {
 
   /* USER CODE BEGIN ICACHE_Init 0 */
@@ -742,7 +766,7 @@ static void MX_ICACHE_Init(void)
   * @param None
   * @retval None
   */
-static void MX_LPTIM1_Init(void)
+void MX_LPTIM1_Init(void)
 {
 
   /* USER CODE BEGIN LPTIM1_Init 0 */
@@ -785,7 +809,7 @@ static void MX_LPTIM1_Init(void)
   * @param None
   * @retval None
   */
-static void MX_LPTIM2_Init(void)
+void MX_LPTIM2_Init(void)
 {
 
   /* USER CODE BEGIN LPTIM2_Init 0 */
@@ -829,7 +853,7 @@ static void MX_LPTIM2_Init(void)
   * @param None
   * @retval None
   */
-static void MX_RAMCFG_Init(void)
+void MX_RAMCFG_Init(void)
 {
 
   /* USER CODE BEGIN RAMCFG_Init 0 */
@@ -858,7 +882,7 @@ static void MX_RAMCFG_Init(void)
   * @param None
   * @retval None
   */
-static void MX_RNG_Init(void)
+void MX_RNG_Init(void)
 {
 
   /* USER CODE BEGIN RNG_Init 0 */
@@ -875,7 +899,7 @@ static void MX_RNG_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN RNG_Init 2 */
-
+  HW_RNG_Disable( );
   /* USER CODE END RNG_Init 2 */
 
 }
@@ -934,11 +958,47 @@ void MX_RTC_Init(void)
 }
 
 /**
+  * @brief TIM16 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM16_Init(void)
+{
+
+  /* USER CODE BEGIN TIM16_Init 0 */
+
+  /* USER CODE END TIM16_Init 0 */
+
+  /* USER CODE BEGIN TIM16_Init 1 */
+
+  /* USER CODE END TIM16_Init 1 */
+  htim16.Instance = TIM16;
+  htim16.Init.Prescaler = 0;
+  htim16.Init.CounterMode = TIM_COUNTERMODE_DOWN;
+  htim16.Init.Period = 3200;
+  htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim16.Init.RepetitionCounter = 0;
+  htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim16) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_OnePulse_Init(&htim16, TIM_OPMODE_SINGLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM16_Init 2 */
+
+  /* USER CODE END TIM16_Init 2 */
+
+}
+
+/**
   * @brief TIM17 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_TIM17_Init(void)
+void MX_TIM17_Init(void)
 {
 
   /* USER CODE BEGIN TIM17_Init 0 */
@@ -953,7 +1013,7 @@ static void MX_TIM17_Init(void)
   /* USER CODE END TIM17_Init 1 */
   htim17.Instance = TIM17;
   htim17.Init.Prescaler = 15;
-  htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim17.Init.CounterMode = TIM_COUNTERMODE_DOWN;
   htim17.Init.Period = 1000;
   htim17.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim17.Init.RepetitionCounter = 0;
@@ -1004,7 +1064,7 @@ static void MX_TIM17_Init(void)
   * @param None
   * @retval None
   */
-static void MX_USART2_UART_Init(void)
+void MX_USART2_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART2_Init 0 */

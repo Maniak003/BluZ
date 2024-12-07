@@ -33,14 +33,11 @@ extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
 extern DMA_QListTypeDef List_GPDMA1_Channel0;
 extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
 extern DMA_QListTypeDef List_GPDMA1_Channel0;
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-extern ADC_HandleTypeDef hadc4;
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
-extern CRC_HandleTypeDef hcrc;
 extern LPTIM_HandleTypeDef hlptim1;
 extern LPTIM_HandleTypeDef hlptim2;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern RNG_HandleTypeDef hrng;
+extern TIM_HandleTypeDef htim16;
 extern TIM_HandleTypeDef htim17;
 extern UART_HandleTypeDef huart2;
 
@@ -55,32 +52,41 @@ extern UART_HandleTypeDef huart2;
   * @param  None
   * @retval None
   */
-void MX_StandbyExit_PeripharalInit(void)
+void MX_StandbyExit_PeripheralInit(void)
 {
+  HAL_StatusTypeDef hal_status;
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
   /* Select SysTick source clock */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
+
   /* Re-Initialize Tick with new clock source */
-  HAL_InitTick(TICK_INT_PRIORITY);
+  hal_status = HAL_InitTick(TICK_INT_PRIORITY);
+  if (hal_status != HAL_OK)
+  {
+    assert_param(0);
+  }
 
   memset(&Node_GPDMA1_Channel0, 0, sizeof(Node_GPDMA1_Channel0));
   memset(&List_GPDMA1_Channel0, 0, sizeof(List_GPDMA1_Channel0));
   memset(&Node_GPDMA1_Channel0, 0, sizeof(Node_GPDMA1_Channel0));
   memset(&List_GPDMA1_Channel0, 0, sizeof(List_GPDMA1_Channel0));
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  memset(&hadc4, 0, sizeof(hadc4));
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
-  memset(&hcrc, 0, sizeof(hcrc));
   memset(&hlptim1, 0, sizeof(hlptim1));
   memset(&hlptim2, 0, sizeof(hlptim2));
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&hrng, 0, sizeof(hrng));
+  memset(&htim16, 0, sizeof(htim16));
   memset(&htim17, 0, sizeof(htim17));
   memset(&huart2, 0, sizeof(huart2));
 
+  MX_RAMCFG_Init();
+  MX_RNG_Init();
+  MX_ICACHE_Init();
+  MX_LPTIM2_Init();
+  MX_LPTIM1_Init();
+  MX_TIM17_Init();
   CRCCTRL_Init();
 
 #if (CFG_DEBUGGER_LEVEL == 0)

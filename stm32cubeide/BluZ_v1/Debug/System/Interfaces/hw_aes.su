@@ -1,7 +1,10 @@
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:453:22:LL_AHB2_GRP1_EnableClock	24	static
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:492:26:LL_AHB2_GRP1_IsEnabledClock	16	static
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:527:22:LL_AHB2_GRP1_DisableClock	16	static
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:462:22:LL_AHB2_GRP1_EnableClock	24	static
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:501:26:LL_AHB2_GRP1_IsEnabledClock	16	static
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:536:22:LL_AHB2_GRP1_DisableClock	16	static
 ../System/Interfaces/hw_aes.c:46:5:HW_AES_Enable	24	static,ignoring_inline_asm
 ../System/Interfaces/hw_aes.c:70:6:HW_AES_SetKey	48	static
 ../System/Interfaces/hw_aes.c:135:6:HW_AES_Crypt	16	static
 ../System/Interfaces/hw_aes.c:159:6:HW_AES_Disable	24	static,ignoring_inline_asm
+../System/Interfaces/hw_aes.c:181:6:HW_AES_InitCcm	64	static
+../System/Interfaces/hw_aes.c:238:6:HW_AES_EndCcm	32	static
+../System/Interfaces/hw_aes.c:263:6:HW_AES_SetLast	16	static

@@ -15,13 +15,12 @@ RM := rm -rf
 -include Utilities/misc/subdir.mk
 -include Utilities/lpm/tiny_lpm/subdir.mk
 -include System/Startup/subdir.mk
--include System/Modules/baes/subdir.mk
 -include System/Modules/SerialCmdInterpreter/subdir.mk
 -include System/Modules/RTDebug/subdir.mk
--include System/Modules/RFControl/subdir.mk
 -include System/Modules/Nvm/subdir.mk
 -include System/Modules/MemoryManager/subdir.mk
 -include System/Modules/Flash/subdir.mk
+-include System/Modules/BasicAES/subdir.mk
 -include System/Modules/subdir.mk
 -include System/Interfaces/subdir.mk
 -include System/Config/LowPower/subdir.mk

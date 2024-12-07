@@ -7,6 +7,6 @@
 ../System/Modules/Flash/simple_nvm_arbiter.c:1528:9:IsCrcOk	40	static
 ../System/Modules/Flash/simple_nvm_arbiter.c:1688:9:IsSameContent	32	static
 ../System/Modules/Flash/simple_nvm_arbiter.c:1706:19:GetNewestBank	32	static
-../System/Modules/Flash/simple_nvm_arbiter.c:1728:9:EraseSector	40	static
-../System/Modules/Flash/simple_nvm_arbiter.c:1761:17:StartFlashWrite	48	static,ignoring_inline_asm
-../System/Modules/Flash/simple_nvm_arbiter.c:1865:6:InvokeBufferCallback	48	static,ignoring_inline_asm
+../System/Modules/Flash/simple_nvm_arbiter.c:1728:9:EraseSector	32	static
+../System/Modules/Flash/simple_nvm_arbiter.c:1766:17:StartFlashWrite	48	static,ignoring_inline_asm
+../System/Modules/Flash/simple_nvm_arbiter.c:1870:6:InvokeBufferCallback	48	static,ignoring_inline_asm
