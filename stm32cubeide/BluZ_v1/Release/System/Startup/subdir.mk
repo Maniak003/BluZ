@@ -4,24 +4,24 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
-S_SRCS += \
-../System/Startup/stm32wbaxx_ResetHandler_GCC.s 
+S_UPPER_SRCS += \
+../System/Startup/stm32wbaxx_ResetHandler.S 
 
 OBJS += \
-./System/Startup/stm32wbaxx_ResetHandler_GCC.o 
+./System/Startup/stm32wbaxx_ResetHandler.o 
 
-S_DEPS += \
-./System/Startup/stm32wbaxx_ResetHandler_GCC.d 
+S_UPPER_DEPS += \
+./System/Startup/stm32wbaxx_ResetHandler.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
-System/Startup/%.o: ../System/Startup/%.s System/Startup/subdir.mk
+System/Startup/%.o: ../System/Startup/%.S System/Startup/subdir.mk
 	arm-none-eabi-gcc -mcpu=cortex-m33 -c -x assembler-with-cpp -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@" "$<"
 
 clean: clean-System-2f-Startup
 
 clean-System-2f-Startup:
-	-$(RM) ./System/Startup/stm32wbaxx_ResetHandler_GCC.d ./System/Startup/stm32wbaxx_ResetHandler_GCC.o
+	-$(RM) ./System/Startup/stm32wbaxx_ResetHandler.d ./System/Startup/stm32wbaxx_ResetHandler.o
 
 .PHONY: clean-System-2f-Startup
 

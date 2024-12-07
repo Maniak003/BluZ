@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/bsp.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05Patchv6_2/firmware/public_inc/bsp.h#1 $*/
 
 /**
  ********************************************************************************
@@ -55,14 +55,6 @@
 #define LL_LOW_ISR_ONLY  		0x02	// Specify only LL LOW ISR to be enabled or disabled
 #define SYS_LOW_ISR		 		0x04 	// Specify only system low ISR to be enabled or disabled
 
-#ifndef EBQ_BUILD
-#define EBQ_BUILD					0
-#endif
-
-
-#ifndef USE_HCI_TRANSPORT
-#define USE_HCI_TRANSPORT 	0
-#endif
 /**
  * @brief InterruptPriorities Enum.
  * it is used to define the different ISR priorities in the controller
@@ -275,7 +267,6 @@ typedef enum Debug_GPIO_e{
 
 	DBG_IO_CONN_MNGR_PROCESS_EVNT_CLBK                          ,
 	DBG_IO_CONN_MNGR_UPDT_CONN_PARAM_CBK                        ,
-	DBG_IO_CONN_MNGR_DATA_LEN_UPDT_CBK							,
 	DBG_IO_EVNT_SCHDLR_HW_EVNT_CMPLT                            ,
 
 	DBG_IO_HCI_EVENT_HNDLR                                      ,
@@ -290,7 +281,9 @@ typedef enum Debug_GPIO_e{
 	DBG_IO_PROFILE_MARKER_PHY_WAKEUP_TIME                       ,
 	DBG_IO_PROFILE_END_DRIFT_TIME                               ,
 	DBG_IO_PROC_RADIO_RCV										,
+
 	DBG_IO_EVNT_TIME_UPDT										,
+												
 	DBG_IO_MAC_RECEIVE_DONE										,
 	DBG_IO_MAC_TX_DONE											,
 	DBG_IO_RADIO_APPLY_CSMA										,
@@ -335,12 +328,6 @@ typedef enum Debug_GPIO_e{
 	DBG_IO_PAWR_MULTIPLE_EVNTS_MISSED							,
 	DBG_IO_PAWR_CHM_UPDT_END									,
 	DBG_IO_LLHWC_CMN_INIT                                       ,
-	DBG_IO_RADIO_SET_PENDING_TX_FULL							,
-	DBG_IO_RADIO_SET_PENDING_TX_CONTINUE						,
-	DBG_IO_RADIO_HANDLE_PENDING_TX								,
-	DBG_IO_RAL_AD_SET_MEASUREMENT_STATE							,
-    DBG_IO_PROFILE_CS_GEN                                       ,
-    DBG_IO_PROFILE_CS_CHNL_SHUFFLING                            ,
 	Debug_GPIO_num
 
 }Debug_GPIO_t;
@@ -412,9 +399,7 @@ void logger_write(uint8_t *buffer, uint32_t size);
  *
  * @retval None
  */
-extern void enable_irq(
-			void
-);
+extern void enable_irq(void);
 /**
  * @brief   disable interrupt request function
  * This function disable the MCU interrupt ,after calling this function the LL code must not be interrupted as it is in critical section
@@ -422,9 +407,8 @@ extern void enable_irq(
  *
  * @retval None
  */
-extern void disable_irq(
-			void
-);
+extern void disable_irq(void);
+
 /**
  * @brief this function is used to enable a specific ISR
  * @param[in]  isr_type that holds specific ISR to be enabled by this function
@@ -433,7 +417,7 @@ extern void disable_irq(
  * 				BIT[2] for SYS_LOW_ISR
  * @return None
  */
-void enable_specific_irq(uint8_t isr_type );
+void enable_specific_irq (uint8_t isr_type);
 
 
 /**
@@ -444,7 +428,8 @@ void enable_specific_irq(uint8_t isr_type );
  * 				BIT[2] for SYS_LOW_ISR
  * @return None
  */
-void disable_specific_irq(uint8_t isr_type );
+void disable_specific_irq (uint8_t isr_type);
+
 
 /**
  * @brief   broad  initialization Function
@@ -511,28 +496,6 @@ int bsp_is_ptr_in_ble_mem(void* ptr);
  * @retval None.
  */
 void bsp_mcu_slp(void);
-
-
-/**
- * @brief	Clear GPIO pin output value
- *
- * @param	enable: enable/disable flag
- *
- * @retval None.
- */
-
-void bsp_gpio_clear(uint8_t gpio_num);   
-
-
-/**
- * @brief	Set GPIO pin output value
- *
- * @param	enable: enable/disable flag
- *
- * @retval None.
- */
-void bsp_gpio_set(uint8_t gpio_num);   
-
 
 /**
  * @brief	Enables/Disables the bus clock.
@@ -649,7 +612,6 @@ void bsp_debug_gpio_toggle(Debug_GPIO_t gpio);
  * @retval None.
  */
 void bsp_set_phy_clbr_state(PhyClbrState state);
-
 /**
  * @brief a function to notify the upper layer to switch the clock.
  *

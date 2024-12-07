@@ -26,7 +26,6 @@ System/Modules/crc_ctrl.o: ../System/Modules/crc_ctrl.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h \
@@ -55,10 +54,10 @@ System/Modules/crc_ctrl.o: ../System/Modules/crc_ctrl.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
  ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
- ../Core/Inc/app_conf.h ../Utilities/misc/stm32_mem.h \
- ../Core/Inc/utilities_conf.h ../Utilities/misc/stm32_tiny_vsnprintf.h \
- ../System/Modules/crc_ctrl.h ../System/Config/CRC_Ctrl/crc_ctrl_conf.h \
- ../System/Modules/crc_ctrl.h
+ ../Utilities/misc/stm32_mem.h ../Core/Inc/utilities_conf.h \
+ ../Utilities/misc/stm32_tiny_vsnprintf.h \
+ ../System/Config/Log/log_module.h ../System/Modules/crc_ctrl.h \
+ ../System/Config/CRC_Ctrl/crc_ctrl_conf.h ../System/Modules/crc_ctrl.h
 ../System/Modules/utilities_common.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -87,7 +86,6 @@ System/Modules/crc_ctrl.o: ../System/Modules/crc_ctrl.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h:
@@ -117,10 +115,10 @@ System/Modules/crc_ctrl.o: ../System/Modules/crc_ctrl.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h:
 ../Core/Inc/utilities_conf.h:
 ../Drivers/CMSIS/Include/cmsis_compiler.h:
-../Core/Inc/app_conf.h:
 ../Utilities/misc/stm32_mem.h:
 ../Core/Inc/utilities_conf.h:
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
+../System/Config/Log/log_module.h:
 ../System/Modules/crc_ctrl.h:
 ../System/Config/CRC_Ctrl/crc_ctrl_conf.h:
 ../System/Modules/crc_ctrl.h:

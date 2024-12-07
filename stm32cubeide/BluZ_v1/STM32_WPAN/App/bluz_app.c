@@ -21,14 +21,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
-#include "log_module.h"
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
 #include "ble.h"
 #include "bluz_app.h"
 #include "bluz.h"
-#include "stm32_rtos.h"
+#include "stm32_seq.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -440,18 +439,18 @@ __USED void BLUZ_Rx_SendNotification(void) /* Property Notification */
   bluz_notification_data.p_Payload = (uint8_t*)a_BLUZ_UpdateCharData;
   bluz_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service1Char1_NS_1 */
+  /* USER CODE BEGIN Service1Char1_NS_1*/
 
-  /* USER CODE END Service1Char1_NS_1 */
+  /* USER CODE END Service1Char1_NS_1*/
 
   if (notification_on_off != Rx_NOTIFICATION_OFF)
   {
     BLUZ_UpdateValue(BLUZ_RX, &bluz_notification_data);
   }
 
-  /* USER CODE BEGIN Service1Char1_NS_Last */
+  /* USER CODE BEGIN Service1Char1_NS_Last*/
 
-  /* USER CODE END Service1Char1_NS_Last */
+  /* USER CODE END Service1Char1_NS_Last*/
 
   return;
 }
@@ -464,23 +463,23 @@ __USED void BLUZ_Tx_SendNotification(void) /* Property Notification */
   bluz_notification_data.p_Payload = (uint8_t*)a_BLUZ_UpdateCharData;
   bluz_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service1Char2_NS_1 */
+  /* USER CODE BEGIN Service1Char2_NS_1*/
 
-  /* USER CODE END Service1Char2_NS_1 */
+  /* USER CODE END Service1Char2_NS_1*/
 
   if (notification_on_off != Tx_NOTIFICATION_OFF)
   {
     BLUZ_UpdateValue(BLUZ_TX, &bluz_notification_data);
   }
 
-  /* USER CODE BEGIN Service1Char2_NS_Last */
+  /* USER CODE BEGIN Service1Char2_NS_Last*/
 
-  /* USER CODE END Service1Char2_NS_Last */
+  /* USER CODE END Service1Char2_NS_Last*/
 
   return;
 }
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
 void sendData( uint8_t *dataSpectrBufer )
 {
 	if (connectFlag) {
@@ -517,4 +516,4 @@ void sendData( uint8_t *dataSpectrBufer )
   return;
 }
 
-/* USER CODE END FD_LOCAL_FUNCTIONS */
+/* USER CODE END FD_LOCAL_FUNCTIONS*/

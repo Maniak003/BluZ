@@ -20,10 +20,6 @@
 #ifndef DEBUG_CONFIG_H
 #define DEBUG_CONFIG_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "app_conf.h"
 
 #if(CFG_RT_DEBUG_GPIO_MODULE == 1)
@@ -1524,9 +1520,5 @@ static const st_gpio_debug_t general_debug_table[] = {
 };
 
 #endif /* CFG_RT_DEBUG_GPIO_MODULE */
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* DEBUG_CONFIG_H */

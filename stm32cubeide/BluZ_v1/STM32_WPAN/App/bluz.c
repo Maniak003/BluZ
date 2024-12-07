@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "log_module.h"
 #include "common_blesvc.h"
 #include "bluz.h"
 
@@ -218,7 +217,7 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
                 /* USER CODE END Service1_Char_1_default */
                 break;
             }
-          }
+          }  /* if(p_attribute_modified->Attr_Handle == (BLUZ_Context.RxCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
 
           else if(p_attribute_modified->Attr_Handle == (BLUZ_Context.TxCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))
           {
@@ -262,7 +261,7 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
                 /* USER CODE END Service1_Char_2_default */
                 break;
             }
-          }
+          }  /* if(p_attribute_modified->Attr_Handle == (BLUZ_Context.TxCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
 
           else if(p_attribute_modified->Attr_Handle == (BLUZ_Context.TxCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
@@ -273,7 +272,7 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
 
             /* USER CODE END Service1_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             BLUZ_Notification(&notification);
-          }
+          } /* if(p_attribute_modified->Attr_Handle == (BLUZ_Context.TxCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
 
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
@@ -346,19 +345,19 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
           /* USER CODE END EVT_DEFAULT */
           break;
       }
-      /* USER CODE BEGIN EVT_VENDOR */
+      /* USER CODE BEGIN EVT_VENDOR*/
 
-      /* USER CODE END EVT_VENDOR */
+      /* USER CODE END EVT_VENDOR*/
       break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
 
-      /* USER CODE BEGIN EVENT_PCKT_CASES */
+      /* USER CODE BEGIN EVENT_PCKT_CASES*/
 
-      /* USER CODE END EVENT_PCKT_CASES */
+      /* USER CODE END EVENT_PCKT_CASES*/
 
     default:
-      /* USER CODE BEGIN EVENT_PCKT */
+      /* USER CODE BEGIN EVENT_PCKT*/
 
-      /* USER CODE END EVENT_PCKT */
+      /* USER CODE END EVENT_PCKT*/
       break;
   }
 
@@ -492,7 +491,7 @@ void BLUZ_Init(void)
 /**
  * @brief  Characteristic update
  * @param  CharOpcode: Characteristic identifier
- * @param  pData: Structure holding data to update
+ * @param  Service_Instance: Instance of the service to which the characteristic belongs
  *
  */
 tBleStatus BLUZ_UpdateValue(BLUZ_CharOpcode_t CharOpcode, BLUZ_Data_t *pData)
@@ -521,7 +520,7 @@ tBleStatus BLUZ_UpdateValue(BLUZ_CharOpcode_t CharOpcode, BLUZ_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value RX command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_1 */
+      /* USER CODE BEGIN Service1_Char_Value_1*/
 		//bzero((char *) uartBuffer, sizeof(uartBuffer));
 		//sprintf(uartBuffer, "Service1_Char_Value_1\n\r");
 		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
@@ -544,7 +543,7 @@ tBleStatus BLUZ_UpdateValue(BLUZ_CharOpcode_t CharOpcode, BLUZ_Data_t *pData)
 		}
 		HAL_UART_Transmit(&huart2, (uint8_t *) "\n\r", 2, 100);
 		*/
-      /* USER CODE END Service1_Char_Value_1 */
+      /* USER CODE END Service1_Char_Value_1*/
       break;
 
     case BLUZ_TX:
@@ -561,13 +560,13 @@ tBleStatus BLUZ_UpdateValue(BLUZ_CharOpcode_t CharOpcode, BLUZ_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value TX command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_2 */
+      /* USER CODE BEGIN Service1_Char_Value_2*/
 		#ifdef DEBUG_USER
 		bzero((char *) uartBuffer, sizeof(uartBuffer));
 		sprintf(uartBuffer, "Service1_Char_Value_2\n\r");
 		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 		#endif
-      /* USER CODE END Service1_Char_Value_2 */
+      /* USER CODE END Service1_Char_Value_2*/
       break;
 
     default:

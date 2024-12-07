@@ -1,9 +1,5 @@
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rcc.h:1763:26:LL_RCC_RADIO_GetSleepTimerClockSource	1
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_system.h:926:26:LL_DBGMCU_GetRevisionID	1
-../STM32_WPAN/Target/ll_sys_if.c:82:6:ll_sys_bg_process_init	1
-../STM32_WPAN/Target/ll_sys_if.c:93:6:ll_sys_schedule_bg_process	1
-../STM32_WPAN/Target/ll_sys_if.c:103:6:ll_sys_schedule_bg_process_isr	1
-../STM32_WPAN/Target/ll_sys_if.c:113:6:ll_sys_config_params	1
-../STM32_WPAN/Target/ll_sys_if.c:139:9:ll_sys_BLE_sleep_clock_accuracy_selection	4
-../STM32_WPAN/Target/ll_sys_if.c:178:6:ll_sys_sleep_clock_source_selection	7
-../STM32_WPAN/Target/ll_sys_if.c:206:6:ll_sys_reset	2
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rcc.h:1761:26:LL_RCC_RADIO_GetSleepTimerClockSource	1
+../STM32_WPAN/Target/ll_sys_if.c:73:6:ll_sys_bg_process_init	1
+../STM32_WPAN/Target/ll_sys_if.c:84:6:ll_sys_schedule_bg_process	1
+../STM32_WPAN/Target/ll_sys_if.c:94:6:ll_sys_schedule_bg_process_isr	1
+../STM32_WPAN/Target/ll_sys_if.c:104:6:ll_sys_config_params	7

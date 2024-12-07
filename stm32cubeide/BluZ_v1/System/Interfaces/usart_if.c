@@ -19,31 +19,31 @@
 /* USER CODE END Header */
 
 /*
- *  (!) No platform settings set in Cube MX for the MW STM32_WPAN. The Logs will not be used (!)
+ *	(!) No platform settings set in Cube MX for the MW STM32_WPAN. The Logs will not be used (!)
  *
- *  --------------------------------------------------------------------
- *  If you intend to use the Logs, please follow the procedure below :
- *  --------------------------------------------------------------------
+ *	--------------------------------------------------------------------
+ *	If you intend to use the Logs, please follow the procedure below :
+ *	--------------------------------------------------------------------
  *
- * 1. Open your project on Cube MX.
+ *	1.	Open your project on Cube MX.
  *
- * 2. Click on the MW "STM32_WPAN".
+ *	2.	Click on the MW "STM32_WPAN".
  *
- * 3. Click on the "Configuration" panel.
+ *	3.	Click on the "Configuration" panel.
  *
- * 4. Open the sub-section "Application configuration - Logs".
+ *	4.	Open the sub-section "Application configuration - Logs".
  *
- * 5. Enable one of the following according to your needs :
- *      . CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE
- *      . CFG_LOG_SUPPORTED
+ *	5.	Enable one of the following according to your needs :
+ *		. CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE
+ *		. CFG_LOG_SUPPORTED
  *
- * 6. Click on the "Platform Settings" panel.
+ *	6.	Click on the "Platform Settings" panel.
  *
- * 7. Select the BSP you'll use for the Logs. It can be one of the following :
- *    In order to select them, you need to activate the corresponding IP beforehand in Cube MX.
- *    . USART1
- *    . USART2
- *    . LPUART1
+ *	7.	Select the BSP you'll use for the Logs. It can be one of the following :
+ *		In order to select them, you need to activate the corresponding IP beforehand in Cube MX.
+ *		. USART1
+ *		. USART2
+ *		. LPUART1
  *
  */
 

@@ -20,10 +20,6 @@
 #ifndef APP_DEBUG_H
 #define APP_DEBUG_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "RTDebug.h"
 
 /***************************************************/
@@ -59,9 +55,5 @@ void APP_DEBUG_SIGNAL_TOGGLE(app_debug_signal_t signal);
 /** Debug GPIO Initialization **/
 /*******************************/
 void RT_DEBUG_GPIO_Init(void);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* APP_DEBUG_H */

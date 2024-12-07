@@ -35,13 +35,14 @@ System/Config/Flash \
 System/Config/Log \
 System/Config/LowPower \
 System/Interfaces \
-System/Modules/BasicAES \
 System/Modules/Flash \
 System/Modules/MemoryManager \
 System/Modules/Nvm \
+System/Modules/RFControl \
 System/Modules/RTDebug \
 System/Modules/SerialCmdInterpreter \
 System/Modules \
+System/Modules/baes \
 System/Startup \
 Utilities/lpm/tiny_lpm \
 Utilities/misc \

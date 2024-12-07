@@ -26,7 +26,6 @@ STM32_WPAN/Target/bleplat.o: ../STM32_WPAN/Target/bleplat.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h \
@@ -56,7 +55,8 @@ STM32_WPAN/Target/bleplat.o: ../STM32_WPAN/Target/bleplat.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
  ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
  ../Utilities/misc/stm32_mem.h ../Core/Inc/utilities_conf.h \
- ../Utilities/misc/stm32_tiny_vsnprintf.h ../System/Interfaces/hw.h \
+ ../Utilities/misc/stm32_tiny_vsnprintf.h \
+ ../System/Config/Log/log_module.h ../System/Interfaces/hw.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h \
@@ -69,24 +69,8 @@ STM32_WPAN/Target/bleplat.o: ../STM32_WPAN/Target/bleplat.c \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/hci.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/bleplat.h \
- ../System/Modules/Nvm/nvm.h ../System/Modules/BasicAES/baes.h \
- ../STM32_WPAN/Target/bpka.h ../System/Modules/ble_timer.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/blestack.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_types.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_const.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_std.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_defs.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_bufsize.h \
- ../STM32_WPAN/Target/host_stack_if.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_wrap.c \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_gap_aci.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_types.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_gatt_aci.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_hal_aci.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_hci_le.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_l2cap_aci.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_events.h \
- ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_raw_api.h
+ ../System/Modules/Nvm/nvm.h ../System/Modules/baes/baes.h \
+ ../STM32_WPAN/Target/bpka.h ../System/Modules/ble_timer.h
 ../Core/Inc/app_common.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -115,7 +99,6 @@ STM32_WPAN/Target/bleplat.o: ../STM32_WPAN/Target/bleplat.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_flash_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_gpio_ex.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_hsem.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_icache.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_lptim.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_lptim.h:
@@ -148,6 +131,7 @@ STM32_WPAN/Target/bleplat.o: ../STM32_WPAN/Target/bleplat.c \
 ../Utilities/misc/stm32_mem.h:
 ../Core/Inc/utilities_conf.h:
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
+../System/Config/Log/log_module.h:
 ../System/Interfaces/hw.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h:
@@ -162,22 +146,6 @@ STM32_WPAN/Target/bleplat.o: ../STM32_WPAN/Target/bleplat.c \
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h:
 ../Middlewares/ST/STM32_WPAN/ble/stack/include/bleplat.h:
 ../System/Modules/Nvm/nvm.h:
-../System/Modules/BasicAES/baes.h:
+../System/Modules/baes/baes.h:
 ../STM32_WPAN/Target/bpka.h:
 ../System/Modules/ble_timer.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/blestack.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_types.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_const.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_std.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_defs.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_bufsize.h:
-../STM32_WPAN/Target/host_stack_if.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_wrap.c:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_gap_aci.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_types.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_gatt_aci.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_hal_aci.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_hci_le.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_l2cap_aci.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_events.h:
-../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_raw_api.h:
