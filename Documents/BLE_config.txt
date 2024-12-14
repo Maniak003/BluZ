@@ -1,0 +1,149 @@
+PostBuild command:
+arm-none-eabi-objcopy -O ihex ${ProjName}.elf ${ProjName}.hex
+
+=========================
+app_entry.c
+=========================
+/* USER CODE BEGIN SystemPower_Config */
+LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_NO_RETENTION);
+/* USER CODE END SystemPower_Config */
+
+
+=========================
+STM32_WPAN/App/app_ble.c
+=========================
+
+/* USER CODE BEGIN PTD_1 */
+UTIL_TIMER_Object_t           TimerAdvLowPower_Id;
+uint8_t connIntervalFlag;
+/* USER CODE END PTD_1 */
+
+/* USER CODE BEGIN PD */
+#define ADV_TIMEOUT_MS                 (60 * 1000)
+/* USER CODE END PD */
+
+/* USER CODE BEGIN PFP */
+static void APP_BLE_AdvLowPower_timCB(void *arg);
+static void APP_BLE_AdvLowPower(void);
+/* USER CODE END PFP */
+
+/* USER CODE BEGIN APP_BLE_Init_3 */
+APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
+UTIL_SEQ_RegTask(1<<CFG_TASK_ADV_LP_REQ_ID, UTIL_SEQ_RFU, APP_BLE_AdvLowPower);
+/*
+ * Create timer to enter Low Power Advertising
+ */
+UTIL_TIMER_Create(&(bleAppContext.TimerAdvLowPower_Id), ADV_TIMEOUT_MS, UTIL_TIMER_ONESHOT, &APP_BLE_AdvLowPower_timCB, 0);
+UTIL_TIMER_Start(&(bleAppContext.TimerAdvLowPower_Id));
+/* USER CODE END APP_BLE_Init_3 */
+
+/* USER CODE BEGIN APP_BLE_Init_2 */
+bleAppContext.connIntervalFlag = 0;
+/*
+tBleStatus status;
+status = aci_gap_set_discoverable(ADV_TYPE, ADV_INTERVAL_MIN, ADV_INTERVAL_MAX, CFG_BD_ADDRESS_TYPE, ADV_FILTER, 0, 0, 0, 0, 0, 0);
+if (status != BLE_STATUS_SUCCESS) {
+      return;
+}
+status = aci_gap_delete_ad_type(AD_TYPE_TX_POWER_LEVEL);
+if (status != BLE_STATUS_SUCCESS) {
+      return;
+}
+status = aci_gap_update_adv_data(sizeof(a_AdvData), (uint8_t *) a_AdvData);
+if (status != BLE_STATUS_SUCCESS) {
+      return;
+}
+status = aci_gap_delete_ad_type(AD_TYPE_TX_POWER_LEVEL);
+if (status != BLE_STATUS_SUCCESS) {
+          return;
+}*/
+/* USER CODE END APP_BLE_Init_2 */
+
+/* USER CODE BEGIN EVT_DISCONN_COMPLETE */
+APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
+UTIL_TIMER_StartWithPeriod(&bleAppContext.TimerAdvLowPower_Id, ADV_TIMEOUT_MS);
+/*tBleStatus status;
+  status = aci_gap_set_discoverable(ADV_TYPE, ADV_INTERVAL_MIN, ADV_INTERVAL_MAX, CFG_BD_ADDRESS_TYPE, ADV_FILTER, 0, 0, 0, 0, 0, 0);
+  if (status != BLE_STATUS_SUCCESS) {
+  }
+  status = aci_gap_delete_ad_type(AD_TYPE_TX_POWER_LEVEL);
+  if (status != BLE_STATUS_SUCCESS) {
+  }
+  status = aci_gap_update_adv_data(sizeof(a_AdvData), (uint8_t *) a_AdvData);
+  if (status != BLE_STATUS_SUCCESS) {
+  }
+  status = aci_gap_delete_ad_type(AD_TYPE_TX_POWER_LEVEL);
+  if (status != BLE_STATUS_SUCCESS) {
+  }*/
+/* USER CODE END EVT_DISCONN_COMPLETE */
+
+/* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
+UTIL_TIMER_Stop(&(bleAppContext.TimerAdvLowPower_Id));
+/* USER CODE END HCI_EVT_LE_CONN_COMPLETE */
+
+/* USER CODE BEGIN CONN_PARAM_UPDATE */
+if (bleAppContext.connIntervalFlag != 0)
+{
+bleAppContext.connIntervalFlag = 0;
+   paramA = CONN_INT_MS(50);
+   paramB = CONN_INT_MS(50);
+}
+else
+{
+   bleAppContext.connIntervalFlag = 1;
+   paramA = CONN_INT_MS(1000);
+   paramB = CONN_INT_MS(1000);
+}
+/* USER CODE END CONN_PARAM_UPDATE */
+
+/* USER CODE BEGIN FD_WRAP_FUNCTIONS */
+static void APP_BLE_AdvLowPower_timCB(void *arg)
+{
+  /**
+   * The code shall be executed in the background as aci command may be sent
+   * The background is the only place where the application can make sure a new aci command
+   * is not sent if there is a pending one
+   */
+  UTIL_SEQ_SetTask(1<<CFG_TASK_ADV_LP_REQ_ID, CFG_SEQ_PRIO_0);
+
+  return;
+}
+
+static void APP_BLE_AdvLowPower(void)
+{
+  UTIL_TIMER_Stop(&(bleAppContext.TimerAdvLowPower_Id));
+  APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_STOP);
+  APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_LP);
+}
+/* USER CODE END FD_WRAP_FUNCTIONS */
+
+======================================
+app_conf.h
+======================================
+
+  /* USER CODE BEGIN CFG_Task_Id_t */
+  CFG_TASK_BUTTON_B1,
+  CFG_TASK_BUTTON_B2,
+  CFG_TASK_BUTTON_B3,
+
+  CFG_TASK_MEAS_REQ_ID,
+  CFG_TASK_ADV_LP_REQ_ID,
+  /* USER CODE END CFG_Task_Id_t */
+
+======================================
+mian.c
+======================================
+/* USER CODE BEGIN RNG_Init 2 */
+HW_RNG_Disable( );
+/* USER CODE END RNG_Init 2 */
+
+
+=======================================
+System/Config/LowPower/peripheral_init.c
+=======================================
+/* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
+APP_BSP_StandbyExit();
+ConfigureStandbyWakeupPins();
+/* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
+
+
