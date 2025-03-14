@@ -62,7 +62,7 @@ void MX_StandbyExit_PeripharalInit(void)
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
   /* Select SysTick source clock */
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
   /* Re-Initialize Tick with new clock source */
   HAL_InitTick(TICK_INT_PRIORITY);
 

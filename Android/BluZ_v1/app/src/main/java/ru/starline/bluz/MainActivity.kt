@@ -15,6 +15,7 @@ public val GO: globalObj = globalObj()
 public const val propADDRESS: String = "Address"
 public const val BLEDeviceName: String = "BluZ"
 public const val propSpectrGraphType: String = "SpecterGraphType"
+public const val propColorDozimeter: String = "ColorDozimeter"
 public const val propColorSpecterLin: String = "ColorLin"
 public const val propColorSpecterLog: String = "ColorLog"
 public const val propColorSpecterFone: String = "ColorFone"
@@ -70,6 +71,7 @@ public class MainActivity : FragmentActivity() {
         GO.mainContext = applicationContext
         enableEdgeToEdge()
         GO.drawSPECTER = drawSpecter()
+        GO.drawDOZIMETER = drawDozimeter()
         GO.drawCURSOR = drawCursor()
         GO.adapter = NumberAdapter(this)
         GO.indicatorBT = findViewById(R.id.indicatorBT)
@@ -189,6 +191,12 @@ public class MainActivity : FragmentActivity() {
         */
         GO.PP = propControl()
         GO.LEMAC = GO.PP.getPropStr(propADDRESS)
+        /* Цвета для дозиметра */
+        GO.ColorDosimeter = GO.PP.getPropInt(propColorDozimeter)
+        if (GO.ColorDosimeter == 0) {
+            GO.ColorDosimeter = resources.getColor(R.color.ColorDosimeter, GO.mainContext.theme)
+        }
+
         /* Цвета для линейного графика */
         GO.ColorLin = GO.PP.getPropInt(propColorSpecterLin)
         GO.ColorLog = GO.PP.getPropInt(propColorSpecterLog)

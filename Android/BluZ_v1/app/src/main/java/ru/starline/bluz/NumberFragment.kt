@@ -82,6 +82,7 @@ class NumberFragment : Fragment() {
     }
 
 
+    @OptIn(ExperimentalUnsignedTypes::class)
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         arguments?.takeIf { it.containsKey(ARG_OBJECT) }?.apply {
@@ -292,6 +293,13 @@ class NumberFragment : Fragment() {
             /*
             *   Обекты закладки дозиметра
             */
+                GO.drawDOZIMETER.dozView = view.findViewById(R.id.dozView)
+
+                if (! GO.initDOZ) {
+                    GO.initDOZ = true
+                    GO.drawDOZIMETER.Init()
+                }
+
                 /* Сброс дозиметра */
                 val btnClearDose: Button = view.findViewById(R.id.buttonClearDoze)
                 btnClearDose.setOnClickListener {
@@ -427,16 +435,17 @@ class NumberFragment : Fragment() {
                     GO.LEMAC = GO.textMACADR.text.toString()
                     GO.rejectChann = editRejectChann.text.toString().toInt();
                     //Log.d("BluZ-BT", "Reject chann: " + GO.rejectChann )
-                    GO.PP.setPropInt(propRejectCann, GO.rejectChann)                     // Сохраним количество не отображаемых каналов
+                    GO.PP.setPropInt(propRejectCann, GO.rejectChann)                    // Сохраним количество не отображаемых каналов
                     GO.PP.setPropStr(propADDRESS, GO.LEMAC)                             // Сохраним MAC адрес устройства
                     GO.PP.setPropInt(propColorSpecterLin, GO.ColorLin)                  // Сохраним цвет линейного графика
                     GO.PP.setPropInt(propColorSpecterLog, GO.ColorLog)                  // Сохраним цвет логарифмического графика
-                    GO.PP.setPropInt(propColorSpecterFone, GO.ColorFone)                // Сохранним цвет графика фона
-                    GO.PP.setPropInt(propColorSpecterFoneLg, GO.ColorFoneLg)            // Сохранним цвет логарифмического графика фона
+                    GO.PP.setPropInt(propColorSpecterFone, GO.ColorFone)                // Сохраним цвет графика фона
+                    GO.PP.setPropInt(propColorSpecterFoneLg, GO.ColorFoneLg)            // Сохраним цвет логарифмического графика фона
                     GO.PP.setPropInt(propColorSpecterLinGisto, GO.ColorLinGisto)        // Сохраним цвет линейного графика гистограммы
                     GO.PP.setPropInt(propColorSpecterLogGisto, GO.ColorLogGisto)        // Сохраним цвет логарифмического графика  гистограммы
-                    GO.PP.setPropInt(propColorSpecterFoneGisto, GO.ColorFoneGisto)      // Сохранним цвет графика фона гистограммы
-                    GO.PP.setPropInt(propColorSpecterFoneLgGisto, GO.ColorFoneLgGisto)  // Сохранним цвет логарифмического графика фона гистограммы
+                    GO.PP.setPropInt(propColorSpecterFoneGisto, GO.ColorFoneGisto)      // Сохраним цвет графика фона гистограммы
+                    GO.PP.setPropInt(propColorSpecterFoneLgGisto, GO.ColorFoneLgGisto)  // Сохраним цвет логарифмического графика фона гистограммы
+                    GO.PP.setPropInt(propColorDozimeter, GO.ColorDosimeter)             // Сохраним цвет дозиметра
                     if (rbLineSpectr.isChecked) {                                       // Сохраним тип графика для вывода спектра
                         GO.specterGraphType = 0
                     } else {
@@ -756,29 +765,32 @@ class NumberFragment : Fragment() {
                 tvColor = view.findViewById(R.id.tvColor)
 
                 /* Установка цветов по умолчанию если не нашли в конфигурации */
+                if (GO.ColorDosimeter == 0) {
+                    GO.ColorDosimeter = resources.getColor(R.color.ColorDosimeter, GO.mainContext.theme)
+                }
                 if (GO.ColorLin == 0) {
-                    GO.ColorLin = getResources().getColor(R.color.specterColorLin, GO.mainContext.theme)
+                    GO.ColorLin = resources.getColor(R.color.specterColorLin, GO.mainContext.theme)
                 }
                 if (GO.ColorLog == 0) {
-                    GO.ColorLog = getResources().getColor(R.color.specterColorLog, GO.mainContext.theme)
+                    GO.ColorLog = resources.getColor(R.color.specterColorLog, GO.mainContext.theme)
                 }
                 if (GO.ColorFone == 0) {
-                    GO.ColorFone = getResources().getColor(R.color.specterColorFone, GO.mainContext.theme)
+                    GO.ColorFone = resources.getColor(R.color.specterColorFone, GO.mainContext.theme)
                 }
                 if (GO.ColorFoneLg == 0) {
-                    GO.ColorFoneLg = getResources().getColor(R.color.specterColorFoneLg, GO.mainContext.theme)
+                    GO.ColorFoneLg = resources.getColor(R.color.specterColorFoneLg, GO.mainContext.theme)
                 }
                 if (GO.ColorLinGisto == 0) {
-                    GO.ColorLinGisto = getResources().getColor(R.color.specterColorLinGisto, GO.mainContext.theme)
+                    GO.ColorLinGisto = resources.getColor(R.color.specterColorLinGisto, GO.mainContext.theme)
                 }
                 if (GO.ColorLogGisto == 0) {
-                    GO.ColorLogGisto = getResources().getColor(R.color.specterColorLogGisto, GO.mainContext.theme)
+                    GO.ColorLogGisto = resources.getColor(R.color.specterColorLogGisto, GO.mainContext.theme)
                 }
                 if (GO.ColorFoneGisto == 0) {
-                    GO.ColorFoneGisto = getResources().getColor(R.color.specterColorFoneGisto, GO.mainContext.theme)
+                    GO.ColorFoneGisto = resources.getColor(R.color.specterColorFoneGisto, GO.mainContext.theme)
                 }
                 if (GO.ColorFoneLgGisto == 0) {
-                    GO.ColorFoneLgGisto = getResources().getColor(R.color.specterColorFoneLgGisto, GO.mainContext.theme)
+                    GO.ColorFoneLgGisto = resources.getColor(R.color.specterColorFoneLgGisto, GO.mainContext.theme)
                 }
 
                 var noChange: Boolean = true

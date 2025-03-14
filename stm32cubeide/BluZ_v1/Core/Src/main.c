@@ -422,6 +422,7 @@ int main(void)
 	  *	 T(°C) = (130 - 30) / (*(__IO uint32_t*) 0x0BF9 0742 - *(__IO uint32_t*) 0x0BF9 0710) * (TS_DATA - *(__IO uint32_t*) 0x0BF9 0710) + 30
 	  */
 	  Temperature.Float = TK1 * (float) currTemterature + TK2;
+	  Temperature.Float = (float) TK1 * 1000000.0;
 	  Voltage.Float = currVoltage * ADC_VREF_COEF;
 	  specterBuffer[13] = Temperature.Uint[0];
 	  specterBuffer[14] = Temperature.Uint[1];
@@ -541,6 +542,15 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+   /* Select SysTick source clock */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+
+   /* Re-Initialize Tick with new clock source */
+  if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
   {
     Error_Handler();
   }
