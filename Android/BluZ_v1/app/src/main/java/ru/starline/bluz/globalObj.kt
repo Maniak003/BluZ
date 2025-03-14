@@ -15,11 +15,14 @@ class globalObj {
     public var LEMAC: String = ""
     public lateinit var mainContext: Context
     public lateinit var drawSPECTER: drawSpecter
+    public lateinit var drawDOZIMETER: drawDozimeter
     public lateinit var drawCURSOR: drawCursor
     public var drawObjectInit: Boolean = true
+    public var drawDozObjectInit: Boolean = true
     public var pagerFrame: Int = 1
     public lateinit var BTT:  BluetoothInterface
     public var initBT: Boolean = false
+    public var initDOZ: Boolean = false
     public lateinit var adapter: NumberAdapter
     public lateinit var textMACADR: EditText
     public lateinit var bColor: buttonColor
@@ -42,7 +45,11 @@ class globalObj {
     public var ColorActiveCursor: Int = 0
 
     /*
-     *  Цвета для графика типа линия
+    *   Цвета для графика дозиметра
+    */
+    public var ColorDosimeter: Int = 0
+    /*
+     *  Цвета для графика спектра типа линия
      */
     public var ColorLin: Int = 0
     public var ColorLog: Int = 0
@@ -66,7 +73,7 @@ class globalObj {
     public var battLevel: Float = 0.0f              // Уровень батареии
     public var tempMC: Float = 0.0f                 // Температура МК
     public var pulsePerSec: UInt = 0u               // CPS за короткий интервал.
-    public var rejectChann: Int = 10                 // Количество каналов от начала, не отображаемых на гистограмме
+    public var rejectChann: Int = 10                // Количество каналов от начала, не отображаемых на гистограмме
 
     /* Параметры для хранения в приборе */
     public var propSoundKvant: Boolean = false      // Озвучка прихода частицы

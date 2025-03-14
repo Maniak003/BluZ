@@ -5823,31 +5823,32 @@ LOAD /opt/st/stm32cubeide_1.15.1/plugins/com.st.stm32cube.ide.mcu.externaltools.
                 0x08001168       0x6c ./Core/Src/main.o
                 0x08001168                calcPulseLevel
  .text.SystemClock_Config
-                0x080011d4       0x94 ./Core/Src/main.o
+                0x080011d4       0xa4 ./Core/Src/main.o
                 0x080011d4                SystemClock_Config
  .text.PeriphCommonClock_Config
-                0x08001268       0x2c ./Core/Src/main.o
-                0x08001268                PeriphCommonClock_Config
+                0x08001278       0x2c ./Core/Src/main.o
+                0x08001278                PeriphCommonClock_Config
  .text.MX_RTC_Init
-                0x08001294       0x70 ./Core/Src/main.o
-                0x08001294                MX_RTC_Init
+                0x080012a4       0x70 ./Core/Src/main.o
+                0x080012a4                MX_RTC_Init
  .text.startup.main
-                0x08001304      0x798 ./Core/Src/main.o
-                0x08001304                main
+                0x08001314      0x784 ./Core/Src/main.o
+                0x08001314                main
  .text.HAL_LPTIM_CompareMatchCallback
-                0x08001a9c       0x60 ./Core/Src/main.o
-                0x08001a9c                HAL_LPTIM_CompareMatchCallback
+                0x08001a98       0x60 ./Core/Src/main.o
+                0x08001a98                HAL_LPTIM_CompareMatchCallback
  .text.HAL_LPTIM_AutoReloadMatchCallback
-                0x08001afc       0x3c ./Core/Src/main.o
-                0x08001afc                HAL_LPTIM_AutoReloadMatchCallback
+                0x08001af8       0x3c ./Core/Src/main.o
+                0x08001af8                HAL_LPTIM_AutoReloadMatchCallback
  .text.HAL_LPTIM_UpdateEventCallback
-                0x08001b38       0x2c ./Core/Src/main.o
-                0x08001b38                HAL_LPTIM_UpdateEventCallback
+                0x08001b34       0x2c ./Core/Src/main.o
+                0x08001b34                HAL_LPTIM_UpdateEventCallback
  .text.Error_Handler
-                0x08001b64        0x4 ./Core/Src/main.o
-                0x08001b64                Error_Handler
- .text.CB_SMA   0x08001b68       0x90 ./Core/Src/rw_FLASH.o
-                0x08001b68                CB_SMA
+                0x08001b60        0x4 ./Core/Src/main.o
+                0x08001b60                Error_Handler
+ .text.CB_SMA   0x08001b64       0x90 ./Core/Src/rw_FLASH.o
+                0x08001b64                CB_SMA
+ *fill*         0x08001bf4        0x4 
  .text.writeFlash
                 0x08001bf8      0x1c0 ./Core/Src/rw_FLASH.o
                 0x08001bf8                writeFlash
@@ -10294,9 +10295,9 @@ LOAD /opt/st/stm32cubeide_1.15.1/plugins/com.st.stm32cube.ide.mcu.externaltools.
                 0x0802c378                        . = ALIGN (0x4)
  *(.rodata)
  *(.rodata*)
- .rodata.CSWTCH.91
+ .rodata.CSWTCH.92
                 0x0802c378        0x6 ./Core/Src/main.o
- .rodata.CSWTCH.90
+ .rodata.CSWTCH.91
                 0x0802c37e        0x3 ./Core/Src/main.o
  .rodata.CB_SMA.str1.1
                 0x0802c381        0x8 ./Core/Src/rw_FLASH.o

@@ -24,6 +24,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.Nullable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -347,7 +348,7 @@ class BluetoothInterface(tv: TextView) {
                        && (data[2].toUByte() == 62.toUByte())) {
                         testIdx = 0
                         idxArray = 0                    // Индекс результирующего массива с данными
-                        numberMTU = data[3].toInt()     // Количество пакетов для передачи
+                        numberMTU = data[3].toInt()     // Количество пакетов (MTU) для передачи
                         dataType = data[4].toInt()      // Тип передаваемых данных
                         GO.PCounter = (data[10].toUByte() + data[11].toUByte() * 256u + data[12].toUByte() * 65536u + data[13].toUByte() * 16777216u).toUInt()
                         GO.pulsePerSec  = (data[14].toUByte() + data[15].toUByte() * 256u + data[16].toUByte() * 65536u + data[17].toUByte() * 16777216u).toUInt()
@@ -375,6 +376,7 @@ class BluetoothInterface(tv: TextView) {
                          * 4 - Тип передаваемых данных
                          *    0   - Текущий спектр
                          *    1   - Исторический спектр
+                         *    2   - Статистика дозиметра
                          *
                          * 5, 6   - Общее число импульсов от начала измерения uint32_t
                          * 7, 8   - Число импульсов за последнюю секунду. uint32_t
@@ -387,23 +389,27 @@ class BluetoothInterface(tv: TextView) {
 
                         /* Определим размер заголовка */
                         when(numberMTU) {
-                            1 -> {                      // Параметры прибора
-                                indexData = 8           // Размер заголовка
+                            1 -> {                          // Параметры прибора
+                                indexData = 8               // Размер заголовка
                             }
-                            3 -> {                      // Логи
+                            3 -> {                          // Логи
                                 indexData = 8
                             }
-                            9 -> {                      // Спектр с разрешением 1024
+                            4 -> {                          // Данные дозиметра
                                 indexData = 55
                                 endOfData = data.size - 5
-                                GO.specterType = 0         // Определяет размер по горизонтали
                             }
-                            17 -> {                     // Спектр с разрешением 2048
+                            9 -> {                          // Спектр с разрешением 1024
+                                indexData = 55
+                                endOfData = data.size - 5
+                                GO.specterType = 0          // Определяет размер по горизонтали
+                            }
+                            17 -> {                         // Спектр с разрешением 2048
                                 indexData = 55
                                 endOfData = data.size - 5
                                 GO.specterType = 1
                             }
-                            34 -> {                     // Спектр с разрешением 4096
+                            34 -> {                         // Спектр с разрешением 4096
                                 indexData = 55
                                 endOfData = data.size - 5
                                 GO.specterType = 2
@@ -417,7 +423,7 @@ class BluetoothInterface(tv: TextView) {
                             testIdx++
                             testIdx2++
                         }
-                        numberMTU--                     // Считаем количество передач
+                        numberMTU--                         // Считаем количество передач
                     } else {
                         numberMTU--
                         indexData = 0
@@ -449,6 +455,19 @@ class BluetoothInterface(tv: TextView) {
                                 testIdx2+=2
                             }
                         }
+                        2 -> {
+                            /* Перегружаем данные в массив для дозиметра */
+                            var idx = indexData
+                            var d0: UByte
+                            var d1: UByte
+                            while (idx <= endOfData) {
+                                d0 = data[idx++].toUByte()
+                                d1 = data[idx++].toUByte()
+                                checkSumm =  (checkSumm + d0 + d1).toUShort()
+                                /* Накопление массива спектра */
+                                GO.drawDOZIMETER.dozimeterData[idxArray++] = (d0 + d1 * 256u).toDouble()
+                            }
+                        }
                     }
                     /*
                     Log.d("BluZ-BT", "Receive: " + data.size.toString()+ " real size: " + testIdx2.toString() + " "
@@ -460,21 +479,33 @@ class BluetoothInterface(tv: TextView) {
                         var tmpCS: UShort
                         tmpCS = (data[242].toUByte() + (data[243].toUByte() * 256u)).toUShort()
                         Log.d("BluZ-BT", "Total data size: $testIdx")
-                        if (tmpCS == checkSumm) {
+                        if (tmpCS == checkSumm /*|| true*/) {
                             Log.d("BluZ-BT", "CS - correct: $checkSumm")
                             /* Накопление массива закончено можно вызывать обновление экрана */
-
                             MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                                 withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
-                                    GO.drawSPECTER.init()
-                                    if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
-                                        /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
-                                        //Log.d("BluZ-BT", "call drawSPEC")
-                                        GO.drawSPECTER.clearSpecter()
-                                        GO.drawSPECTER.redrawSpecter(GO.specterType)
-                                    } else {
-                                        //GO.drawObjectInit = true
-                                        Log.e("BluZ-BT", "drawSPEC is null")
+                                    when (dataType) {
+                                        0, 1 -> {                   // Данные спектрометра
+                                            GO.drawSPECTER.init()
+                                            if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
+                                                /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
+                                                //Log.d("BluZ-BT", "call drawSPEC")
+                                                GO.drawSPECTER.clearSpecter()
+                                                GO.drawSPECTER.redrawSpecter(GO.specterType)
+                                            } else {
+                                                //GO.drawObjectInit = true
+                                                Log.e("BluZ-BT", "drawSPEC is null")
+                                            }
+                                        }
+                                        2 -> {                      // Данные дозиметра
+                                            if (GO.initDOZ) {
+                                                GO.drawDOZIMETER.Init()
+                                                if (GO.drawDOZIMETER.dozVSize > 0 &&  GO.drawDOZIMETER.dozHSize > 0) {
+                                                    GO.drawDOZIMETER.clearDozimeter()
+                                                    GO.drawDOZIMETER.redrawDozimeter()
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
