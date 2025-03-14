@@ -1,0 +1,16 @@
+../Core/Src/stm32wbaxx_hal_msp.c:70:6:HAL_MspInit	1
+../Core/Src/stm32wbaxx_hal_msp.c:100:6:HAL_ADC_MspInit	9
+../Core/Src/stm32wbaxx_hal_msp.c:205:6:HAL_ADC_MspDeInit	2
+../Core/Src/stm32wbaxx_hal_msp.c:238:6:HAL_CRC_MspInit	2
+../Core/Src/stm32wbaxx_hal_msp.c:261:6:HAL_CRC_MspDeInit	2
+../Core/Src/stm32wbaxx_hal_msp.c:283:6:HAL_LPTIM_MspInit	5
+../Core/Src/stm32wbaxx_hal_msp.c:334:6:HAL_LPTIM_MspPostInit	2
+../Core/Src/stm32wbaxx_hal_msp.c:366:6:HAL_LPTIM_MspDeInit	3
+../Core/Src/stm32wbaxx_hal_msp.c:402:6:HAL_RAMCFG_MspInit	1
+../Core/Src/stm32wbaxx_hal_msp.c:421:6:HAL_RAMCFG_MspDeInit	1
+../Core/Src/stm32wbaxx_hal_msp.c:440:6:HAL_RNG_MspInit	3
+../Core/Src/stm32wbaxx_hal_msp.c:474:6:HAL_RNG_MspDeInit	2
+../Core/Src/stm32wbaxx_hal_msp.c:496:6:HAL_RTC_MspInit	3
+../Core/Src/stm32wbaxx_hal_msp.c:533:6:HAL_RTC_MspDeInit	2
+../Core/Src/stm32wbaxx_hal_msp.c:558:6:HAL_TIM_Base_MspInit	2
+../Core/Src/stm32wbaxx_hal_msp.c:584:6:HAL_TIM_Base_MspDeInit	2
