@@ -1,0 +1,8 @@
+../System/Interfaces/stm32_lpm_if.c:536:6:PWR_EnterSleepMode	8	static,ignoring_inline_asm
+../System/Interfaces/stm32_lpm_if.c:555:6:PWR_ExitSleepMode	0	static
+../System/Interfaces/stm32_lpm_if.c:288:16:PWR_EnterOffMode	24	static,ignoring_inline_asm
+../System/Interfaces/stm32_lpm_if.c:367:16:PWR_ExitOffMode	24	static
+../System/Interfaces/stm32_lpm_if.c:483:16:PWR_EnterStopMode	8	static,ignoring_inline_asm
+../System/Interfaces/stm32_lpm_if.c:512:16:PWR_ExitStopMode	8	static
+../System/Interfaces/stm32_lpm_if.c:134:23:Standby_Restore_GPIO	24	static,ignoring_inline_asm
+../System/Interfaces/stm32_lpm_if.c:568:10:is_boot_from_standby	8	static,ignoring_inline_asm

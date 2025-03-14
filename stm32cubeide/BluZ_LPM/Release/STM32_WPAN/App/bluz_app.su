@@ -1,0 +1,6 @@
+../STM32_WPAN/App/bluz_app.c:104:6:BLUZ_Notification	8	static
+../STM32_WPAN/App/bluz_app.c:357:6:BLUZ_APP_EvtRx	8	static
+../STM32_WPAN/App/bluz_app.c:403:6:BLUZ_APP_Init	0	static
+../STM32_WPAN/App/bluz_app.c:423:13:BLUZ_Rx_SendNotification	0	static
+../STM32_WPAN/App/bluz_app.c:447:13:BLUZ_Tx_SendNotification	0	static
+../STM32_WPAN/App/bluz_app.c:472:6:sendData	16	static

@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name" translatable="false">BluZ</string>
+    <string name="textSaveSetup">Save</string>
+    <string name="textScan">Scan</string>
+    <string name="textScan2">Stop</string>
+    <string name="textSaveBQ">BqMon</string>
+    <string name="textLoadSpectr">Load</string>
+    <string name="textClearSpectr">Clear</string>
+    <string name="textStartStop">Start</string>
+    <string name="textStartStop2">Stop</string>
+    <string name="textClearDoze">Clear</string>
+    <string name="textClearLog">Clear</string>
+    <string name="textEmpty">.</string>
+    <string name="saveComplete">Save complete</string>
+    <string name="resetDosimeter">Reset complete</string>
+    <string name="resetLogs">Reset logs complete</string>
+    <string name="defaultMAC">XX:XX:XX:XX:XX:XX</string>
+    <string name="labelMAC">MAC Address:</string>
+    <string name="labelAPP">Application parameters</string>
+    <string name="labelDEVICE">Device parameters</string>
+    <string name="labelSpecterType">Specter style</string>
+    <string name="specterLinColor">Specter color</string>
+    <string name="RBLine">Lin</string>
+    <string name="RBLog">Lg</string>
+    <string name="RBFoneLin">FoneLin</string>
+    <string name="RBFoneLog">FoneLg</string>
+    <string name="AColor">A</string>
+    <string name="RColor">R</string>
+    <string name="GColor">G</string>
+    <string name="BColor">B</string>
+    <string name="soundKvant">Sound of kvant</string>
+    <string name="ledKvant">Led of kvant</string>
+    <string name="ledMarker">Marker</string>
+    <string name="autoStart">Spectrometer</string>
+    <string name="readFromDevice">Read</string>
+    <string name="writeToDevice">Write</string>
+    <string name="textLevel_1">Level 1:</string>
+    <string name="textLevel_2">Level 2:</string>
+    <string name="textLevel_3">Level 3:</string>
+    <string name="textResolution">Resolution:</string>
+    <string name="textRes1024">1024</string>
+    <string name="textRes2048">2048</string>
+    <string name="textRes4096">4096</string>
+    <string name="textAlarms">Alarms</string>
+    <string name="textPolinom">Ax<sup><font size="7">2</font></sup> + Bx + C</string>
+    <string name="textPolinomA">A:</string>
+    <string name="textPolinomB">B:</string>
+    <string name="textPolinomC">C:</string>
+    <string name="textSMA">SMA</string>
+    <string name="textHVoltage">HV:</string>
+    <string name="textComparator">Comp:</string>
+    <string name="textRejectChann">Reject channels:</string>
+    <string name="textCPS2RH">uRh/cps:</string>
+    <string name="textTmp1">Total:0000000(100.00%) AvgCPS:000000.00</string>
+    <string name="textTmp2">00 C 0.00v Time:00:00:00:00</string>
+    <!-- TODO: Remove or change this placeholder text
+    <string name="hello_blank_fragment">Hello blank fragment</string> -->
+</resources>
