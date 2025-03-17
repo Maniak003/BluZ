@@ -287,6 +287,8 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						pulseCounter = 0;
 						currentTime = 0;
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 2) {		// Запуск/останов спектрометра
+						HAL_ADC_Stop_DMA(&hadc4);
+						HAL_ADC_DeInit(&hadc4);
 						if (dataType == 0) {											// Переключение в режим спектрометра
 							switch (resolution) {
 							case 0:
@@ -303,8 +305,14 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 								resolution = 0;
 								break;
 							}
+							MX_ADC4_Init();
+							HAL_ADC_Start_DMA(&hadc4, TVLevel, 3);
+							hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
+							/* Включим ADC для одного канала */
+							MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
 						} else {
 							dataType = 0;												// Переключение в режим дозиметра
+							MX_ADC4_Init();
 						}
 					}
 				} else {

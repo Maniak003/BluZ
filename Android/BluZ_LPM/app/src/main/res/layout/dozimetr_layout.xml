@@ -16,18 +16,18 @@
         <Space
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="7" />
+            android:layout_weight="7.4" />
 
         <ImageView
             android:id="@+id/dozView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1.4" />
 
         <Space
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="7" />
+            android:layout_weight="8" />
     </LinearLayout>
 
     <LinearLayout
@@ -49,14 +49,16 @@
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="7.5" />
+                android:layout_weight="7" />
 
             <TextView
                 android:id="@+id/txtMAXDoze"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
-                android:text="cps:0" />
+                android:text="cps:0"
+                android:textColor="@color/labelTextColor2"
+                android:textSize="12sp" />
 
             <Space
                 android:layout_width="match_parent"
@@ -68,12 +70,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
-                android:text="cps:0" />
+                android:text="cps:0"
+                android:textColor="@color/labelTextColor2"
+                android:textSize="12sp" />
 
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="7.5" />
+                android:layout_weight="7" />
         </LinearLayout>
 
         <Space

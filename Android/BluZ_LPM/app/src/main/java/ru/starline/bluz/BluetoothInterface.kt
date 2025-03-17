@@ -345,24 +345,23 @@ class BluetoothInterface(tv: TextView) {
                     *   Ищем стартовую последовательность <B> (60, 66, 62)
                     *   Разбираем заголовок
                     */
-                    testIdx2 = 0;
+                    //testIdx2 = 0;
                     if ((data[0].toUByte() == 60.toUByte())
                        && (data[1].toUByte() == 66.toUByte())
                        && (data[2].toUByte() == 62.toUByte())) {
                         testIdx = 0
                         dataType = data[3].toInt()      // Тип передаваемых данных
                         idxArray = 0                    // Индекс результирующего массива с данными
+                        indexData = 80                  // Смещение на начало данных - длина заголовка в байтах
                         when (dataType) {
                             /* Данные дозиметра и лога */
                             0 -> {
                                 numberMTU = 6      // Количество пакетов (MTU) для передачи
-                                indexData = 40     // Начало данных
                                 endOfData = data.size - 5
                             }
                             /* Данные дозиметра, лога и спектра 1024 */
                             1 -> {
                                 numberMTU = 16     // Количество пакетов (MTU) для передачи
-                                indexData = 40     // Начало данных
                                 GO.specterType = 0 // Определяет размер по горизонтали
                                 GO.drawSPECTER.ResolutionSpectr = 1024
                                 endOfData = data.size - 5
@@ -370,7 +369,6 @@ class BluetoothInterface(tv: TextView) {
                             /* Данные дозиметра, лога и спектра 2048 */
                             2 -> {
                                 numberMTU = 23     // Количество пакетов (MTU) для передачи
-                                indexData = 40     // Начало данных
                                 GO.specterType = 1
                                 GO.drawSPECTER.ResolutionSpectr = 2048
                                 endOfData = data.size - 5
@@ -378,7 +376,6 @@ class BluetoothInterface(tv: TextView) {
                             /* Данные дозиметра, лога и спектра 4096 */
                             3 -> {
                                 numberMTU = 40     // Количество пакетов (MTU) для передачи
-                                indexData = 40     // Начало данных
                                 GO.specterType = 2
                                 GO.drawSPECTER.ResolutionSpectr = 4096
                                 endOfData = data.size - 5
@@ -438,6 +435,7 @@ class BluetoothInterface(tv: TextView) {
                            *     6 - Вибро второго уровня
                            *     7 - Вибро третьего уровня
                            *     8 - Автозапуск спектрометра при включении
+                           * 39  - Конец заголовка
                            *
                            * 50  - Данные дозиметра
                            * 572 - Данные лога
@@ -447,23 +445,14 @@ class BluetoothInterface(tv: TextView) {
                          *
                          */
 
-                        /* Считаем контрольную сумму заголовка*/
                         checkSumm = 0u
-                        for (idxH in 0 until indexData) {
-                            checkSumm = (checkSumm + data[idxH].toUByte()).toUShort()
-                            receiveBuffer[idxH] = data[idxH].toUByte()
-                            testIdx++
-                            testIdx2++
-                        }
-                        numberMTU--                         // Считаем количество передач
+                    }
+                    numberMTU--
+                    indexData = 0                       // Заголовок прочитан, данные начинаются с начала.
+                    endOfData = if (numberMTU == 0) {           // Последний буфер, не считаем последние 2 байта
+                        data.size - 7
                     } else {
-                        numberMTU--
-                        indexData = 0
-                        endOfData = if (numberMTU == 0) {           // Последний буфер, не считаем последние 2 байта
-                            data.size - 7
-                        } else {
-                            data.size - 5
-                        }
+                        data.size - 5
                     }
                     /*
                     Log.d("BluZ-BT", "Receive: " + data.size.toString()+ " real size: " + testIdx2.toString() + " "
@@ -486,20 +475,9 @@ class BluetoothInterface(tv: TextView) {
                     if (numberMTU == 0) {       // Прием последнего блока
                         var tmpCS: UShort
                         tmpCS = (data[242].toUByte() + (data[243].toUByte() * 256u)).toUShort()
-                        Log.d("BluZ-BT", "Total data size: $testIdx")
+                        Log.d("BluZ-BT", "Header size: $testIdx")
                         if (tmpCS == checkSumm /*|| true*/) {
                             Log.d("BluZ-BT", "CS - correct: $checkSumm")
-                            /* Подготовка массивов */
-                            /*
-                                if (idxArray < 552) {           // Накопление массива дозиметра
-                                    GO.drawDOZIMETER.dozimeterData[idxArray++] = (d0 + d1 * 256u).toDouble()
-                                } else if (idxArray >= 552 && idxArray < 702) {     // Накопление массива лога
-                                    GO.drawLOG.logData[idxArray++] = (d0 + d1 * 256u).toDouble()
-                                } else if (idxArray >= 552 && idxArray < 702) {     // Накопление массива спектра
-                                    GO.drawSPECTER.spectrData[idxArray++] = (d0 + d1 * 256u).toDouble()
-                                }
-
-                            */
                             /* Накопление массива закончено можно вызывать обновление экрана */
                             MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                                 withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
@@ -513,7 +491,7 @@ class BluetoothInterface(tv: TextView) {
                                     var ss: Int = GO.messTm.toInt() / 1 % 60
 
                                     var tmpStr = String.format("Time:%02d:%02d:%02d:%02d",  dd, hh, mm, ss)
-                                    Log.d("BluZ-BT", tmpStr)
+                                    //Log.d("BluZ-BT", tmpStr)
                                     var tmpMC: Int = GO.tempMC.toInt()
                                     var tmpBL = GO.battLevel
 
@@ -535,7 +513,11 @@ class BluetoothInterface(tv: TextView) {
                                     var doze: Float =  Math.round(tmpPS.toFloat() * GO.propCPS2UR * 100.0f) / 100.0f
                                     var avgDoze : Float = (Math.round(GO.cps * GO.propCPS2UR * 100.0f) / 100.0f).toFloat()
                                     GO.txtStat3.setText("CPS:$tmpPS ($doze uRh) Avg:$avgDoze uRh")
-                                    var iii = 40
+
+                                    /*
+                                    *   Загрузка данных спектрометра дозиметра и логов из массивов.
+                                    */
+                                    var iii = 80        // Начало данных дозиметра (байты).
                                     var d0 : UByte
                                     var d1 : UByte
                                     var d2 : UByte
@@ -554,6 +536,9 @@ class BluetoothInterface(tv: TextView) {
                                         }
                                     }
 
+                                    /*
+                                    *   Логи
+                                    */
                                     iii = 1104                                                  // Смещение от начала буфера.
                                     jjj = 0
                                     while (jjj < 50) {                                         // Перегружаем данные логов
@@ -564,11 +549,15 @@ class BluetoothInterface(tv: TextView) {
                                         GO.drawLOG.logData[jjj].tm = d0.toUInt() + (d1.toUInt() shl 8) + (d2.toUInt() shl 16) + (d3.toUInt() shl 24)
                                         GO.drawLOG.logData[jjj++].act = GO.receiveData[iii++]   // id события
                                     }
-
+                                    /*
+                                    *   Спектр
+                                    */
                                     if (dataType > 0) {             // Данные спектрометра
+                                        /* Кнопка для включени/выключения спектрометра */
                                         GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
                                         GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
-                                        iii = 1404                  // Смещение от начала буфера.
+
+                                        iii = 1404                  // Смещение в байтах от начала буфера.
                                         jjj = 0
                                         while (jjj < GO.drawSPECTER.ResolutionSpectr) {
                                             d0 = GO.receiveData[iii++]      // Выбираем младший байт
@@ -586,6 +575,7 @@ class BluetoothInterface(tv: TextView) {
                                             Log.e("BluZ-BT", "drawSPEC is null")
                                         }
                                     } else {
+                                        /* Кнопка для включени/выключения спектрометра */
                                         GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop)
                                         GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.buttonTextColor))
                                     }

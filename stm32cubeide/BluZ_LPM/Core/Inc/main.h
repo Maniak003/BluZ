@@ -67,8 +67,8 @@ extern "C" {
 #define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 #define CRC_SIZE 1											/* размер в uint16_t */
 #define MTU_SIZE DATA_NOTIFICATION_MAX_PACKET_SIZE			/* Размер mtu в uint8_t */
-#define HEADER_OFFSET 40									/* Начало данных дозиметра */
-#define SIZE_DOZIMETR_BUFER 512								/* Размер буфера для статистики дозиметра */
+#define HEADER_OFFSET 40									/* Начало данных дозиметра (uint16_t)*/
+#define SIZE_DOZIMETR_BUFER 512								/* Размер буфера для статистики дозиметра (uint16_t) */
 #define LOG_BUFER_SIZE 50									/* Количество записей в логе */
 #define LOG_OFFSET HEADER_OFFSET + SIZE_DOZIMETR_BUFER		/* Начало данных лога */
 #define SPECTER_OFFSET LOG_OFFSET + LOG_BUFER_SIZE * 3		/* Начало спектра в буфере в uint16_t */
@@ -94,6 +94,7 @@ extern uint16_t HVoltage, comparatorLevel;
 extern LPTIM_HandleTypeDef hlptim2;
 extern uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER];
 extern int indexDozimetrBufer;
+extern ADC_HandleTypeDef hadc4;
 extern uint64_t PL[8];
 
 struct LG {
