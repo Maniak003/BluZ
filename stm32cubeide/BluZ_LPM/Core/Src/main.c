@@ -218,9 +218,27 @@ int main(void)
   /* USER CODE BEGIN SysInit */
   if (readFlash() == HAL_OK) {
   }
+  if (autoStartSpecrometr) {
+	  switch (resolution) {
+	  case 0:
+		  dataType = 1;
+		  break;
+	  case 1:
+		  dataType = 2;
+		  break;
+	  case 2:
+		  dataType = 3;
+		  break;
+	  default:
+		  dataType = 1;
+	  	  resolution = 0;
+		  break;
+	  }
+  } else {
+	  dataType = 0;
+  }
   /* Пересчет уровней в uint32_t для ускорения обработки */
   calcPulseLevel();
-  dataType = 0;
 
   /* USER CODE END SysInit */
 
@@ -257,15 +275,15 @@ int main(void)
 
   /* Запуск набора спектра при активном автостарте */
   if (dataType > 0) {
-	  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
-	  if (autoStartSpecrometr) {
+	  //UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+	  //if (autoStartSpecrometr) {
 		  HAL_ADC_Start_DMA(&hadc4, TVLevel, 3);
 		  hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
 		  /* Включим ADC для одного канала */
 		  MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
-	  } else {
+	  //} else {
 		  //tempVoltADCInit();
-	  }
+	  //}
   }
 
   pulseCounter = 0;
@@ -379,8 +397,12 @@ int main(void)
 	  if (dataType > 0) {							/* Нужно передавать спектр ? */
 		  /* Test */
 		  //for (int jjj = 0; jjj < nm_channel; jjj++) {
-			  //tmpSpecterBuffer[jjj] = jjj;
+			//  tmpSpecterBuffer[jjj] = jjj;
 		  //}
+		  //tmpSpecterBuffer[200] = 100;
+		  //tmpSpecterBuffer[300] = 100;
+		  //tmpSpecterBuffer[500] = 100;
+		  //tmpSpecterBuffer[900] = 100;
 		  for (int jjj = 0; jjj < nm_channel; jjj++) {
 			  transmitBuffer[jjj + SPECTER_OFFSET] = tmpSpecterBuffer[kkk++];
 		  }
@@ -519,7 +541,7 @@ int main(void)
 		#endif
 	}
 
-    if (interval1 < intervalNow) {
+    /*if (interval1 < intervalNow) {
     	interval1 = intervalNow + INTERVAL1;
     	//HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
     	//NotifyAct(LED_NOTIFY, 0);
@@ -528,7 +550,7 @@ int main(void)
 			//NotifyAct(LED_NOTIFY, 0);
 
 		}
-    }
+    }*/
     /* Измерение напряжения батареи и температуры МК */
     //if (interval4 < intervalNow) {
     //	interval4 = intervalNow + INTERVAL4;

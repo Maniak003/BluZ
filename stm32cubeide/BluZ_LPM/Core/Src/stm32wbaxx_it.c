@@ -301,20 +301,22 @@ void GPDMA1_Channel0_IRQHandler(void)
 		switch (resolution) {
 		/* 1024 */
 		case 0:
-			if (tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET] < 65535) {
-				tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF) + HEADER_OFFSET]++;
+			if (tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF)] < 65535) {
+				tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF)]++;
 			}
+			/* Тест */
+			//tmpSpecterBuffer[500]++;
 			break;
 		/* 2048 */
 		case 1:
-			if (tmpSpecterBuffer[((TVLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET] < 65535) {
-				tmpSpecterBuffer[((TVLevel[0] >> 1) & 0x7FF) + HEADER_OFFSET]++;
+			if (tmpSpecterBuffer[((TVLevel[0] >> 1) & 0x7FF)] < 65535) {
+				tmpSpecterBuffer[((TVLevel[0] >> 1) & 0x7FF)]++;
 			}
 			break;
 		/* 4096 */
 		case 2:
-			if (tmpSpecterBuffer[(TVLevel[0] & 0xFFF) + HEADER_OFFSET] < 65535) {
-				tmpSpecterBuffer[(TVLevel[0] & 0xFFF) + HEADER_OFFSET]++;
+			if (tmpSpecterBuffer[(TVLevel[0] & 0xFFF)] < 65535) {
+				tmpSpecterBuffer[(TVLevel[0] & 0xFFF)]++;
 			}
 			break;
 		}

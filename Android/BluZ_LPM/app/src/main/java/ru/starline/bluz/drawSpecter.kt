@@ -126,7 +126,12 @@ class drawSpecter {
             }
             if (GO.specterGraphType == 0) {         // Стиль графика - линия
                 /* Прорисовка линейного графика */
+
                 if ( ! (oldYlin == VSize.toDouble() && tmpSpecterData[idx] == 0.0)) {
+
+                    /* For testing */
+                    //Log.d("BluZ-BT", "X : $idx, sSize: $xSize")
+
                     specCanvas.drawLine(
                         (oldX * xSize).toFloat(),   // Начальный X
                         oldYlin.toFloat(),          // Начальный Y
