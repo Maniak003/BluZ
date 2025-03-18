@@ -254,21 +254,7 @@ class NumberFragment : Fragment() {
                 val btnSaveBQ: Button = view.findViewById(R.id.buttonSaveBQ)
                 btnSaveBQ.setOnClickListener {
                     val saveBqMon = SaveBqMon()
-                    when (GO.specterType) {
-                        0 -> {  /* Разрешение 1024 */
-                            saveBqMon.saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
-                        }
-                        1 -> {  /* Разрешение 2048 */
-                            saveBqMon.saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 2048)
-                        }
-                        2 -> {  /* Разрешение 4096 */
-                            saveBqMon.saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 4096)
-                        }
-                        else -> {
-                            saveBqMon.saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
-                        }
-                    }
-
+                    saveBqMon.saveSpecter()
                     Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
                 }
                 /* Кнопка загрузки данных */
@@ -276,36 +262,7 @@ class NumberFragment : Fragment() {
                 /* Кнопка очистки буфера спектра */
                 val btnClearSpecter : Button = view.findViewById(R.id.buttonClearSpectr)
                 btnClearSpecter.setOnClickListener {
-                    /*
-                    *   Команда очистки спектра в буфере прибора
-                    *
-                    * 0, 1, 2       -   Заголовок <S>
-                    * 3             -   Код команды
-                    * 242, 243      -   Контрольная сумма
-                    *
-                    */
-                    GO.BTT.sendBuffer[0] = '<'.code.toUByte()
-                    GO.BTT.sendBuffer[1] = 'S'.code.toUByte()
-                    GO.BTT.sendBuffer[2] = '>'.code.toUByte()
-
-                    /* Очистка буфера спектра */
-                    GO.BTT.sendBuffer[3] = 1u
-
-                    /*
-                    *   Подсчет контрольной суммы
-                    */
-                    GO.sendCS = 0u
-                    Log.d("BluZ-BT", "calcCS: " + GO.sendCS.toString() + " Buffer size:  " + GO.BTT.sendBuffer.size.toString())
-                    for (iii in 0..241) {
-                        GO.sendCS = (GO.sendCS + GO.BTT.sendBuffer[iii]).toUShort()
-                    }
-                    Log.d("BluZ-BT", "calcCS: " + GO.sendCS.toString())
-                    GO.BTT.sendBuffer[242] = (GO.sendCS and 255u).toUByte()
-                    GO.BTT.sendBuffer[243] = ((GO.sendCS.toUInt() shr 8) and 255u).toUByte()
-                    //GO.BTT.sendBuffer[242] = 1u
-                    //GO.BTT.sendBuffer[243] = 2u
-
-                    GO.BTT.write(GO.BTT.sendBuffer.toByteArray())
+                    GO.BTT.sendCommand(1u)      // Очистка буфера спектрометра.
                     GO.drawSPECTER.clearSpecter()
                 }
 
@@ -313,9 +270,11 @@ class NumberFragment : Fragment() {
             /*
             *   Обекты закладки история
             */
-                /* Сохранение спектра в файл */
+                /* Сохранение исторического спектра в файл */
                 val btnHistorySave: Button = view.findViewById(R.id.buttonHistorySave)
                 btnHistorySave.setOnClickListener {
+                    val saveBqMon = SaveBqMon()
+                    saveBqMon.saveSpecter()
                     Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_LONG).show()
                 }
 
@@ -335,6 +294,7 @@ class NumberFragment : Fragment() {
                 /* Сброс дозиметра */
                 val btnClearDose: Button = view.findViewById(R.id.buttonClearDoze)
                 btnClearDose.setOnClickListener {
+                    GO.BTT.sendCommand(3u)      // Очистка буфера дозиметра.
                     Toast.makeText(GO.mainContext, R.string.resetDosimeter, Toast.LENGTH_LONG).show()
                 }
             } else if (getInt(ARG_OBJECT) == 3) {   // Логи

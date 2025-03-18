@@ -22,6 +22,26 @@ class SaveBqMon {
 
     var tmpVal: Float = 0f
 
+    /*
+    *   Сохранение спектра с учетом разрешения.
+    */
+    fun saveSpecter() {
+        when (GO.specterType) {
+            0 -> {  /* Разрешение 1024 */
+                saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
+            }
+            1 -> {  /* Разрешение 2048 */
+                saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 2048)
+            }
+            2 -> {  /* Разрешение 4096 */
+                saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 4096)
+            }
+            else -> {
+                saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
+            }
+        }
+    }
+
     @SuppressLint("MissingPermission")
     fun saveHistogramXML(context: Context, spectrData: DoubleArray, resolution: Int) {
         var dataStr: String

@@ -636,6 +636,32 @@ class BluetoothInterface(tv: TextView) {
         }
     }
 
+    /*
+    * Передача комманды в прибор
+    * 0, 1, 2       -   Заголовок <S>
+    * 3             -   Код команды
+    * 242, 243      -   Контрольная сумма
+    */
+    fun sendCommand(cmd: UByte) {
+        GO.BTT.sendBuffer[0] = '<'.code.toUByte()
+        GO.BTT.sendBuffer[1] = 'S'.code.toUByte()
+        GO.BTT.sendBuffer[2] = '>'.code.toUByte()
+        GO.BTT.sendBuffer[3] = cmd
+
+        /*
+        *   Подсчет контрольной суммы
+        */
+        GO.sendCS = 0u
+        Log.d("BluZ-BT", "calcCS: " + GO.sendCS.toString() + " Buffer size:  " + GO.BTT.sendBuffer.size.toString())
+        for (iii in 0..241) {
+            GO.sendCS = (GO.sendCS + GO.BTT.sendBuffer[iii]).toUShort()
+        }
+        Log.d("BluZ-BT", "calcCS: " + GO.sendCS.toString())
+        GO.BTT.sendBuffer[242] = (GO.sendCS and 255u).toUByte()
+        GO.BTT.sendBuffer[243] = ((GO.sendCS.toUInt() shr 8) and 255u).toUByte()
+
+        write(GO.BTT.sendBuffer.toByteArray())
+    }
 
         /*
          *  Передача данных

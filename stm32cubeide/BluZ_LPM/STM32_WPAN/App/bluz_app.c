@@ -159,6 +159,8 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     *                   0 - Настройки
                     *                   1 - Команда очистки буфера спектра
                     *                   2 - Запуск/Останов спектрометра
+                    *                   3 - Очистка буфера дозиметра
+                    *
                     * 4,5,6,7       - Первый порог в uR
                     * 8,9,10,11     - Второй порог в uR
                     * 12,13,14,15   - Третий порог в uR
@@ -313,6 +315,10 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						} else {
 							dataType = 0;												// Переключение в режим дозиметра
 							MX_ADC4_Init();
+						}
+					} else if (p_Notification->DataTransfered.p_Payload[3] == 3) {
+						for (int ii = 0; ii < SIZE_DOZIMETR_BUFER; ii++) {
+							dozimetrBuffer[ii] = 0;
 						}
 					}
 				} else {
