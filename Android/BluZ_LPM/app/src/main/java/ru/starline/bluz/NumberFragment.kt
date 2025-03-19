@@ -118,6 +118,10 @@ class NumberFragment : Fragment() {
                 btnConfirmCalibrate = view.findViewById(R.id.buttonConfirmCalibrate)
                 btnConfirmCalibrate.setOnClickListener {
                     if (btnConfirmCalibrate.text == "V") {
+                        /* Отключаем показ статистики */
+                        GO.txtStat1.visibility = View.INVISIBLE
+                        GO.txtStat2.visibility = View.INVISIBLE
+                        GO.txtStat3.visibility = View.INVISIBLE
                         GO.viewPager.setCurrentItem(4, false)
                         GO.bColor.resetToDefault()
                         GO.bColor.setToActive(GO.btnSetup)

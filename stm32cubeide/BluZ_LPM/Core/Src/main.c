@@ -102,7 +102,9 @@ float TK1, TK2;
 uint16_t level1, level2, level3;											// Значения порогов
 uint32_t level1_cps, level2_cps, level3_cps;						// Значения порогов в CPS
 union dataC calcCoeff;												// Коэффициент для пересчета CPS в uR/h
-union dataC enCoefA, enCoefB, enCoefC;								// Коэффициенты полинома для преобразования канала в энергию
+union dataC enCoefA1024, enCoefB1024, enCoefC1024;					// Коэффициенты полинома для преобразования канала в энергию для 1024
+union dataC enCoefA2048, enCoefB2048, enCoefC2048;					// Коэффициенты полинома для преобразования канала в энергию для 2048
+union dataC enCoefA4096, enCoefB4096, enCoefC4096;					// Коэффициенты полинома для преобразования канала в энергию для 4096
 union dataA Temperature, Voltage;									// Температура и напряжение батареи
 union dataA AvgCPS;													// Средний CPS за время с последнего старта.
 
@@ -345,6 +347,7 @@ int main(void)
 
   NotifyAct(SOUND_NOTIFY /*| VIBRO_NOTIFY*/, 1);
 
+  /* Таймер для расчета статистики измерений */
   UTIL_SEQ_RegTask(1<<CFG_TASK_MEASURE_REQ_ID, UTIL_SEQ_RFU, updateMesurment);
   UTIL_TIMER_Create(&(timerMeasureInterval), MEASURE_INTERVAL, UTIL_TIMER_PERIODIC, &updateMesurmentCb, 0);
   UTIL_TIMER_Start(&(timerMeasureInterval));
@@ -475,12 +478,12 @@ int main(void)
 	  transmitBuffer[16] = Voltage.Uint[1];
 
 	  /* Коэффициенты преобразования канала в энергию */
-	  transmitBuffer[17] = enCoefA.Uint16[0];
-	  transmitBuffer[18] = enCoefA.Uint16[1];
-	  transmitBuffer[19] = enCoefB.Uint16[0];
-	  transmitBuffer[20] = enCoefB.Uint16[1];
-	  transmitBuffer[21] = enCoefC.Uint16[0];
-	  transmitBuffer[22] = enCoefC.Uint16[1];
+	  transmitBuffer[17] = enCoefA1024.Uint16[0];
+	  transmitBuffer[18] = enCoefA1024.Uint16[1];
+	  transmitBuffer[19] = enCoefB1024.Uint16[0];
+	  transmitBuffer[20] = enCoefB1024.Uint16[1];
+	  transmitBuffer[21] = enCoefC1024.Uint16[0];
+	  transmitBuffer[22] = enCoefC1024.Uint16[1];
 
 	  /* Коэффициент пересчета uRh/csp */
 	  transmitBuffer[23] = calcCoeff.Uint16[0];
@@ -1232,63 +1235,16 @@ void updateMesurment(void) {
 	if ((level3 > 0) && (CPS > level3_cps)) {
 		tmp_level = 3;
 	}
+	/* Тревога если превышение. */
 	if (tmp_level > 0) {
 		NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, tmp_level - 1);
 	}
 
 	/* Измерение напряжения батареи и температуры МК */
-    if (interval4 < intervalNow) {
+    if (interval4 <= intervalNow) {
     	interval4 = intervalNow + INTERVAL4;
-    	if (! flagTemperatureMess) {
-			flagTemperatureMess = true;						// Для единичного измерения
-    		tempVoltMeasure();
-    		/* Включим ADC для трех каналов */
-    		//MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((3UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
-    	}
+    	tempVoltMeasure();
     }
-
-
-}
-
-void tempVoltADCInit(void) {
-	/*ADC_ChannelConfTypeDef sConfig = {0};
-	HAL_ADC_Stop_DMA(&hadc4);
-	HAL_ADC_DeInit(&hadc4);
-	hadc4.Instance = ADC4;
-	hadc4.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
-	hadc4.Init.Resolution = ADC_RESOLUTION_12B;
-	hadc4.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-	hadc4.Init.ScanConvMode = ADC_SCAN_ENABLE;
-	hadc4.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-	hadc4.Init.LowPowerAutoPowerOff = ENABLE;
-	hadc4.Init.LowPowerAutonomousDPD = ADC_LP_AUTONOMOUS_DPD_ENABLE;
-	hadc4.Init.LowPowerAutoWait = ENABLE;
-	hadc4.Init.ContinuousConvMode = DISABLE;
-	hadc4.Init.NbrOfConversion = 2;
-	hadc4.Init.DiscontinuousConvMode = ENABLE;
-	hadc4.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-	hadc4.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-	hadc4.Init.DMAContinuousRequests = ENABLE;
-	hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_LOW;
-	hadc4.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-	hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_1CYCLE_5;
-	hadc4.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_814CYCLES_5;
-	hadc4.Init.OversamplingMode = DISABLE;
-	if (HAL_ADC_Init(&hadc4) != HAL_OK) {
-		Error_Handler();
-	}
-
-	sConfig.Channel = ADC_CHANNEL_7;
-	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_2;
-	if (HAL_ADC_ConfigChannel(&hadc4, &sConfig) != HAL_OK) {
-		Error_Handler();
-	}
-	sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
-	sConfig.Rank = ADC_REGULAR_RANK_2;
-	if (HAL_ADC_ConfigChannel(&hadc4, &sConfig) != HAL_OK) {
-		Error_Handler();
-	}*/
 }
 
 void ADC_Switch_Channel(uint32_t channel) {
@@ -1301,10 +1257,7 @@ void ADC_Switch_Channel(uint32_t channel) {
 
 void tempVoltMeasure(void) {
 	if (dataType == 0 ) {
-		UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
-		//HAL_ADC_Stop_DMA(&hadc4);
-		//hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
-		//HAL_ADC_Start_DMA(&hadc4, TVLevel, 2);
+		//UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
 		MX_ADC4_Init();
 
 		ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR);
@@ -1319,7 +1272,7 @@ void tempVoltMeasure(void) {
 		currVoltage = HAL_ADC_GetValue(&hadc4) & 0xFFF;
 		HAL_ADC_Stop(&hadc4);
 
-		HAL_ADC_DeInit(&hadc4);
+		HAL_ADC_DeInit(&hadc4);			// Для снижения потребления
 	} else {
 		if (! flagTemperatureMess) {
 			/* Включим ADC для трех каналов */

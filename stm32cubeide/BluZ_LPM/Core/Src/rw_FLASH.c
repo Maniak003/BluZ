@@ -186,11 +186,11 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData = level3;
 	PL[3] = tmpData;					// 6,  7
 
-	tmpData = enCoefA.Uint[0] | ((uint64_t)enCoefA.Uint[1] << 8) | ((uint64_t)enCoefA.Uint[2] << 16)  | ((uint64_t)enCoefA.Uint[3] << 24)
-			| ((uint64_t)enCoefB.Uint[0] << 32) | ((uint64_t)enCoefB.Uint[1] << 40) | ((uint64_t)enCoefB.Uint[2] << 48) | ((uint64_t)enCoefB.Uint[3] << 56);
+	tmpData = enCoefA1024.Uint[0] | ((uint64_t)enCoefA1024.Uint[1] << 8) | ((uint64_t)enCoefA1024.Uint[2] << 16)  | ((uint64_t)enCoefA1024.Uint[3] << 24)
+			| ((uint64_t)enCoefB1024.Uint[0] << 32) | ((uint64_t)enCoefB1024.Uint[1] << 40) | ((uint64_t)enCoefB1024.Uint[2] << 48) | ((uint64_t)enCoefB1024.Uint[3] << 56);
 	PL[4] = tmpData;					// 8,  9
 
-	tmpData = enCoefC.Uint[0] | (enCoefC.Uint[1] << 8) | (enCoefC.Uint[2] << 16) | (enCoefC.Uint[3] << 24);
+	tmpData = enCoefC1024.Uint[0] | (enCoefC1024.Uint[1] << 8) | (enCoefC1024.Uint[2] << 16) | (enCoefC1024.Uint[3] << 24);
 	PL[5] = tmpData;					// 10, 11
 
 	PL[6] = 0xDDDDDDDDCCCCCCCC;			// 12, 13
@@ -332,24 +332,24 @@ HAL_StatusTypeDef readFlash() {
 
 		/* Коэффициент A полинома преобразования канала в энергию */
 		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A_ADDRESS);
-		enCoefA.Uint[0] = tmpData & 0x000000FF;
-		enCoefA.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefA.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefA.Uint[3] = tmpData >> 24 & 0x000000FF;
+		enCoefA1024.Uint[0] = tmpData & 0x000000FF;
+		enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		enCoefA1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент B полинома преобразования канала в энергию */
 		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B_ADDRESS);
-		enCoefB.Uint[0] = tmpData & 0x000000FF;
-		enCoefB.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefB.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefB.Uint[3] = tmpData >> 24 & 0x000000FF;
+		enCoefB1024.Uint[0] = tmpData & 0x000000FF;
+		enCoefB1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		enCoefB1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		enCoefB1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент B полинома преобразования канала в энергию */
 		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C_ADDRESS);
-		enCoefC.Uint[0] = tmpData & 0x000000FF;
-		enCoefC.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefC.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefC.Uint[3] = tmpData >> 24 & 0x000000FF;
+		enCoefC1024.Uint[0] = tmpData & 0x000000FF;
+		enCoefC1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		enCoefC1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		enCoefC1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/*bzero((char *) uartBuffer, sizeof(uartBuffer));
 		sprintf(uartBuffer,
@@ -410,9 +410,9 @@ HAL_StatusTypeDef readFlash() {
 		level2 = 60;
 		level3 = 120;
 		calcCoeff.Float = 0.7f;
-		enCoefA.Float = 0.001f;
-		enCoefB.Float = 1.1;
-		enCoefC.Float = 2.2;
+		enCoefA1024.Float = 0.001f;
+		enCoefB1024.Float = 1.1;
+		enCoefC1024.Float = 2.2;
 		if(writeFlash() == HAL_OK) {	}
 	}
 	return HAL_OK;

@@ -38,7 +38,7 @@
 /**
  * Define Tx Power
  */
-#define CFG_TX_POWER                      (0x17) /* 0x17 <=> -2.4 dBm */
+#define CFG_TX_POWER                      (0x16) /* 0x16 <=> -3.5 dBm */
 
 /**
  * Definition of public BD Address,
@@ -64,8 +64,8 @@
  */
 #define CFG_BD_ADDRESS_TYPE               (GAP_PUBLIC_ADDR)
 
-#define ADV_INTERVAL_MIN                  (0x0C80)
-#define ADV_INTERVAL_MAX                  (0x0FA0)
+#define ADV_INTERVAL_MIN                  (0x12C0)
+#define ADV_INTERVAL_MAX                  (0x15E0)
 #define ADV_LP_INTERVAL_MIN               (0x1388)
 #define ADV_LP_INTERVAL_MAX               (0x157C)
 #define ADV_TYPE                          ADV_IND

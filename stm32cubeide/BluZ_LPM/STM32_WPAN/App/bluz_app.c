@@ -228,22 +228,22 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						calcCoeff.Uint[0] = p_Notification->DataTransfered.p_Payload[19];
 
 						/* Коэффициент A полинома преобразования канала в энергию */
-						enCoefA.Uint[3] = p_Notification->DataTransfered.p_Payload[21];
-						enCoefA.Uint[2] = p_Notification->DataTransfered.p_Payload[22];
-						enCoefA.Uint[1] = p_Notification->DataTransfered.p_Payload[23];
-						enCoefA.Uint[0] = p_Notification->DataTransfered.p_Payload[24];
+						enCoefA1024.Uint[3] = p_Notification->DataTransfered.p_Payload[21];
+						enCoefA1024.Uint[2] = p_Notification->DataTransfered.p_Payload[22];
+						enCoefA1024.Uint[1] = p_Notification->DataTransfered.p_Payload[23];
+						enCoefA1024.Uint[0] = p_Notification->DataTransfered.p_Payload[24];
 
 						/* Коэффициент B полинома преобразования канала в энергию */
-						enCoefB.Uint[3] = p_Notification->DataTransfered.p_Payload[25];
-						enCoefB.Uint[2] = p_Notification->DataTransfered.p_Payload[26];
-						enCoefB.Uint[1] = p_Notification->DataTransfered.p_Payload[27];
-						enCoefB.Uint[0] = p_Notification->DataTransfered.p_Payload[28];
+						enCoefB1024.Uint[3] = p_Notification->DataTransfered.p_Payload[25];
+						enCoefB1024.Uint[2] = p_Notification->DataTransfered.p_Payload[26];
+						enCoefB1024.Uint[1] = p_Notification->DataTransfered.p_Payload[27];
+						enCoefB1024.Uint[0] = p_Notification->DataTransfered.p_Payload[28];
 
 						/* Коэффициент C полинома преобразования канала в энергию */
-						enCoefC.Uint[3] = p_Notification->DataTransfered.p_Payload[29];
-						enCoefC.Uint[2] = p_Notification->DataTransfered.p_Payload[30];
-						enCoefC.Uint[1] = p_Notification->DataTransfered.p_Payload[31];
-						enCoefC.Uint[0] = p_Notification->DataTransfered.p_Payload[32];
+						enCoefC1024.Uint[3] = p_Notification->DataTransfered.p_Payload[29];
+						enCoefC1024.Uint[2] = p_Notification->DataTransfered.p_Payload[30];
+						enCoefC1024.Uint[1] = p_Notification->DataTransfered.p_Payload[31];
+						enCoefC1024.Uint[0] = p_Notification->DataTransfered.p_Payload[32];
 
 
 						/* Уровни компаратора и высокого напряжения */
