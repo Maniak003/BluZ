@@ -42,9 +42,9 @@ class Mtrx {
         }
         val mainDet = determinant(detArray)
         if (mainDet == 0.0) {  // Система не имеет решения в области действительных чисел
-            GO.propCoefA = 0.0f
-            GO.propCoefB = 1.0f
-            GO.propCoefC = 0.0f
+            GO.propCoef1024A = 0.0f
+            GO.propCoef1024B = 1.0f
+            GO.propCoef1024C = 0.0f
         } else {
             detArray[0][0] = sysArray[0][1]
             detArray[1][0] = sysArray[1][1]
@@ -65,6 +65,6 @@ class Mtrx {
             detArray[2][2] = sysArray[2][1]
             cC = (determinant(detArray) / mainDet).toFloat()
         }
-        Log.i("BluZ-BT", "det: $mainDet A: " + GO.propCoefA + " B: " + GO.propCoefB + " C: " + GO.propCoefC)
+        Log.i("BluZ-BT", "det: $mainDet A: " + GO.propCoef1024A + " B: " + GO.propCoef1024B + " C: " + GO.propCoef1024C)
     }
 }

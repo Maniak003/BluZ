@@ -90,9 +90,9 @@ class drawCursor {
             curChan = (x / GO.drawSPECTER.xSize).toInt()
             when (GO.spectrResolution) {
                 0 -> {  // 1024
-                    cfA = GO.propCoefA
-                    cfB = GO.propCoefB
-                    cfC = GO.propCoefC
+                    cfA = GO.propCoef1024A
+                    cfB = GO.propCoef1024B
+                    cfC = GO.propCoef1024C
                 }
                 1 -> {  // 2048
                     cfA = GO.propCoef2048A
@@ -125,7 +125,7 @@ class drawCursor {
             cursorCanvas.drawText(tmpCounts.toString(), x + 10, Ylog + 4, aCursor) // Counts
             cursorCanvas.save()
             cursorCanvas.rotate(90f, x + 3, Ylog + 10 /*HSize - textVShift*/)
-            if(GO.propCoefA == 0.0f) {
+            if(GO.propCoef1024A == 0.0f) {
                 cursorCanvas.drawText(tmpEnergy.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
             } else {
                 cursorCanvas.drawText(tmpEnergy.toString() + "keV/" + tmpChann.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy

@@ -98,9 +98,9 @@ class globalObj {
     public var propVibroLevel3: Boolean = true
     public var propAutoStartSpectrometr: Boolean = false
     public var propCPS2UR: Float = 0.0f
-    public var propCoefA: Float = 0.0f
-    public var propCoefB: Float = 0.0f
-    public var propCoefC: Float = 0.0f
+    public var propCoef1024A: Float = 0.0f
+    public var propCoef1024B: Float = 0.0f
+    public var propCoef1024C: Float = 0.0f
     public var propCoef2048A: Float = 0.0f
     public var propCoef2048B: Float = 0.0f
     public var propCoef2048C: Float = 0.0f
