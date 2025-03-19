@@ -149,9 +149,9 @@ class NumberFragment : Fragment() {
                                 matrx.sysEq()
                                 when (GO.spectrResolution) {
                                     0 -> {  // 1024
-                                        GO.propCoefA = matrx.cA
-                                        GO.propCoefB = matrx.cB
-                                        GO.propCoefC = matrx.cC
+                                        GO.propCoef1024A = matrx.cA
+                                        GO.propCoef1024B = matrx.cB
+                                        GO.propCoef1024C = matrx.cC
                                     }
                                     1 -> {  // 2048
                                         GO.propCoef2048A = matrx.cA
@@ -223,24 +223,8 @@ class NumberFragment : Fragment() {
                     *
                     * 242, 243      - Контрольная сумма
                     */
-                    GO.BTT.sendBuffer[0] = '<'.code.toUByte()
-                    GO.BTT.sendBuffer[1] = 'S'.code.toUByte()
-                    GO.BTT.sendBuffer[2] = '>'.code.toUByte()
-                    GO.BTT.sendBuffer[3] = 2u
-
-                    /*
-                    *   Подсчет контрольной суммы
-                    */
-                    GO.sendCS = 0u
-
-                    for (iii in 0..241) {
-                        GO.sendCS = (GO.sendCS + GO.BTT.sendBuffer[iii]).toUShort()
-                    }
-                    GO.BTT.sendBuffer[242] = (GO.sendCS and 255u).toUByte()
-                    GO.BTT.sendBuffer[243] = ((GO.sendCS.toUInt() shr 8) and 255u).toUByte()
-
                     /* Передача данных в прибор */
-                    GO.BTT.write(GO.BTT.sendBuffer.toByteArray())
+                    GO.BTT.sendCommand(2u)
 
 
                     /* Изменение статуса кнопки */
@@ -351,7 +335,7 @@ class NumberFragment : Fragment() {
                 cbSoundKvant.isChecked = GO.propSoundKvant              // Звук прихода частицы
                 cbLedKvant.isChecked = GO.propLedKvant                  // Подсветка прихода частицы
                 cbSpectrometr.isChecked = GO.propAutoStartSpectrometr   // Запуск набора спектра при включении прибора
-                editRejectChann.setText(GO.rejectChann.toString())       // Количество не отображаемых каналов от начала
+                editRejectChann.setText(GO.rejectChann.toString())      // Количество не отображаемых каналов от начала
 
                 /* Разрешение в конфигурации */
                 when (GO.spectrResolution) {
@@ -387,9 +371,9 @@ class NumberFragment : Fragment() {
                 /* Значения коэффициентов полинома */
                 when (GO.spectrResolution) {
                     0 -> {
-                        editPolinomA.setText(GO.propCoefA.toString())
-                        editPolinomB.setText(GO.propCoefB.toString())
-                        editPolinomC.setText(GO.propCoefC.toString())
+                        editPolinomA.setText(GO.propCoef1024A.toString())
+                        editPolinomB.setText(GO.propCoef1024B.toString())
+                        editPolinomC.setText(GO.propCoef1024C.toString())
                     }
                     1 -> {
                         editPolinomA.setText(GO.propCoef2048A.toString())
@@ -484,9 +468,9 @@ class NumberFragment : Fragment() {
 
                     when (GO.spectrResolution) {
                         0 -> {
-                            GO.propCoefA = editPolinomA.text.toString().toFloat()
-                            GO.propCoefB = editPolinomB.text.toString().toFloat()
-                            GO.propCoefC = editPolinomC.text.toString().toFloat()
+                            GO.propCoef1024A = editPolinomA.text.toString().toFloat()
+                            GO.propCoef1024B = editPolinomB.text.toString().toFloat()
+                            GO.propCoef1024C = editPolinomC.text.toString().toFloat()
                             }
                         1 -> {
                             GO.propCoef2048A = editPolinomA.text.toString().toFloat()
@@ -499,9 +483,9 @@ class NumberFragment : Fragment() {
                             GO.propCoef4096C = editPolinomC.text.toString().toFloat()
                         }
                     }
-                    GO.PP.setPropFloat(propCoefA, GO.propCoefA)                     // A - полинома пересчета канала в энергию
-                    GO.PP.setPropFloat(propCoefB, GO.propCoefB)                     // B - полинома пересчета канала в энергию
-                    GO.PP.setPropFloat(propCoefC, GO.propCoefC)                     // C - полинома пересчета канала в энергию
+                    GO.PP.setPropFloat(propCoef1024A, GO.propCoef1024A)             // A - полинома пересчета канала в энергию
+                    GO.PP.setPropFloat(propCoef1024B, GO.propCoef1024B)             // B - полинома пересчета канала в энергию
+                    GO.PP.setPropFloat(propCoef1024C, GO.propCoef1024C)             // C - полинома пересчета канала в энергию
                     GO.PP.setPropFloat(propCoef2048A, GO.propCoef2048A)             // A - полинома пересчета канала в энергию
                     GO.PP.setPropFloat(propCoef2048B, GO.propCoef2048B)             // B - полинома пересчета канала в энергию
                     GO.PP.setPropFloat(propCoef2048C, GO.propCoef2048C)             // C - полинома пересчета канала в энергию
@@ -610,13 +594,7 @@ class NumberFragment : Fragment() {
                     *
                     * 242, 243      - Контрольная сумма
                     */
-                    GO.BTT.sendBuffer[0] = '<'.code.toUByte()
-                    GO.BTT.sendBuffer[1] = 'S'.code.toUByte()
-                    GO.BTT.sendBuffer[2] = '>'.code.toUByte()
-
                     /* Сохраненние настроек */
-                    GO.BTT.sendBuffer[3] = 0u
-
                     var convVal = ByteArray(4)
                     /*
                     * EEE754
@@ -690,26 +668,68 @@ class NumberFragment : Fragment() {
                         GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b10000000.toUByte()
                     }
 
-                    /* Коэффициент A полинома */
-                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoefA).array();
+                    /* Коэффициент A полинома для 1024 */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef1024A).array();
                     GO.BTT.sendBuffer[21] = convVal[0].toUByte()
                     GO.BTT.sendBuffer[22] = convVal[1].toUByte()
                     GO.BTT.sendBuffer[23] = convVal[2].toUByte()
                     GO.BTT.sendBuffer[24] = convVal[3].toUByte()
 
-                    /* Коэффициент B полинома */
-                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoefB).array();
+                    /* Коэффициент B полинома для 1024 */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef1024B).array();
                     GO.BTT.sendBuffer[25] = convVal[0].toUByte()
                     GO.BTT.sendBuffer[26] = convVal[1].toUByte()
                     GO.BTT.sendBuffer[27] = convVal[2].toUByte()
                     GO.BTT.sendBuffer[28] = convVal[3].toUByte()
 
-                    /* Коэффициент C полинома */
-                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoefC).array();
+                    /* Коэффициент C полинома для 1024 */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef1024C).array();
                     GO.BTT.sendBuffer[29] = convVal[0].toUByte()
                     GO.BTT.sendBuffer[30] = convVal[1].toUByte()
                     GO.BTT.sendBuffer[31] = convVal[2].toUByte()
                     GO.BTT.sendBuffer[32] = convVal[3].toUByte()
+
+                    /* Коэффициент A полинома для 2048 */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef2048A).array();
+                    GO.BTT.sendBuffer[39] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[40] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[41] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[42] = convVal[3].toUByte()
+
+                    /* Коэффициент B полинома для 2048 */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef2048B).array();
+                    GO.BTT.sendBuffer[43] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[44] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[45] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[46] = convVal[3].toUByte()
+
+                    /* Коэффициент C полинома для 2048 */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef2048C).array();
+                    GO.BTT.sendBuffer[47] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[48] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[49] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[50] = convVal[3].toUByte()
+
+                    /* Коэффициент A полинома для 4096 */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef4096A).array();
+                    GO.BTT.sendBuffer[51] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[52] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[53] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[54] = convVal[3].toUByte()
+
+                    /* Коэффициент B полинома для 4096 */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef4096B).array();
+                    GO.BTT.sendBuffer[55] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[56] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[57] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[58] = convVal[3].toUByte()
+
+                    /* Коэффициент C полинома для 4096 */
+                    convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef4096C).array();
+                    GO.BTT.sendBuffer[59] = convVal[0].toUByte()
+                    GO.BTT.sendBuffer[60] = convVal[1].toUByte()
+                    GO.BTT.sendBuffer[61] = convVal[2].toUByte()
+                    GO.BTT.sendBuffer[62] = convVal[3].toUByte()
 
                     /* Уровень высокого напряжения */
                     GO.BTT.sendBuffer[33] = (GO.propHVoltage and 255u).toUByte()
@@ -737,20 +757,7 @@ class NumberFragment : Fragment() {
                         GO.BTT.sendBuffer[38] = 0u
                     }
 
-                    /*
-                    *   Подсчет контрольной суммы
-                    */
-                    GO.sendCS = 0u
-
-                    for (iii in 0..241) {
-                        GO.sendCS = (GO.sendCS + GO.BTT.sendBuffer[iii]).toUShort()
-                    }
-                    GO.BTT.sendBuffer[242] = (GO.sendCS and 255u).toUByte()
-                    GO.BTT.sendBuffer[243] = ((GO.sendCS.toUInt() shr 8) and 255u).toUByte()
-
-                    //Log.d("BluZ-BT", "propIndicator: " + GO.propIndicator.toString())
-                    /* Передача данных в прибор */
-                    GO.BTT.write(GO.BTT.sendBuffer.toByteArray())
+                    GO.BTT.sendCommand(0u)
                 }
 
                 /* Radiobuttons для выбора элемента настройки цвета */
@@ -806,9 +813,9 @@ class NumberFragment : Fragment() {
                         noChange = false
                         when (checkedId) {
                             rbResolution1024.id -> {
-                                editPolinomA.setText(GO.propCoefA.toString())
-                                editPolinomB.setText(GO.propCoefB.toString())
-                                editPolinomC.setText(GO.propCoefC.toString())
+                                editPolinomA.setText(GO.propCoef1024A.toString())
+                                editPolinomB.setText(GO.propCoef1024B.toString())
+                                editPolinomC.setText(GO.propCoef1024C.toString())
                             }
                             rbResolution2048.id -> {
                                 editPolinomA.setText(GO.propCoef2048A.toString())
