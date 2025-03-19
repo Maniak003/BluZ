@@ -116,7 +116,9 @@ union dataA {
 extern uint32_t level1_cps, level2_cps, level3_cps, tmp_level;
 extern uint16_t level1, level2, level3;
 extern union dataC calcCoeff;
-extern union dataC enCoefA, enCoefB, enCoefC;
+extern union dataC enCoefA1024, enCoefB1024, enCoefC1024;
+extern union dataC enCoefA2048, enCoefB2048, enCoefC2048;
+extern union dataC enCoefA4096, enCoefB4096, enCoefC4096;
 extern union dataA Temperature, Voltage;
 extern union dataA AvgCPS;
 extern uint16_t MTUSizeValue;
@@ -181,7 +183,7 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define INTERVAL1 1
 #define INTERVAL2 5
 #define INTERVAL3 1
-#define INTERVAL4 10
+#define INTERVAL4 30
 
 #define SOUND_TIME_NOTIFY 4096
 #define SOUND_NOTIFY 	1
