@@ -23,10 +23,16 @@
 #define CONVERT_CPS2RH START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 12		// Коэффициент преобразования CPS в uRh
 #define LEVEL1_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 16		// Адрес заначения первого порога
 #define LEVEL2_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 20		// Адрес значения второго порога
-#define LEVEL3_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 24		// Адрес значения третьего прога
-#define KOEF_A_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 32		// Адрес коэффициента A преобразования канала в энергию.
-#define KOEF_B_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 36		// Адрес коэффициента B преобразования канала в энергию.
-#define KOEF_C_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 40		// Адрес коэффициента C преобразования канала в энергию.
+#define LEVEL3_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 24		// Адрес значения третьего порога
+#define KOEF_A1024_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 32	// Адрес коэффициента A преобразования канала в энергию для 1024 каналов.
+#define KOEF_B1024_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 36	// Адрес коэффициента B преобразования канала в энергию для 1024 каналов.
+#define KOEF_C1024_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 40	// Адрес коэффициента C преобразования канала в энергию для 1024 каналов.
+#define KOEF_A2048_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 44	// Адрес коэффициента A преобразования канала в энергию для 2048 каналов.
+#define KOEF_B2048_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 48	// Адрес коэффициента B преобразования канала в энергию для 2048 каналов.
+#define KOEF_C2048_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 52	// Адрес коэффициента C преобразования канала в энергию для 2048 каналов.
+#define KOEF_A4096_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 54	// Адрес коэффициента A преобразования канала в энергию для 4096 каналов.
+#define KOEF_B4096_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 58	// Адрес коэффициента B преобразования канала в энергию для 4096 каналов.
+#define KOEF_C4096_ADDRESS START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + 62	// Адрес коэффициента C преобразования канала в энергию для 4096 каналов.
 
 //extern uint64_t buffer_nvm[CFG_BLEPLAT_NVM_MAX_SIZE];
 extern char uartBuffer[400];

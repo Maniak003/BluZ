@@ -83,7 +83,7 @@ uint8_t retryCount;
 void CB_SMA (SNVMA_Callback_Status_t os) {
 	if (os != SNVMA_OPERATION_COMPLETE) {
 		if (retryCount++ < 3) {
-			SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
+			SNVMA_Write (SNVMA_BufferId_4, CB_SMA);
 		} else {
 			//bzero((char *) uartBuffer, sizeof(uartBuffer));
 			//sprintf(uartBuffer, "Error\n\r");
@@ -92,7 +92,7 @@ void CB_SMA (SNVMA_Callback_Status_t os) {
 	} else {
 		if (*(__IO uint32_t*) (MAGIC_KEY_ADDRESS) != MAGIC_KEY) {
 			if (retryCount++ < 3) {
-				SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
+				SNVMA_Write (SNVMA_BufferId_4, CB_SMA);
 			} else {
 				//bzero((char *) uartBuffer, sizeof(uartBuffer));
 				//sprintf(uartBuffer, "Error\n\r");
@@ -110,7 +110,6 @@ HAL_StatusTypeDef writeFlash() {
 	FD_FlashOp_Status_t stat_ok = FD_FLASHOP_SUCCESS;
 	SNVMA_Cmd_Status_t stat_cmd;
 	PL[0] = MAGIC_KEY;				// 0, 1
-
 	uint64_t tmpData = 0;
 
 	if (SoundEnable) {
@@ -190,11 +189,23 @@ HAL_StatusTypeDef writeFlash() {
 			| ((uint64_t)enCoefB1024.Uint[0] << 32) | ((uint64_t)enCoefB1024.Uint[1] << 40) | ((uint64_t)enCoefB1024.Uint[2] << 48) | ((uint64_t)enCoefB1024.Uint[3] << 56);
 	PL[4] = tmpData;					// 8,  9
 
-	tmpData = enCoefC1024.Uint[0] | (enCoefC1024.Uint[1] << 8) | (enCoefC1024.Uint[2] << 16) | (enCoefC1024.Uint[3] << 24);
+	tmpData = enCoefC1024.Uint[0] | ((uint64_t)enCoefC1024.Uint[1] << 8) | ((uint64_t)enCoefC1024.Uint[2] << 16) | ((uint64_t)enCoefC1024.Uint[3] << 24)
+			| ((uint64_t)enCoefA2048.Uint[0] << 32) | ((uint64_t)enCoefA2048.Uint[1] << 40) | ((uint64_t)enCoefA2048.Uint[2] << 48) | ((uint64_t)enCoefA2048.Uint[3] << 56);
 	PL[5] = tmpData;					// 10, 11
 
-	PL[6] = 0xDDDDDDDDCCCCCCCC;			// 12, 13
-	PL[7] = 0xFFFFFFFFEEEEEEEE;			// 14, 15
+	tmpData = enCoefB2048.Uint[0] | ((uint64_t)enCoefB2048.Uint[1] << 8) | ((uint64_t)enCoefB2048.Uint[2] << 16) | ((uint64_t)enCoefB2048.Uint[3] << 24)
+			| ((uint64_t)enCoefC2048.Uint[0] << 32) | ((uint64_t)enCoefC2048.Uint[1] << 40) | ((uint64_t)enCoefC2048.Uint[2] << 48) | ((uint64_t)enCoefC2048.Uint[3] << 56);
+	PL[6] = tmpData;					// 12, 13
+
+	tmpData = enCoefA4096.Uint[0] | ((uint64_t)enCoefA4096.Uint[1] << 8) | ((uint64_t)enCoefA4096.Uint[2] << 16) | ((uint64_t)enCoefA4096.Uint[3] << 24)
+			| ((uint64_t)enCoefB4096.Uint[0] << 32) | ((uint64_t)enCoefB4096.Uint[1] << 40) | ((uint64_t)enCoefB4096.Uint[2] << 48) | ((uint64_t)enCoefB4096.Uint[3] << 56);
+	PL[7] = tmpData;					// 14, 15
+
+	tmpData = enCoefC4096.Uint[0] | ((uint64_t)enCoefC4096.Uint[1] << 8) | ((uint64_t)enCoefC4096.Uint[2] << 16) | ((uint64_t)enCoefC4096.Uint[3] << 24);
+	PL[8] = tmpData;					// 16, 17
+
+	PL[9] = 0xDDDDDDDDCCCCCCCC;			// 18, 19
+	PL[10] = 0xFFFFFFFFEEEEEEEE;		// 20, 21
 
 	/*
 	NVM_Init(PL, 8, 8);
@@ -210,8 +221,8 @@ HAL_StatusTypeDef writeFlash() {
 	}
 	*/
 	retryCount = 0;	// Количество повторов записи
-	stat_cmd = SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
-	bzero((char *) uartBuffer, sizeof(uartBuffer));
+	stat_cmd = SNVMA_Write (SNVMA_BufferId_4, CB_SMA);
+	//bzero((char *) uartBuffer, sizeof(uartBuffer));
 	if (stat_cmd == SNVMA_ERROR_OK) {
 		//sprintf(uartBuffer, "SNVMA_Write complete\n\r");
 		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
@@ -330,22 +341,64 @@ HAL_StatusTypeDef readFlash() {
 		level2 = *(__IO uint32_t*) ((uint32_t) LEVEL2_ADDRESS);
 		level3 = *(__IO uint32_t*) ((uint32_t) LEVEL3_ADDRESS);
 
-		/* Коэффициент A полинома преобразования канала в энергию */
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A_ADDRESS);
+		/* Коэффициент A полинома преобразования канала в энергию для 1024 каналов*/
+		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A1024_ADDRESS);
 		enCoefA1024.Uint[0] = tmpData & 0x000000FF;
 		enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
 		enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
 		enCoefA1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
-		/* Коэффициент B полинома преобразования канала в энергию */
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B_ADDRESS);
+		/* Коэффициент B полинома преобразования канала в энергию для 1024 каналов */
+		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B1024_ADDRESS);
 		enCoefB1024.Uint[0] = tmpData & 0x000000FF;
 		enCoefB1024.Uint[1] = tmpData >> 8 & 0x000000FF;
 		enCoefB1024.Uint[2] = tmpData >> 16 & 0x000000FF;
 		enCoefB1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
-		/* Коэффициент B полинома преобразования канала в энергию */
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C_ADDRESS);
+		/* Коэффициент B полинома преобразования канала в энергию для 1024 каналов */
+		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C1024_ADDRESS);
+		enCoefC1024.Uint[0] = tmpData & 0x000000FF;
+		enCoefC1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		enCoefC1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		enCoefC1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+
+		/* Коэффициент A полинома преобразования канала в энергию для 2048 каналов*/
+		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A2048_ADDRESS);
+		enCoefA1024.Uint[0] = tmpData & 0x000000FF;
+		enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		enCoefA1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+
+		/* Коэффициент B полинома преобразования канала в энергию для 2048 каналов */
+		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B2048_ADDRESS);
+		enCoefB1024.Uint[0] = tmpData & 0x000000FF;
+		enCoefB1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		enCoefB1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		enCoefB1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+
+		/* Коэффициент B полинома преобразования канала в энергию для 2048 каналов */
+		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C2048_ADDRESS);
+		enCoefC1024.Uint[0] = tmpData & 0x000000FF;
+		enCoefC1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		enCoefC1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		enCoefC1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+
+		/* Коэффициент A полинома преобразования канала в энергию для 4096 каналов*/
+		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A4096_ADDRESS);
+		enCoefA1024.Uint[0] = tmpData & 0x000000FF;
+		enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		enCoefA1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+
+		/* Коэффициент B полинома преобразования канала в энергию для 4096 каналов */
+		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B4096_ADDRESS);
+		enCoefB1024.Uint[0] = tmpData & 0x000000FF;
+		enCoefB1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		enCoefB1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		enCoefB1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+
+		/* Коэффициент B полинома преобразования канала в энергию для 4096 каналов */
+		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C4096_ADDRESS);
 		enCoefC1024.Uint[0] = tmpData & 0x000000FF;
 		enCoefC1024.Uint[1] = tmpData >> 8 & 0x000000FF;
 		enCoefC1024.Uint[2] = tmpData >> 16 & 0x000000FF;
@@ -413,6 +466,12 @@ HAL_StatusTypeDef readFlash() {
 		enCoefA1024.Float = 0.001f;
 		enCoefB1024.Float = 1.1;
 		enCoefC1024.Float = 2.2;
+		enCoefA2048.Float = 0.001f;
+		enCoefB2048.Float = 1.1;
+		enCoefC2048.Float = 2.2;
+		enCoefA4096.Float = 0.001f;
+		enCoefB4096.Float = 1.1;
+		enCoefC4096.Float = 2.2;
 		if(writeFlash() == HAL_OK) {	}
 	}
 	return HAL_OK;

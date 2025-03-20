@@ -42,6 +42,11 @@ SNVMA_NvmElt_t SNVMA_NvmConfiguration [SNVMA_NVM_NUMBER] =
     .BankNumber = SNVMA_NVM_ID_1_BANK_NUMBER,
     .BankSize = SNVMA_NVM_ID_1_BANK_SIZE,
   },
+  /* NVM ID #2 */
+  {
+    .BankNumber = SNVMA_NVM_ID_2_BANK_NUMBER,
+    .BankSize = SNVMA_NVM_ID_2_BANK_SIZE,
+  },
 };
 
 /* Callback prototypes -------------------------------------------------------*/
