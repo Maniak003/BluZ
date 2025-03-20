@@ -67,7 +67,7 @@ struct LG logBuffer[LOG_BUFER_SIZE];
 int logIndex = 0;	/* Текущий указатель на буфер лога */
 char uartBuffer[400] = {0,};
 /* Буфер для работы с flash */
-uint64_t PL[8] = {0,};
+uint64_t PL[11] = {0,};
 uint8_t resolution = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
 /*
  * 0 - Дозиметр и логи,
@@ -316,9 +316,9 @@ int main(void)
    * 11, 12 - Среднее количество имльсов в секунду. float
    * 13, 14 - Температура в гр. цельсия
    * 15, 16 - Напряжение батареи в вольтах
-   * 17, 18 - Коэффициент полинома A
-   * 19, 20 - Коэффициент полинома B
-   * 21, 22 - Коэффициент полинома C
+   * 17, 18 - Коэффициент полинома A для 1024 каналов
+   * 19, 20 - Коэффициент полинома B для 1024 каналов
+   * 21, 22 - Коэффициент полинома C для 1024 каналов
    * 23, 24 - Коэффициент пересчета uRh/cps
    * 25     - Значение высокого напряжения
    * 26     - Значение порога компаратора
@@ -335,6 +335,12 @@ int main(void)
    *     6 - Вибро второго уровня
    *     7 - Вибро третьего уровня
    *     8 - Автозапуск спектрометра при включении
+   * 31, 32 - Коэффициент полинома A для 1024 каналов
+   * 33, 34 - Коэффициент полинома B для 1024 каналов
+   * 35, 36 - Коэффициент полинома C для 1024 каналов
+   * 37, 38 - Коэффициент полинома A для 1024 каналов
+   * 39, 40 - Коэффициент полинома B для 1024 каналов
+   * 41, 42 - Коэффициент полинома C для 1024 каналов
    *
    * 50  - Данные дозиметра
    * 572 - Данные лога
@@ -477,7 +483,7 @@ int main(void)
 	  transmitBuffer[15] = Voltage.Uint[0];
 	  transmitBuffer[16] = Voltage.Uint[1];
 
-	  /* Коэффициенты преобразования канала в энергию */
+	  /* Коэффициенты преобразования канала в энергию для 1024 каналов*/
 	  transmitBuffer[17] = enCoefA1024.Uint16[0];
 	  transmitBuffer[18] = enCoefA1024.Uint16[1];
 	  transmitBuffer[19] = enCoefB1024.Uint16[0];
@@ -502,6 +508,22 @@ int main(void)
 
 	  /* Битовый регистр конфигурации */
 	  transmitBuffer[30] = LEDEnable | (SoundEnable << 1) | (levelSound1 << 2) | (levelSound2 << 3) | (levelSound3 << 4) | (levelVibro1 << 5) | (levelVibro2 << 6) | (levelVibro3 << 7) | (autoStartSpecrometr << 8);
+	  /* Коэффициенты преобразования канала в энергию для 2048 каналов*/
+	  transmitBuffer[31] = enCoefA2048.Uint16[0];
+	  transmitBuffer[32] = enCoefA2048.Uint16[1];
+	  transmitBuffer[33] = enCoefB2048.Uint16[0];
+	  transmitBuffer[34] = enCoefB2048.Uint16[1];
+	  transmitBuffer[35] = enCoefC2048.Uint16[0];
+	  transmitBuffer[36] = enCoefC2048.Uint16[1];
+
+	  /* Коэффициенты преобразования канала в энергию для 4096 каналов*/
+	  transmitBuffer[37] = enCoefA4096.Uint16[0];
+	  transmitBuffer[38] = enCoefA4096.Uint16[1];
+	  transmitBuffer[39] = enCoefB4096.Uint16[0];
+	  transmitBuffer[40] = enCoefB4096.Uint16[1];
+	  transmitBuffer[41] = enCoefC4096.Uint16[0];
+	  transmitBuffer[42] = enCoefC4096.Uint16[1];
+
 
 
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
