@@ -1,10 +1,10 @@
-../System/Modules/Flash/simple_nvm_arbiter.c:1473:9:IsHeaderOk	12
 ../System/Modules/Flash/simple_nvm_arbiter.c:1870:6:InvokeBufferCallback	6
 ../System/Modules/Flash/simple_nvm_arbiter.c:1528:9:IsCrcOk	13
 ../System/Modules/Flash/simple_nvm_arbiter.c:1728:9:EraseSector	3
 ../System/Modules/Flash/simple_nvm_arbiter.c:1766:17:StartFlashWrite	9
 ../System/Modules/Flash/simple_nvm_arbiter.c:769:6:SNVMA_FlashManagerCallback	55
-../System/Modules/Flash/simple_nvm_arbiter.c:229:20:SNVMA_Init	29
+../System/Modules/Flash/simple_nvm_arbiter.c:1473:9:IsHeaderOk.constprop	12
+../System/Modules/Flash/simple_nvm_arbiter.c:229:20:SNVMA_Init	25
 ../System/Modules/Flash/simple_nvm_arbiter.c:422:20:SNVMA_Register	17
 ../System/Modules/Flash/simple_nvm_arbiter.c:533:20:SNVMA_Restore	16
 ../System/Modules/Flash/simple_nvm_arbiter.c:655:20:SNVMA_Write	6

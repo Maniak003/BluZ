@@ -40,59 +40,17 @@
  *
  */
 
-/*
-void CB_RFTS(void) {
-	FD_FlashOp_Status_t stat_ok;
-	RFTS_Cmd_Status_t stat_cmd;
-	uint32_t PL[4] = {0,};
-	PL[0] = 0x1234;
-	PL[1] = 0x5678;
-	bzero((char *) uartBuffer, sizeof(uartBuffer));
-	sprintf(uartBuffer, "Start write to flash\n\r");
-	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-
-	stat_ok = FD_WriteData(START_FLASH_ADDRESS, *PL);
-	stat_cmd = RFTS_RelWindow();
-
-	bzero((char *) uartBuffer, sizeof(uartBuffer));
-	if (stat_ok == FD_FLASHOP_SUCCESS) {
-		sprintf(uartBuffer, "Write complete\n\r");
-	} else {
-		sprintf(uartBuffer, "Write false\n\r");
-	}
-	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-
-	bzero((char *) uartBuffer, sizeof(uartBuffer));
-	if (stat_cmd == RFTS_CMD_OK) {
-		sprintf(uartBuffer, "RFTS Req complete\n\r");
-	} else {
-		sprintf(uartBuffer, "RFTS Req false\n\r");
-	}
-	HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-}
-*/
-
-// FM_Cmd_Status_t FM_Write(uint32_t *Src, uint32_t *Dest, int32_t Size, FM_CallbackNode_t *CallbackNode);
-// FM_Cmd_Status_t FM_Erase(uint32_t FirstSect, uint32_t NbrSect, FM_CallbackNode_t *CallbackNode);
-// FD_FlashOp_Status_t FD_EraseSectors(uint32_t Sect);
-// void FD_SetStatus(FD_Flash_ctrl_bm_t Flags_bm, FD_FLASH_Status_t Status);
-// FD_FlashOp_Status_t FD_WriteData(uint32_t Dest, uint32_t Payload);
-
 uint8_t retryCount;
 
 void CB_SMA (SNVMA_Callback_Status_t os) {
 	if (os != SNVMA_OPERATION_COMPLETE) {
-		if (retryCount++ < 3) {
-			SNVMA_Write (SNVMA_BufferId_4, CB_SMA);
-		} else {
-			//bzero((char *) uartBuffer, sizeof(uartBuffer));
-			//sprintf(uartBuffer, "Error\n\r");
-			//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+		if (retryCount++ < 2) {
+			SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
 		}
 	} else {
 		if (*(__IO uint32_t*) (MAGIC_KEY_ADDRESS) != MAGIC_KEY) {
-			if (retryCount++ < 3) {
-				SNVMA_Write (SNVMA_BufferId_4, CB_SMA);
+			if (retryCount++ < 2) {
+				SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
 			} else {
 				//bzero((char *) uartBuffer, sizeof(uartBuffer));
 				//sprintf(uartBuffer, "Error\n\r");
@@ -104,13 +62,14 @@ void CB_SMA (SNVMA_Callback_Status_t os) {
 }
 
 
-
 /* Запись параметров во flash контроллера */
 HAL_StatusTypeDef writeFlash() {
 	FD_FlashOp_Status_t stat_ok = FD_FLASHOP_SUCCESS;
 	SNVMA_Cmd_Status_t stat_cmd;
-	PL[0] = MAGIC_KEY;				// 0, 1
+	uint16_t idxPL = 0;
 	uint64_t tmpData = 0;
+	PL[idxPL++] = (uint64_t) MAGIC_KEY;		// 0, 1
+	//PL[idxPL++] = MAGIC_KEY;				// 0, 1
 
 	if (SoundEnable) {
 		tmpData = 1;
@@ -169,43 +128,40 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData |= HVoltage << 12;
 	tmpData |= (uint64_t)comparatorLevel << 22;
 
-	//uint32_t ttt = (calcCoeff.Uint[0]) | (calcCoeff.Uint[1] << 8) | (calcCoeff.Uint[2] << 16) | (calcCoeff.Uint[3] << 24);
-	//tmpData |= (uint64_t)ttt << 32;
+
 	tmpData |= (((uint64_t)calcCoeff.Uint[0] << 32) | ((uint64_t)calcCoeff.Uint[1] << 40) | ((uint64_t)calcCoeff.Uint[2] << 48) | ((uint64_t)calcCoeff.Uint[3] << 56));
 
-	//bzero((char *) uartBuffer, sizeof(uartBuffer));
-	//sprintf(uartBuffer, "calcCoeff: %f tmpData: %8lX\n\r", calcCoeff.Float,  ttt);
-	//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-
-	PL[1] = tmpData;					// 2,  3
+	PL[idxPL++] = tmpData;					// 2,  3
 
 	tmpData = level1 | ((uint64_t)level2 << 32);
-	PL[2] = tmpData;					// 4,  5
+	PL[idxPL++] = tmpData;					// 4,  5
 
 	tmpData = level3;
-	PL[3] = tmpData;					// 6,  7
+	PL[idxPL++] = tmpData;					// 6,  7
 
 	tmpData = enCoefA1024.Uint[0] | ((uint64_t)enCoefA1024.Uint[1] << 8) | ((uint64_t)enCoefA1024.Uint[2] << 16)  | ((uint64_t)enCoefA1024.Uint[3] << 24)
 			| ((uint64_t)enCoefB1024.Uint[0] << 32) | ((uint64_t)enCoefB1024.Uint[1] << 40) | ((uint64_t)enCoefB1024.Uint[2] << 48) | ((uint64_t)enCoefB1024.Uint[3] << 56);
-	PL[4] = tmpData;					// 8,  9
+	PL[idxPL++] = tmpData;					// 8,  9
 
 	tmpData = enCoefC1024.Uint[0] | ((uint64_t)enCoefC1024.Uint[1] << 8) | ((uint64_t)enCoefC1024.Uint[2] << 16) | ((uint64_t)enCoefC1024.Uint[3] << 24)
 			| ((uint64_t)enCoefA2048.Uint[0] << 32) | ((uint64_t)enCoefA2048.Uint[1] << 40) | ((uint64_t)enCoefA2048.Uint[2] << 48) | ((uint64_t)enCoefA2048.Uint[3] << 56);
-	PL[5] = tmpData;					// 10, 11
+	PL[idxPL++] = tmpData;					// 10, 11
 
 	tmpData = enCoefB2048.Uint[0] | ((uint64_t)enCoefB2048.Uint[1] << 8) | ((uint64_t)enCoefB2048.Uint[2] << 16) | ((uint64_t)enCoefB2048.Uint[3] << 24)
 			| ((uint64_t)enCoefC2048.Uint[0] << 32) | ((uint64_t)enCoefC2048.Uint[1] << 40) | ((uint64_t)enCoefC2048.Uint[2] << 48) | ((uint64_t)enCoefC2048.Uint[3] << 56);
-	PL[6] = tmpData;					// 12, 13
+	PL[idxPL++] = tmpData;					// 12, 13
 
 	tmpData = enCoefA4096.Uint[0] | ((uint64_t)enCoefA4096.Uint[1] << 8) | ((uint64_t)enCoefA4096.Uint[2] << 16) | ((uint64_t)enCoefA4096.Uint[3] << 24)
 			| ((uint64_t)enCoefB4096.Uint[0] << 32) | ((uint64_t)enCoefB4096.Uint[1] << 40) | ((uint64_t)enCoefB4096.Uint[2] << 48) | ((uint64_t)enCoefB4096.Uint[3] << 56);
-	PL[7] = tmpData;					// 14, 15
+	PL[idxPL++] = tmpData;					// 14, 15
 
 	tmpData = enCoefC4096.Uint[0] | ((uint64_t)enCoefC4096.Uint[1] << 8) | ((uint64_t)enCoefC4096.Uint[2] << 16) | ((uint64_t)enCoefC4096.Uint[3] << 24);
-	PL[8] = tmpData;					// 16, 17
+	PL[idxPL++] = tmpData;					// 16, 17
 
-	PL[9] = 0xDDDDDDDDCCCCCCCC;			// 18, 19
-	PL[10] = 0xFFFFFFFFEEEEEEEE;		// 20, 21
+	PL[idxPL++] = 0xDDDDDDFFCCCCCCFF;			// 18, 19
+	//PL[idxPL++] = MAGIC_KEY;		// 20, 21
+	/* Test */
+	//PL[1] = 0x11111111;
 
 	/*
 	NVM_Init(PL, 8, 8);
@@ -221,7 +177,7 @@ HAL_StatusTypeDef writeFlash() {
 	}
 	*/
 	retryCount = 0;	// Количество повторов записи
-	stat_cmd = SNVMA_Write (SNVMA_BufferId_4, CB_SMA);
+	stat_cmd = SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
 	//bzero((char *) uartBuffer, sizeof(uartBuffer));
 	if (stat_cmd == SNVMA_ERROR_OK) {
 		//sprintf(uartBuffer, "SNVMA_Write complete\n\r");
@@ -472,7 +428,7 @@ HAL_StatusTypeDef readFlash() {
 		enCoefA4096.Float = 0.001f;
 		enCoefB4096.Float = 1.1;
 		enCoefC4096.Float = 2.2;
-		if(writeFlash() == HAL_OK) {	}
+		//if(writeFlash() == HAL_OK) {	}
 	}
 	return HAL_OK;
 }

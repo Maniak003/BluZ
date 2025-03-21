@@ -45,7 +45,7 @@ extern "C" {
  * @details This number must be lower than SNVMA_MAX_NUMBER_NVM
  *
  */
-#define SNVMA_NVM_NUMBER                2u
+#define SNVMA_NVM_NUMBER                1u
 
 /* Check that NVM number does not exceed limitations */
 #if SNVMA_NVM_NUMBER > SNVMA_MAX_NUMBER_NVM
@@ -67,26 +67,15 @@ extern "C" {
 #error NVM ID #1 => Not enough bank
 #endif
 
-/* NVM ID #2 */
-#define SNVMA_NVM_ID_2
-#define SNVMA_NVM_ID_2_BANK_NUMBER      2u
-#define SNVMA_NVM_ID_2_BANK_SIZE        1u
-
-#if (SNVMA_NVM_ID_2_BANK_NUMBER == 0u) || (SNVMA_NVM_ID_2_BANK_SIZE == 0u)
-#error NVM ID #2 => Bank not initialized
-#elif (SNVMA_NVM_ID_2_BANK_NUMBER < SNVMA_MIN_NUMBER_BANK)
-#error NVM ID #2 => Not enough bank
-#endif
-
 /* ========================================================================== */
 /* +                       Check part - NOT USER DEFINED                    + */
 /* ========================================================================== */
 
 /* Compute the number of sectors required */
 
-#define SNVMA_NUMBER_OF_SECTOR_NEEDED (SNVMA_NVM_ID_1_BANK_NUMBER * SNVMA_NVM_ID_1_BANK_SIZE) + (SNVMA_NVM_ID_2_BANK_NUMBER * SNVMA_NVM_ID_2_BANK_SIZE)
+#define SNVMA_NUMBER_OF_SECTOR_NEEDED (SNVMA_NVM_ID_1_BANK_NUMBER * SNVMA_NVM_ID_1_BANK_SIZE)
 
-#define SNVMA_NUMBER_OF_BANKS (SNVMA_NVM_ID_1_BANK_NUMBER + SNVMA_NVM_ID_2_BANK_NUMBER)
+#define SNVMA_NUMBER_OF_BANKS (SNVMA_NVM_ID_1_BANK_NUMBER)
 
 /* Check that required number of sector does not exceed Flash capacities */
 #if SNVMA_NUMBER_OF_SECTOR_NEEDED == 0u
@@ -112,7 +101,6 @@ extern "C" {
 typedef enum SNVMA_BufferId
 {
   APP_BLE_NvmBuffer,
-  SNVMA_BufferId_4,
   SNVMA_BufferId_Max  /* End of the enumeration */
 }SNVMA_BufferId_t;
 
