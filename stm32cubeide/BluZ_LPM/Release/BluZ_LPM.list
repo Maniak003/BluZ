@@ -2014,15 +2014,15 @@ Disassembly of section .text:
  800160c:	200069f8 	.word	0x200069f8
  8001610:	080015cd 	.word	0x080015cd
  8001614:	0bf90700 	.word	0x0bf90700
- 8001618:	07ffc010 	.word	0x07ffc010
- 800161c:	080fc010 	.word	0x080fc010
+ 8001618:	07ffc018 	.word	0x07ffc018
+ 800161c:	080fc018 	.word	0x080fc018
 
 08001620 <writeFlash>:
  8001620:	4a5d      	ldr	r2, [pc, #372]	@ (8001798 <writeFlash+0x178>)
  8001622:	a159      	add	r1, pc, #356	@ (adr r1, 8001788 <writeFlash+0x168>)
  8001624:	e9d1 0100 	ldrd	r0, r1, [r1]
  8001628:	b570      	push	{r4, r5, r6, lr}
- 800162a:	e9c2 0100 	strd	r0, r1, [r2]
+ 800162a:	e9c2 0102 	strd	r0, r1, [r2, #8]
  800162e:	495b      	ldr	r1, [pc, #364]	@ (800179c <writeFlash+0x17c>)
  8001630:	4b5b      	ldr	r3, [pc, #364]	@ (80017a0 <writeFlash+0x180>)
  8001632:	7809      	ldrb	r1, [r1, #0]
@@ -2084,17 +2084,17 @@ Disassembly of section .text:
  80016bc:	8836      	ldrh	r6, [r6, #0]
  80016be:	ea44 3406 	orr.w	r4, r4, r6, lsl #12
  80016c2:	4323      	orrs	r3, r4
- 80016c4:	e9c2 3102 	strd	r3, r1, [r2, #8]
+ 80016c4:	e9c2 3104 	strd	r3, r1, [r2, #16]
  80016c8:	4b42      	ldr	r3, [pc, #264]	@ (80017d4 <writeFlash+0x1b4>)
  80016ca:	4943      	ldr	r1, [pc, #268]	@ (80017d8 <writeFlash+0x1b8>)
  80016cc:	881b      	ldrh	r3, [r3, #0]
  80016ce:	8809      	ldrh	r1, [r1, #0]
- 80016d0:	e9c2 1304 	strd	r1, r3, [r2, #16]
+ 80016d0:	e9c2 1306 	strd	r1, r3, [r2, #24]
  80016d4:	4b41      	ldr	r3, [pc, #260]	@ (80017dc <writeFlash+0x1bc>)
  80016d6:	4942      	ldr	r1, [pc, #264]	@ (80017e0 <writeFlash+0x1c0>)
  80016d8:	881b      	ldrh	r3, [r3, #0]
  80016da:	784c      	ldrb	r4, [r1, #1]
- 80016dc:	e9c2 3006 	strd	r3, r0, [r2, #24]
+ 80016dc:	e9c2 3008 	strd	r3, r0, [r2, #32]
  80016e0:	780b      	ldrb	r3, [r1, #0]
  80016e2:	788d      	ldrb	r5, [r1, #2]
  80016e4:	ea43 2304 	orr.w	r3, r3, r4, lsl #8
@@ -2104,7 +2104,7 @@ Disassembly of section .text:
  80016f0:	6824      	ldr	r4, [r4, #0]
  80016f2:	ea43 6301 	orr.w	r3, r3, r1, lsl #24
  80016f6:	493c      	ldr	r1, [pc, #240]	@ (80017e8 <writeFlash+0x1c8>)
- 80016f8:	e9c2 4308 	strd	r4, r3, [r2, #32]
+ 80016f8:	e9c2 430a 	strd	r4, r3, [r2, #40]	@ 0x28
  80016fc:	784c      	ldrb	r4, [r1, #1]
  80016fe:	780b      	ldrb	r3, [r1, #0]
  8001700:	788d      	ldrb	r5, [r1, #2]
@@ -2115,7 +2115,7 @@ Disassembly of section .text:
  800170e:	6824      	ldr	r4, [r4, #0]
  8001710:	ea43 6301 	orr.w	r3, r3, r1, lsl #24
  8001714:	4936      	ldr	r1, [pc, #216]	@ (80017f0 <writeFlash+0x1d0>)
- 8001716:	e9c2 430a 	strd	r4, r3, [r2, #40]	@ 0x28
+ 8001716:	e9c2 430c 	strd	r4, r3, [r2, #48]	@ 0x30
  800171a:	784c      	ldrb	r4, [r1, #1]
  800171c:	780b      	ldrb	r3, [r1, #0]
  800171e:	ea43 2304 	orr.w	r3, r3, r4, lsl #8
@@ -2126,7 +2126,7 @@ Disassembly of section .text:
  800172a:	ea43 4305 	orr.w	r3, r3, r5, lsl #16
  800172e:	ea43 6301 	orr.w	r3, r3, r1, lsl #24
  8001732:	4931      	ldr	r1, [pc, #196]	@ (80017f8 <writeFlash+0x1d8>)
- 8001734:	e9c2 430c 	strd	r4, r3, [r2, #48]	@ 0x30
+ 8001734:	e9c2 430e 	strd	r4, r3, [r2, #56]	@ 0x38
  8001738:	784c      	ldrb	r4, [r1, #1]
  800173a:	780b      	ldrb	r3, [r1, #0]
  800173c:	788d      	ldrb	r5, [r1, #2]
@@ -2136,14 +2136,14 @@ Disassembly of section .text:
  8001746:	6824      	ldr	r4, [r4, #0]
  8001748:	ea43 4305 	orr.w	r3, r3, r5, lsl #16
  800174c:	ea43 6301 	orr.w	r3, r3, r1, lsl #24
- 8001750:	e9c2 430e 	strd	r4, r3, [r2, #56]	@ 0x38
+ 8001750:	e9c2 4310 	strd	r4, r3, [r2, #64]	@ 0x40
  8001754:	a50e      	add	r5, pc, #56	@ (adr r5, 8001790 <writeFlash+0x170>)
  8001756:	e9d5 4500 	ldrd	r4, r5, [r5]
  800175a:	4b29      	ldr	r3, [pc, #164]	@ (8001800 <writeFlash+0x1e0>)
  800175c:	4929      	ldr	r1, [pc, #164]	@ (8001804 <writeFlash+0x1e4>)
  800175e:	681b      	ldr	r3, [r3, #0]
- 8001760:	e9c2 4512 	strd	r4, r5, [r2, #72]	@ 0x48
- 8001764:	e9c2 3010 	strd	r3, r0, [r2, #64]	@ 0x40
+ 8001760:	e9c2 4514 	strd	r4, r5, [r2, #80]	@ 0x50
+ 8001764:	e9c2 3012 	strd	r3, r0, [r2, #72]	@ 0x48
  8001768:	4b27      	ldr	r3, [pc, #156]	@ (8001808 <writeFlash+0x1e8>)
  800176a:	7018      	strb	r0, [r3, #0]
  800176c:	f007 fa4c 	bl	8008c08 <SNVMA_Write>
@@ -2156,7 +2156,7 @@ Disassembly of section .text:
  800177e:	f443 6380 	orr.w	r3, r3, #1024	@ 0x400
  8001782:	e784      	b.n	800168e <writeFlash+0x6e>
  8001784:	f3af 8000 	nop.w
- 8001788:	00000000 	.word	0x00000000
+ 8001788:	000000aa 	.word	0x000000aa
  800178c:	01234567 	.word	0x01234567
  8001790:	ccccccff 	.word	0xccccccff
  8001794:	ddddddff 	.word	0xddddddff
@@ -2267,8 +2267,8 @@ Disassembly of section .text:
  80018a8:	bd10      	pop	{r4, pc}
  80018aa:	bf00      	nop
  80018ac:	0bf90700 	.word	0x0bf90700
- 80018b0:	07ffc010 	.word	0x07ffc010
- 80018b4:	080fc010 	.word	0x080fc010
+ 80018b0:	07ffc018 	.word	0x07ffc018
+ 80018b4:	080fc018 	.word	0x080fc018
  80018b8:	2000002b 	.word	0x2000002b
  80018bc:	3a83126f 	.word	0x3a83126f
  80018c0:	200014a9 	.word	0x200014a9

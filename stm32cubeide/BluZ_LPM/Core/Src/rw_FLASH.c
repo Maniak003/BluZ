@@ -66,7 +66,7 @@ void CB_SMA (SNVMA_Callback_Status_t os) {
 HAL_StatusTypeDef writeFlash() {
 	FD_FlashOp_Status_t stat_ok = FD_FLASHOP_SUCCESS;
 	SNVMA_Cmd_Status_t stat_cmd;
-	uint16_t idxPL = 0;
+	uint16_t idxPL = 1;
 	uint64_t tmpData = 0;
 	PL[idxPL++] = (uint64_t) MAGIC_KEY;		// 0, 1
 	//PL[idxPL++] = MAGIC_KEY;				// 0, 1
