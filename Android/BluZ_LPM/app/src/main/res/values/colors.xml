@@ -21,4 +21,5 @@
     <color name="eraseColorCursor">#000000</color>
     <color name="activeColorCursor">#81FF4A</color>
     <color name="ColorDosimeter">#81FF4A</color>
+    <color name="ColorDosimeterSMA">#F8E117</color>
 </resources>

@@ -426,6 +426,7 @@ class NumberFragment : Fragment() {
                     GO.PP.setPropInt(propColorSpecterFoneGisto, GO.ColorFoneGisto)      // Сохраним цвет графика фона гистограммы
                     GO.PP.setPropInt(propColorSpecterFoneLgGisto, GO.ColorFoneLgGisto)  // Сохраним цвет логарифмического графика фона гистограммы
                     GO.PP.setPropInt(propColorDozimeter, GO.ColorDosimeter)             // Сохраним цвет дозиметра
+                    GO.PP.setPropInt(propColorDozimeterSMA, GO.ColorDosimeterSMA)       // Сохраним цвет дозиметра
                     if (rbLineSpectr.isChecked) {                                       // Сохраним тип графика для вывода спектра
                         GO.specterGraphType = 0
                     } else {
@@ -770,6 +771,9 @@ class NumberFragment : Fragment() {
                 /* Установка цветов по умолчанию если не нашли в конфигурации */
                 if (GO.ColorDosimeter == 0) {
                     GO.ColorDosimeter = resources.getColor(R.color.ColorDosimeter, GO.mainContext.theme)
+                }
+                if (GO.ColorDosimeterSMA == 0) {
+                    GO.ColorDosimeterSMA = resources.getColor(R.color.ColorDosimeterSMA, GO.mainContext.theme)
                 }
                 if (GO.ColorLin == 0) {
                     GO.ColorLin = resources.getColor(R.color.specterColorLin, GO.mainContext.theme)
