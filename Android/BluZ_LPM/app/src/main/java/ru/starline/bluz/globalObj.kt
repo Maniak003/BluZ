@@ -56,6 +56,7 @@ class globalObj {
     *   Цвета для графика дозиметра
     */
     public var ColorDosimeter: Int = 0
+    public var ColorDosimeterSMA: Int = 0
     /*
      *  Цвета для графика спектра типа линия
      */
