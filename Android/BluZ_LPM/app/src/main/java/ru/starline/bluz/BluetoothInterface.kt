@@ -544,7 +544,7 @@ class BluetoothInterface(tv: TextView) {
                                     /*
                                     *   Логи
                                     */
-                                    iii = 1104                                                  // Смещение от начала буфера.
+                                    iii = 1124                                                  // Смещение от начала буфера.
                                     jjj = 0
                                     while (jjj < 50) {                                         // Перегружаем данные логов
                                         d0 = GO.receiveData[iii++]                              // 0 байт временной метки
@@ -552,7 +552,10 @@ class BluetoothInterface(tv: TextView) {
                                         d2 = GO.receiveData[iii++]                              // 2 байт временной метки
                                         d3 = GO.receiveData[iii++]                              // 3 байт временной метки
                                         GO.drawLOG.logData[jjj].tm = d0.toUInt() + (d1.toUInt() shl 8) + (d2.toUInt() shl 16) + (d3.toUInt() shl 24)
-                                        GO.drawLOG.logData[jjj++].act = GO.receiveData[iii++]   // id события
+                                        GO.drawLOG.logData[jjj++].act = (GO.receiveData[iii++] + GO.receiveData[iii++]).toUByte()  // id события
+                                    }
+                                    if (GO.drawLOG.logsDrawIsInit) {
+                                        GO.drawLOG.updateLogs()
                                     }
                                     /*
                                     *   Спектр
@@ -561,8 +564,15 @@ class BluetoothInterface(tv: TextView) {
                                         /* Кнопка для включени/выключения спектрометра */
                                         GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
                                         GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
-
-                                        iii = 1404                  // Смещение в байтах от начала буфера.
+                                        /*
+                                        *   Смещение от начала буфера
+                                        *   HEADER_OFFSET 50
+                                        *   SIZE_DOZIMETR_BUFER 512
+                                        *   LOG_BUFER_SIZE 50
+                                        *   LOG_OFFSET = HEADER_OFFSET + SIZE_DOZIMETR_BUFER = (uint16_t)562 - 1124 байта
+                                        *   SPECTER_OFFSET = LOG_OFFSET + LOG_BUFER_SIZE * 3 = (uint16_t)712 - 1424 байта
+                                        */
+                                        iii = 1424                  // Смещение в байтах от начала буфера.
                                         jjj = 0
                                         while (jjj < GO.drawSPECTER.ResolutionSpectr) {
                                             d0 = GO.receiveData[iii++]      // Выбираем младший байт

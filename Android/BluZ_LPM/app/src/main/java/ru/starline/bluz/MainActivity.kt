@@ -163,9 +163,9 @@ public class MainActivity : FragmentActivity() {
         /* Окно с историей */
         var btnHistory: ImageButton = findViewById(R.id.buttonHistory)
         btnHistory.setOnClickListener {
-            GO.txtStat1.visibility = View.INVISIBLE
-            GO.txtStat2.visibility = View.INVISIBLE
-            GO.txtStat3.visibility = View.INVISIBLE
+            GO.txtStat1.visibility = View.VISIBLE
+            GO.txtStat2.visibility = View.VISIBLE
+            GO.txtStat3.visibility = View.VISIBLE
             GO.viewPager.setCurrentItem(1, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnHistory)
@@ -185,9 +185,9 @@ public class MainActivity : FragmentActivity() {
         /* Окно c логами */
         var btnLog: ImageButton = findViewById(R.id.buttonLog)
         btnLog.setOnClickListener {
-            GO.txtStat1.visibility = View.VISIBLE
-            GO.txtStat2.visibility = View.VISIBLE
-            GO.txtStat3.visibility = View.VISIBLE
+            GO.txtStat1.visibility = View.INVISIBLE
+            GO.txtStat2.visibility = View.INVISIBLE
+            GO.txtStat3.visibility = View.INVISIBLE
             GO.viewPager.setCurrentItem(3, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnLog)

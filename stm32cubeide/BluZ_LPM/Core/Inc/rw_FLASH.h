@@ -45,4 +45,6 @@
 //               uint16_t size,
 //               uint16_t max_size );
 
+HAL_StatusTypeDef readFlash(void);
+
 #endif /* INC_RW_FLASH_H_ */

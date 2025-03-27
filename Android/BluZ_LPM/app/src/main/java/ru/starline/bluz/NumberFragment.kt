@@ -285,20 +285,24 @@ class NumberFragment : Fragment() {
                     GO.BTT.sendCommand(3u)      // Очистка буфера дозиметра.
                     Toast.makeText(GO.mainContext, R.string.resetDosimeter, Toast.LENGTH_LONG).show()
                 }
+
+                /*
+                *   Обекты закладки логов
+                */
             } else if (getInt(ARG_OBJECT) == 3) {   // Логи
-            /*
-            *   Обекты закладки логов
-            */
                 /* Очистка логов */
                 val btnCleaarLog: Button = view.findViewById(R.id.buttonClearLog)
                 btnCleaarLog.setOnClickListener {
                     Toast.makeText(GO.mainContext, R.string.resetLogs, Toast.LENGTH_LONG).show()
                 }
+                GO.drawLOG.logView = view.findViewById(R.id.logScrolView)
+                GO.drawLOG.logsText = view.findViewById(R.id.logsText)
+                GO.drawLOG.logsDrawIsInit = true
 
-            } else if (getInt(ARG_OBJECT) == 4) {   // Настройки
                 /*
                 *   Обекты закладки настроек
                 */
+            } else if (getInt(ARG_OBJECT) == 4) {   // Настройки
                 val rbGistogramSpectr: RadioButton = view.findViewById(R.id.rbGistogram)
                 val rbLineSpectr: RadioButton = view.findViewById(R.id.rbLine)
                 val cbSoundKvant: CheckBox = view.findViewById(R.id.CBsoundKvant)
