@@ -59,7 +59,7 @@ TIM_HandleTypeDef htim17;
 
 /* USER CODE BEGIN PV */
 bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false;
-uint32_t tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
+uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
 uint32_t pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,};
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
 int indexDozimetrBufer = 0;
@@ -141,12 +141,11 @@ void tempVoltADCInit(void);
  *	5 - нормальный уровень
  */
 void logUpdate(uint8_t act) {
-	if (logIndex > LOG_BUFER_SIZE) {		// Переполнение лога
+	logBuffer[logIndex].time = currentTime;
+	logBuffer[logIndex++].type = act;
+	if (logIndex >= LOG_BUFER_SIZE) {		// Переполнение лога
 		logIndex = 0;						// Начинаем с начала
 	}
-	logBuffer[logIndex].time = currentTime;
-	logBuffer[logIndex].type = act;
-	logIndex++;
 }
 /*
  * Управление оповещениями
@@ -419,10 +418,10 @@ int main(void)
 		  /* Подготавливаем данные дозиметра */
 	  uint16_t ddd = indexDozimetrBufer;
 	  for (uint16_t jjj = HEADER_OFFSET; jjj < HEADER_OFFSET + SIZE_DOZIMETR_BUFER; jjj++) {
-		  if (ddd == SIZE_DOZIMETR_BUFER) {
+		  transmitBuffer[jjj] = dozimetrBuffer[ddd++];
+		  if (ddd >= SIZE_DOZIMETR_BUFER) {
 			  ddd = 0;
 		  }
-		  transmitBuffer[jjj] = dozimetrBuffer[ddd++];
 	  }
 	  /* Test дозиметра*/
 	  //for (uint16_t jjj = HEADER_OFFSET; jjj < HEADER_OFFSET + SIZE_DOZIMETR_BUFER; jjj++) {
@@ -430,18 +429,16 @@ int main(void)
 	  //}
 
 	  /* Подготавливаем данные лога */
-	  ddd = logIndex;
 	  uint16_t nnn;
 	  nnn = LOG_OFFSET;
+	  ddd = logIndex;
 	  for (uint16_t jjj = 0; jjj < LOG_BUFER_SIZE; jjj++) {
-		  if (ddd < LOG_BUFER_SIZE - 1) {
-			  ddd++;
-		  } else {
-			  ddd = 0;
-		  }
 		  transmitBuffer[nnn++] = logBuffer[ddd].time & 0xFFFF;
 		  transmitBuffer[nnn++] = (logBuffer[ddd].time >> 16) & 0xFFFF;
-		  transmitBuffer[nnn++] = (uint16_t) logBuffer[ddd].type;
+		  transmitBuffer[nnn++] = (uint16_t) logBuffer[ddd++].type;
+		  if (ddd >= LOG_BUFER_SIZE) {
+			  ddd = 0;
+		  }
 	  }
 
 	  /* Общее количество импульсов */
@@ -1262,6 +1259,21 @@ void updateMesurment(void) {
 		NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, tmp_level - 1);
 	}
 
+	if (currentLevel != tmp_level) {
+		currentLevel = tmp_level;
+		/*
+		 *	act
+		 *	2 - превышение уровня 1
+		 *	3 - превышение уровня 2
+		 *	4 - превышение уровня 3
+		 *	5 - нормальный уровень
+		 */
+		if (tmp_level == 0) {
+			logUpdate((uint8_t) 5);					// Нормальный уровень
+		} else {
+			logUpdate((uint8_t) tmp_level + 1);		// Превышение уровня
+		}
+	}
 	/* Измерение напряжения батареи и температуры МК */
     if (interval4 <= intervalNow) {
     	interval4 = intervalNow + INTERVAL4;
