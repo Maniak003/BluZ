@@ -53,6 +53,7 @@ public const val propResolution: String = "Resolution"
 public const val propStartSpectrometr: String = "AutoStartSpectrometr"
 public const val propSMAWindow: String = "SMAWindow"
 public const val propRejectCann: String = "RejectConn"
+public const val propSaveSpecterType: String = "saveSpecterType"
 
 
 //public lateinit var mainContext: Context
@@ -85,6 +86,12 @@ public class MainActivity : FragmentActivity() {
         GO.txtStat1 = findViewById(R.id.textStatistic1)
         GO.txtStat2 = findViewById(R.id.textStatistic2)
         GO.txtStat3 = findViewById(R.id.textStatistic3)
+
+        /*
+        *   Тексты форматов для сохранения
+        */
+        GO.saveSpecterType1 = getResources().getString(R.string.textType1)
+        GO.saveSpecterType2 = getResources().getString(R.string.textType2)
 
         /*
         *   Цвета для курсора
@@ -270,6 +277,13 @@ public class MainActivity : FragmentActivity() {
         if (GO.windowSMA < 3) {
             GO.windowSMA = 3
         }
+
+        /*
+        *   Формат для сохранения спектра
+        *   0 - BqMon
+        *   1 - SPE
+        */
+        GO.saveSpecterType = GO.PP.getPropInt(propSaveSpecterType)
 
         GO.needTerminate = false
         Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())

@@ -28,17 +28,90 @@ class SaveBqMon {
     fun saveSpecter() {
         when (GO.specterType) {
             0 -> {  /* Разрешение 1024 */
-                saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
+                if (GO.saveSpecterType == 0) {
+                    saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
+                } else {
+                    saveHistogramSPE(GO.mainContext, GO.drawSPECTER.spectrData,  1024)
+                }
             }
             1 -> {  /* Разрешение 2048 */
-                saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 2048)
+                if (GO.saveSpecterType == 0) {
+                    saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 2048)
+                } else {
+                    saveHistogramSPE(GO.mainContext, GO.drawSPECTER.spectrData,  2048)
+                }
             }
             2 -> {  /* Разрешение 4096 */
-                saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 4096)
+                if (GO.saveSpecterType == 0) {
+                    saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 4096)
+                } else {
+                    saveHistogramSPE(GO.mainContext, GO.drawSPECTER.spectrData,  4096)
+                }
             }
             else -> {
-                saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
+                if (GO.saveSpecterType == 0) {
+                    saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
+                } else {
+                    saveHistogramSPE(GO.mainContext, GO.drawSPECTER.spectrData,  1024)
+                }
             }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun saveHistogramSPE(context: Context, spectrData: DoubleArray, resolution: Int) {
+        var sm: Double = 0.0
+        for (i in 0 until resolution) {
+            sm += spectrData.get(i)
+        }
+        if (sm == 0.0) {
+            Toast.makeText(context, "The spectrum does not contain data. Unloading is not possible.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        var dataStr: String
+        val calendar = Calendar.getInstance()
+        val now = calendar.time
+        var simpleDateFormat = SimpleDateFormat("yyyyMMdd'_'HHmmss", Locale.getDefault())
+        val fileName = simpleDateFormat.format(now)
+        Toast.makeText(context, "Saved " + GO.saveSpecterType2, Toast.LENGTH_SHORT).show()
+        // Check mount devices
+        if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
+            Log.d("BluZ-BT", "SD-storage not available: ${Environment.getExternalStorageState()}")
+            Toast.makeText(context, "SD-storage not available: ${Environment.getExternalStorageState()}", Toast.LENGTH_LONG).show()
+            return
+        }
+        try {
+            val SDPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
+            val direct = File("$SDPath/BluZ")
+            if (!direct.exists()) {         // Нужно проверить наличие каталога.
+                if (direct.mkdir()) {
+                    Log.d("BluZ-BT", "SD Path: $SDPath/BluZ")
+                } else {
+                    Log.d("BluZ-BT", "Create dir error.")
+                    Toast.makeText(context, "Directory create error.", Toast.LENGTH_LONG).show()
+                    return
+                }
+            }
+            val myFile = File("$SDPath/BluZ/$fileName.csv")
+            if (myFile.createNewFile()) {
+                Log.d("BluZ-BT", "File create Ok.")
+            } else {
+                Toast.makeText(context, "File create error.", Toast.LENGTH_LONG).show()
+                Log.d("BluZ-BT", "Create file error.")
+                return
+            }
+            val outputStream = FileOutputStream(myFile)
+            /*
+            *   Выгрузка данных в файл
+            */
+            for (i in 0 until resolution) {
+                dataStr = java.lang.String.format("%d", i) + "," + java.lang.String.format("%.0f", spectrData.get(i)) + "\n"
+
+                outputStream.write(dataStr.toByteArray()) // Write to file
+            }
+            outputStream.close()
+        } catch (e: Exception) {
+            Log.e("BluZ-BT", "Error: ${e.message}")
         }
     }
 
@@ -49,7 +122,7 @@ class SaveBqMon {
         val now = calendar.time
         var simpleDateFormat = SimpleDateFormat("yyyyMMdd'_'HHmmss", Locale.getDefault())
         val fileName = simpleDateFormat.format(now)
-        Toast.makeText(context, "Saved BqXML.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Saved " + GO.saveSpecterType1, Toast.LENGTH_SHORT).show()
 
         // Check mount devices
         if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
