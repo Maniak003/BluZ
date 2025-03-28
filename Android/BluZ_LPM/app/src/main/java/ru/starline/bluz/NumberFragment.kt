@@ -239,8 +239,17 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Сохранение спектра в файл */
-                val btnSaveBQ: Button = view.findViewById(R.id.buttonSaveBQ)
-                btnSaveBQ.setOnClickListener {
+                GO.btnSaveBQ = view.findViewById(R.id.buttonSaveBQ)
+                when (GO.saveSpecterType) {
+                    0 -> {
+                        GO.btnSaveBQ.text = GO.saveSpecterType1
+                    }
+                    1 -> {
+                        GO.btnSaveBQ.text = GO.saveSpecterType2
+                    }
+                }
+
+                GO.btnSaveBQ.setOnClickListener {
                     val saveBqMon = SaveBqMon()
                     saveBqMon.saveSpecter()
                     Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
@@ -329,6 +338,20 @@ class NumberFragment : Fragment() {
                 val cbSpectrometr: CheckBox = view.findViewById(R.id.CBSpectrometer)
                 val editSMA: EditText = view.findViewById(R.id.editTextSMAWindow)
                 val editRejectChann: EditText = view.findViewById(R.id.editTextRejectCann)
+                val rbSpctTypeBq: RadioButton = view.findViewById(R.id.rbBqMon)
+                val rbSpctTypeSPE: RadioButton = view.findViewById(R.id.rbSPE)
+                val rbSpctType : RadioGroup = view.findViewById(R.id.rbSpctType)
+
+                when (GO.saveSpecterType) {
+                    0 -> {
+                        rbSpctTypeBq.isChecked = true
+                        GO.btnSaveBQ.text = GO.saveSpecterType1
+                    }
+                    1 -> {
+                        rbSpctTypeSPE.isChecked = true
+                        GO.btnSaveBQ.text = GO.saveSpecterType2
+                    }
+                }
 
                 when (GO.specterGraphType) {
                     0 -> rbLineSpectr.isChecked = true
@@ -431,6 +454,14 @@ class NumberFragment : Fragment() {
                     GO.PP.setPropInt(propColorSpecterFoneLgGisto, GO.ColorFoneLgGisto)  // Сохраним цвет логарифмического графика фона гистограммы
                     GO.PP.setPropInt(propColorDozimeter, GO.ColorDosimeter)             // Сохраним цвет дозиметра
                     GO.PP.setPropInt(propColorDozimeterSMA, GO.ColorDosimeterSMA)       // Сохраним цвет дозиметра
+
+                    if (rbSpctTypeBq.isChecked) {
+                        GO.saveSpecterType = 0
+                    } else {
+                        GO.saveSpecterType = 1
+                    }
+                    GO.PP.setPropInt(propSaveSpecterType, GO.saveSpecterType)
+
                     if (rbLineSpectr.isChecked) {                                       // Сохраним тип графика для вывода спектра
                         GO.specterGraphType = 0
                     } else {
@@ -813,6 +844,25 @@ class NumberFragment : Fragment() {
                 rbGroup = view.findViewById(R.id.rbTypeGroup)
                 rgTypeSpec = view.findViewById(R.id.rgTypeSpectr)
                 rbResolution = view.findViewById(R.id.RGResolution)
+
+                /*
+                *   Выбор типа сохранения спектра
+                */
+                rbSpctType.setOnCheckedChangeListener { _, checkedId -> view.findViewById<RadioButton>(checkedId)?.apply {
+                    noChange = false
+                    when (checkedId) {
+                        rbSpctTypeBq.id -> {
+                            GO.btnSaveBQ.text = GO.saveSpecterType1
+                            GO.saveSpecterType = 0
+                        }
+                        rbSpctTypeSPE.id -> {
+                            GO.btnSaveBQ.text = GO.saveSpecterType2
+                            GO.saveSpecterType = 1
+                        }
+                    }
+                    noChange = true
+                }
+                }
 
                 /*
                 * Выбор разрешения

@@ -111,4 +111,14 @@ class globalObj {
     public var propComparator: UShort = 0u
     public var propHVoltage: UShort = 0u
     public var windowSMA: Int = 5
+
+    public lateinit var btnSaveBQ: Button
+    /*
+    *   Формат сохранения спектра
+    *   0 - BqMon
+    *   1 - SPE
+    */
+    public var saveSpecterType: Int = 0
+    public var saveSpecterType1: String = ""
+    public var saveSpecterType2: String = ""
 }

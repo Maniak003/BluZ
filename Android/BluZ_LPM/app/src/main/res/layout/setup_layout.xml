@@ -292,7 +292,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
                         android:text="@string/textSMA"
-                        android:textColor="@color/labelTextColor" />
+                        android:textColor="@color/labelTextColor"
+                        android:textSize="14sp" />
 
                     <EditText
                         android:id="@+id/editTextSMAWindow"
@@ -305,7 +306,8 @@
                         android:inputType="number"
                         android:text="5"
                         android:textAlignment="center"
-                        android:textColor="@color/editTextColor" />
+                        android:textColor="@color/editTextColor"
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/textView12"
@@ -313,7 +315,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
                         android:text="@string/textRejectChann"
-                        android:textColor="@color/labelTextColor" />
+                        android:textColor="@color/labelTextColor"
+                        android:textSize="14sp" />
 
                     <EditText
                         android:id="@+id/editTextRejectCann"
@@ -324,12 +327,40 @@
                         android:inputType="number"
                         android:text="10"
                         android:textAlignment="center"
-                        android:textColor="@color/editTextColor" />
+                        android:textColor="@color/editTextColor"
+                        android:textSize="14sp" />
 
                     <Space
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="0" />
+
+                    <RadioGroup
+                        android:id="@+id/rbSpctType"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rbBqMon"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:checked="true"
+                            android:text="BqMon"
+                            android:textColor="@color/editTextColor"
+                            android:textSize="12sp" />
+
+                        <RadioButton
+                            android:id="@+id/rbSPE"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="SPE"
+                            android:textColor="@color/editTextColor"
+                            android:textSize="12sp" />
+                    </RadioGroup>
 
                 </LinearLayout>
 
