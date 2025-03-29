@@ -291,11 +291,12 @@ public class MainActivity : FragmentActivity() {
         if (GO.LEMAC.length == 17 &&  GO.LEMAC[0] != 'X') { // MAC адрес настроен, продолжаем работу.
             GO.tmFull.startTimer();
         } else {                                            // MAC адрес не настроен, переходим к настройкам
-            GO.viewPager.setCurrentItem(1, false)
-            GO.viewPager.setCurrentItem(4, false)
+            //GO.viewPager.setCurrentItem(0, false)
+            //GO.viewPager.setCurrentItem(4, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(GO.btnSetup)
             Toast.makeText(GO.mainContext, "MAC address not set.\nScan your device.", Toast.LENGTH_LONG ).show()
+            GO.viewPager.setCurrentItem(4, false)
         }
     }
 }

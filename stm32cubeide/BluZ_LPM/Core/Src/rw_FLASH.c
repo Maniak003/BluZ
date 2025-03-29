@@ -413,8 +413,8 @@ HAL_StatusTypeDef readFlash() {
 		levelVibro2 = true;
 		levelVibro3 = true;
 		resolution = 0;
-		HVoltage = 800;
-		comparatorLevel = 600;
+		HVoltage = 200;					// ~30V
+		comparatorLevel = 600;			// ~33mV
 		level1 = 30;
 		level2 = 60;
 		level3 = 120;

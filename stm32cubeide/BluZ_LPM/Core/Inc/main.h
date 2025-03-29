@@ -192,6 +192,9 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define TEST_LED		1
 #define MEASURE_INTERVAL	1000
 
+//#define SAMPLE_TIME		ADC_SAMPLETIME_12CYCLES_5		// 12.5 циклов для Sensl FC/FJ 60035
+#define SAMPLE_TIME			ADC_SAMPLETIME_79CYCLES_5		// Циклов для MacroPixel SC-14x25c-SiPM-T
+
 //#define DEBUG_USER
 
 /*

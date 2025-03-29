@@ -30,7 +30,6 @@ class drawSpecter {
     public var spectrData: DoubleArray = DoubleArray(4096)
     public var tmpSpecterData: DoubleArray = DoubleArray(4096)
     public var flagSMA: Boolean = false
-    public var maxYlog: Double = 0.0
     public var ResolutionSpectr: Int = 1024;
     public var koefLog: Double = 1.0
     public var xSize: Double = 1.0
@@ -81,7 +80,7 @@ class drawSpecter {
                     tmpSpecterData[ttt] = spectrData[ttt]
                 }
             } else {
-                tmpSpecterData[ttt] = 0.0
+                tmpSpecterData[ttt] = 0.0       // Удалим данные из не используемых каналов
             }
         }
 
@@ -100,6 +99,7 @@ class drawSpecter {
         var oldYlog: Double = VSize.toDouble()
         var oldX: Double = 0.0
         var maxYlin: Double = 0.0
+        var maxYlog: Double = 0.0
         var tmpLog: Double
         var koefLin: Double
 
