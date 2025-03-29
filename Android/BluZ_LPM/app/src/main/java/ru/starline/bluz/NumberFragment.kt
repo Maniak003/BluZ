@@ -92,6 +92,7 @@ class NumberFragment : Fragment() {
                 /*
                 * Объекты закладки спектр
                 */
+                GO.btnSaveBQ = view.findViewById(R.id.buttonSaveBQ)
 
                 GO.drawCURSOR.cursorView = view.findViewById(R.id.cursorView)
 
@@ -239,7 +240,6 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Сохранение спектра в файл */
-                GO.btnSaveBQ = view.findViewById(R.id.buttonSaveBQ)
                 when (GO.saveSpecterType) {
                     0 -> {
                         GO.btnSaveBQ.text = GO.saveSpecterType1
@@ -345,11 +345,11 @@ class NumberFragment : Fragment() {
                 when (GO.saveSpecterType) {
                     0 -> {
                         rbSpctTypeBq.isChecked = true
-                        GO.btnSaveBQ.text = GO.saveSpecterType1
+                        //GO.btnSaveBQ.text = GO.saveSpecterType1
                     }
                     1 -> {
                         rbSpctTypeSPE.isChecked = true
-                        GO.btnSaveBQ.text = GO.saveSpecterType2
+                        //GO.btnSaveBQ.text = GO.saveSpecterType2
                     }
                 }
 
