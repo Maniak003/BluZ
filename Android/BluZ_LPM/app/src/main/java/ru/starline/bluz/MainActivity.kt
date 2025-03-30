@@ -187,6 +187,13 @@ public class MainActivity : FragmentActivity() {
             GO.viewPager.setCurrentItem(2, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnDozimeter)
+            if (GO.initDOZ) {
+                GO.drawDOZIMETER.Init()
+                if (GO.drawDOZIMETER.dozVSize > 0 &&  GO.drawDOZIMETER.dozHSize > 0) {
+                    GO.drawDOZIMETER.clearDozimeter()
+                    GO.drawDOZIMETER.redrawDozimeter()
+                }
+            }
         }
 
         /* Окно c логами */
@@ -198,6 +205,9 @@ public class MainActivity : FragmentActivity() {
             GO.viewPager.setCurrentItem(3, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnLog)
+            if (GO.drawLOG.logsDrawIsInit) {
+                GO.drawLOG.updateLogs()
+            }
         }
 
         /* Окно с настройками */
