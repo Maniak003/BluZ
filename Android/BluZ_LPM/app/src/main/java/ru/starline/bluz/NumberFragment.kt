@@ -306,7 +306,10 @@ class NumberFragment : Fragment() {
                 }
                 GO.drawLOG.logView = view.findViewById(R.id.logScrolView)
                 GO.drawLOG.logsText = view.findViewById(R.id.logsText)
-                GO.drawLOG.logsDrawIsInit = true
+                if (! GO.drawLOG.logsDrawIsInit) {
+                    GO.drawLOG.updateLogs()
+                    GO.drawLOG.logsDrawIsInit = true
+                }
 
                 /*
                 *   Обекты закладки настроек
