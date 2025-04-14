@@ -578,14 +578,12 @@ class BluetoothInterface(tv: TextView) {
                                         */
                                         iii = 1424                  // Смещение в байтах от начала буфера.
                                         jjj = 0
+                                        val koefChan = 20.0 / 65535.0
                                         while (jjj < GO.drawSPECTER.ResolutionSpectr) {
                                             d0 = GO.receiveData[iii++]      // Выбираем младший байт
                                             d1 = GO.receiveData[iii++]      // Выбираем старший байт
-                                            var tmpLog = 0.0
-                                            var tmpDat = (d0 + d1 * 256u).toDouble()
                                             /* Логарифмическое сжатие */
-                                            tmpLog = round(2.0.pow(tmpDat / 65535 * 20)) - 1
-                                            GO.drawSPECTER.spectrData[jjj++] = tmpLog
+                                            GO.drawSPECTER.spectrData[jjj++] = round(2.0.pow((d0 + d1 * 256u).toDouble() * koefChan)) - 1
                                         }
                                         GO.drawSPECTER.init()
                                         if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
