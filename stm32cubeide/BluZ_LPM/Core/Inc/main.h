@@ -80,11 +80,14 @@ extern "C" {
 #define CHANNELS_2048	2048
 #define CHANNELS_4096	4096
 #define MAX_RESOLUTION 4096
+#define CAPCHAN 20
+#define LIMITCHAN 1 << CAPCHAN								/* Максимальное значение канала */
 
 extern uint16_t MTUSizeValue;
 extern uint8_t resolution, dataType;
 extern uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET];
-extern uint16_t currTemperature, currVoltage,tmpSpecterBuffer[MAX_RESOLUTION];
+extern uint16_t currTemperature, currVoltage;
+extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION];
 extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, currentTime, pulseCounterSecond, CPS, intervalNow, TVLevel[3];
 extern bool SoundEnable, VibroEnable, LEDEnable;
 extern bool levelSound1, levelSound2, levelSound3;
@@ -183,7 +186,7 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define INTERVAL1 1
 #define INTERVAL2 5
 #define INTERVAL3 1
-#define INTERVAL4 30
+#define INTERVAL4 120
 
 #define SOUND_TIME_NOTIFY 4096
 #define SOUND_NOTIFY 	1

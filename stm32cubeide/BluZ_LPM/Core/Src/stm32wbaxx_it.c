@@ -285,14 +285,6 @@ void GPDMA1_Channel0_IRQHandler(void)
   HAL_DMA_IRQHandler(&handle_GPDMA1_Channel0);
   /* USER CODE BEGIN GPDMA1_Channel0_IRQn 1 */
 	if (dataType > 0) {
-		if (flagTemperatureMess) {
-			flagTemperatureMess = false;						// Сбросим флаг однократного выполнения.
-			MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
-			currVoltage = (uint16_t) TVLevel[2] & 0xFFF;		// Сохраним напряжение
-			currTemperature = (uint16_t) TVLevel[1] & 0xFFF;	// Сохраним температуру
-			//HAL_ADC_Stop_DMA(&hadc4);							// Остановим измерение температуры и напряжения
-			//HAL_ADC_Start_DMA(&hadc4, pulseLevel, 1);			// Дальше набираем только спектр
-		}
 		/*
 		* 0 - 1024 канала
 		* 1 - 2048 каналов
@@ -301,7 +293,7 @@ void GPDMA1_Channel0_IRQHandler(void)
 		switch (resolution) {
 		/* 1024 */
 		case 0:
-			if (tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF)] < 65535) {
+			if (tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF)] < LIMITCHAN) {
 				tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF)]++;
 			}
 			/* Тест */
@@ -309,13 +301,13 @@ void GPDMA1_Channel0_IRQHandler(void)
 			break;
 		/* 2048 */
 		case 1:
-			if (tmpSpecterBuffer[((TVLevel[0] >> 1) & 0x7FF)] < 65535) {
+			if (tmpSpecterBuffer[((TVLevel[0] >> 1) & 0x7FF)] < LIMITCHAN) {
 				tmpSpecterBuffer[((TVLevel[0] >> 1) & 0x7FF)]++;
 			}
 			break;
 		/* 4096 */
 		case 2:
-			if (tmpSpecterBuffer[(TVLevel[0] & 0xFFF)] < 65535) {
+			if (tmpSpecterBuffer[(TVLevel[0] & 0xFFF)] < LIMITCHAN) {
 				tmpSpecterBuffer[(TVLevel[0] & 0xFFF)]++;
 			}
 			break;

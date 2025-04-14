@@ -130,6 +130,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 
     case BLUZ_TX_WRITE_NO_RESP_EVT:
       /* USER CODE BEGIN Service1Char2_WRITE_NO_RESP_EVT */
+    	void calcPulseLevel(void);
     	/* Прием данных со смартфона */
 		if (p_Notification->DataTransfered.Length > 10) {
 			/* Прием данных */
@@ -308,10 +309,10 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 								break;
 							}
 							MX_ADC4_Init();
-							HAL_ADC_Start_DMA(&hadc4, TVLevel, 3);
+							HAL_ADC_Start_DMA(&hadc4, TVLevel, 1);
 							hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
 							/* Включим ADC для одного канала */
-							MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
+							//MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
 						} else {
 							dataType = 0;												// Переключение в режим дозиметра
 							MX_ADC4_Init();
@@ -483,6 +484,7 @@ __USED void BLUZ_Tx_SendNotification(void) /* Property Notification */
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
+void BleStackCB_Process(void);
 void sendData( uint8_t *dataSpectrBufer )
 {
 	if (connectFlag) {

@@ -41,7 +41,7 @@ class drawLogs {
         logsText.text = ""
         var TZ: TimeZone = TimeZone.getDefault()
         val unixTime = Date().time
-        Log.i("BluZ-BT", "UT: $unixTime")
+        //Log.i("BluZ-BT", "UT: $unixTime")
         var s: String = ""
         for (idx: Int in 0 until LOG_BUFFER_SIZE) {
             if (logData[idx].act > 0u) {
@@ -53,7 +53,7 @@ class drawLogs {
                     4 -> eventStr = "<font color=#B02EE8>Level 3"
                     5 -> eventStr = "<font color=#1AFF00>Normal"
                 }
-                Log.i("BluZ-BT", "LT: " + GO.messTm.toString())
+                //Log.i("BluZ-BT", "LT: " + GO.messTm.toString())
                 var logTime = unixTime - (GO.messTm.toInt() - logData[idx].tm.toLong()) * 1000
                 var sdf: SimpleDateFormat = SimpleDateFormat("dd-MM-yyyy HH:mm:ss")
                 s = s + sdf.format(logTime) + " " + eventStr + "</font><br>"

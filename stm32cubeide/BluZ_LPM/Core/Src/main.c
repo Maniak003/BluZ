@@ -80,14 +80,15 @@ uint8_t resolution = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
  */
 uint8_t dataType = 0;
 uint8_t tmpBTBuffer[DATA_NOTIFICATION_MAX_PACKET_SIZE] = {0,};
-uint16_t currTemperature = 0, currVoltage = 0, tmpSpecterBuffer[4096];
+uint16_t currTemperature = 0, currVoltage = 0;
+uint32_t tmpSpecterBuffer[MAX_RESOLUTION];
 
 /* Настройки прибора */
 uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET] = {0,};
 bool SoundEnable = true, VibroEnable = true, LEDEnable = false;		// Сопровождение квантов
 bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активность звука для разных уровней
 bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
-bool flagTemperatureMess = false, startSpecrometr = false;
+bool startSpectrometr = false;
 
 /*
 union dataC {
@@ -413,7 +414,11 @@ int main(void)
 		  //tmpSpecterBuffer[500] = 100;
 		  //tmpSpecterBuffer[900] = 100;
 		  for (int jjj = 0; jjj < nm_channel; jjj++) {
-			  transmitBuffer[jjj + SPECTER_OFFSET] = tmpSpecterBuffer[kkk++];
+			  /* Логарифмическое зжатие */
+			  double tmpLog;
+			  uint32_t tmpData = tmpSpecterBuffer[kkk++];
+			  tmpLog = log2(tmpData + 1) / (double) CAPCHAN * 65535.0;
+			  transmitBuffer[jjj + SPECTER_OFFSET] = (uint16_t) tmpLog;
 		  }
 	  }
 		  /* Подготавливаем данные дозиметра */
@@ -750,7 +755,7 @@ void MX_ADC4_Init(void)
 	  hadc4.Init.LowPowerAutonomousDPD = ADC_LP_AUTONOMOUS_DPD_DISABLE;
 	  hadc4.Init.LowPowerAutoWait = DISABLE;
 	  hadc4.Init.ContinuousConvMode = DISABLE;
-	  hadc4.Init.NbrOfConversion = 3;
+	  hadc4.Init.NbrOfConversion = 1;
 	  hadc4.Init.DiscontinuousConvMode = ENABLE;
 	  hadc4.Init.ExternalTrigConv = ADC_EXTERNALTRIG_EXT_IT15;
 	  hadc4.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
@@ -770,25 +775,6 @@ void MX_ADC4_Init(void)
 	  sConfig.Channel = ADC_CHANNEL_9;
 	  sConfig.Rank = ADC_REGULAR_RANK_1;
 	  sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
-	  if (HAL_ADC_ConfigChannel(&hadc4, &sConfig) != HAL_OK)
-	  {
-	    Error_Handler();
-	  }
-
-	  /** Configure Regular Channel
-	  */
-	  sConfig.Channel = ADC_CHANNEL_7;
-	  sConfig.Rank = ADC_REGULAR_RANK_2;
-	  sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_2;
-	  if (HAL_ADC_ConfigChannel(&hadc4, &sConfig) != HAL_OK)
-	  {
-	    Error_Handler();
-	  }
-
-	  /** Configure Regular Channel
-	  */
-	  sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
-	  sConfig.Rank = ADC_REGULAR_RANK_3;
 	  if (HAL_ADC_ConfigChannel(&hadc4, &sConfig) != HAL_OK)
 	  {
 	    Error_Handler();
@@ -1309,11 +1295,30 @@ void tempVoltMeasure(void) {
 
 		HAL_ADC_DeInit(&hadc4);			// Для снижения потребления
 	} else {
-		if (! flagTemperatureMess) {
-			/* Включим ADC для трех каналов */
-			flagTemperatureMess = true;						// Для единичного измерения
-			MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((3UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
-		}
+		/* Измерение температуры и напряжения в режиме спектрометра */
+		uint8_t tmp_data_type = dataType;
+		HAL_ADC_Stop_DMA(&hadc4);
+		HAL_ADC_DeInit(&hadc4);
+		dataType = 0;
+		MX_ADC4_Init();
+
+		ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR);
+		HAL_ADC_Start(&hadc4);
+		HAL_ADC_PollForConversion(&hadc4, HAL_MAX_DELAY);
+		currTemperature = HAL_ADC_GetValue(&hadc4) & 0xFFF;
+		HAL_ADC_Stop(&hadc4);
+
+		ADC_Switch_Channel(ADC_CHANNEL_7);
+		HAL_ADC_Start(&hadc4);
+		HAL_ADC_PollForConversion(&hadc4, HAL_MAX_DELAY);
+		currVoltage = HAL_ADC_GetValue(&hadc4) & 0xFFF;
+		HAL_ADC_Stop(&hadc4);
+
+		HAL_ADC_DeInit(&hadc4);			// Для снижения потребления
+		dataType = tmp_data_type;		// Возвращаем исходный режим спектрометра
+		MX_ADC4_Init();
+		HAL_ADC_Start_DMA(&hadc4, TVLevel, 1);
+		hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
 	}
 	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
 }
