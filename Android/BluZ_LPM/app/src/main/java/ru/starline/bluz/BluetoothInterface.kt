@@ -39,7 +39,11 @@ import ru.starline.bluz.globalObj
 import kotlin.concurrent.thread
 import kotlin.math.round
 import androidx.fragment.app.Fragment
+import java.lang.Math.pow
 import java.lang.Math.sqrt
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 
 /*
@@ -577,7 +581,11 @@ class BluetoothInterface(tv: TextView) {
                                         while (jjj < GO.drawSPECTER.ResolutionSpectr) {
                                             d0 = GO.receiveData[iii++]      // Выбираем младший байт
                                             d1 = GO.receiveData[iii++]      // Выбираем старший байт
-                                            GO.drawSPECTER.spectrData[jjj++] = (d0 + d1 * 256u).toDouble()
+                                            var tmpLog = 0.0
+                                            var tmpDat = (d0 + d1 * 256u).toDouble()
+                                            /* Логарифмическое сжатие */
+                                            tmpLog = round(2.0.pow(tmpDat / 65535 * 20)) - 1
+                                            GO.drawSPECTER.spectrData[jjj++] = tmpLog
                                         }
                                         GO.drawSPECTER.init()
                                         if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
