@@ -32,6 +32,7 @@ class drawSpecter {
     public var flagSMA: Boolean = false
     public var ResolutionSpectr: Int = 1024;
     public var koefLog: Double = 1.0
+    public var koefLin: Double = 1.0
     public var xSize: Double = 1.0
 
     /* Установка рабочих параметров и создание необходимых объектов */
@@ -101,7 +102,6 @@ class drawSpecter {
         var maxYlin: Double = 0.0
         var maxYlog: Double = 0.0
         var tmpLog: Double
-        var koefLin: Double
 
         /* Поиск максимального значения для масштабирования */
         for (idx in GO.rejectChann..ResolutionSpectr - 1) {

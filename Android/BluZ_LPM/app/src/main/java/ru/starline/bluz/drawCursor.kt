@@ -114,7 +114,11 @@ class drawCursor {
             }
             tmpCounts = GO.drawSPECTER.tmpSpecterData[curChan].toInt()
             if (GO.drawSPECTER.tmpSpecterData[curChan] != 0.0) {
-                Ylog = (VSize - log(GO.drawSPECTER.tmpSpecterData[curChan]) * GO.drawSPECTER.koefLog).toFloat()
+                if (GO.drawSPECTER.tmpSpecterData[curChan] == 1.0) {    // Курсор по линейному графику при 0 значения логарифмического.
+                    Ylog = (VSize - GO.drawSPECTER.koefLin).toFloat()
+                } else {
+                    Ylog = (VSize - log(GO.drawSPECTER.tmpSpecterData[curChan]) * GO.drawSPECTER.koefLog).toFloat()
+                }
             } else {
                 Ylog = VSize.toFloat()
             }

@@ -90,6 +90,9 @@ bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активн
 bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
 bool startSpectrometr = false;
 
+static const double KOEFCHAN = 65435.0 / CAPCHAN;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
+
+
 /*
 union dataC {
 	float Float;
@@ -417,7 +420,7 @@ int main(void)
 			  /* Логарифмическое зжатие */
 			  double tmpLog;
 			  uint32_t tmpData = tmpSpecterBuffer[kkk++];
-			  tmpLog = log2(tmpData + 1) / (double) CAPCHAN * 65535.0;
+			  tmpLog = log2(tmpData + 1) * (double) KOEFCHAN;
 			  transmitBuffer[jjj + SPECTER_OFFSET] = (uint16_t) tmpLog;
 		  }
 	  }

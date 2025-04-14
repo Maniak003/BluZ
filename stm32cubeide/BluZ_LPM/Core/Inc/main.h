@@ -80,8 +80,8 @@ extern "C" {
 #define CHANNELS_2048	2048
 #define CHANNELS_4096	4096
 #define MAX_RESOLUTION 4096
-#define CAPCHAN 20
-#define LIMITCHAN 1 << CAPCHAN								/* Максимальное значение канала */
+#define CAPCHAN 20											/* Количество разрядов в канале */
+#define LIMITCHAN (uint32_t) (1 << CAPCHAN)					/* Максимальное значение канала */
 
 extern uint16_t MTUSizeValue;
 extern uint8_t resolution, dataType;
