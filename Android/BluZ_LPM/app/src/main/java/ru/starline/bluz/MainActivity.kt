@@ -13,47 +13,6 @@ import androidx.fragment.app.FragmentActivity
 import kotlin.system.exitProcess
 
 public val GO: globalObj = globalObj()
-public const val propADDRESS: String = "Address"
-public const val BLEDeviceName: String = "BluZ"
-public const val propSpectrGraphType: String = "SpecterGraphType"
-public const val propColorDozimeter: String = "ColorDozimeter"
-public const val propColorDozimeterSMA: String = "ColorDozimeterSMA"
-public const val propColorSpecterLin: String = "ColorLin"
-public const val propColorSpecterLog: String = "ColorLog"
-public const val propColorSpecterFone: String = "ColorFone"
-public const val propColorSpecterFoneLg: String = "ColorFoneLg"
-public const val propColorSpecterLinGisto: String = "ColorLinGisto"
-public const val propColorSpecterLogGisto: String = "ColorLogGisto"
-public const val propColorSpecterFoneGisto: String = "ColorFoneGisto"
-public const val propColorSpecterFoneLgGisto: String = "ColorFoneLgGisto"
-public const val propLevel1: String = "Level1"
-public const val propLevel2: String = "Level2"
-public const val propLevel3: String = "Level3"
-public const val propSoundLevel1: String = "soundLevel1"
-public const val propSoundLevel2: String = "soundLevel2"
-public const val propSoundLevel3: String = "soundLevel3"
-public const val propVibroLevel1: String = "vibroLevel1"
-public const val propVibroLevel2: String = "vibroLevel2"
-public const val propVibroLevel3: String = "vibroLevel3"
-public const val propCPS2UR: String = "CPS2UR"
-public const val propCoef1024A: String = "CoeffA"
-public const val propCoef1024B: String = "CoeffB"
-public const val propCoef1024C: String = "CoeffC"
-public const val propCoef2048A: String = "Coeff2048A"
-public const val propCoef2048B: String = "Coeff2048B"
-public const val propCoef2048C: String = "Coeff2048C"
-public const val propCoef4096A: String = "Coeff4096A"
-public const val propCoef4096B: String = "Coeff4096B"
-public const val propCoef4096C: String = "Coeff4096C"
-public const val propHV: String = "HVoltage"
-public const val propComparator: String = "Comparator"
-public const val propSoundKvant: String = "SoundKvant"
-public const val propLedKvant: String = "LedKvant"
-public const val propResolution: String = "Resolution"
-public const val propStartSpectrometr: String = "AutoStartSpectrometr"
-public const val propSMAWindow: String = "SMAWindow"
-public const val propRejectCann: String = "RejectConn"
-public const val propSaveSpecterType: String = "saveSpecterType"
 
 
 //public lateinit var mainContext: Context
@@ -228,86 +187,7 @@ public class MainActivity : FragmentActivity() {
         *       Параметры приложения
         */
         GO.PP = propControl()
-        GO.LEMAC = GO.PP.getPropStr(propADDRESS)
-        /* Цвета для дозиметра */
-        GO.ColorDosimeter = GO.PP.getPropInt(propColorDozimeter)
-        if (GO.ColorDosimeter == 0) {
-            GO.ColorDosimeter = resources.getColor(R.color.ColorDosimeter, GO.mainContext.theme)
-        }
-        GO.ColorDosimeterSMA = GO.PP.getPropInt(propColorDozimeterSMA)
-        if (GO.ColorDosimeterSMA == 0) {
-            GO.ColorDosimeterSMA = resources.getColor(R.color.ColorDosimeterSMA, GO.mainContext.theme)
-        }
-
-        /* Цвета для линейного графика */
-        GO.ColorLin = GO.PP.getPropInt(propColorSpecterLin)
-        GO.ColorLog = GO.PP.getPropInt(propColorSpecterLog)
-        GO.ColorFone = GO.PP.getPropInt(propColorSpecterFone)
-        GO.ColorFoneLg = GO.PP.getPropInt(propColorSpecterFoneLg)
-        /* Цвета для гистограммы */
-        GO.ColorLinGisto = GO.PP.getPropInt(propColorSpecterLinGisto)
-        GO.ColorLogGisto = GO.PP.getPropInt(propColorSpecterLogGisto)
-        GO.ColorFoneGisto = GO.PP.getPropInt(propColorSpecterFoneGisto)
-        GO.ColorFoneLgGisto = GO.PP.getPropInt(propColorSpecterFoneLgGisto)
-
-        /* Тип графика спектра: линейный, гистограмма */
-        GO.specterGraphType = GO.PP.getPropInt(propSpectrGraphType)
-        GO.rejectChann = GO.PP.getPropInt(propRejectCann)
-        //Log.d("BluZ-BT", "Reject chann: " +GO.rejectCann )
-        GO.BTT = BluetoothInterface(GO.indicatorBT)
-        /*
-        *       Параметры прибора
-        */
-        GO.propSoundKvant = GO.PP.getPropBoolean(propSoundKvant)
-        GO.propLedKvant = GO.PP.getPropBoolean(propLedKvant)
-        GO.propAutoStartSpectrometr = GO.PP.getPropBoolean(propStartSpectrometr)
-        GO.propSoundLevel1 = GO.PP.getPropBoolean(propSoundLevel1)
-        GO.propSoundLevel2 = GO.PP.getPropBoolean(propSoundLevel2)
-        GO.propSoundLevel3 = GO.PP.getPropBoolean(propSoundLevel3)
-        GO.propVibroLevel1 = GO.PP.getPropBoolean(propVibroLevel1)
-        GO.propVibroLevel2 = GO.PP.getPropBoolean(propVibroLevel2)
-        GO.propVibroLevel3 = GO.PP.getPropBoolean(propVibroLevel3)
-        GO.propLevel1 = GO.PP.getPropInt(propLevel1)
-        GO.propLevel2 = GO.PP.getPropInt(propLevel2)
-        GO.propLevel3 = GO.PP.getPropInt(propLevel3)
-        GO.propCoef1024A = GO.PP.getPropFloat(propCoef1024A)
-        GO.propCoef1024B = GO.PP.getPropFloat(propCoef1024B)
-        GO.propCoef1024C = GO.PP.getPropFloat(propCoef1024C)
-        GO.propCoef2048A = GO.PP.getPropFloat(propCoef2048A)
-        GO.propCoef2048B = GO.PP.getPropFloat(propCoef2048B)
-        GO.propCoef2048C = GO.PP.getPropFloat(propCoef2048C)
-        GO.propCoef4096A = GO.PP.getPropFloat(propCoef4096A)
-        GO.propCoef4096B = GO.PP.getPropFloat(propCoef4096B)
-        GO.propCoef4096C = GO.PP.getPropFloat(propCoef4096C)
-        GO.propCPS2UR = GO.PP.getPropFloat(propCPS2UR)
-        GO.propHVoltage = GO.PP.getPropInt(propHV).toUShort()
-        GO.propComparator = GO.PP.getPropInt(propComparator).toUShort()
-        GO.spectrResolution = GO.PP.getPropInt(propResolution)
-        GO.windowSMA = GO.PP.getPropInt(propSMAWindow)
-        if (GO.windowSMA < 3) {
-            GO.windowSMA = 3
-        }
-
-        /*
-        *   Формат для сохранения спектра
-        *   0 - BqMon
-        *   1 - SPE
-        */
-        GO.saveSpecterType = GO.PP.getPropInt(propSaveSpecterType)
-
-        GO.needTerminate = false
-        Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())
-
-        if (GO.LEMAC.length == 17 &&  GO.LEMAC[0] != 'X') { // MAC адрес настроен, продолжаем работу.
-            GO.tmFull.startTimer();
-        } else {                                            // MAC адрес не настроен, переходим к настройкам
-            //GO.viewPager.setCurrentItem(0, false)
-            //GO.viewPager.setCurrentItem(4, false)
-            GO.bColor.resetToDefault()
-            GO.bColor.setToActive(GO.btnSetup)
-            Toast.makeText(GO.mainContext, "MAC address not set.\nScan your device.", Toast.LENGTH_LONG ).show()
-            GO.viewPager.setCurrentItem(4, false)
-        }
+        GO.readConfigParameters()
     }
 }
 

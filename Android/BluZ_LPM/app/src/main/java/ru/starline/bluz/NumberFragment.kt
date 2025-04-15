@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
+import android.text.Editable
 import android.text.InputType
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -40,6 +42,7 @@ class NumberFragment : Fragment() {
     private lateinit var btnCalibrate: Button
     private lateinit var btnConfirmCalibrate: Button
     private lateinit var rbResolution: RadioGroup
+    var noChange: Boolean = true
 /*
     override fun onResume() {
         super.onResume()
@@ -61,6 +64,95 @@ class NumberFragment : Fragment() {
 
     }
 */
+
+    /*
+    *   Отображение конфигурационных параметров в закладке Setup
+    */
+    fun reloadConfigParameters() {
+        GO.propButtonInit = false                               // Отключим реакцию в листенерах компонентов
+        if (GO.LEMAC.isNotEmpty()) {
+            GO.textMACADR.setText(GO.LEMAC)
+        }
+        when (GO.saveSpecterType) {
+            0 -> {
+                GO.rbSpctTypeBq.isChecked = true
+            }
+            1 -> {
+                GO.rbSpctTypeSPE.isChecked = true
+            }
+        }
+        when (GO.specterGraphType) {
+            0 -> GO.rbLineSpectr.isChecked = true
+            1 -> GO.rbGistogramSpectr.isChecked = true
+        }
+        /* Заполненние элементов управления из текущей конфигурации */
+        GO.cbSoundKvant.isChecked = GO.propSoundKvant              // Звук прихода частицы
+        GO.cbLedKvant.isChecked = GO.propLedKvant                  // Подсветка прихода частицы
+        GO.cbSpectrometr.isChecked = GO.propAutoStartSpectrometr   // Запуск набора спектра при включении прибора
+        GO.editRejectChann.setText(GO.rejectChann.toString())      // Количество не отображаемых каналов от начала
+
+        /* Разрешение в конфигурации */
+        when (GO.spectrResolution) {
+            0 -> {
+                GO.rbResolution1024.isChecked = true
+            }
+            1 -> {
+                GO.rbResolution2048.isChecked = true
+            }
+            2 -> {
+                GO.rbResolution4096.isChecked = true
+            }
+            else -> {
+                GO.rbResolution1024.isChecked = true
+            }
+        }
+
+        /* Значения порогов */
+        GO.editLevel1.setText(GO.propLevel1.toString())
+        GO.editLevel2.setText(GO.propLevel2.toString())
+        GO.editLevel3.setText(GO.propLevel3.toString())
+
+        /* Разрешения звука для порогов */
+        GO.cbSoundLevel1.isChecked = GO.propSoundLevel1
+        GO.cbSoundLevel2.isChecked = GO.propSoundLevel2
+        GO.cbSoundLevel3.isChecked = GO.propSoundLevel3
+
+        /* Разрешения вибро для порогов */
+        GO.cbVibroLevel1.isChecked = GO.propVibroLevel1
+        GO.cbVibroLevel2.isChecked = GO.propVibroLevel2
+        GO.cbVibroLevel3.isChecked = GO.propVibroLevel3
+
+        /* Значения коэффициентов полинома */
+        when (GO.spectrResolution) {
+            0 -> {
+                GO.editPolinomA.setText(GO.propCoef1024A.toString())
+                GO.editPolinomB.setText(GO.propCoef1024B.toString())
+                GO.editPolinomC.setText(GO.propCoef1024C.toString())
+            }
+            1 -> {
+                GO.editPolinomA.setText(GO.propCoef2048A.toString())
+                GO.editPolinomB.setText(GO.propCoef2048B.toString())
+                GO.editPolinomC.setText(GO.propCoef2048C.toString())
+            }
+            2 -> {
+                GO.editPolinomA.setText(GO.propCoef4096A.toString())
+                GO.editPolinomB.setText(GO.propCoef4096B.toString())
+                GO.editPolinomC.setText(GO.propCoef4096C.toString())
+            }
+        }
+
+        /* CPS в uRh */
+        GO.editCPS2Rh.setText(GO.propCPS2UR.toString())
+
+        /* Значения DAC */
+        GO.editHVoltage.setText(GO.propHVoltage.toString())
+        GO.editComparator.setText(GO.propComparator.toString())
+
+        /* SMA window */
+        GO.editSMA.setText(GO.windowSMA.toString())
+        GO.propButtonInit = true                   // Включим реакцию в листенерах компонентов
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -227,7 +319,6 @@ class NumberFragment : Fragment() {
                     /* Передача данных в прибор */
                     GO.BTT.sendCommand(2u)
 
-
                     /* Изменение статуса кнопки */
 
                     if (GO.btnSpecterSS.text == getString(R.string.textStartStop)) {
@@ -315,245 +406,178 @@ class NumberFragment : Fragment() {
                 *   Обекты закладки настроек
                 */
             } else if (getInt(ARG_OBJECT) == 4) {   // Настройки
-                val rbGistogramSpectr: RadioButton = view.findViewById(R.id.rbGistogram)
-                val rbLineSpectr: RadioButton = view.findViewById(R.id.rbLine)
-                val cbSoundKvant: CheckBox = view.findViewById(R.id.CBsoundKvant)
-                val cbLedKvant: CheckBox = view.findViewById(R.id.CBledKvant)
-                val cbMarker: CheckBox = view.findViewById(R.id.CBSpectrometer)
-                val editPolinomA: EditText = view.findViewById(R.id.editPolA)
-                val editPolinomB: EditText = view.findViewById(R.id.editPolB)
-                val editPolinomC: EditText = view.findViewById(R.id.editPolC)
-                val editLevel1: EditText = view.findViewById(R.id.editLevel1)
-                val editLevel2: EditText = view.findViewById(R.id.editLevel2)
-                val editLevel3: EditText = view.findViewById(R.id.editLevel3)
-                val cbSoundLevel1: CheckBox = view.findViewById(R.id.CBSoudLevel1)
-                val cbSoundLevel2: CheckBox = view.findViewById(R.id.CBSoudLevel2)
-                val cbSoundLevel3: CheckBox = view.findViewById(R.id.CBSoudLevel3)
-                val cbVibroLevel1: CheckBox = view.findViewById(R.id.CBVibroLevel1)
-                val cbVibroLevel2: CheckBox = view.findViewById(R.id.CBVibroLevel2)
-                val cbVibroLevel3: CheckBox = view.findViewById(R.id.CBVibroLevel3)
-                val editCPS2Rh: EditText = view.findViewById(R.id.editCPS2RH)
-                val rbResolution1024: RadioButton = view.findViewById(R.id.RBResol1024)
-                val rbResolution2048: RadioButton = view.findViewById(R.id.RBResol2048)
-                val rbResolution4096: RadioButton = view.findViewById(R.id.RBResol4096)
-                val editHVoltage: EditText = view.findViewById(R.id.editHvoltage)
-                val editComparator: EditText = view.findViewById(R.id.editComparator)
-                val cbSpectrometr: CheckBox = view.findViewById(R.id.CBSpectrometer)
-                val editSMA: EditText = view.findViewById(R.id.editTextSMAWindow)
-                val editRejectChann: EditText = view.findViewById(R.id.editTextRejectCann)
-                val rbSpctTypeBq: RadioButton = view.findViewById(R.id.rbBqMon)
-                val rbSpctTypeSPE: RadioButton = view.findViewById(R.id.rbSPE)
-                val rbSpctType : RadioGroup = view.findViewById(R.id.rbSpctType)
+                GO.rbGistogramSpectr = view.findViewById(R.id.rbGistogram)
+                GO.rbLineSpectr = view.findViewById(R.id.rbLine)
+                GO.cbSoundKvant = view.findViewById(R.id.CBsoundKvant)
+                GO.cbLedKvant = view.findViewById(R.id.CBledKvant)
+                GO.cbMarker = view.findViewById(R.id.CBSpectrometer)
+                GO.editPolinomA = view.findViewById(R.id.editPolA)
+                GO.editPolinomB = view.findViewById(R.id.editPolB)
+                GO.editPolinomC = view.findViewById(R.id.editPolC)
+                GO.editLevel1 = view.findViewById(R.id.editLevel1)
+                GO.editLevel2 = view.findViewById(R.id.editLevel2)
+                GO.editLevel3 = view.findViewById(R.id.editLevel3)
+                GO.cbSoundLevel1 = view.findViewById(R.id.CBSoudLevel1)
+                GO.cbSoundLevel2 = view.findViewById(R.id.CBSoudLevel2)
+                GO.cbSoundLevel3 = view.findViewById(R.id.CBSoudLevel3)
+                GO.cbVibroLevel1 = view.findViewById(R.id.CBVibroLevel1)
+                GO.cbVibroLevel2 = view.findViewById(R.id.CBVibroLevel2)
+                GO.cbVibroLevel3 = view.findViewById(R.id.CBVibroLevel3)
+                GO.editCPS2Rh = view.findViewById(R.id.editCPS2RH)
+                GO.rbResolution1024 = view.findViewById(R.id.RBResol1024)
+                GO.rbResolution2048 = view.findViewById(R.id.RBResol2048)
+                GO.rbResolution4096 = view.findViewById(R.id.RBResol4096)
+                GO.editHVoltage = view.findViewById(R.id.editHvoltage)
+                GO.editComparator = view.findViewById(R.id.editComparator)
+                GO.cbSpectrometr = view.findViewById(R.id.CBSpectrometer)
+                GO.editSMA = view.findViewById(R.id.editTextSMAWindow)
+                GO.editRejectChann = view.findViewById(R.id.editTextRejectCann)
+                GO.rbSpctTypeBq = view.findViewById(R.id.rbBqMon)
+                GO.rbSpctTypeSPE = view.findViewById(R.id.rbSPE)
+                GO.rbSpctType = view.findViewById(R.id.rbSpctType)
+                GO.textMACADR = view.findViewById(R.id.textMACADDR)
 
-                when (GO.saveSpecterType) {
-                    0 -> {
-                        rbSpctTypeBq.isChecked = true
-                        //GO.btnSaveBQ.text = GO.saveSpecterType1
+                reloadConfigParameters()
+
+                /* Измененние коэффициента A для разных разрешений */
+                GO.editPolinomA.addTextChangedListener(object : TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    override fun afterTextChanged(s: Editable?) {
+                        if(noChange) {
+                            if (GO.rbResolution1024.isChecked) {
+                                GO.propCoef1024A = GO.editPolinomA.text.toString().toFloat()
+                            } else if (GO.rbResolution2048.isChecked) {
+                                GO.propCoef2048A = GO.editPolinomA.text.toString().toFloat()
+                            } else if (GO.rbResolution4096.isChecked) {
+                                GO.propCoef4096A = GO.editPolinomA.text.toString().toFloat()
+                            }
+                        }
                     }
-                    1 -> {
-                        rbSpctTypeSPE.isChecked = true
-                        //GO.btnSaveBQ.text = GO.saveSpecterType2
+                })
+
+                /* Измененние коэффициента B для разных разрешений */
+                GO.editPolinomB.addTextChangedListener(object : TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    override fun afterTextChanged(s: Editable?) {
+                        if(noChange) {
+                            if (GO.rbResolution1024.isChecked) {
+                                GO.propCoef1024B = GO.editPolinomB.text.toString().toFloat()
+                            } else if (GO.rbResolution2048.isChecked) {
+                                GO.propCoef2048B = GO.editPolinomB.text.toString().toFloat()
+                            } else if (GO.rbResolution4096.isChecked) {
+                                GO.propCoef4096B = GO.editPolinomB.text.toString().toFloat()
+                            }
+                        }
                     }
-                }
+                })
 
-                when (GO.specterGraphType) {
-                    0 -> rbLineSpectr.isChecked = true
-                    1 -> rbGistogramSpectr.isChecked = true
-                }
-                /* Заполненние элементов управления из текущей конфигурации */
-                GO.propButtonInit = false                               // Отключим реакцию в листенерах компонентов
-                cbSoundKvant.isChecked = GO.propSoundKvant              // Звук прихода частицы
-                cbLedKvant.isChecked = GO.propLedKvant                  // Подсветка прихода частицы
-                cbSpectrometr.isChecked = GO.propAutoStartSpectrometr   // Запуск набора спектра при включении прибора
-                editRejectChann.setText(GO.rejectChann.toString())      // Количество не отображаемых каналов от начала
-
-                /* Разрешение в конфигурации */
-                when (GO.spectrResolution) {
-                    0 -> {
-                        rbResolution1024.isChecked = true
+                /* Измененние коэффициента C для разных разрешений */
+                GO.editPolinomC.addTextChangedListener(object : TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    override fun afterTextChanged(s: Editable?) {
+                        if(noChange) {
+                            if (GO.rbResolution1024.isChecked) {
+                                GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
+                            } else if (GO.rbResolution2048.isChecked) {
+                                GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
+                            } else if (GO.rbResolution4096.isChecked) {
+                                GO.propCoef4096C = GO.editPolinomC.text.toString().toFloat()
+                            }
+                        }
                     }
-                    1 -> {
-                        rbResolution2048.isChecked = true
-                    }
-                    2 -> {
-                        rbResolution4096.isChecked = true
-                    }
-                    else -> {
-                        rbResolution1024.isChecked = true
-                    }
-                }
-
-                /* Значения порогов */
-                editLevel1.setText(GO.propLevel1.toString())
-                editLevel2.setText(GO.propLevel2.toString())
-                editLevel3.setText(GO.propLevel3.toString())
-
-                /* Разрешения звука для порогов */
-                cbSoundLevel1.isChecked = GO.propSoundLevel1
-                cbSoundLevel2.isChecked = GO.propSoundLevel2
-                cbSoundLevel3.isChecked = GO.propSoundLevel3
-
-                /* Разрешения вибро для порогов */
-                cbVibroLevel1.isChecked = GO.propVibroLevel1
-                cbVibroLevel2.isChecked = GO.propVibroLevel2
-                cbVibroLevel3.isChecked = GO.propVibroLevel3
-
-                /* Значения коэффициентов полинома */
-                when (GO.spectrResolution) {
-                    0 -> {
-                        editPolinomA.setText(GO.propCoef1024A.toString())
-                        editPolinomB.setText(GO.propCoef1024B.toString())
-                        editPolinomC.setText(GO.propCoef1024C.toString())
-                    }
-                    1 -> {
-                        editPolinomA.setText(GO.propCoef2048A.toString())
-                        editPolinomB.setText(GO.propCoef2048B.toString())
-                        editPolinomC.setText(GO.propCoef2048C.toString())
-                    }
-                    2 -> {
-                        editPolinomA.setText(GO.propCoef4096A.toString())
-                        editPolinomB.setText(GO.propCoef4096B.toString())
-                        editPolinomC.setText(GO.propCoef4096C.toString())
-                    }
-                }
-
-                /* CPS в uRh */
-                editCPS2Rh.setText(GO.propCPS2UR.toString())
-
-                /* Значения DAC */
-                editHVoltage.setText(GO.propHVoltage.toString())
-                editComparator.setText(GO.propComparator.toString())
-
-                /* SMA window */
-                editSMA.setText(GO.windowSMA.toString())
-
-                GO.propButtonInit = true                   // Включим реакцию в листенерах компонентов
+                })
 
                 /*
-                 *
+                 *  Чтение конфигурации из файла
+                 */
+                var btnRestoreSetup: Button = view.findViewById(R.id.buttonRestoreSetup)
+                btnRestoreSetup.setOnClickListener {
+                    GO.readConfigParameters()
+                    reloadConfigParameters()
+                }
+                /*
                  * Сохранение параметров в конфигурационном файле смартфона
-                 *
                  */
                 val btnSaveSetup: Button = view.findViewById(R.id.buttonSaveSetup)
 
-                GO.textMACADR = view.findViewById(R.id.textMACADDR)
-                if (GO.LEMAC.isNotEmpty()) {
-                    GO.textMACADR.setText(GO.LEMAC)
-                }
                 btnSaveSetup.setOnClickListener {
-                    /* Сохраняем MAC адрес */
-                    GO.LEMAC = GO.textMACADR.text.toString()
-                    GO.rejectChann = editRejectChann.text.toString().toInt();
-                    //Log.d("BluZ-BT", "Reject chann: " + GO.rejectChann )
-                    GO.PP.setPropInt(propRejectCann, GO.rejectChann)                    // Сохраним количество не отображаемых каналов
-                    GO.PP.setPropStr(propADDRESS, GO.LEMAC)                             // Сохраним MAC адрес устройства
-                    GO.PP.setPropInt(propColorSpecterLin, GO.ColorLin)                  // Сохраним цвет линейного графика
-                    GO.PP.setPropInt(propColorSpecterLog, GO.ColorLog)                  // Сохраним цвет логарифмического графика
-                    GO.PP.setPropInt(propColorSpecterFone, GO.ColorFone)                // Сохраним цвет графика фона
-                    GO.PP.setPropInt(propColorSpecterFoneLg, GO.ColorFoneLg)            // Сохраним цвет логарифмического графика фона
-                    GO.PP.setPropInt(propColorSpecterLinGisto, GO.ColorLinGisto)        // Сохраним цвет линейного графика гистограммы
-                    GO.PP.setPropInt(propColorSpecterLogGisto, GO.ColorLogGisto)        // Сохраним цвет логарифмического графика  гистограммы
-                    GO.PP.setPropInt(propColorSpecterFoneGisto, GO.ColorFoneGisto)      // Сохраним цвет графика фона гистограммы
-                    GO.PP.setPropInt(propColorSpecterFoneLgGisto, GO.ColorFoneLgGisto)  // Сохраним цвет логарифмического графика фона гистограммы
-                    GO.PP.setPropInt(propColorDozimeter, GO.ColorDosimeter)             // Сохраним цвет дозиметра
-                    GO.PP.setPropInt(propColorDozimeterSMA, GO.ColorDosimeterSMA)       // Сохраним цвет дозиметра
-
-                    if (rbSpctTypeBq.isChecked) {
+                    /* Тип файла для сохранения спектра */
+                    if (GO.rbSpctTypeBq.isChecked) {
                         GO.saveSpecterType = 0
                     } else {
                         GO.saveSpecterType = 1
                     }
-                    GO.PP.setPropInt(propSaveSpecterType, GO.saveSpecterType)
-
-                    if (rbLineSpectr.isChecked) {                                       // Сохраним тип графика для вывода спектра
+                    GO.rejectChann = GO.editRejectChann.text.toString().toInt();
+                    /* Тип графика для отображения спектра */
+                    if (GO.rbLineSpectr.isChecked) {                                       // Сохраним тип графика для вывода спектра
                         GO.specterGraphType = 0
                     } else {
                         GO.specterGraphType = 1
                     }
-                    GO.PP.setPropInt(propSpectrGraphType, GO.specterGraphType)
+                    /* Звуковое сопровождение регистрации частицы */
+                    GO.propSoundKvant = GO.cbSoundKvant.isChecked
+                    /* Световое сопровождение регистрации частицы */
+                    GO.propLedKvant = GO.cbLedKvant.isChecked
+                    /* Запуск спектрометра при включении прибора (потребление 380uA) */
+                    GO.propAutoStartSpectrometr = GO.cbSpectrometr.isChecked
 
-                    GO.propSoundKvant = cbSoundKvant.isChecked
-                    GO.PP.setPropBoolean(propSoundKvant, GO.propSoundKvant)
+                    GO.propLevel1 = GO.editLevel1.text.toString().toInt()              // Значение первого порога из редактора
+                    GO.propLevel2 = GO.editLevel2.text.toString().toInt()              // Значение второго порога из редактора
+                    GO.propLevel3 = GO.editLevel3.text.toString().toInt()              // Значение третьего порога из редактора
 
-                    GO.propLedKvant = cbLedKvant.isChecked
-                    GO.PP.setPropBoolean(propLedKvant, GO.propLedKvant)
+                    GO.propSoundLevel1 = GO.cbSoundLevel1.isChecked
+                    GO.propSoundLevel2 = GO.cbSoundLevel2.isChecked
+                    GO.propSoundLevel3 = GO.cbSoundLevel3.isChecked
 
-                    GO.propAutoStartSpectrometr = cbSpectrometr.isChecked
-                    GO.PP.setPropBoolean(propStartSpectrometr, GO.propAutoStartSpectrometr)
+                    GO.propVibroLevel1 = GO.cbVibroLevel1.isChecked
+                    GO.propVibroLevel2 = GO.cbVibroLevel2.isChecked
+                    GO.propVibroLevel3 = GO.cbVibroLevel3.isChecked
+                    /* Коэффициент пересчета CPS в uRh */
+                    GO.propCPS2UR = GO.editCPS2Rh.text.toString().toFloat()
 
-                    GO.propLevel1 = editLevel1.text.toString().toInt()              // Значение первого порога из редактора
-                    GO.propLevel2 = editLevel2.text.toString().toInt()              // Значение второго порога из редактора
-                    GO.propLevel3 = editLevel3.text.toString().toInt()              // Значение третьего порога из редактора
-                    GO.PP.setPropInt(propLevel1, GO.propLevel1)                     // Значение первого порога
-                    GO.PP.setPropInt(propLevel2, GO.propLevel2)                     // Значение второго порога
-                    GO.PP.setPropInt(propLevel3, GO.propLevel3)                     // Значение третьего порога
-
-                    GO.propSoundLevel1 = cbSoundLevel1.isChecked
-                    GO.propSoundLevel2 = cbSoundLevel2.isChecked
-                    GO.propSoundLevel3 = cbSoundLevel3.isChecked
-                    GO.PP.setPropBoolean(propSoundLevel1, GO.propSoundLevel1)       // Звук первого порога
-                    GO.PP.setPropBoolean(propSoundLevel2, GO.propSoundLevel2)       // Звук второго порога
-                    GO.PP.setPropBoolean(propSoundLevel3, GO.propSoundLevel3)       // Звук третьего порога
-
-                    GO.propVibroLevel1 = cbVibroLevel1.isChecked
-                    GO.propVibroLevel2 = cbVibroLevel2.isChecked
-                    GO.propVibroLevel3 = cbVibroLevel3.isChecked
-                    GO.PP.setPropBoolean(propVibroLevel1, GO.propVibroLevel1)       // Вибро первого порога
-                    GO.PP.setPropBoolean(propVibroLevel2, GO.propVibroLevel2)       // Вибро второго порога
-                    GO.PP.setPropBoolean(propVibroLevel3, GO.propVibroLevel3)       // Вибро третьего порога
-
-                    GO.propCPS2UR = editCPS2Rh.text.toString().toFloat()
-                    GO.PP.setPropFloat(propCPS2UR, GO.propCPS2UR)                   // Коэффициент пересчета cps в uRh
-
+                    /* Коэффициенты для полинома преобразования канала в энергию */
+                    /*
                     when (GO.spectrResolution) {
                         0 -> {
-                            GO.propCoef1024A = editPolinomA.text.toString().toFloat()
-                            GO.propCoef1024B = editPolinomB.text.toString().toFloat()
-                            GO.propCoef1024C = editPolinomC.text.toString().toFloat()
+                            GO.propCoef1024A = GO.editPolinomA.text.toString().toFloat()
+                            GO.propCoef1024B = GO.editPolinomB.text.toString().toFloat()
+                            GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
                             }
                         1 -> {
-                            GO.propCoef2048A = editPolinomA.text.toString().toFloat()
-                            GO.propCoef2048B = editPolinomB.text.toString().toFloat()
-                            GO.propCoef2048C = editPolinomC.text.toString().toFloat()
+                            GO.propCoef2048A = GO.editPolinomA.text.toString().toFloat()
+                            GO.propCoef2048B = GO.editPolinomB.text.toString().toFloat()
+                            GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
                         }
                         2 -> {
-                            GO.propCoef4096A = editPolinomA.text.toString().toFloat()
-                            GO.propCoef4096B = editPolinomB.text.toString().toFloat()
-                            GO.propCoef4096C = editPolinomC.text.toString().toFloat()
+                            GO.propCoef4096A = GO.editPolinomA.text.toString().toFloat()
+                            GO.propCoef4096B = GO.editPolinomB.text.toString().toFloat()
+                            GO.propCoef4096C = GO.editPolinomC.text.toString().toFloat()
                         }
-                    }
-                    GO.PP.setPropFloat(propCoef1024A, GO.propCoef1024A)             // A - полинома пересчета канала в энергию
-                    GO.PP.setPropFloat(propCoef1024B, GO.propCoef1024B)             // B - полинома пересчета канала в энергию
-                    GO.PP.setPropFloat(propCoef1024C, GO.propCoef1024C)             // C - полинома пересчета канала в энергию
-                    GO.PP.setPropFloat(propCoef2048A, GO.propCoef2048A)             // A - полинома пересчета канала в энергию
-                    GO.PP.setPropFloat(propCoef2048B, GO.propCoef2048B)             // B - полинома пересчета канала в энергию
-                    GO.PP.setPropFloat(propCoef2048C, GO.propCoef2048C)             // C - полинома пересчета канала в энергию
-                    GO.PP.setPropFloat(propCoef4096A, GO.propCoef4096A)             // A - полинома пересчета канала в энергию
-                    GO.PP.setPropFloat(propCoef4096B, GO.propCoef4096B)             // B - полинома пересчета канала в энергию
-                    GO.PP.setPropFloat(propCoef4096C, GO.propCoef4096C)             // C - полинома пересчета канала в энергию
-
+                    }*/
 
                     /* SMA window сформируем нечетное число */
-                    GO.windowSMA = (editSMA.text.toString().toInt() / 2).toInt() * 2 + 1
-                    GO.PP.setPropInt(propSMAWindow, GO.windowSMA)
+                    GO.windowSMA = (GO.editSMA.text.toString().toInt() / 2).toInt() * 2 + 1
+                    /* Уровень высокого напряжения */
+                    GO.propHVoltage = GO.editHVoltage.text.toString().toUShort()
+                    /* Уровень компаратора */
+                    GO.propComparator = GO.editComparator.text.toString().toUShort()
 
-                    GO.propHVoltage = editHVoltage.text.toString().toUShort()
-                    GO.PP.setPropInt(propHV, GO.propHVoltage.toInt())               // Уровень высокого напряжения
-
-                    GO.propComparator = editComparator.text.toString().toUShort()
-                    GO.PP.setPropInt(propComparator, GO.propComparator.toInt())     // Уровень Компаратора
-
-                    if (rbResolution1024.isChecked) {           // Разрешение прибора.
+                    if (GO.rbResolution1024.isChecked) {           // Разрешение прибора.
                         GO.spectrResolution = 0
-                    } else if (rbResolution2048.isChecked) {
+                    } else if (GO.rbResolution2048.isChecked) {
                         GO.spectrResolution = 1
-                    } else if (rbResolution4096.isChecked) {
+                    } else if (GO.rbResolution4096.isChecked) {
                         GO.spectrResolution = 2
                     } else {
                         GO.spectrResolution = 0
                     }
                     Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())
-                    GO.PP.setPropInt(propResolution, GO.spectrResolution)
+
+                    GO.writeConfigParameters()      // Сохраненние конфигурации.
+
                     Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
                     if (GO.LEMAC.length == 17 &&  GO.LEMAC[0] != 'X') { // MAC адрес настроен, продолжаем работу.
                         GO.tmFull.startTimer();
@@ -582,7 +606,7 @@ class NumberFragment : Fragment() {
                 /* Чтение настроек из прибора */
                 GO.btnReadFromDevice = view.findViewById(R.id.buttonReadFromDevice)
                 GO.btnReadFromDevice.setOnClickListener {
-
+                    GO.readConfigFormDevice()
                 }
 
                 /* Запись настроек в прибор */
@@ -675,35 +699,35 @@ class NumberFragment : Fragment() {
 
                     GO.BTT.sendBuffer[20] = 0u                  // Очистим флаги управления индикацией
                     /* Светодиод сопровождает приход частицы */
-                    if (cbLedKvant.isChecked) {
+                    if (GO.cbLedKvant.isChecked) {
                         GO.BTT.sendBuffer[20] = 1u
                     }
                     /* Звук сопровождает приход частицы */
-                    if (cbSoundKvant.isChecked) {
+                    if (GO.cbSoundKvant.isChecked) {
                         GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00000010.toUByte()
                     }
                     /* Звуковая сигнализация первого порога */
-                    if (cbSoundLevel1.isChecked) {
+                    if (GO.cbSoundLevel1.isChecked) {
                         GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00000100.toUByte()
                     }
                     /* Звуковая сигнализация второго порога */
-                    if (cbSoundLevel2.isChecked) {
+                    if (GO.cbSoundLevel2.isChecked) {
                         GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00001000.toUByte()
                     }
                     /* Звуковая сигнализация третьего порога */
-                    if (cbSoundLevel3.isChecked) {
+                    if (GO.cbSoundLevel3.isChecked) {
                         GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00010000.toUByte()
                     }
                     /* Вибро первого порога */
-                    if (cbVibroLevel1.isChecked) {
+                    if (GO.cbVibroLevel1.isChecked) {
                         GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00100000.toUByte()
                     }
                     /* Вибро второго порога */
-                    if (cbVibroLevel2.isChecked) {
+                    if (GO.cbVibroLevel2.isChecked) {
                         GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b01000000.toUByte()
                     }
                     /* Вибро третьего порога */
-                    if (cbVibroLevel3.isChecked) {
+                    if (GO.cbVibroLevel3.isChecked) {
                         GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b10000000.toUByte()
                     }
 
@@ -779,18 +803,18 @@ class NumberFragment : Fragment() {
                     GO.BTT.sendBuffer[36] = ((GO.propComparator.toUInt() shr 8) and 255u).toUByte()
 
                     /* Разрешение спектра */
-                    if (rbResolution1024.isChecked) {
+                    if (GO.rbResolution1024.isChecked) {
                         GO.BTT.sendBuffer[37] = 0u
-                    } else if (rbResolution2048.isChecked) {
+                    } else if (GO.rbResolution2048.isChecked) {
                         GO.BTT.sendBuffer[37] = 1u
-                    } else if (rbResolution4096.isChecked) {
+                    } else if (GO.rbResolution4096.isChecked) {
                         GO.BTT.sendBuffer[37] = 2u
                     } else {
                         GO.BTT.sendBuffer[37] = 0u
                     }
 
                     /* Запуск спектрометра при включении прибора */
-                    if (cbSpectrometr.isChecked) {
+                    if (GO.cbSpectrometr.isChecked) {
                         GO.BTT.sendBuffer[38] = 1u
                     } else {
                         GO.BTT.sendBuffer[38] = 0u
@@ -838,7 +862,6 @@ class NumberFragment : Fragment() {
                     GO.ColorFoneLgGisto = resources.getColor(R.color.specterColorFoneLgGisto, GO.mainContext.theme)
                 }
 
-                var noChange: Boolean = true
                 tvColor.setBackgroundColor(GO.ColorLin)
                 rbLine = view.findViewById(R.id.RBLin)
                 rbLg = view.findViewById(R.id.RBLg)
@@ -851,14 +874,14 @@ class NumberFragment : Fragment() {
                 /*
                 *   Выбор типа сохранения спектра
                 */
-                rbSpctType.setOnCheckedChangeListener { _, checkedId -> view.findViewById<RadioButton>(checkedId)?.apply {
+                GO.rbSpctType.setOnCheckedChangeListener { _, checkedId -> view.findViewById<RadioButton>(checkedId)?.apply {
                     noChange = false
                     when (checkedId) {
-                        rbSpctTypeBq.id -> {
+                        GO.rbSpctTypeBq.id -> {
                             GO.btnSaveBQ.text = GO.saveSpecterType1
                             GO.saveSpecterType = 0
                         }
-                        rbSpctTypeSPE.id -> {
+                        GO.rbSpctTypeSPE.id -> {
                             GO.btnSaveBQ.text = GO.saveSpecterType2
                             GO.saveSpecterType = 1
                         }
@@ -873,20 +896,20 @@ class NumberFragment : Fragment() {
                 rbResolution.setOnCheckedChangeListener { _, checkedId -> view.findViewById<RadioButton>(checkedId)?.apply {
                         noChange = false
                         when (checkedId) {
-                            rbResolution1024.id -> {
-                                editPolinomA.setText(GO.propCoef1024A.toString())
-                                editPolinomB.setText(GO.propCoef1024B.toString())
-                                editPolinomC.setText(GO.propCoef1024C.toString())
+                            GO.rbResolution1024.id -> {
+                                GO.editPolinomA.setText(GO.propCoef1024A.toString())
+                                GO.editPolinomB.setText(GO.propCoef1024B.toString())
+                                GO.editPolinomC.setText(GO.propCoef1024C.toString())
                             }
-                            rbResolution2048.id -> {
-                                editPolinomA.setText(GO.propCoef2048A.toString())
-                                editPolinomB.setText(GO.propCoef2048B.toString())
-                                editPolinomC.setText(GO.propCoef2048C.toString())
+                            GO.rbResolution2048.id -> {
+                                GO.editPolinomA.setText(GO.propCoef2048A.toString())
+                                GO.editPolinomB.setText(GO.propCoef2048B.toString())
+                                GO.editPolinomC.setText(GO.propCoef2048C.toString())
                             }
-                            rbResolution4096.id -> {
-                                editPolinomA.setText(GO.propCoef4096A.toString())
-                                editPolinomB.setText(GO.propCoef4096B.toString())
-                                editPolinomC.setText(GO.propCoef4096C.toString())
+                            GO.rbResolution4096.id -> {
+                                GO.editPolinomA.setText(GO.propCoef4096A.toString())
+                                GO.editPolinomB.setText(GO.propCoef4096B.toString())
+                                GO.editPolinomC.setText(GO.propCoef4096C.toString())
                             }
                         }
                         noChange = true
@@ -897,7 +920,7 @@ class NumberFragment : Fragment() {
                 */
                 rgTypeSpec.setOnCheckedChangeListener { _, checkedId -> view.findViewById<RadioButton>(checkedId)?.apply {
                         noChange = false
-                        if (checkedId == rbLineSpectr.id) {
+                        if (checkedId == GO.rbLineSpectr.id) {
                             GO.specterGraphType = 0
                             if (rbLine.isChecked) {                                   // Цвет для линейного графика
                                 tvColor.setBackgroundColor(GO.ColorLin)
@@ -924,7 +947,7 @@ class NumberFragment : Fragment() {
                                 selG.setProgress(Color.green(GO.ColorFoneLg), false)
                                 selB.setProgress(Color.blue(GO.ColorFoneLg), false)
                             }
-                        } else if (checkedId == rbGistogramSpectr.id) {
+                        } else if (checkedId == GO.rbGistogramSpectr.id) {
                             GO.specterGraphType = 1
                             if (rbLine.isChecked) {                                   // Цвет для линейного графика
                                 tvColor.setBackgroundColor(GO.ColorLinGisto)
@@ -963,7 +986,7 @@ class NumberFragment : Fragment() {
                 rbGroup.setOnCheckedChangeListener  { _, checkedId ->
                     view.findViewById<RadioButton>(checkedId)?.apply {
                         noChange = false
-                        if (rbLineSpectr.isChecked) {
+                        if (GO.rbLineSpectr.isChecked) {
                             if (checkedId == rbLine.id) {                                   // Цвет для линейного графика
                                 tvColor.setBackgroundColor(GO.ColorLin)
                                 selA.setProgress(Color.alpha(GO.ColorLin), false)
@@ -989,7 +1012,7 @@ class NumberFragment : Fragment() {
                                 selG.setProgress(Color.green(GO.ColorFoneLg), false)
                                 selB.setProgress(Color.blue(GO.ColorFoneLg), false)
                             }
-                        } else if (rbGistogramSpectr.isChecked) {
+                        } else if (GO.rbGistogramSpectr.isChecked) {
                             if (checkedId == rbLine.id) {                                   // Цвет для линейного графика
                                 tvColor.setBackgroundColor(GO.ColorLinGisto)
                                 selA.setProgress(Color.alpha(GO.ColorLinGisto), false)
@@ -1027,7 +1050,7 @@ class NumberFragment : Fragment() {
                     override fun onProgressChanged(
                         seekBar: SeekBar, progress: Int, fromUser: Boolean ) {
                         if (noChange) {
-                            if (rbLineSpectr.isChecked) {
+                            if (GO.rbLineSpectr.isChecked) {
                                 if (rbLine.isChecked) {
                                     GO.ColorLin = GO.bColor.setSpecterColor(0, progress, GO.ColorLin)
                                     tvColor.setBackgroundColor(GO.ColorLin)
@@ -1041,7 +1064,7 @@ class NumberFragment : Fragment() {
                                     GO.ColorFoneLg = GO.bColor.setSpecterColor(0, progress, GO.ColorFoneLg)
                                     tvColor.setBackgroundColor(GO.ColorFoneLg)
                                 }
-                            } else if (rbGistogramSpectr.isChecked) {
+                            } else if (GO.rbGistogramSpectr.isChecked) {
                                 if (rbLine.isChecked) {
                                     GO.ColorLinGisto = GO.bColor.setSpecterColor(0, progress, GO.ColorLinGisto)
                                     tvColor.setBackgroundColor(GO.ColorLinGisto)
@@ -1069,7 +1092,7 @@ class NumberFragment : Fragment() {
                     override fun onProgressChanged(
                         seekBar: SeekBar, progress: Int, fromUser: Boolean ) {
                         if (noChange) {
-                            if (rbLineSpectr.isChecked) {
+                            if (GO.rbLineSpectr.isChecked) {
                                 if (rbLine.isChecked) {
                                     GO.ColorLin = GO.bColor.setSpecterColor(1, progress, GO.ColorLin)
                                     tvColor.setBackgroundColor(GO.ColorLin)
@@ -1083,7 +1106,7 @@ class NumberFragment : Fragment() {
                                     GO.ColorFoneLg = GO.bColor.setSpecterColor(1, progress, GO.ColorFoneLg)
                                     tvColor.setBackgroundColor(GO.ColorFoneLg)
                                 }
-                            } else if (rbGistogramSpectr.isChecked) {
+                            } else if (GO.rbGistogramSpectr.isChecked) {
                                 if (rbLine.isChecked) {
                                     GO.ColorLinGisto = GO.bColor.setSpecterColor(1, progress, GO.ColorLinGisto)
                                     tvColor.setBackgroundColor(GO.ColorLinGisto)
@@ -1111,7 +1134,7 @@ class NumberFragment : Fragment() {
                     override fun onProgressChanged(
                         seekBar: SeekBar, progress: Int, fromUser: Boolean ) {
                         if (noChange) {
-                            if(rbLineSpectr.isChecked) {
+                            if(GO.rbLineSpectr.isChecked) {
                                 if (rbLine.isChecked) {
                                     GO.ColorLin = GO.bColor.setSpecterColor(2, progress, GO.ColorLin)
                                     tvColor.setBackgroundColor(GO.ColorLin)
@@ -1125,7 +1148,7 @@ class NumberFragment : Fragment() {
                                     GO.ColorFoneLg = GO.bColor.setSpecterColor(2, progress, GO.ColorFoneLg)
                                     tvColor.setBackgroundColor(GO.ColorFoneLg)
                                 }
-                            } else if (rbGistogramSpectr.isChecked) {
+                            } else if (GO.rbGistogramSpectr.isChecked) {
                                 if (rbLine.isChecked) {
                                     GO.ColorLinGisto = GO.bColor.setSpecterColor(2, progress, GO.ColorLinGisto)
                                     tvColor.setBackgroundColor(GO.ColorLinGisto)
@@ -1153,7 +1176,7 @@ class NumberFragment : Fragment() {
                     override fun onProgressChanged(
                         seekBar: SeekBar, progress: Int, fromUser: Boolean ) {
                         if (noChange) {
-                            if (rbLineSpectr.isChecked) {
+                            if (GO.rbLineSpectr.isChecked) {
                                 if (rbLine.isChecked) {
                                     GO.ColorLin = GO.bColor.setSpecterColor(3, progress, GO.ColorLin)
                                     tvColor.setBackgroundColor(GO.ColorLin)
@@ -1167,7 +1190,7 @@ class NumberFragment : Fragment() {
                                     GO.ColorFoneLg = GO.bColor.setSpecterColor(3, progress, GO.ColorFoneLg)
                                     tvColor.setBackgroundColor(GO.ColorFoneLg)
                                 }
-                            } else if (rbGistogramSpectr.isChecked) {
+                            } else if (GO.rbGistogramSpectr.isChecked) {
                                 if (rbLine.isChecked) {
                                     GO.ColorLinGisto = GO.bColor.setSpecterColor(2, progress, GO.ColorLinGisto)
                                     tvColor.setBackgroundColor(GO.ColorLinGisto)

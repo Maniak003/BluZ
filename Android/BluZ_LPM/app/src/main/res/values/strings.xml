@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">BluZ</string>
     <string name="textSaveSetup">Save</string>
+    <string name="textRestoreSetup">Rest</string>
     <string name="textScan">Scan</string>
     <string name="textScan2">Stop</string>
     <string name="textSaveBQ">BqMon</string>
