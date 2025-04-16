@@ -606,7 +606,9 @@ class NumberFragment : Fragment() {
                 /* Чтение настроек из прибора */
                 GO.btnReadFromDevice = view.findViewById(R.id.buttonReadFromDevice)
                 GO.btnReadFromDevice.setOnClickListener {
-                    GO.readConfigFormDevice()
+                    if (GO.configDataReady) {
+                        GO.readConfigFormDevice()
+                    }
                 }
 
                 /* Запись настроек в прибор */

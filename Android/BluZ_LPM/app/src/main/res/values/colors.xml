@@ -4,6 +4,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="Red">#FFFF0000</color>
     <color name="Green">#FF00FF00</color>
+    <color name="Yellow">#FFFFFF00</color>
     <color name="buttonColor">#5E5904</color>
     <color name="activeButtonColor">#9E7C06</color>
     <color name="buttonTextColor">#EAB100</color>

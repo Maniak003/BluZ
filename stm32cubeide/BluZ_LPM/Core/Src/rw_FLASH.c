@@ -44,19 +44,19 @@ uint8_t retryCount;
 
 void CB_SMA (SNVMA_Callback_Status_t os) {
 	if (os != SNVMA_OPERATION_COMPLETE) {
-		if (retryCount++ < 2) {
+		if (retryCount++ < 3) {
 			SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
 		}
-	} else {
-		if (*(__IO uint32_t*) (MAGIC_KEY_ADDRESS) != MAGIC_KEY) {
-			if (retryCount++ < 2) {
-				SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
-			} else {
-				//bzero((char *) uartBuffer, sizeof(uartBuffer));
-				//sprintf(uartBuffer, "Error\n\r");
-				//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-			}
-		}
+	//} else {
+	//	if (*(__IO uint32_t*) (MAGIC_KEY_ADDRESS) != MAGIC_KEY) {
+	//		if (retryCount++ < 3) {
+	//			SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
+	//		} else {
+	//			//bzero((char *) uartBuffer, sizeof(uartBuffer));
+	//			//sprintf(uartBuffer, "Error\n\r");
+	//			//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+	//		}
+	//	}
 	}
 
 }
@@ -128,37 +128,28 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData |= HVoltage << 12;
 	tmpData |= (uint64_t)comparatorLevel << 22;
 
-
-	tmpData |= (((uint64_t)calcCoeff.Uint[0] << 32) | ((uint64_t)calcCoeff.Uint[1] << 40) | ((uint64_t)calcCoeff.Uint[2] << 48) | ((uint64_t)calcCoeff.Uint[3] << 56));
-
+	tmpData |= ((uint64_t)calcCoeff.Uint32 << 32);
 	PL[idxPL++] = tmpData;					// 2,  3
 
-	tmpData = level1 | ((uint64_t)level2 << 32);
+	tmpData = level1 | ((uint64_t)level2 << 16) | ((uint64_t)level3 << 32 );
 	PL[idxPL++] = tmpData;					// 4,  5
 
-	tmpData = level3;
+	tmpData = enCoefA1024.Uint32 | ((uint64_t)enCoefB1024.Uint32 << 32);
 	PL[idxPL++] = tmpData;					// 6,  7
 
-	tmpData = enCoefA1024.Uint[0] | ((uint64_t)enCoefA1024.Uint[1] << 8) | ((uint64_t)enCoefA1024.Uint[2] << 16)  | ((uint64_t)enCoefA1024.Uint[3] << 24)
-			| ((uint64_t)enCoefB1024.Uint[0] << 32) | ((uint64_t)enCoefB1024.Uint[1] << 40) | ((uint64_t)enCoefB1024.Uint[2] << 48) | ((uint64_t)enCoefB1024.Uint[3] << 56);
-	PL[idxPL++] = tmpData;					// 8,  9
+	tmpData = enCoefC1024.Uint32 | ((uint64_t)enCoefA2048.Uint32 << 32);
+	PL[idxPL++] = tmpData;					// 8, 9
 
-	tmpData = enCoefC1024.Uint[0] | ((uint64_t)enCoefC1024.Uint[1] << 8) | ((uint64_t)enCoefC1024.Uint[2] << 16) | ((uint64_t)enCoefC1024.Uint[3] << 24)
-			| ((uint64_t)enCoefA2048.Uint[0] << 32) | ((uint64_t)enCoefA2048.Uint[1] << 40) | ((uint64_t)enCoefA2048.Uint[2] << 48) | ((uint64_t)enCoefA2048.Uint[3] << 56);
+	tmpData = enCoefB2048.Uint32 | ((uint64_t)enCoefC2048.Uint32 << 32);
 	PL[idxPL++] = tmpData;					// 10, 11
 
-	tmpData = enCoefB2048.Uint[0] | ((uint64_t)enCoefB2048.Uint[1] << 8) | ((uint64_t)enCoefB2048.Uint[2] << 16) | ((uint64_t)enCoefB2048.Uint[3] << 24)
-			| ((uint64_t)enCoefC2048.Uint[0] << 32) | ((uint64_t)enCoefC2048.Uint[1] << 40) | ((uint64_t)enCoefC2048.Uint[2] << 48) | ((uint64_t)enCoefC2048.Uint[3] << 56);
+	tmpData = enCoefA4096.Uint32 | ((uint64_t)enCoefB4096.Uint32 << 32);
 	PL[idxPL++] = tmpData;					// 12, 13
 
-	tmpData = enCoefA4096.Uint[0] | ((uint64_t)enCoefA4096.Uint[1] << 8) | ((uint64_t)enCoefA4096.Uint[2] << 16) | ((uint64_t)enCoefA4096.Uint[3] << 24)
-			| ((uint64_t)enCoefB4096.Uint[0] << 32) | ((uint64_t)enCoefB4096.Uint[1] << 40) | ((uint64_t)enCoefB4096.Uint[2] << 48) | ((uint64_t)enCoefB4096.Uint[3] << 56);
+	tmpData = enCoefC4096.Uint32;
 	PL[idxPL++] = tmpData;					// 14, 15
 
-	tmpData = enCoefC4096.Uint[0] | ((uint64_t)enCoefC4096.Uint[1] << 8) | ((uint64_t)enCoefC4096.Uint[2] << 16) | ((uint64_t)enCoefC4096.Uint[3] << 24);
-	PL[idxPL++] = tmpData;					// 16, 17
-
-	PL[idxPL++] = 0xDDDDDDFFCCCCCCFF;			// 18, 19
+	PL[idxPL++] = 0xDDDDDDFFCCCCCCFF;		// 16, 17
 	//PL[idxPL++] = MAGIC_KEY;		// 20, 21
 	/* Test */
 	//PL[1] = 0x11111111;
@@ -194,6 +185,8 @@ HAL_StatusTypeDef writeFlash() {
 
 /* Чтение параметров из flash контроллера */
 HAL_StatusTypeDef readFlash() {
+
+	uint16_t idxPL = 2;
 	/* Flash уже инициализирована ? */
 
 	//int jjj = 0;
@@ -210,7 +203,7 @@ HAL_StatusTypeDef readFlash() {
 	//}
 	//HAL_UART_Transmit(&huart2, (uint8_t *)"\n\r", 2, 100);
 
-	if (*(__IO uint32_t*) (MAGIC_KEY_ADDRESS) == MAGIC_KEY) {
+	//if (*(__IO uint32_t*) (MAGIC_KEY_ADDRESS) == MAGIC_KEY) {
 		//bzero((char *) uartBuffer, sizeof(uartBuffer));
 		//sprintf(uartBuffer, "Magic key found.\n\r");
 		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
@@ -270,7 +263,8 @@ HAL_StatusTypeDef readFlash() {
 		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
 		/* Параметры устройства */
-		uint32_t tmpData = *(__IO uint32_t*) ((uint32_t) PARAMETERS_ADDRESS);
+		//uint32_t tmpData = *(__IO uint32_t*) ((uint32_t) PARAMETERS_ADDRESS);
+		uint64_t tmpData = PL[idxPL++];
 		SoundEnable = tmpData & 1;
 		LEDEnable = tmpData & 1 << 1;
 		VibroEnable = tmpData & 1 << 2;
@@ -286,79 +280,82 @@ HAL_StatusTypeDef readFlash() {
 		comparatorLevel = (tmpData >> 22) & 0x3FF;	// DAC компаратора с 22 по 31 разряды
 
 		/* Коэффицент пересчета cps в uRh */
-		tmpData = *(__IO uint32_t*) ((uint32_t) CONVERT_CPS2RH);
-		calcCoeff.Uint[0] = tmpData & 0x000000FF;
-		calcCoeff.Uint[1] = tmpData >> 8 & 0x000000FF;
-		calcCoeff.Uint[2] = tmpData >> 16 & 0x000000FF;
-		calcCoeff.Uint[3] = tmpData >> 24 & 0x000000FF;
+		//tmpData = *(__IO uint32_t*) ((uint32_t) CONVERT_CPS2RH);
+		calcCoeff.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
 
 		/* Значения порогов */
-		level1 = *(__IO uint32_t*) ((uint32_t) LEVEL1_ADDRESS);
-		level2 = *(__IO uint32_t*) ((uint32_t) LEVEL2_ADDRESS);
-		level3 = *(__IO uint32_t*) ((uint32_t) LEVEL3_ADDRESS);
+		tmpData = PL[idxPL++];
+		level1 = tmpData & 0xFFFF;
+		level2 = (tmpData >> 16) & 0xFFFF;
+		level3 = (tmpData >> 32) & 0xFFFF;
 
 		/* Коэффициент A полинома преобразования канала в энергию для 1024 каналов*/
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A1024_ADDRESS);
-		enCoefA1024.Uint[0] = tmpData & 0x000000FF;
-		enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefA1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A1024_ADDRESS);
+		tmpData = PL[idxPL++];
+		enCoefA1024.Uint32 = tmpData & 0xFFFFFFFF;
+		//enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		//enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		//enCoefA1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент B полинома преобразования канала в энергию для 1024 каналов */
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B1024_ADDRESS);
-		enCoefB1024.Uint[0] = tmpData & 0x000000FF;
-		enCoefB1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefB1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefB1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B1024_ADDRESS);
+		enCoefB1024.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
+		//enCoefB1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		//enCoefB1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		//enCoefB1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент B полинома преобразования канала в энергию для 1024 каналов */
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C1024_ADDRESS);
-		enCoefC1024.Uint[0] = tmpData & 0x000000FF;
-		enCoefC1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefC1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefC1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C1024_ADDRESS);
+		tmpData = PL[idxPL++];
+		enCoefC1024.Uint32 = tmpData & 0xFFFFFFFF;
+		//enCoefC1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		//enCoefC1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		//enCoefC1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент A полинома преобразования канала в энергию для 2048 каналов*/
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A2048_ADDRESS);
-		enCoefA1024.Uint[0] = tmpData & 0x000000FF;
-		enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefA1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A2048_ADDRESS);
+		enCoefA2048.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
+		//enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
+		//enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
+		//enCoefA1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент B полинома преобразования канала в энергию для 2048 каналов */
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B2048_ADDRESS);
-		enCoefB1024.Uint[0] = tmpData & 0x000000FF;
-		enCoefB1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefB1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefB1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B2048_ADDRESS);
+		tmpData = PL[idxPL++];
+		enCoefB2048.Uint32 = tmpData & 0xFFFFFFFF;
+		//enCoefB2048.Uint[1] = tmpData >> 8 & 0x000000FF;
+		//enCoefB2048.Uint[2] = tmpData >> 16 & 0x000000FF;
+		//enCoefB2048.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент B полинома преобразования канала в энергию для 2048 каналов */
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C2048_ADDRESS);
-		enCoefC1024.Uint[0] = tmpData & 0x000000FF;
-		enCoefC1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefC1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefC1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C2048_ADDRESS);
+		enCoefC2048.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
+		//enCoefC2048.Uint[1] = tmpData >> 8 & 0x000000FF;
+		//enCoefC2048.Uint[2] = tmpData >> 16 & 0x000000FF;
+		//enCoefC2048.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент A полинома преобразования канала в энергию для 4096 каналов*/
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A4096_ADDRESS);
-		enCoefA1024.Uint[0] = tmpData & 0x000000FF;
-		enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefA1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A4096_ADDRESS);
+		tmpData = PL[idxPL++];
+		enCoefA4096.Uint32 = tmpData & 0xFFFFFFFF;
+		//enCoefA4096.Uint[1] = tmpData >> 8 & 0x000000FF;
+		//enCoefA4096.Uint[2] = tmpData >> 16 & 0x000000FF;
+		//enCoefA4096.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент B полинома преобразования канала в энергию для 4096 каналов */
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B4096_ADDRESS);
-		enCoefB1024.Uint[0] = tmpData & 0x000000FF;
-		enCoefB1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefB1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefB1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B4096_ADDRESS);
+		enCoefB4096.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
+		//enCoefB4096.Uint[1] = tmpData >> 8 & 0x000000FF;
+		//enCoefB4096.Uint[2] = tmpData >> 16 & 0x000000FF;
+		//enCoefB4096.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент B полинома преобразования канала в энергию для 4096 каналов */
-		tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C4096_ADDRESS);
-		enCoefC1024.Uint[0] = tmpData & 0x000000FF;
-		enCoefC1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		enCoefC1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		enCoefC1024.Uint[3] = tmpData >> 24 & 0x000000FF;
+		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C4096_ADDRESS);
+		tmpData = PL[idxPL++];
+		enCoefC4096.Uint32 = tmpData & 0xFFFFFFFF;
+		//enCoefC4096.Uint[1] = tmpData >> 8 & 0x000000FF;
+		//enCoefC4096.Uint[2] = tmpData >> 16 & 0x000000FF;
+		//enCoefC4096.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/*bzero((char *) uartBuffer, sizeof(uartBuffer));
 		sprintf(uartBuffer,
@@ -395,7 +392,7 @@ HAL_StatusTypeDef readFlash() {
 				resolution, HVoltage, comparatorLevel, calcCoeff.Float, level1, level2, level3, enCoefA.Float, enCoefB.Float, enCoefC.Float);
 		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);*/
 
-	} else { // Ключ не найден, нужно инициализировать flash
+	//} else { // Ключ не найден, нужно инициализировать flash
 		//bzero((char *) uartBuffer, sizeof(uartBuffer));
 		//sprintf(uartBuffer, "Magic key not found.\n\r");
 		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
@@ -403,6 +400,7 @@ HAL_StatusTypeDef readFlash() {
 		/*
 		 *	Параметры по умолчанию
 		 */
+		/*
 		SoundEnable = true;
 		LEDEnable = false;
 		VibroEnable = true;
@@ -429,6 +427,10 @@ HAL_StatusTypeDef readFlash() {
 		enCoefB4096.Float = 1.1;
 		enCoefC4096.Float = 2.2;
 		//if(writeFlash() == HAL_OK) {	}
-	}
+	//}
+
+	 */
 	return HAL_OK;
+
 }
+

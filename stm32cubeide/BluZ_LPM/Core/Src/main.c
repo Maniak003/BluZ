@@ -221,29 +221,7 @@ int main(void)
   SystemPower_Config();
 
   /* USER CODE BEGIN SysInit */
-  if (readFlash() == HAL_OK) {
-  }
-  if (autoStartSpecrometr) {
-	  switch (resolution) {
-	  case 0:
-		  dataType = 1;
-		  break;
-	  case 1:
-		  dataType = 2;
-		  break;
-	  case 2:
-		  dataType = 3;
-		  break;
-	  default:
-		  dataType = 1;
-	  	  resolution = 0;
-		  break;
-	  }
-  } else {
-	  dataType = 0;
-  }
-  /* Пересчет уровней в uint32_t для ускорения обработки */
-  calcPulseLevel();
+  dataType = 0;
 
   /* USER CODE END SysInit */
 
@@ -267,6 +245,29 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  if (readFlash() == HAL_OK) {
+  }
+  if (autoStartSpecrometr) {
+	  switch (resolution) {
+	  case 0:
+		  dataType = 1;
+		  break;
+	  case 1:
+		  dataType = 2;
+		  break;
+	  case 2:
+		  dataType = 3;
+		  break;
+	  default:
+		  dataType = 1;
+	  	  resolution = 0;
+		  break;
+	  }
+  } else {
+	  dataType = 0;
+  }
+  /* Пересчет уровней в uint32_t для ускорения обработки */
+  calcPulseLevel();
   /*
    * Настройка порога компаратора
    */
