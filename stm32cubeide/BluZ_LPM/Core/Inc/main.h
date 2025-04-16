@@ -109,11 +109,13 @@ union dataC {
 	float Float;
 	uint16_t Uint16[2];
 	uint8_t Uint[4];
+	uint32_t Uint32;
 };
 
 union dataA {
 	float Float;
 	uint16_t Uint[2];
+	uint32_t Uint32;
 };
 
 extern uint32_t level1_cps, level2_cps, level3_cps, tmp_level;

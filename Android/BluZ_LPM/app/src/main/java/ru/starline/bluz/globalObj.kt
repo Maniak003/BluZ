@@ -11,7 +11,13 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.Nullable
+import androidx.loader.content.Loader.ForceLoadContentObserver
 import androidx.viewpager2.widget.ViewPager2
+import java.sql.Array
+import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 /**
  * Created by ed on 27,июнь,2024
@@ -89,7 +95,8 @@ class globalObj {
     public lateinit var txtStat1: TextView
     public lateinit var txtStat2: TextView
     public lateinit var txtStat3: TextView
-    public var configDataReady: Boolean = false
+    public var configDataReady: Boolean = false         // Флаг готовности параметров из прибора
+    public var propButtonInit: Boolean = false          // Флаг активности изменения состояния переключателей
     private var saveStat1: String = ""
     private var saveStat2: String = ""
     private var saveStat3: String = ""
@@ -167,7 +174,6 @@ class globalObj {
     /* Параметры для хранения в приборе */
     public var propSoundKvant: Boolean = false      // Озвучка прихода частицы
     public var propLedKvant: Boolean = true         // Подсветка прихода частицы
-    public var propButtonInit: Boolean = false      // Флаг активности изменения состояния переключателей
     public var propLevel1: Int = 0
     public var propLevel2: Int = 0
     public var propLevel3: Int = 0
@@ -295,6 +301,174 @@ class globalObj {
     public var HWCoef4096B: Float = 0.0f
     public var HWCoef4096C: Float = 0.0f
 
+    /*
+    *   Справочник изотопов
+    */
+    public data class IsotopsCls (
+        var Energy: Int,
+        var Name: String,
+        var Activity: Int,
+        var Channel: Int
+    )
+    public var isotopSize: Int = 47
+    public var isotopDelta: Int = 3
+    val isotopList = Array(isotopSize) {IsotopsCls(0, "", 0, 0)}
+
+    /*
+    *   Функция находит изотоп по энергии в заданном диапазоне точности.
+    *   Выдается первый найденный изотоп
+    */
+    fun findIsotop(Energy: Int): IsotopsCls {
+        var fndIsotop: IsotopsCls = IsotopsCls(0, "", 0, 0)
+        for (ii in 0 until isotopSize ) {
+            if ((isotopList[ii].Energy >  Energy - isotopDelta) and (isotopList[ii].Energy <  Energy + isotopDelta)) {
+                fndIsotop.Energy = isotopList[ii].Energy
+                fndIsotop.Name = isotopList[ii].Name
+                fndIsotop.Activity = isotopList[ii].Activity
+                fndIsotop.Channel = isotopList[ii].Channel
+                break
+            }
+        }
+        return fndIsotop
+    }
+
+    /*
+    *   Функция подготавливает справочник изотопов
+    */
+    fun loadIsotop() {
+        isotopList[0].Energy = 26
+        isotopList[0].Name = "Am-241"
+        isotopList[1].Energy = 30
+        isotopList[1].Name = "I-131"
+        isotopList[2].Energy = 32
+        isotopList[2].Name = "Cs-137, Ba-137"
+        isotopList[3].Energy = 35
+        isotopList[3].Name = "I-125"
+        isotopList[4].Energy = 55
+        isotopList[4].Name = "Lu-176"
+        isotopList[5].Energy = 59
+        isotopList[5].Name = "Am-241"
+        isotopList[6].Energy = 75
+        isotopList[6].Name = "Pa-234m, U-238"
+        isotopList[7].Energy = 81
+        isotopList[7].Name = "Xe-133"
+        isotopList[8].Energy = 141
+        isotopList[8].Name = "Tc-99"
+        isotopList[9].Energy = 160
+        isotopList[9].Name = "I-123"
+        isotopList[10].Energy = 171
+        isotopList[10].Name = "In-111"
+        isotopList[11].Energy = 186
+        isotopList[11].Name = "Ra-226, Bi-214, Pb-214"
+        isotopList[12].Energy = 190
+        isotopList[12].Name = "U-235, U-238, Pa-234m"
+        isotopList[13].Energy = 202
+        isotopList[13].Name = "Lu-176"
+        isotopList[14].Energy = 208
+        isotopList[14].Name = "Lu-177"
+        isotopList[15].Energy = 238
+        isotopList[15].Name = "Th-232, Ac-228, Tl-208"
+        isotopList[16].Energy = 242
+        isotopList[16].Name = "Ra-226, Pb-214, Bi-214"
+        isotopList[17].Energy = 245
+        isotopList[17].Name = "In-111"
+        isotopList[18].Energy = 295
+        isotopList[18].Name = "Ra-226, Pb-214, Bi-214"
+        isotopList[19].Energy = 296
+        isotopList[19].Name = "Ir-192"
+        isotopList[20].Energy = 307
+        isotopList[20].Name = "Lu-176"
+        isotopList[21].Energy = 308
+        isotopList[21].Name = "Ir-192"
+        isotopList[22].Energy = 317
+        isotopList[22].Name = "Ir-192"
+        isotopList[23].Energy = 338
+        isotopList[23].Name = "Pb-212, Th-232, Ac-228, Tl-208"
+        isotopList[24].Energy = 351
+        isotopList[24].Name = "Ra-226, Pb-214, Bi-214"
+        isotopList[25].Energy = 364
+        isotopList[25].Name = "I-131"
+        isotopList[26].Energy = 392
+        isotopList[26].Name = "In-113m"
+        isotopList[27].Energy = 412
+        isotopList[27].Name = "Au-198"
+        isotopList[28].Energy = 468
+        isotopList[28].Name = "Ir-192"
+        isotopList[29].Energy = 511
+        isotopList[29].Name = "Annihilation"
+        isotopList[30].Energy = 538
+        isotopList[30].Name = "Pb-212,Th-232,Ac-228"
+        isotopList[31].Energy = 583
+        isotopList[31].Name = "Tl-208, Th-232, Ac-228"
+        isotopList[32].Energy = 609
+        isotopList[32].Name = "Ra-226, Pb-214, Bi-214"
+        isotopList[33].Energy = 662
+        isotopList[33].Name = "Ba-137, Cs-137"
+        isotopList[33].Activity = 838
+        isotopList[34].Energy = 750
+        isotopList[34].Name = "U-238, U-235, Pa-234m"
+        isotopList[35].Energy = 911
+        isotopList[35].Name = "Th-232, Pb-212, Ac-228, Tl-208"
+        isotopList[36].Energy = 920
+        isotopList[36].Name = "Tl-20"
+        isotopList[37].Energy = 1001
+        isotopList[37].Name = "U-238, U-235, Pa-234m"
+        isotopList[38].Energy = 1120
+        isotopList[38].Name = "Ra-226, Pb-214, Bi-214"
+        isotopList[39].Energy = 1173
+        isotopList[39].Name = "Co-60"
+        isotopList[40].Energy = 1332
+        isotopList[40].Name = "Co-60"
+        isotopList[41].Energy = 1460
+        isotopList[41].Name = "K-40"
+        isotopList[42].Energy = 1588
+        isotopList[42].Name = "Th-232, Ac-228"
+        isotopList[43].Energy = 1600
+        isotopList[43].Name = "Th-232, Pb-212, Ac-228, Tl-208"
+        isotopList[44].Energy = 1760
+        isotopList[44].Name = "Ra-226, Pb-214, Bi-214"
+        isotopList[45].Energy = 2200
+        isotopList[45].Name = "Ra-226, Pb-214, Bi-214"
+        isotopList[46].Energy = 2614
+        isotopList[46].Name = "Th-232, Pb-212, Ac-228, Tl-208"
+
+        /* Пересчитать канал для изотопов с активностью */
+        var cA = 0.0f
+        var cB = 0.0f
+        var cC = 0.0f
+        var DD = 0.0f
+        for (ii in 0 until isotopSize) {
+            if (isotopList[ii].Activity != 0) {         // Активность не нулевая, требуется получить номер канала для правильного выделения пика
+                when (GO.spectrResolution) {
+                    0 -> {  // Разрешение 1024
+                        cA = GO.propCoef1024A
+                        cB = GO.propCoef1024B
+                        cC = GO.propCoef1024C
+                    }
+                    1 -> {  // Разрешение 2048
+                        cA = GO.propCoef2048A
+                        cB = GO.propCoef2048B
+                        cC = GO.propCoef2048C
+                    }
+                    2 -> {  // Разрешение 4096
+                        cA = GO.propCoef4096A
+                        cB = GO.propCoef4096B
+                        cC = GO.propCoef4096C
+                    }
+                }
+                if ((cA != 0.0f) and (cB != 0.0f)) {
+                    /* Дискриминант */
+                    DD = cB.pow(2.0f) - 4 * cA * (cC - isotopList[ii].Energy)
+                    /* Если имеются реальные корни, выбираем наибольшее значение */
+                    if (DD > 0) {
+                        var x1 = (-cB + sqrt(DD)) / (2 * cA)
+                        var x2 = (-cB - sqrt(DD)) / (2 * cA)
+                        isotopList[ii].Channel = max(x1.toInt(), x2.toInt())
+                    }
+                }
+            }
+        }
+    }
 
     /*
     *   Чтение параметров прибора в закладку Setup

@@ -204,9 +204,10 @@ class BluetoothInterface(tv: TextView) {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
+                    /* Прибор подключен, меняем цвет индикатора. */
                     MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                         withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
-                            tv.setBackgroundColor(GO.mainContext.getColor(R.color.Green))
+                            tv.setBackgroundColor(GO.mainContext.getColor(R.color.Yellow))
                             if (GO.btnSpecterSSisInit) {
                                 //GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
                                 //GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
@@ -226,6 +227,7 @@ class BluetoothInterface(tv: TextView) {
                     }
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
+                    /* Прибор отключен, меняем цвет индикатора */
                     MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                         withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
                             tv.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
@@ -492,6 +494,8 @@ class BluetoothInterface(tv: TextView) {
                             /* Накопление массива закончено можно вызывать обновление экрана */
                             MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                                 withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                                    /* Контрольная сумма совпала, меняем цвет индикатора */
+                                    tv.setBackgroundColor(GO.mainContext.getColor(R.color.Green))
                                     /*
                                     *  Вывод статистики
                                     *  Перевод в дни, часы, минуты, секунды
@@ -584,7 +588,6 @@ class BluetoothInterface(tv: TextView) {
                                     GO.HWpropComparator = (GO.receiveData[52] + (GO.receiveData[53] * 256u)).toUShort()
 
                                     //GO.HWspectrResolution =
-
 
                                     GO.HWCoef1024A = java.lang.Float.intBitsToFloat((GO.receiveData[34] + (GO.receiveData[35] * 256u)  + (GO.receiveData[36] * 65536u) + (GO.receiveData[37] * 16777216u)).toInt())
                                     GO.HWCoef1024B = java.lang.Float.intBitsToFloat((GO.receiveData[38] + (GO.receiveData[39] * 256u)  + (GO.receiveData[40] * 65536u) + (GO.receiveData[41] * 16777216u)).toInt())

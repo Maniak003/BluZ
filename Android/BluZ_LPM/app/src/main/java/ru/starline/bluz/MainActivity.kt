@@ -188,6 +188,8 @@ public class MainActivity : FragmentActivity() {
         */
         GO.PP = propControl()
         GO.readConfigParameters()
+        /* Загрузка справочника изотопов */
+        GO.loadIsotop()
     }
 }
 

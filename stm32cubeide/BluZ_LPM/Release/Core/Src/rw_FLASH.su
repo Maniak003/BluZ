@@ -1,3 +1,3 @@
-../Core/Src/rw_FLASH.c:45:6:CB_SMA	8	static
+../Core/Src/rw_FLASH.c:45:6:CB_SMA	0	static
 ../Core/Src/rw_FLASH.c:66:19:writeFlash	16	static
-../Core/Src/rw_FLASH.c:196:19:readFlash	8	static
+../Core/Src/rw_FLASH.c:187:19:readFlash	8	static
