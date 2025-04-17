@@ -448,6 +448,8 @@ class BluetoothInterface(tv: TextView) {
                            * 37, 38 - Коэффициент полинома A для 4096 каналов
                            * 39, 40 - Коэффициент полинома B для 4096 каналов
                            * 41, 42 - Коэффициент полинома C для 4096 каналов
+                           * 43, 44 - Время работы спектрометра в секундах
+                           * 45, 46 - Количество импульсов от спектрометра
                            * 49  - Конец заголовка
                            *
                            * 50  - Данные дозиметра
@@ -496,6 +498,10 @@ class BluetoothInterface(tv: TextView) {
                                 withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
                                     /* Контрольная сумма совпала, меняем цвет индикатора */
                                     tv.setBackgroundColor(GO.mainContext.getColor(R.color.Green))
+                                    
+                                    /* Количество импульсов и время набора спектра */
+                                    GO.spectrometerTime = GO.receiveData[86] + GO.receiveData[87] * 256u + GO.receiveData[88] * 65536u + GO.receiveData[89] * 16777216u
+                                    GO.spectrometerPulse = GO.receiveData[90] + GO.receiveData[91] * 256u + GO.receiveData[92] * 65536u + GO.receiveData[93] * 16777216u
                                     /*
                                     *  Вывод статистики
                                     *  Перевод в дни, часы, минуты, секунды
@@ -505,8 +511,18 @@ class BluetoothInterface(tv: TextView) {
                                     var mm: Int = GO.messTm.toInt() / 60 % 60
                                     var ss: Int = GO.messTm.toInt() / 1 % 60
 
-                                    var tmpStr = String.format("Time:%02d:%02d:%02d:%02d",  dd, hh, mm, ss)
-                                    //Log.d("BluZ-BT", tmpStr)
+                                    var ddS: Int = GO.spectrometerTime.toInt() / 86400
+                                    var hhS: Int = (GO.spectrometerTime.toInt() - ddS * 86400) /  3600
+                                    var mmS: Int = GO.spectrometerTime.toInt() / 60 % 60
+                                    var ssS: Int = GO.spectrometerTime.toInt() / 1 % 60
+
+                                    var tmpStr: String
+                                    if (GO.viewPager.currentItem == 0) {
+                                        tmpStr = String.format("Time:%02d:%02d:%02d:%02d",  ddS, hhS, mmS, ssS)
+                                    } else {
+                                        tmpStr = String.format("Time:%02d:%02d:%02d:%02d",  dd, hh, mm, ss)
+                                    }
+                                        //Log.d("BluZ-BT", tmpStr)
                                     var tmpMC: Int = GO.tempMC.toInt()
                                     var tmpBL = GO.battLevel
 
@@ -518,16 +534,26 @@ class BluetoothInterface(tv: TextView) {
                                         GO.txtStat1.setText(Html.fromHtml("$tmpMC&#176C   <font color=#00ff00> $tmpBL v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
                                     }
 
-                                    /* Расчет погрешности по трем сигмам */
-                                    var aquracy3S: Double = 300.0 / sqrt(GO.PCounter.toDouble())
-
-                                    GO.txtStat2.setText(String.format("Total:%d(%.2f%%) Avg:%.2f", GO.PCounter.toInt(), aquracy3S, GO.cps))
-                                    var tmpPS = GO.pulsePerSec
+                                    var aquracy3S: Double
+                                    var cpsS: Float
+                                    var pulseS: Int
+                                    if (GO.viewPager.currentItem == 0) {        // Статистика для спектрометра
+                                        /* Расчет погрешности по трем сигмам для спектрометра */
+                                        aquracy3S = 300.0 / sqrt(GO.spectrometerPulse.toDouble())
+                                        cpsS = GO.spectrometerPulse.toFloat() / GO.spectrometerTime.toFloat()
+                                        pulseS = GO.spectrometerPulse.toInt()
+                                    } else { // Статистика для дозиметра
+                                        /* Расчет погрешности по трем сигмам для дозиметра */
+                                        aquracy3S = 300.0 / sqrt(GO.PCounter.toDouble())
+                                        cpsS = GO.cps
+                                        pulseS = GO.PCounter.toInt()
+                                    }
+                                    GO.txtStat2.setText(String.format("Total:%d(%.2f%%) Avg:%.2f", pulseS, aquracy3S, cpsS))
 
                                     /* Перевод CPS в uRh */
-                                    var doze: Float =  Math.round(tmpPS.toFloat() * GO.propCPS2UR * 100.0f) / 100.0f
+                                    var doze: Float =  Math.round(GO.pulsePerSec.toFloat() * GO.propCPS2UR * 100.0f) / 100.0f
                                     var avgDoze : Float = (Math.round(GO.cps * GO.propCPS2UR * 100.0f) / 100.0f).toFloat()
-                                    GO.txtStat3.setText("CPS:$tmpPS ($doze uRh) Avg:$avgDoze uRh")
+                                    GO.txtStat3.setText("CPS:${GO.pulsePerSec} ($doze uRh) Avg:$avgDoze uRh")
 
                                     /*
                                     *   Загрузка данных спектрометра дозиметра и логов из массивов.

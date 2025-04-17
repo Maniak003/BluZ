@@ -216,7 +216,7 @@ class SaveBqMon {
                 "<BackgroundSpectrumFile />\n" +
                 "<StartTime>" + startTime + "</StartTime>\n" +
                 "<EndTime>" + endTime + "</EndTime>\n" +
-                "<PresetTime>" + GO.messTm.toString() + "</PresetTime>\n" +
+                "<PresetTime>" + GO.spectrometerTime.toString() + "</PresetTime>\n" +
                 "<EnergySpectrum>\n" +
                 "<NumberOfChannels>1024</NumberOfChannels>\n" +
                 /* Correct by Am6er */
@@ -228,9 +228,9 @@ class SaveBqMon {
                 resolutionStr +
                 "</Coefficients>\n" +
                 "</EnergyCalibration>\n" +
-                "<ValidPulseCount>" + pulseSumm.toInt() + "</ValidPulseCount>\n" +
-                "<TotalPulseCount>" + pulseSumm.toInt() + "</TotalPulseCount>\n" +
-                "<MeasurementTime>" + GO.messTm.toString() + "</MeasurementTime>\n" +
+                "<ValidPulseCount>" + GO.spectrometerPulse.toInt() + "</ValidPulseCount>\n" +
+                "<TotalPulseCount>" + GO.spectrometerPulse.toInt() + "</TotalPulseCount>\n" +
+                "<MeasurementTime>" + GO.spectrometerTime.toString() + "</MeasurementTime>\n" +
                 "<NumberOfSamples>0</NumberOfSamples>\n" +
                 "<Spectrum>\n"
             outputStream.write(dataStr.toByteArray())

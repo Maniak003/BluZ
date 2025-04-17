@@ -95,11 +95,12 @@ class globalObj {
     public lateinit var txtStat1: TextView
     public lateinit var txtStat2: TextView
     public lateinit var txtStat3: TextView
+    public lateinit var txtIsotopInfo: TextView         // Текст для вывода данных об изотопе
     public var configDataReady: Boolean = false         // Флаг готовности параметров из прибора
     public var propButtonInit: Boolean = false          // Флаг активности изменения состояния переключателей
-    private var saveStat1: String = ""
-    private var saveStat2: String = ""
-    private var saveStat3: String = ""
+    //private var saveStat1: String = ""
+    //private var saveStat2: String = ""
+    //private var saveStat3: String = ""
 
     /*
     *   Элементы управления закладки Setup
@@ -142,15 +143,15 @@ class globalObj {
     /*
     *   Цвета для графика дозиметра
     */
-    public var ColorDosimeter: Int = 0
-    public var ColorDosimeterSMA: Int = 0
+    public var ColorDosimeter: Int = 0              // Цвет графика дозиметра
+    public var ColorDosimeterSMA: Int = 0           // Цвет графика SMA дозиметра
     /*
      *  Цвета для графика спектра типа линия
      */
-    public var ColorLin: Int = 0
-    public var ColorLog: Int = 0
-    public var ColorFone: Int = 0
-    public var ColorFoneLg: Int = 0
+    public var ColorLin: Int = 0                    // Цвет линейного графика
+    public var ColorLog: Int = 0                    // Цвет логарифмического графика
+    public var ColorFone: Int = 0                   // Цвет линейного графика фона
+    public var ColorFoneLg: Int = 0                 // Цвет логарифмического графика фона
     /*
      *  Цвета для графика типа гистограмма
      */
@@ -166,26 +167,29 @@ class globalObj {
     public var PCounter: UInt = 0u                  // Всего принято частиц
     public var cps: Float = 0.0f                    // Среднее cps
     public var messTm:UInt = 0u                     // Время измерения
+    public var spectrometerTime:UInt = 0u           // Время работы спектрометра
+    public var spectrometerPulse: UInt = 0u         // Количество импульсов от спектрометра
     public var battLevel: Float = 0.0f              // Уровень батареии
     public var tempMC: Float = 0.0f                 // Температура МК
     public var pulsePerSec: UInt = 0u               // CPS за короткий интервал.
     public var rejectChann: Int = 10                // Количество каналов от начала, не отображаемых на гистограмме
+    public var realResolution: Int = 10             // Разрешение на линии 662 кЭв в каналах
 
     /* Параметры для хранения в приборе */
     public var propSoundKvant: Boolean = false      // Озвучка прихода частицы
     public var propLedKvant: Boolean = true         // Подсветка прихода частицы
-    public var propLevel1: Int = 0
-    public var propLevel2: Int = 0
-    public var propLevel3: Int = 0
-    public var propSoundLevel1: Boolean = true
-    public var propSoundLevel2: Boolean = true
-    public var propSoundLevel3: Boolean = true
-    public var propVibroLevel1: Boolean = true
-    public var propVibroLevel2: Boolean = true
-    public var propVibroLevel3: Boolean = true
+    public var propLevel1: Int = 0                  // Значение первого уровня
+    public var propLevel2: Int = 0                  // Значение второго уровня
+    public var propLevel3: Int = 0                  // Значение третьего уровня
+    public var propSoundLevel1: Boolean = true      // Разрешение звука первого уровня
+    public var propSoundLevel2: Boolean = true      // Разрешение звука второго уровня
+    public var propSoundLevel3: Boolean = true      // Разрешение звука третьего уровня
+    public var propVibroLevel1: Boolean = true      // Разрешение вибро первого уровня
+    public var propVibroLevel2: Boolean = true      // Разрешение вибро второго уровня
+    public var propVibroLevel3: Boolean = true      // Разрешение вибро третьего уровня
     public var propAutoStartSpectrometr: Boolean = false
-    public var propCPS2UR: Float = 0.0f
-    public var propCoef1024A: Float = 0.0f
+    public var propCPS2UR: Float = 0.0f             // Коэффициент пересчета CPS в uRh
+    public var propCoef1024A: Float = 0.0f          // Коэффициенты полинома преобразования канала в энергию
     public var propCoef1024B: Float = 0.0f
     public var propCoef1024C: Float = 0.0f
     public var propCoef2048A: Float = 0.0f
@@ -194,8 +198,8 @@ class globalObj {
     public var propCoef4096A: Float = 0.0f
     public var propCoef4096B: Float = 0.0f
     public var propCoef4096C: Float = 0.0f
-    public var propComparator: UShort = 0u
-    public var propHVoltage: UShort = 0u
+    public var propComparator: UShort = 0u          // Уровень компаратора
+    public var propHVoltage: UShort = 0u            // Уровень высокого напряжения
     public var windowSMA: Int = 5
 
     public lateinit var btnSaveBQ: Button
@@ -310,8 +314,8 @@ class globalObj {
         var Activity: Int,
         var Channel: Int
     )
-    public var isotopSize: Int = 47
-    public var isotopDelta: Int = 3
+    public var isotopSize: Int = 47     // Количество записей в справочнике изотопов.
+    public var isotopDelta: Int = 3     // Погрешность поиска в справочнике.
     val isotopList = Array(isotopSize) {IsotopsCls(0, "", 0, 0)}
 
     /*
@@ -336,101 +340,54 @@ class globalObj {
     *   Функция подготавливает справочник изотопов
     */
     fun loadIsotop() {
-        isotopList[0].Energy = 26
-        isotopList[0].Name = "Am-241"
-        isotopList[1].Energy = 30
-        isotopList[1].Name = "I-131"
-        isotopList[2].Energy = 32
-        isotopList[2].Name = "Cs-137, Ba-137"
-        isotopList[3].Energy = 35
-        isotopList[3].Name = "I-125"
-        isotopList[4].Energy = 55
-        isotopList[4].Name = "Lu-176"
-        isotopList[5].Energy = 59
-        isotopList[5].Name = "Am-241"
-        isotopList[6].Energy = 75
-        isotopList[6].Name = "Pa-234m, U-238"
-        isotopList[7].Energy = 81
-        isotopList[7].Name = "Xe-133"
-        isotopList[8].Energy = 141
-        isotopList[8].Name = "Tc-99"
-        isotopList[9].Energy = 160
-        isotopList[9].Name = "I-123"
-        isotopList[10].Energy = 171
-        isotopList[10].Name = "In-111"
-        isotopList[11].Energy = 186
-        isotopList[11].Name = "Ra-226, Bi-214, Pb-214"
-        isotopList[12].Energy = 190
-        isotopList[12].Name = "U-235, U-238, Pa-234m"
-        isotopList[13].Energy = 202
-        isotopList[13].Name = "Lu-176"
-        isotopList[14].Energy = 208
-        isotopList[14].Name = "Lu-177"
-        isotopList[15].Energy = 238
-        isotopList[15].Name = "Th-232, Ac-228, Tl-208"
-        isotopList[16].Energy = 242
-        isotopList[16].Name = "Ra-226, Pb-214, Bi-214"
-        isotopList[17].Energy = 245
-        isotopList[17].Name = "In-111"
-        isotopList[18].Energy = 295
-        isotopList[18].Name = "Ra-226, Pb-214, Bi-214"
-        isotopList[19].Energy = 296
-        isotopList[19].Name = "Ir-192"
-        isotopList[20].Energy = 307
-        isotopList[20].Name = "Lu-176"
-        isotopList[21].Energy = 308
-        isotopList[21].Name = "Ir-192"
-        isotopList[22].Energy = 317
-        isotopList[22].Name = "Ir-192"
-        isotopList[23].Energy = 338
-        isotopList[23].Name = "Pb-212, Th-232, Ac-228, Tl-208"
-        isotopList[24].Energy = 351
-        isotopList[24].Name = "Ra-226, Pb-214, Bi-214"
-        isotopList[25].Energy = 364
-        isotopList[25].Name = "I-131"
-        isotopList[26].Energy = 392
-        isotopList[26].Name = "In-113m"
-        isotopList[27].Energy = 412
-        isotopList[27].Name = "Au-198"
-        isotopList[28].Energy = 468
-        isotopList[28].Name = "Ir-192"
-        isotopList[29].Energy = 511
-        isotopList[29].Name = "Annihilation"
-        isotopList[30].Energy = 538
-        isotopList[30].Name = "Pb-212,Th-232,Ac-228"
-        isotopList[31].Energy = 583
-        isotopList[31].Name = "Tl-208, Th-232, Ac-228"
-        isotopList[32].Energy = 609
-        isotopList[32].Name = "Ra-226, Pb-214, Bi-214"
-        isotopList[33].Energy = 662
-        isotopList[33].Name = "Ba-137, Cs-137"
-        isotopList[33].Activity = 838
-        isotopList[34].Energy = 750
-        isotopList[34].Name = "U-238, U-235, Pa-234m"
-        isotopList[35].Energy = 911
-        isotopList[35].Name = "Th-232, Pb-212, Ac-228, Tl-208"
-        isotopList[36].Energy = 920
-        isotopList[36].Name = "Tl-20"
-        isotopList[37].Energy = 1001
-        isotopList[37].Name = "U-238, U-235, Pa-234m"
-        isotopList[38].Energy = 1120
-        isotopList[38].Name = "Ra-226, Pb-214, Bi-214"
-        isotopList[39].Energy = 1173
-        isotopList[39].Name = "Co-60"
-        isotopList[40].Energy = 1332
-        isotopList[40].Name = "Co-60"
-        isotopList[41].Energy = 1460
-        isotopList[41].Name = "K-40"
-        isotopList[42].Energy = 1588
-        isotopList[42].Name = "Th-232, Ac-228"
-        isotopList[43].Energy = 1600
-        isotopList[43].Name = "Th-232, Pb-212, Ac-228, Tl-208"
-        isotopList[44].Energy = 1760
-        isotopList[44].Name = "Ra-226, Pb-214, Bi-214"
-        isotopList[45].Energy = 2200
-        isotopList[45].Name = "Ra-226, Pb-214, Bi-214"
-        isotopList[46].Energy = 2614
-        isotopList[46].Name = "Th-232, Pb-212, Ac-228, Tl-208"
+        var idxIst = 0
+        isotopList[idxIst++] = IsotopsCls(26, "Am-241", 0, 0)                           // 0
+        isotopList[idxIst++] = IsotopsCls(30, "I-131", 0, 0)                            // 1
+        isotopList[idxIst++] = IsotopsCls(32, "Cs-137, Ba-137", 0, 0)                   // 2
+        isotopList[idxIst++] = IsotopsCls(35, "I-125", 0, 0)                            // 3
+        isotopList[idxIst++] = IsotopsCls(55, "Lu-176", 0, 0)                           // 4
+        isotopList[idxIst++] = IsotopsCls(59, "Am-241", 0, 0)                           // 5
+        isotopList[idxIst++] = IsotopsCls(75, "Pa-234m, U-238", 0, 0)                   // 6
+        isotopList[idxIst++] = IsotopsCls(81, "Xe-133", 0, 0)                           // 7
+        isotopList[idxIst++] = IsotopsCls(141, "Tc-99", 0, 0)                           // 8
+        isotopList[idxIst++] = IsotopsCls(160, "I-123", 0, 0)                           // 9
+        isotopList[idxIst++] = IsotopsCls(171, "In-111", 0, 0)                          // 10
+        isotopList[idxIst++] = IsotopsCls(186, "Ra-226, Bi-214, Pb-214", 0, 0)          // 11
+        isotopList[idxIst++] = IsotopsCls(190, "U-235, U-238, Pa-234m", 0, 0)           // 12
+        isotopList[idxIst++] = IsotopsCls(202, "Lu-176", 0, 0)                          // 13
+        isotopList[idxIst++] = IsotopsCls(208, "Lu-177", 0, 0)                          // 14
+        isotopList[idxIst++] = IsotopsCls(238, "Th-232, Ac-228, Tl-208", 0, 0)          // 15
+        isotopList[idxIst++] = IsotopsCls(242, "Ra-226, Pb-214, Bi-214", 0, 0)          // 16
+        isotopList[idxIst++] = IsotopsCls(245, "In-111", 0, 0)                          // 17
+        isotopList[idxIst++] = IsotopsCls(295, "Ra-226, Pb-214, Bi-214", 0, 0)          // 18
+        isotopList[idxIst++] = IsotopsCls(296, "Ir-192", 0, 0)                          // 19
+        isotopList[idxIst++] = IsotopsCls(307, "Lu-176", 0, 0)                          // 20
+        isotopList[idxIst++] = IsotopsCls(308, "Ir-192", 0, 0)                          // 21
+        isotopList[idxIst++] = IsotopsCls(317, "Ir-192", 0, 0)                          // 22
+        isotopList[idxIst++] = IsotopsCls(338, "Pb-212, Th-232, Ac-228, Tl-208", 0, 0)  // 23
+        isotopList[idxIst++] = IsotopsCls(351, "Ra-226, Pb-214, Bi-214", 0, 0)          // 24
+        isotopList[idxIst++] = IsotopsCls(364, "I-131", 0, 0)                           // 25
+        isotopList[idxIst++] = IsotopsCls(392, "In-113m", 0, 0)                         // 26
+        isotopList[idxIst++] = IsotopsCls(412, "Au-198", 0, 0)                          // 27
+        isotopList[idxIst++] = IsotopsCls(468, "Ir-192", 0, 0)                          // 28
+        isotopList[idxIst++] = IsotopsCls(511, "Annihilation", 0, 0)                    // 29
+        isotopList[idxIst++] = IsotopsCls(538, "Pb-212,Th-232,Ac-228", 0, 0)            // 30
+        isotopList[idxIst++] = IsotopsCls(583, "Tl-208, Th-232, Ac-228", 0, 0)          // 31
+        isotopList[idxIst++] = IsotopsCls(609, "Ra-226, Pb-214, Bi-214", 0, 0)          // 32
+        isotopList[idxIst++] = IsotopsCls(662, "Ba-137, Cs-137", 838, 0)                // 33
+        isotopList[idxIst++] = IsotopsCls(750, "U-238, U-235, Pa-234m", 0, 0)           // 34
+        isotopList[idxIst++] = IsotopsCls(911, "Th-232, Pb-212, Ac-228, Tl-208", 0, 0)  // 35
+        isotopList[idxIst++] = IsotopsCls(920, "Tl-20", 0, 0)                           // 36
+        isotopList[idxIst++] = IsotopsCls(1001, "U-238, U-235, Pa-234m", 0, 0)          // 37
+        isotopList[idxIst++] = IsotopsCls(1120, "Ra-226, Pb-214, Bi-214", 0, 0)         // 38
+        isotopList[idxIst++] = IsotopsCls(1173, "Co-60", 0, 0)                          // 39
+        isotopList[idxIst++] = IsotopsCls(1332, "Co-60", 0, 0)                          // 40
+        isotopList[idxIst++] = IsotopsCls(1460, "K-40", 0, 0)                           // 41
+        isotopList[idxIst++] = IsotopsCls(1588, "Th-232, Ac-228", 0, 0)                 // 42
+        isotopList[idxIst++] = IsotopsCls(1600, "Th-232, Pb-212, Ac-228, Tl-208", 0, 0) // 43
+        isotopList[idxIst++] = IsotopsCls(1760, "Ra-226, Pb-214, Bi-214", 0, 0)         // 44
+        isotopList[idxIst++] = IsotopsCls(2200, "Ra-226, Pb-214, Bi-214", 0, 0)         // 45
+        isotopList[idxIst++] = IsotopsCls(2614, "Th-232, Pb-212, Ac-228, Tl-208", 0, 0) // 46
 
         /* Пересчитать канал для изотопов с активностью */
         var cA = 0.0f

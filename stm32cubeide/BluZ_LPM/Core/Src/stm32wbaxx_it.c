@@ -265,12 +265,15 @@ void EXTI15_IRQHandler(void)
   /* USER CODE END EXTI15_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(Sync_Pin);
   /* USER CODE BEGIN EXTI15_IRQn 1 */
-  pulseCounter++;
-  pulseCounterSecond++;
-	/* Оповещение об импульсе */
-  if (LEDEnable) {
-	  NotifyAct(LED_NOTIFY, 0);
-  }
+  //if ((Sync_GPIO_Port->IDR & Sync_Pin) != 0x00U) {
+  //if (HAL_GPIO_ReadPin(Sync_GPIO_Port, Sync_Pin)) {
+	  pulseCounter++;
+	  pulseCounterSecond++;
+		/* Оповещение об импульсе */
+	  if (LEDEnable) {
+		  NotifyAct(LED_NOTIFY, 0);
+	  }
+  //}
   /* USER CODE END EXTI15_IRQn 1 */
 }
 
@@ -285,6 +288,7 @@ void GPDMA1_Channel0_IRQHandler(void)
   HAL_DMA_IRQHandler(&handle_GPDMA1_Channel0);
   /* USER CODE BEGIN GPDMA1_Channel0_IRQn 1 */
 	if (dataType > 0) {
+		spectrometerPulse++;
 		/*
 		* 0 - 1024 канала
 		* 1 - 2048 каналов

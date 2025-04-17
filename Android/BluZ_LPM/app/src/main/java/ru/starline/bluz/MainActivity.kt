@@ -45,6 +45,7 @@ public class MainActivity : FragmentActivity() {
         GO.txtStat1 = findViewById(R.id.textStatistic1)
         GO.txtStat2 = findViewById(R.id.textStatistic2)
         GO.txtStat3 = findViewById(R.id.textStatistic3)
+        GO.txtIsotopInfo = findViewById(R.id.textIsotopInfo)
 
         /*
         *   Тексты форматов для сохранения
@@ -121,6 +122,7 @@ public class MainActivity : FragmentActivity() {
             GO.txtStat1.visibility = View.VISIBLE
             GO.txtStat2.visibility = View.VISIBLE
             GO.txtStat3.visibility = View.VISIBLE
+            GO.txtIsotopInfo.visibility = View.VISIBLE
             GO.viewPager.setCurrentItem(0, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnSpecter)
@@ -132,6 +134,7 @@ public class MainActivity : FragmentActivity() {
             GO.txtStat1.visibility = View.VISIBLE
             GO.txtStat2.visibility = View.VISIBLE
             GO.txtStat3.visibility = View.VISIBLE
+            GO.txtIsotopInfo.visibility = View.VISIBLE
             GO.viewPager.setCurrentItem(1, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnHistory)
@@ -143,6 +146,7 @@ public class MainActivity : FragmentActivity() {
             GO.txtStat1.visibility = View.VISIBLE
             GO.txtStat2.visibility = View.VISIBLE
             GO.txtStat3.visibility = View.VISIBLE
+            GO.txtIsotopInfo.visibility = View.INVISIBLE
             GO.viewPager.setCurrentItem(2, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnDozimeter)
@@ -161,6 +165,7 @@ public class MainActivity : FragmentActivity() {
             GO.txtStat1.visibility = View.INVISIBLE
             GO.txtStat2.visibility = View.INVISIBLE
             GO.txtStat3.visibility = View.INVISIBLE
+            GO.txtIsotopInfo.visibility = View.INVISIBLE
             GO.viewPager.setCurrentItem(3, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnLog)
@@ -175,6 +180,7 @@ public class MainActivity : FragmentActivity() {
             GO.txtStat1.visibility = View.INVISIBLE
             GO.txtStat2.visibility = View.INVISIBLE
             GO.txtStat3.visibility = View.INVISIBLE
+            GO.txtIsotopInfo.visibility = View.INVISIBLE
             GO.viewPager.setCurrentItem(4, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(GO.btnSetup)
