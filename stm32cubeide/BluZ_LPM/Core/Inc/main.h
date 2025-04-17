@@ -87,7 +87,7 @@ extern uint16_t MTUSizeValue;
 extern uint8_t resolution, dataType;
 extern uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET];
 extern uint16_t currTemperature, currVoltage;
-extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION];
+extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION], spectrometerTime, spectrometerPulse;
 extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, currentTime, pulseCounterSecond, CPS, intervalNow, TVLevel[3];
 extern bool SoundEnable, VibroEnable, LEDEnable;
 extern bool levelSound1, levelSound2, levelSound3;

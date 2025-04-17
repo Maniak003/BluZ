@@ -60,7 +60,7 @@ TIM_HandleTypeDef htim17;
 /* USER CODE BEGIN PV */
 bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false;
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
-uint32_t pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,};
+uint32_t pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
 int indexDozimetrBufer = 0;
 struct LG logBuffer[LOG_BUFER_SIZE];
@@ -346,6 +346,8 @@ int main(void)
    * 37, 38 - Коэффициент полинома A для 1024 каналов
    * 39, 40 - Коэффициент полинома B для 1024 каналов
    * 41, 42 - Коэффициент полинома C для 1024 каналов
+   * 43, 44 - Время работы спектрометра в секундах
+   * 45, 46 - Количество импульсов в спектре
    *
    * 50  - Данные дозиметра
    * 572 - Данные лога
@@ -531,7 +533,12 @@ int main(void)
 	  transmitBuffer[41] = enCoefC4096.Uint16[0];
 	  transmitBuffer[42] = enCoefC4096.Uint16[1];
 
-
+	  /* Время работы спектрометра */
+	  transmitBuffer[43] = spectrometerTime & 0xFFFF;
+	  transmitBuffer[44] = (spectrometerTime >> 16) & 0xFFFF;
+	  /* Время работы спектрометра */
+	  transmitBuffer[45] = spectrometerPulse & 0xFFFF;
+	  transmitBuffer[46] = (spectrometerPulse >> 16) & 0xFFFF;
 
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
 	  transmitBuffer[idxCS] = 0;
@@ -1216,6 +1223,9 @@ void updateMesurmentCb(void *arg) {
 	UTIL_SEQ_SetTask(1<<CFG_TASK_MEASURE_REQ_ID, CFG_SEQ_PRIO_0);
 }
 
+/*
+ *	Вызывается раз в секунду по таймеру
+ */
 void updateMesurment(void) {
 	//if (! connectFlag) {
 	//	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
@@ -1226,6 +1236,9 @@ void updateMesurment(void) {
 	  currentTimeAvg = currentTime++;
 	  pulseCounterAvg = pulseCounter;
 	  CPS = pulseCounterSecond;
+	  if (dataType > 0) {
+		  spectrometerTime++;
+	  }
 	  /* Массив для гистограммы уровней */
 	  if (indexDozimetrBufer >= SIZE_DOZIMETR_BUFER) {
 		indexDozimetrBufer = 0;

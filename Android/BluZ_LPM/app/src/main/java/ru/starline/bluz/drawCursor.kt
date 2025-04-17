@@ -8,6 +8,7 @@ import android.graphics.PorterDuffXfermode
 import android.util.Log
 import android.widget.ImageView
 import java.lang.Math.log
+import kotlin.math.round
 
 class drawCursor {
     public var oldX: Float = 0.0f
@@ -86,7 +87,7 @@ class drawCursor {
             /* Вертикальный курсор*/
             cursorCanvas.drawLine(x, 0.0f, x, HSize.toFloat(), aCursor);
 
-            /* Горизонтальный курсор */
+            /* Указатель горизонтального положения */
             curChan = (x / GO.drawSPECTER.xSize).toInt()
             when (GO.spectrResolution) {
                 0 -> {  // 1024
@@ -129,17 +130,48 @@ class drawCursor {
             cursorCanvas.drawText(tmpCounts.toString(), x + 10, Ylog + 4, aCursor) // Counts
             cursorCanvas.save()
             cursorCanvas.rotate(90f, x + 3, Ylog + 10 /*HSize - textVShift*/)
-            if(GO.propCoef1024A == 0.0f) {
+            if(cfA == 0.0f) {
                 cursorCanvas.drawText(tmpEnergy.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
             } else {
                 cursorCanvas.drawText(tmpEnergy.toString() + "keV/" + tmpChann.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
             }
             cursorCanvas.restore();
 
-
             oldX = x
             oldY = y
             cursorView.setImageBitmap(cursorBitmap)
+
+            /* Вывод данных из справочника изотопов */
+            if(cfA != 0.0f) {      // Имеет смысл только при наличии коэффициентов полинома
+                var isotop: globalObj.IsotopsCls = GO.findIsotop(tmpEnergy)
+                if (isotop.Energy == 0) {   // Изотоп в справочнике не найден
+                    GO.txtIsotopInfo.text = "";
+                } else {
+                    if (isotop.Activity == 0) {
+                        GO.txtIsotopInfo.text = isotop.Name + " " + isotop.Energy.toString() + "kEv"
+                    } else {
+                        /*
+                        *   Расчитываем фоновую активность
+                        *   (Y[isotop.Channel - GO.realResolution] + Y[isotop.Channel + GO.realResolution]) / 2 * 2 * GO.realResolution
+                        */
+                        var cntFon : Int = GO.realResolution * (GO.drawSPECTER.tmpSpecterData[isotop.Channel - GO.realResolution].toInt() + GO.drawSPECTER.tmpSpecterData[isotop.Channel + GO.realResolution].toInt())
+
+                        /* Получим количествоо импульсов в диапазоне разрешения */
+                        var cntPulse: Int = 0
+                        for (ixCh in isotop.Channel - GO.realResolution .. isotop.Channel + GO.realResolution) {
+                            cntPulse += GO.drawSPECTER.tmpSpecterData[ixCh].toInt()
+                        }
+                        /* Расчет активности */
+                        cntPulse -= cntFon
+                        var activ: Float = isotop.Activity.toFloat() * cntPulse / GO.messTm.toFloat()
+                        if (activ < 0.0f) {     // Да, такое может быть из-за не правильного расчета фона
+                            activ = 0.0f
+                        }
+                        GO.txtIsotopInfo.text = isotop.Name + " " + isotop.Energy.toString() + "kEv Act:" + round(activ).toString() + " Bq"
+                    }
+                }
+            }
+
         } else {
             init()
         }

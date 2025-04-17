@@ -287,8 +287,10 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
 							tmpSpecterBuffer[iii] = 0;
 						}
-						pulseCounter = 0;
-						currentTime = 0;
+						//pulseCounter = 0;
+						//currentTime = 0;
+						spectrometerPulse = 0;
+						spectrometerTime = 0;
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 2) {		// Запуск/останов спектрометра
 						HAL_ADC_Stop_DMA(&hadc4);
 						HAL_ADC_DeInit(&hadc4);
