@@ -506,49 +506,7 @@ class BluetoothInterface(tv: TextView) {
                                     *  Вывод статистики
                                     *  Перевод в дни, часы, минуты, секунды
                                     */
-                                    var dd: Int = GO.messTm.toInt() / 86400
-                                    var hh: Int = (GO.messTm.toInt() - dd * 86400) /  3600
-                                    var mm: Int = GO.messTm.toInt() / 60 % 60
-                                    var ss: Int = GO.messTm.toInt() / 1 % 60
-
-                                    var ddS: Int = GO.spectrometerTime.toInt() / 86400
-                                    var hhS: Int = (GO.spectrometerTime.toInt() - ddS * 86400) /  3600
-                                    var mmS: Int = GO.spectrometerTime.toInt() / 60 % 60
-                                    var ssS: Int = GO.spectrometerTime.toInt() / 1 % 60
-
-                                    var tmpStr: String
-                                    if (GO.viewPager.currentItem == 0) {
-                                        tmpStr = String.format("Time:%02d:%02d:%02d:%02d",  ddS, hhS, mmS, ssS)
-                                    } else {
-                                        tmpStr = String.format("Time:%02d:%02d:%02d:%02d",  dd, hh, mm, ss)
-                                    }
-                                        //Log.d("BluZ-BT", tmpStr)
-                                    var tmpMC: Int = GO.tempMC.toInt()
-                                    var tmpBL = GO.battLevel
-
-                                    if (GO.battLevel < 3.0f) {  // Уровень батареи низкий
-                                        GO.txtStat1.setText(Html.fromHtml("$tmpMC&#176C   <font color=#C80000> $tmpBL v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
-                                    } else if (GO.battLevel < 3.5f) { // Уровнь батареи ниже 50%
-                                        GO.txtStat1.setText(Html.fromHtml("$tmpMC&#176C   <font color=#ffff00> $tmpBL v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
-                                    } else {
-                                        GO.txtStat1.setText(Html.fromHtml("$tmpMC&#176C   <font color=#00ff00> $tmpBL v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
-                                    }
-
-                                    var aquracy3S: Double
-                                    var cpsS: Float
-                                    var pulseS: Int
-                                    if (GO.viewPager.currentItem == 0) {        // Статистика для спектрометра
-                                        /* Расчет погрешности по трем сигмам для спектрометра */
-                                        aquracy3S = 300.0 / sqrt(GO.spectrometerPulse.toDouble())
-                                        cpsS = GO.spectrometerPulse.toFloat() / GO.spectrometerTime.toFloat()
-                                        pulseS = GO.spectrometerPulse.toInt()
-                                    } else { // Статистика для дозиметра
-                                        /* Расчет погрешности по трем сигмам для дозиметра */
-                                        aquracy3S = 300.0 / sqrt(GO.PCounter.toDouble())
-                                        cpsS = GO.cps
-                                        pulseS = GO.PCounter.toInt()
-                                    }
-                                    GO.txtStat2.setText(String.format("Total:%d(%.2f%%) Avg:%.2f", pulseS, aquracy3S, cpsS))
+                                    GO.showStatistics()
 
                                     /* Перевод CPS в uRh */
                                     var doze: Float =  Math.round(GO.pulsePerSec.toFloat() * GO.propCPS2UR * 100.0f) / 100.0f
@@ -614,15 +572,15 @@ class BluetoothInterface(tv: TextView) {
                                     GO.HWpropComparator = (GO.receiveData[52] + (GO.receiveData[53] * 256u)).toUShort()
 
                                     //GO.HWspectrResolution =
-
+                                    /* Коэффициенты полинома для 1024 */
                                     GO.HWCoef1024A = java.lang.Float.intBitsToFloat((GO.receiveData[34] + (GO.receiveData[35] * 256u)  + (GO.receiveData[36] * 65536u) + (GO.receiveData[37] * 16777216u)).toInt())
                                     GO.HWCoef1024B = java.lang.Float.intBitsToFloat((GO.receiveData[38] + (GO.receiveData[39] * 256u)  + (GO.receiveData[40] * 65536u) + (GO.receiveData[41] * 16777216u)).toInt())
                                     GO.HWCoef1024C = java.lang.Float.intBitsToFloat((GO.receiveData[42] + (GO.receiveData[43] * 256u)  + (GO.receiveData[44] * 65536u) + (GO.receiveData[45] * 16777216u)).toInt())
-
+                                    /* Коэффициенты полинома для 2048 */
                                     GO.HWCoef2048A = java.lang.Float.intBitsToFloat((GO.receiveData[62] + (GO.receiveData[63] * 256u)  + (GO.receiveData[64] * 65536u) + (GO.receiveData[65] * 16777216u)).toInt())
                                     GO.HWCoef2048B = java.lang.Float.intBitsToFloat((GO.receiveData[66] + (GO.receiveData[67] * 256u)  + (GO.receiveData[68] * 65536u) + (GO.receiveData[69] * 16777216u)).toInt())
                                     GO.HWCoef2048C = java.lang.Float.intBitsToFloat((GO.receiveData[70] + (GO.receiveData[71] * 256u)  + (GO.receiveData[72] * 65536u) + (GO.receiveData[73] * 16777216u)).toInt())
-
+                                    /* Коэффициенты полинома для 4096 */
                                     GO.HWCoef4096A = java.lang.Float.intBitsToFloat((GO.receiveData[74] + (GO.receiveData[75] * 256u)  + (GO.receiveData[76] * 65536u) + (GO.receiveData[77] * 16777216u)).toInt())
                                     GO.HWCoef4096B = java.lang.Float.intBitsToFloat((GO.receiveData[78] + (GO.receiveData[79] * 256u)  + (GO.receiveData[80] * 65536u) + (GO.receiveData[81] * 16777216u)).toInt())
                                     GO.HWCoef4096C = java.lang.Float.intBitsToFloat((GO.receiveData[82] + (GO.receiveData[83] * 256u)  + (GO.receiveData[84] * 65536u) + (GO.receiveData[85] * 16777216u)).toInt())

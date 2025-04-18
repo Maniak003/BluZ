@@ -24,6 +24,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import java.nio.ByteBuffer
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.Locale
 
 const val ARG_OBJECT = "oblect"
 
@@ -123,23 +126,30 @@ class NumberFragment : Fragment() {
         GO.cbVibroLevel3.isChecked = GO.propVibroLevel3
 
         /* Значения коэффициентов полинома */
+        val df = DecimalFormat("##0.#########", DecimalFormatSymbols(Locale.US))
+        var tmpA: String = ""
+        var tmpB: String = ""
+        var tmpC: String = ""
         when (GO.spectrResolution) {
             0 -> {
-                GO.editPolinomA.setText(GO.propCoef1024A.toString())
-                GO.editPolinomB.setText(GO.propCoef1024B.toString())
-                GO.editPolinomC.setText(GO.propCoef1024C.toString())
+                tmpA = df.format(GO.propCoef1024A)
+                tmpB = df.format(GO.propCoef1024B)
+                tmpC = df.format(GO.propCoef1024C)
             }
             1 -> {
-                GO.editPolinomA.setText(GO.propCoef2048A.toString())
-                GO.editPolinomB.setText(GO.propCoef2048B.toString())
-                GO.editPolinomC.setText(GO.propCoef2048C.toString())
+                tmpA = df.format(GO.propCoef2048A)
+                tmpB = df.format(GO.propCoef2048B)
+                tmpC = df.format(GO.propCoef2048C)
             }
             2 -> {
-                GO.editPolinomA.setText(GO.propCoef4096A.toString())
-                GO.editPolinomB.setText(GO.propCoef4096B.toString())
-                GO.editPolinomC.setText(GO.propCoef4096C.toString())
+                tmpA = df.format(GO.propCoef4096A)
+                tmpB = df.format(GO.propCoef4096B)
+                tmpC = df.format(GO.propCoef4096C)
             }
         }
+        GO.editPolinomA.setText(tmpA)
+        GO.editPolinomB.setText(tmpB)
+        GO.editPolinomC.setText(tmpC)
 
         /* CPS в uRh */
         GO.editCPS2Rh.setText(GO.propCPS2UR.toString())
@@ -495,6 +505,7 @@ class NumberFragment : Fragment() {
                  */
                 var btnRestoreSetup: Button = view.findViewById(R.id.buttonRestoreSetup)
                 btnRestoreSetup.setOnClickListener {
+                    //Log.d("BluZ-BT", "Restore from config.")
                     GO.readConfigParameters()
                     reloadConfigParameters()
                 }
@@ -540,23 +551,16 @@ class NumberFragment : Fragment() {
 
                     /* Коэффициенты для полинома преобразования канала в энергию */
                     /*
-                    when (GO.spectrResolution) {
-                        0 -> {
-                            GO.propCoef1024A = GO.editPolinomA.text.toString().toFloat()
-                            GO.propCoef1024B = GO.editPolinomB.text.toString().toFloat()
-                            GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
-                            }
-                        1 -> {
-                            GO.propCoef2048A = GO.editPolinomA.text.toString().toFloat()
-                            GO.propCoef2048B = GO.editPolinomB.text.toString().toFloat()
-                            GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
-                        }
-                        2 -> {
-                            GO.propCoef4096A = GO.editPolinomA.text.toString().toFloat()
-                            GO.propCoef4096B = GO.editPolinomB.text.toString().toFloat()
-                            GO.propCoef4096C = GO.editPolinomC.text.toString().toFloat()
-                        }
-                    }*/
+                    GO.propCoef1024A = GO.editPolinomA.text.toString().toFloat()
+                    GO.propCoef1024B = GO.editPolinomB.text.toString().toFloat()
+                    GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
+                    GO.propCoef2048A = GO.editPolinomA.text.toString().toFloat()
+                    GO.propCoef2048B = GO.editPolinomB.text.toString().toFloat()
+                    GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
+                    GO.propCoef4096A = GO.editPolinomA.text.toString().toFloat()
+                    GO.propCoef4096B = GO.editPolinomB.text.toString().toFloat()
+                    GO.propCoef4096C = GO.editPolinomC.text.toString().toFloat()
+                    */
 
                     /* SMA window сформируем нечетное число */
                     GO.windowSMA = (GO.editSMA.text.toString().toInt() / 2).toInt() * 2 + 1
@@ -608,6 +612,7 @@ class NumberFragment : Fragment() {
                 GO.btnReadFromDevice.setOnClickListener {
                     if (GO.configDataReady) {
                         GO.readConfigFormDevice()
+                        reloadConfigParameters()
                     }
                 }
 

@@ -2,6 +2,7 @@ package ru.starline.bluz
 
 import android.content.ClipData.Item
 import android.content.Context
+import android.text.Html
 import android.util.Log
 import android.widget.Button
 import android.widget.CheckBox
@@ -12,6 +13,7 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.Nullable
+import androidx.core.text.HtmlCompat
 import androidx.loader.content.Loader.ForceLoadContentObserver
 import androidx.viewpager2.widget.ViewPager2
 import java.sql.Array
@@ -98,6 +100,7 @@ class globalObj {
     public lateinit var txtIsotopInfo: TextView         // Текст для вывода данных об изотопе
     public var configDataReady: Boolean = false         // Флаг готовности параметров из прибора
     public var propButtonInit: Boolean = false          // Флаг активности изменения состояния переключателей
+    public var bluetoothRunning: Boolean = false            // Флаг активности таймера
     //private var saveStat1: String = ""
     //private var saveStat2: String = ""
     //private var saveStat3: String = ""
@@ -306,6 +309,61 @@ class globalObj {
     public var HWCoef4096C: Float = 0.0f
 
     /*
+    *   Вывод статистики для дозиметра и спектрометра
+    */
+    fun showStatistics() {
+        /*
+        *  Перевод в дни, часы, минуты, секунды
+        */
+        var dd: Int = GO.messTm.toInt() / 86400
+        var hh: Int = (GO.messTm.toInt() - dd * 86400) /  3600
+        var mm: Int = GO.messTm.toInt() / 60 % 60
+        var ss: Int = GO.messTm.toInt() / 1 % 60
+
+        var ddS: Int = GO.spectrometerTime.toInt() / 86400
+        var hhS: Int = (GO.spectrometerTime.toInt() - ddS * 86400) /  3600
+        var mmS: Int = GO.spectrometerTime.toInt() / 60 % 60
+        var ssS: Int = GO.spectrometerTime.toInt() / 1 % 60
+
+        var tmpStr: String
+        if (GO.viewPager.currentItem == 0) {
+            tmpStr = String.format("Time:%02d:%02d:%02d:%02d",  ddS, hhS, mmS, ssS)
+        } else {
+            tmpStr = String.format("Time:%02d:%02d:%02d:%02d",  dd, hh, mm, ss)
+        }
+
+        /*
+        *   Вывод первой строки статистики
+        */
+        if (GO.battLevel < 3.0f) {  // Уровень батареи низкий
+            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C   <font color=#C80000> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
+        } else if (GO.battLevel < 3.5f) { // Уровнь батареи ниже 50%
+            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C   <font color=#ffff00> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
+        } else {
+            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C   <font color=#00ff00> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
+        }
+
+        /*
+        *   Вывод второй строки статистики
+        */
+        var aquracy3S: Double
+        var cpsS: Float
+        var pulseS: Int
+        if (GO.viewPager.currentItem == 0) {        // Статистика для спектрометра
+            /* Расчет погрешности по трем сигмам для спектрометра */
+            aquracy3S = 300.0 / Math.sqrt(GO.spectrometerPulse.toDouble())
+            cpsS = GO.spectrometerPulse.toFloat() / GO.spectrometerTime.toFloat()
+            pulseS = GO.spectrometerPulse.toInt()
+        } else { // Статистика для дозиметра
+            /* Расчет погрешности по трем сигмам для дозиметра */
+            aquracy3S = 300.0 / Math.sqrt(GO.PCounter.toDouble())
+            cpsS = GO.cps
+            pulseS = GO.PCounter.toInt()
+        }
+        GO.txtStat2.setText(String.format("Total:%d(%.2f%%) Avg:%.2f", pulseS, aquracy3S, cpsS))
+    }
+
+    /*
     *   Справочник изотопов
     */
     public data class IsotopsCls (
@@ -433,36 +491,32 @@ class globalObj {
     fun readConfigFormDevice() {
         cbLedKvant.isChecked = GO.HWpropLedKvant
         cbSoundKvant.isChecked = GO.HWpropSoundKvant
-        if (rbResolution1024.isChecked) {
-            editPolinomA.setText(GO.HWCoef1024A.toString())
-            editPolinomB.setText(GO.HWCoef1024B.toString())
-            editPolinomC.setText(GO.HWCoef1024C.toString())
-        } else if (rbResolution2048.isChecked) {
-            editPolinomA.setText(GO.HWCoef2048A.toString())
-            editPolinomB.setText(GO.HWCoef2048B.toString())
-            editPolinomC.setText(GO.HWCoef2048C.toString())
-        } else if (rbResolution4096.isChecked) {
-            editPolinomA.setText(GO.HWCoef4096A.toString())
-            editPolinomB.setText(GO.HWCoef4096B.toString())
-            editPolinomC.setText(GO.HWCoef4096C.toString())
-        }
-        editLevel1.setText(GO.HWpropLevel1.toString())
-        editLevel2.setText(GO.HWpropLevel2.toString())
-        editLevel3.setText(GO.HWpropLevel3.toString())
-        cbSoundLevel1.isChecked = GO.HWpropSoundLevel1
-        cbSoundLevel2.isChecked = GO.HWpropSoundLevel2
-        cbSoundLevel3.isChecked = GO.HWpropSoundLevel3
-        cbVibroLevel1.isChecked = GO.HWpropVibroLevel1
-        cbVibroLevel2.isChecked = GO.HWpropVibroLevel2
-        cbVibroLevel3.isChecked = GO.HWpropVibroLevel3
-        editCPS2Rh.setText(HWpropCPS2UR.toString())
-        //rbResolution1024
-        //rbResolution2048
-        //rbResolution4096
-        editHVoltage.setText(GO.HWpropHVoltage.toString())
-        editComparator.setText(GO.HWpropComparator.toString())
-        cbSpectrometr.isChecked = GO.HWpropAutoStartSpectrometr
+        GO.propCoef1024A = GO.HWCoef1024A
+        GO.propCoef1024B = GO.HWCoef1024B
+        GO.propCoef1024C = GO.HWCoef1024C
+        GO.propCoef2048A = GO.HWCoef2048A
+        GO.propCoef2048B = GO.HWCoef2048B
+        GO.propCoef2048C = GO.HWCoef2048C
+        GO.propCoef4096A = GO.HWCoef4096A
+        GO.propCoef4096B = GO.HWCoef4096B
+        GO.propCoef4096C = GO.HWCoef4096C
 
+        GO.propLevel1 = GO.HWpropLevel1
+        GO.propLevel2 = GO.HWpropLevel2
+        GO.propLevel3 = GO.HWpropLevel3
+
+        GO.propSoundLevel1 = GO.HWpropSoundLevel1
+        GO.propSoundLevel2 = GO.HWpropSoundLevel2
+        GO.propSoundLevel3 = GO.HWpropSoundLevel3
+
+        GO.propVibroLevel1 = GO.HWpropVibroLevel1
+        GO.propVibroLevel2 = GO.HWpropVibroLevel2
+        GO.propVibroLevel3 = GO.HWpropVibroLevel3
+
+        GO.propCPS2UR = GO.HWpropCPS2UR
+        GO.propHVoltage = GO.HWpropHVoltage
+        GO.propComparator = GO.HWpropComparator
+        GO.propAutoStartSpectrometr = GO.HWpropAutoStartSpectrometr
     }
     /*
     *   Запись всех параметров в конфигурационный файл
@@ -543,7 +597,10 @@ class globalObj {
         GO.specterGraphType = GO.PP.getPropInt(propCfgSpectrGraphType)
         GO.rejectChann = GO.PP.getPropInt(propCfgRejectCann)
         //Log.d("BluZ-BT", "Reject chann: " +GO.rejectCann )
-        GO.BTT = BluetoothInterface(GO.indicatorBT)
+        if (! bluetoothRunning) {
+            bluetoothRunning = true
+            GO.BTT = BluetoothInterface(GO.indicatorBT)
+        }
         /*
         *       Параметры прибора
         */
@@ -584,10 +641,14 @@ class globalObj {
         */
         GO.saveSpecterType = GO.PP.getPropInt(propCfgSaveSpecterType)
 
+    }
+
+    fun startBluetoothTimer() {
         GO.needTerminate = false
         Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())
 
         if (GO.LEMAC.length == 17 &&  GO.LEMAC[0] != 'X') { // MAC адрес настроен, продолжаем работу.
+            Log.d("BluZ-BT", "Start timer")
             GO.tmFull.startTimer();
         } else {                                            // MAC адрес не настроен, переходим к настройкам
             //GO.viewPager.setCurrentItem(0, false)

@@ -1285,32 +1285,27 @@ void updateMesurment(void) {
     }
 }
 
-void ADC_Switch_Channel(uint32_t channel) {
+uint32_t ADC_Switch_Channel(uint32_t channel) {
+	uint32_t tmp_level;
     ADC_ChannelConfTypeDef sConfig = {0};
     sConfig.Channel = channel;
-    sConfig.Rank = ADC_REGULAR_RANK_1; // Всегда используем Rank = 1 для ручного режима
+    sConfig.Rank = ADC_REGULAR_RANK_1; 					// Всегда используем Rank = 1 для ручного режима
     sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_2;
     HAL_ADC_ConfigChannel(&hadc4, &sConfig);
+	HAL_ADC_Start(&hadc4);
+	HAL_ADC_PollForConversion(&hadc4, HAL_MAX_DELAY);
+	tmp_level = HAL_ADC_GetValue(&hadc4) & 0xFFF;
+	HAL_ADC_Stop(&hadc4);
+	return tmp_level;
 }
 
 void tempVoltMeasure(void) {
 	if (dataType == 0 ) {
 		//UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
 		MX_ADC4_Init();
-
-		ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR);
-		HAL_ADC_Start(&hadc4);
-		HAL_ADC_PollForConversion(&hadc4, HAL_MAX_DELAY);
-		currTemperature = HAL_ADC_GetValue(&hadc4) & 0xFFF;
-		HAL_ADC_Stop(&hadc4);
-
-		ADC_Switch_Channel(ADC_CHANNEL_7);
-		HAL_ADC_Start(&hadc4);
-		HAL_ADC_PollForConversion(&hadc4, HAL_MAX_DELAY);
-		currVoltage = HAL_ADC_GetValue(&hadc4) & 0xFFF;
-		HAL_ADC_Stop(&hadc4);
-
-		HAL_ADC_DeInit(&hadc4);			// Для снижения потребления
+		currTemperature = ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR);	// Канал для измерения температуры
+		currVoltage = ADC_Switch_Channel(ADC_CHANNEL_7);				// Канал для измерения напряжения.
+		HAL_ADC_DeInit(&hadc4);											// Для снижения потребления
 	} else {
 		/* Измерение температуры и напряжения в режиме спектрометра */
 		uint8_t tmp_data_type = dataType;
@@ -1318,24 +1313,14 @@ void tempVoltMeasure(void) {
 		HAL_ADC_DeInit(&hadc4);
 		dataType = 0;
 		MX_ADC4_Init();
+		currTemperature = ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR); 	// Канал для измерения температуры
+		currVoltage = ADC_Switch_Channel(ADC_CHANNEL_7);				// Канал для измерения напряжения.
 
-		ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR);
-		HAL_ADC_Start(&hadc4);
-		HAL_ADC_PollForConversion(&hadc4, HAL_MAX_DELAY);
-		currTemperature = HAL_ADC_GetValue(&hadc4) & 0xFFF;
-		HAL_ADC_Stop(&hadc4);
-
-		ADC_Switch_Channel(ADC_CHANNEL_7);
-		HAL_ADC_Start(&hadc4);
-		HAL_ADC_PollForConversion(&hadc4, HAL_MAX_DELAY);
-		currVoltage = HAL_ADC_GetValue(&hadc4) & 0xFFF;
-		HAL_ADC_Stop(&hadc4);
-
-		HAL_ADC_DeInit(&hadc4);			// Для снижения потребления
-		dataType = tmp_data_type;		// Возвращаем исходный режим спектрометра
+		HAL_ADC_DeInit(&hadc4);											// Для снижения потребления
+		dataType = tmp_data_type;										// Возвращаем исходный режим спектрометра
 		MX_ADC4_Init();
 		HAL_ADC_Start_DMA(&hadc4, TVLevel, 1);
-		hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
+		hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;					// Отключение прерывания по промежуточному значению.
 	}
 	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
 }
