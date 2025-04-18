@@ -264,7 +264,7 @@ HAL_StatusTypeDef readFlash() {
 
 		/* Параметры устройства */
 		//uint32_t tmpData = *(__IO uint32_t*) ((uint32_t) PARAMETERS_ADDRESS);
-		uint64_t tmpData = PL[idxPL++];
+		uint64_t tmpData = PL[idxPL++];				// 2, 3
 		SoundEnable = tmpData & 1;
 		LEDEnable = tmpData & 1 << 1;
 		VibroEnable = tmpData & 1 << 2;
@@ -284,14 +284,14 @@ HAL_StatusTypeDef readFlash() {
 		calcCoeff.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
 
 		/* Значения порогов */
-		tmpData = PL[idxPL++];
+		tmpData = PL[idxPL++];						// 4, 5
 		level1 = tmpData & 0xFFFF;
 		level2 = (tmpData >> 16) & 0xFFFF;
 		level3 = (tmpData >> 32) & 0xFFFF;
 
 		/* Коэффициент A полинома преобразования канала в энергию для 1024 каналов*/
 		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A1024_ADDRESS);
-		tmpData = PL[idxPL++];
+		tmpData = PL[idxPL++];						// 6, 7
 		enCoefA1024.Uint32 = tmpData & 0xFFFFFFFF;
 		//enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
 		//enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
@@ -306,7 +306,7 @@ HAL_StatusTypeDef readFlash() {
 
 		/* Коэффициент B полинома преобразования канала в энергию для 1024 каналов */
 		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C1024_ADDRESS);
-		tmpData = PL[idxPL++];
+		tmpData = PL[idxPL++];						// 8, 9
 		enCoefC1024.Uint32 = tmpData & 0xFFFFFFFF;
 		//enCoefC1024.Uint[1] = tmpData >> 8 & 0x000000FF;
 		//enCoefC1024.Uint[2] = tmpData >> 16 & 0x000000FF;
@@ -321,7 +321,7 @@ HAL_StatusTypeDef readFlash() {
 
 		/* Коэффициент B полинома преобразования канала в энергию для 2048 каналов */
 		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B2048_ADDRESS);
-		tmpData = PL[idxPL++];
+		tmpData = PL[idxPL++];						// 10, 11
 		enCoefB2048.Uint32 = tmpData & 0xFFFFFFFF;
 		//enCoefB2048.Uint[1] = tmpData >> 8 & 0x000000FF;
 		//enCoefB2048.Uint[2] = tmpData >> 16 & 0x000000FF;
@@ -336,7 +336,7 @@ HAL_StatusTypeDef readFlash() {
 
 		/* Коэффициент A полинома преобразования канала в энергию для 4096 каналов*/
 		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A4096_ADDRESS);
-		tmpData = PL[idxPL++];
+		tmpData = PL[idxPL++];						// 12, 13
 		enCoefA4096.Uint32 = tmpData & 0xFFFFFFFF;
 		//enCoefA4096.Uint[1] = tmpData >> 8 & 0x000000FF;
 		//enCoefA4096.Uint[2] = tmpData >> 16 & 0x000000FF;
@@ -351,7 +351,7 @@ HAL_StatusTypeDef readFlash() {
 
 		/* Коэффициент B полинома преобразования канала в энергию для 4096 каналов */
 		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C4096_ADDRESS);
-		tmpData = PL[idxPL++];
+		tmpData = PL[idxPL++];						// 14, 15
 		enCoefC4096.Uint32 = tmpData & 0xFFFFFFFF;
 		//enCoefC4096.Uint[1] = tmpData >> 8 & 0x000000FF;
 		//enCoefC4096.Uint[2] = tmpData >> 16 & 0x000000FF;

@@ -62,31 +62,13 @@ public class MainActivity : FragmentActivity() {
         /*
         *   Проверка и запрос разрешений.
         */
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH
-            ) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_SCAN
-            ) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.NEARBY_WIFI_DEVICES
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, Manifest.permission.NEARBY_WIFI_DEVICES) == PackageManager.PERMISSION_GRANTED)
+        {
             /* Все нужные разрешения имеются */
         } else {
             val permissionsRq = arrayOf(
@@ -126,11 +108,14 @@ public class MainActivity : FragmentActivity() {
             GO.viewPager.setCurrentItem(0, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnSpecter)
+            /* Вывод статитики для дозиметра и спектрометра */
+            GO.showStatistics()
         }
 
         /* Окно с историей */
         var btnHistory: ImageButton = findViewById(R.id.buttonHistory)
         btnHistory.setOnClickListener {
+            /* Показ статистики */
             GO.txtStat1.visibility = View.VISIBLE
             GO.txtStat2.visibility = View.VISIBLE
             GO.txtStat3.visibility = View.VISIBLE
@@ -138,11 +123,14 @@ public class MainActivity : FragmentActivity() {
             GO.viewPager.setCurrentItem(1, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnHistory)
+            /* Вывод статитики для дозиметра и спектрометра */
+            GO.showStatistics()
         }
 
         /* Окно дозиметра */
         var btnDozimeter: ImageButton = findViewById(R.id.buttonDosimeter)
         btnDozimeter.setOnClickListener {
+            /* Показ статистики */
             GO.txtStat1.visibility = View.VISIBLE
             GO.txtStat2.visibility = View.VISIBLE
             GO.txtStat3.visibility = View.VISIBLE
@@ -157,11 +145,14 @@ public class MainActivity : FragmentActivity() {
                     GO.drawDOZIMETER.redrawDozimeter()
                 }
             }
+            /* Вывод статитики для дозиметра и спектрометра */
+            GO.showStatistics()
         }
 
         /* Окно c логами */
         var btnLog: ImageButton = findViewById(R.id.buttonLog)
         btnLog.setOnClickListener {
+            /* Скрыть статистику */
             GO.txtStat1.visibility = View.INVISIBLE
             GO.txtStat2.visibility = View.INVISIBLE
             GO.txtStat3.visibility = View.INVISIBLE
@@ -177,6 +168,7 @@ public class MainActivity : FragmentActivity() {
         /* Окно с настройками */
         GO.btnSetup = findViewById(R.id.buttonSetup)
         GO.btnSetup.setOnClickListener {
+            /* Скрыть статистику */
             GO.txtStat1.visibility = View.INVISIBLE
             GO.txtStat2.visibility = View.INVISIBLE
             GO.txtStat3.visibility = View.INVISIBLE
@@ -196,6 +188,7 @@ public class MainActivity : FragmentActivity() {
         GO.readConfigParameters()
         /* Загрузка справочника изотопов */
         GO.loadIsotop()
+        GO.startBluetoothTimer()
     }
 }
 

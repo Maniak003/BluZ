@@ -228,23 +228,59 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						calcCoeff.Uint[1] = p_Notification->DataTransfered.p_Payload[18];
 						calcCoeff.Uint[0] = p_Notification->DataTransfered.p_Payload[19];
 
-						/* Коэффициент A полинома преобразования канала в энергию */
+						/* Коэффициент A полинома преобразования канала в энергию для 1024 */
 						enCoefA1024.Uint[3] = p_Notification->DataTransfered.p_Payload[21];
 						enCoefA1024.Uint[2] = p_Notification->DataTransfered.p_Payload[22];
 						enCoefA1024.Uint[1] = p_Notification->DataTransfered.p_Payload[23];
 						enCoefA1024.Uint[0] = p_Notification->DataTransfered.p_Payload[24];
 
-						/* Коэффициент B полинома преобразования канала в энергию */
+						/* Коэффициент B полинома преобразования канала в энергию для 1024 */
 						enCoefB1024.Uint[3] = p_Notification->DataTransfered.p_Payload[25];
 						enCoefB1024.Uint[2] = p_Notification->DataTransfered.p_Payload[26];
 						enCoefB1024.Uint[1] = p_Notification->DataTransfered.p_Payload[27];
 						enCoefB1024.Uint[0] = p_Notification->DataTransfered.p_Payload[28];
 
-						/* Коэффициент C полинома преобразования канала в энергию */
+						/* Коэффициент C полинома преобразования канала в энергию для 1024 */
 						enCoefC1024.Uint[3] = p_Notification->DataTransfered.p_Payload[29];
 						enCoefC1024.Uint[2] = p_Notification->DataTransfered.p_Payload[30];
 						enCoefC1024.Uint[1] = p_Notification->DataTransfered.p_Payload[31];
 						enCoefC1024.Uint[0] = p_Notification->DataTransfered.p_Payload[32];
+
+						/* Коэффициент A полинома преобразования канала в энергию для 2048 */
+						enCoefA1024.Uint[3] = p_Notification->DataTransfered.p_Payload[39];
+						enCoefA1024.Uint[2] = p_Notification->DataTransfered.p_Payload[40];
+						enCoefA1024.Uint[1] = p_Notification->DataTransfered.p_Payload[41];
+						enCoefA1024.Uint[0] = p_Notification->DataTransfered.p_Payload[42];
+
+						/* Коэффициент B полинома преобразования канала в энергию для 2048 */
+						enCoefB1024.Uint[3] = p_Notification->DataTransfered.p_Payload[43];
+						enCoefB1024.Uint[2] = p_Notification->DataTransfered.p_Payload[44];
+						enCoefB1024.Uint[1] = p_Notification->DataTransfered.p_Payload[45];
+						enCoefB1024.Uint[0] = p_Notification->DataTransfered.p_Payload[46];
+
+						/* Коэффициент C полинома преобразования канала в энергию для 2048 */
+						enCoefC1024.Uint[3] = p_Notification->DataTransfered.p_Payload[47];
+						enCoefC1024.Uint[2] = p_Notification->DataTransfered.p_Payload[48];
+						enCoefC1024.Uint[1] = p_Notification->DataTransfered.p_Payload[49];
+						enCoefC1024.Uint[0] = p_Notification->DataTransfered.p_Payload[50];
+
+						/* Коэффициент A полинома преобразования канала в энергию для 4096 */
+						enCoefA1024.Uint[3] = p_Notification->DataTransfered.p_Payload[51];
+						enCoefA1024.Uint[2] = p_Notification->DataTransfered.p_Payload[52];
+						enCoefA1024.Uint[1] = p_Notification->DataTransfered.p_Payload[53];
+						enCoefA1024.Uint[0] = p_Notification->DataTransfered.p_Payload[54];
+
+						/* Коэффициент B полинома преобразования канала в энергию для 4096 */
+						enCoefB1024.Uint[3] = p_Notification->DataTransfered.p_Payload[55];
+						enCoefB1024.Uint[2] = p_Notification->DataTransfered.p_Payload[56];
+						enCoefB1024.Uint[1] = p_Notification->DataTransfered.p_Payload[57];
+						enCoefB1024.Uint[0] = p_Notification->DataTransfered.p_Payload[58];
+
+						/* Коэффициент C полинома преобразования канала в энергию для 4096 */
+						enCoefC1024.Uint[3] = p_Notification->DataTransfered.p_Payload[59];
+						enCoefC1024.Uint[2] = p_Notification->DataTransfered.p_Payload[60];
+						enCoefC1024.Uint[1] = p_Notification->DataTransfered.p_Payload[61];
+						enCoefC1024.Uint[0] = p_Notification->DataTransfered.p_Payload[62];
 
 
 						/* Уровни компаратора и высокого напряжения */
