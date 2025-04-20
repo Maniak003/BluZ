@@ -67,7 +67,7 @@ struct LG logBuffer[LOG_BUFER_SIZE];
 int logIndex = 0;	/* Текущий указатель на буфер лога */
 char uartBuffer[400] = {0,};
 /* Буфер для работы с flash */
-uint64_t PL[11] = {0,};
+uint64_t PL[18] = {0,};
 uint8_t resolution = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
 /*
  * 0 - Дозиметр и логи,
@@ -740,7 +740,7 @@ void MX_ADC4_Init(void)
   hadc4.Init.DMAContinuousRequests = ENABLE;
   hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
   hadc4.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-  hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_79CYCLES_5;
+  hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_12CYCLES_5;
   hadc4.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_814CYCLES_5;
   hadc4.Init.OversamplingMode = DISABLE;
   if (HAL_ADC_Init(&hadc4) != HAL_OK)
@@ -1204,6 +1204,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : AIn_Pin */
+  GPIO_InitStruct.Pin = AIn_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(AIn_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : Sync_Pin */
   GPIO_InitStruct.Pin = Sync_Pin;

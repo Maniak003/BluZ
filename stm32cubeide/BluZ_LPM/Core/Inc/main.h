@@ -98,7 +98,7 @@ extern LPTIM_HandleTypeDef hlptim2;
 extern uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER];
 extern int indexDozimetrBufer;
 extern ADC_HandleTypeDef hadc4;
-extern uint64_t PL[11];
+extern uint64_t PL[18];
 
 struct LG {
 	uint32_t time;
@@ -177,6 +177,8 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define batLev_GPIO_Port GPIOA
 #define SOUND_Pin GPIO_PIN_1
 #define SOUND_GPIO_Port GPIOA
+#define AIn_Pin GPIO_PIN_0
+#define AIn_GPIO_Port GPIOA
 #define NC_Pin GPIO_PIN_9
 #define NC_GPIO_Port GPIOB
 #define NCB8_Pin GPIO_PIN_8
@@ -198,8 +200,8 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define TEST_LED		1
 #define MEASURE_INTERVAL	1000
 
-//#define SAMPLE_TIME		ADC_SAMPLETIME_12CYCLES_5		// 12.5 циклов для Sensl FC/FJ 60035
-#define SAMPLE_TIME			ADC_SAMPLETIME_79CYCLES_5		// Циклов для MacroPixel SC-14x25c-SiPM-T
+#define SAMPLE_TIME		ADC_SAMPLETIME_12CYCLES_5		// 12.5 циклов для Sensl FC/FJ 60035
+//#define SAMPLE_TIME			ADC_SAMPLETIME_79CYCLES_5		// Циклов для MacroPixel SC-14x25c-SiPM-T
 
 //#define DEBUG_USER
 
