@@ -247,45 +247,45 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						enCoefC1024.Uint[0] = p_Notification->DataTransfered.p_Payload[32];
 
 						/* Коэффициент A полинома преобразования канала в энергию для 2048 */
-						enCoefA1024.Uint[3] = p_Notification->DataTransfered.p_Payload[39];
-						enCoefA1024.Uint[2] = p_Notification->DataTransfered.p_Payload[40];
-						enCoefA1024.Uint[1] = p_Notification->DataTransfered.p_Payload[41];
-						enCoefA1024.Uint[0] = p_Notification->DataTransfered.p_Payload[42];
+						enCoefA2048.Uint[3] = p_Notification->DataTransfered.p_Payload[39];
+						enCoefA2048.Uint[2] = p_Notification->DataTransfered.p_Payload[40];
+						enCoefA2048.Uint[1] = p_Notification->DataTransfered.p_Payload[41];
+						enCoefA2048.Uint[0] = p_Notification->DataTransfered.p_Payload[42];
 
 						/* Коэффициент B полинома преобразования канала в энергию для 2048 */
-						enCoefB1024.Uint[3] = p_Notification->DataTransfered.p_Payload[43];
-						enCoefB1024.Uint[2] = p_Notification->DataTransfered.p_Payload[44];
-						enCoefB1024.Uint[1] = p_Notification->DataTransfered.p_Payload[45];
-						enCoefB1024.Uint[0] = p_Notification->DataTransfered.p_Payload[46];
+						enCoefB2048.Uint[3] = p_Notification->DataTransfered.p_Payload[43];
+						enCoefB2048.Uint[2] = p_Notification->DataTransfered.p_Payload[44];
+						enCoefB2048.Uint[1] = p_Notification->DataTransfered.p_Payload[45];
+						enCoefB2048.Uint[0] = p_Notification->DataTransfered.p_Payload[46];
 
 						/* Коэффициент C полинома преобразования канала в энергию для 2048 */
-						enCoefC1024.Uint[3] = p_Notification->DataTransfered.p_Payload[47];
-						enCoefC1024.Uint[2] = p_Notification->DataTransfered.p_Payload[48];
-						enCoefC1024.Uint[1] = p_Notification->DataTransfered.p_Payload[49];
-						enCoefC1024.Uint[0] = p_Notification->DataTransfered.p_Payload[50];
+						enCoefC2048.Uint[3] = p_Notification->DataTransfered.p_Payload[47];
+						enCoefC2048.Uint[2] = p_Notification->DataTransfered.p_Payload[48];
+						enCoefC2048.Uint[1] = p_Notification->DataTransfered.p_Payload[49];
+						enCoefC2048.Uint[0] = p_Notification->DataTransfered.p_Payload[50];
 
 						/* Коэффициент A полинома преобразования канала в энергию для 4096 */
-						enCoefA1024.Uint[3] = p_Notification->DataTransfered.p_Payload[51];
-						enCoefA1024.Uint[2] = p_Notification->DataTransfered.p_Payload[52];
-						enCoefA1024.Uint[1] = p_Notification->DataTransfered.p_Payload[53];
-						enCoefA1024.Uint[0] = p_Notification->DataTransfered.p_Payload[54];
+						enCoefA4096.Uint[3] = p_Notification->DataTransfered.p_Payload[51];
+						enCoefA4096.Uint[2] = p_Notification->DataTransfered.p_Payload[52];
+						enCoefA4096.Uint[1] = p_Notification->DataTransfered.p_Payload[53];
+						enCoefA4096.Uint[0] = p_Notification->DataTransfered.p_Payload[54];
 
 						/* Коэффициент B полинома преобразования канала в энергию для 4096 */
-						enCoefB1024.Uint[3] = p_Notification->DataTransfered.p_Payload[55];
-						enCoefB1024.Uint[2] = p_Notification->DataTransfered.p_Payload[56];
-						enCoefB1024.Uint[1] = p_Notification->DataTransfered.p_Payload[57];
-						enCoefB1024.Uint[0] = p_Notification->DataTransfered.p_Payload[58];
+						enCoefB4096.Uint[3] = p_Notification->DataTransfered.p_Payload[55];
+						enCoefB4096.Uint[2] = p_Notification->DataTransfered.p_Payload[56];
+						enCoefB4096.Uint[1] = p_Notification->DataTransfered.p_Payload[57];
+						enCoefB4096.Uint[0] = p_Notification->DataTransfered.p_Payload[58];
 
 						/* Коэффициент C полинома преобразования канала в энергию для 4096 */
-						enCoefC1024.Uint[3] = p_Notification->DataTransfered.p_Payload[59];
-						enCoefC1024.Uint[2] = p_Notification->DataTransfered.p_Payload[60];
-						enCoefC1024.Uint[1] = p_Notification->DataTransfered.p_Payload[61];
-						enCoefC1024.Uint[0] = p_Notification->DataTransfered.p_Payload[62];
+						enCoefC4096.Uint[3] = p_Notification->DataTransfered.p_Payload[59];
+						enCoefC4096.Uint[2] = p_Notification->DataTransfered.p_Payload[60];
+						enCoefC4096.Uint[1] = p_Notification->DataTransfered.p_Payload[61];
+						enCoefC4096.Uint[0] = p_Notification->DataTransfered.p_Payload[62];
 
 
 						/* Уровни компаратора и высокого напряжения */
-						HVoltage = p_Notification->DataTransfered.p_Payload[33] | p_Notification->DataTransfered.p_Payload[34] << 8;
-						comparatorLevel = p_Notification->DataTransfered.p_Payload[35] | p_Notification->DataTransfered.p_Payload[36] << 8;
+						HVoltage = p_Notification->DataTransfered.p_Payload[33] | (p_Notification->DataTransfered.p_Payload[34] << 8);
+						comparatorLevel = p_Notification->DataTransfered.p_Payload[35] | (p_Notification->DataTransfered.p_Payload[36] << 8);
 
 						/* Разрешение спектра. 0 - 1024, 1 - 2048, 2 - 4096 */
 						resolution = p_Notification->DataTransfered.p_Payload[37];
@@ -316,17 +316,16 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						 */
 						writeFlash();
 						calcPulseLevel();	 // Обновление порогов
-						//writeFlash();
+						logUpdate(8);
 
 					/* Очистка буфера спектра */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 1) {		// Очистка буфера спектрометра
 						for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
 							tmpSpecterBuffer[iii] = 0;
 						}
-						//pulseCounter = 0;
-						//currentTime = 0;
 						spectrometerPulse = 0;
 						spectrometerTime = 0;
+						logUpdate(7);
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 2) {		// Запуск/останов спектрометра
 						HAL_ADC_Stop_DMA(&hadc4);
 						HAL_ADC_DeInit(&hadc4);
@@ -349,16 +348,23 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							MX_ADC4_Init();
 							HAL_ADC_Start_DMA(&hadc4, TVLevel, 1);
 							hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
+							logUpdate(9);
 							/* Включим ADC для одного канала */
 							//MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
 						} else {
 							dataType = 0;												// Переключение в режим дозиметра
 							MX_ADC4_Init();
+							logUpdate(10);
 						}
+					/* Сброс дозиметра */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 3) {
+						pulseCounter = 0;
+						currentTime = 0;
+						//memset(dozimetrBuffer, 0, SIZE_DOZIMETR_BUFER * 2);
 						for (int ii = 0; ii < SIZE_DOZIMETR_BUFER; ii++) {
 							dozimetrBuffer[ii] = 0;
 						}
+						logUpdate(6);
 					}
 				} else {
 				}
