@@ -90,7 +90,7 @@ bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активн
 bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
 bool startSpectrometr = false;
 
-static const double KOEFCHAN = 65435.0 / CAPCHAN;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
+static const double KOEFCHAN = 65535.0 / CAPCHAN;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
 
 
 /*
