@@ -137,12 +137,17 @@ void tempVoltADCInit(void);
  *	Добавление записи в лог
  *
  *	act
- *	0 - Отсутствие события
- *	1 - Включение прибора
- *	2 - превышение уровня 1
- *	3 - превышение уровня 2
- *	4 - превышение уровня 3
- *	5 - нормальный уровень
+ *	0 -  Отсутствие события
+ *	1 -  Включение прибора
+ *	2 -  превышение уровня 1
+ *	3 -  превышение уровня 2
+ *	4 -  превышение уровня 3
+ *	5 -  нормальный уровень
+ *	6 -  Сброс дозиметра
+ *	7 -  Сброс спектрометра
+ *	8 -  Запись данных во флаш
+ *	9 -  Запуск набора спектра
+ *	10 - Останов набора спектра
  */
 void logUpdate(uint8_t act) {
 	logBuffer[logIndex].time = currentTime;
@@ -245,8 +250,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  if (readFlash() == HAL_OK) {
-  }
+  if (readFlash() == HAL_OK) {}
   if (autoStartSpecrometr) {
 	  switch (resolution) {
 	  case 0:
@@ -287,7 +291,7 @@ int main(void)
 		  HAL_ADC_Start_DMA(&hadc4, TVLevel, 3);
 		  hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
 		  /* Включим ADC для одного канала */
-		  MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
+		  //MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
 	  //} else {
 		  //tempVoltADCInit();
 	  //}

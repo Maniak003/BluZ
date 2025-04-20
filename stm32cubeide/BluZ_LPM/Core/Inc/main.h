@@ -129,6 +129,7 @@ extern union dataA AvgCPS;
 extern uint16_t MTUSizeValue;
 
 void sendData( uint8_t *dataSpectrBufer );
+void logUpdate(uint8_t act);
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
