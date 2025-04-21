@@ -67,7 +67,6 @@ extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
 extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
 extern DMA_QListTypeDef List_GPDMA1_Channel0;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
-extern ADC_HandleTypeDef hadc4;
 extern LPTIM_HandleTypeDef hlptim1;
 extern RTC_HandleTypeDef hrtc;
 extern TIM_HandleTypeDef htim17;
@@ -267,12 +266,12 @@ void EXTI15_IRQHandler(void)
   /* USER CODE BEGIN EXTI15_IRQn 1 */
   //if ((Sync_GPIO_Port->IDR & Sync_Pin) != 0x00U) {
   //if (HAL_GPIO_ReadPin(Sync_GPIO_Port, Sync_Pin)) {
-	  pulseCounter++;
-	  pulseCounterSecond++;
-		/* Оповещение об импульсе */
-	  if (LEDEnable) {
-		  NotifyAct(LED_NOTIFY, 0);
-	  }
+  //pulseCounter++;
+  //pulseCounterSecond++;
+	/* Оповещение об импульсе */
+  //if (LEDEnable) {
+	//  NotifyAct(LED_NOTIFY, 0);
+  //}
   //}
   /* USER CODE END EXTI15_IRQn 1 */
 }
@@ -313,6 +312,11 @@ void GPDMA1_Channel0_IRQHandler(void)
 		case 2:
 			if (tmpSpecterBuffer[(TVLevel[0] & 0xFFF)] < LIMITCHAN) {
 				tmpSpecterBuffer[(TVLevel[0] & 0xFFF)]++;
+			}
+			break;
+		default:
+			if (tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF)] < LIMITCHAN) {
+				tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF)]++;
 			}
 			break;
 		}
@@ -374,20 +378,6 @@ void TIM17_IRQHandler(void)
   /* USER CODE BEGIN TIM17_IRQn 1 */
 
   /* USER CODE END TIM17_IRQn 1 */
-}
-
-/**
-  * @brief This function handles ADC4 (12bits) global interrupt.
-  */
-void ADC4_IRQHandler(void)
-{
-  /* USER CODE BEGIN ADC4_IRQn 0 */
-
-  /* USER CODE END ADC4_IRQn 0 */
-  HAL_ADC_IRQHandler(&hadc4);
-  /* USER CODE BEGIN ADC4_IRQn 1 */
-
-  /* USER CODE END ADC4_IRQn 1 */
 }
 
 /**

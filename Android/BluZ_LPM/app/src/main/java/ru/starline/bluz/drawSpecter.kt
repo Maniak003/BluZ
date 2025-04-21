@@ -113,6 +113,7 @@ class drawSpecter {
                 maxYlog = tmpLog
             }
         }
+        //Log.d("BluZ-BT", "MAX: : $maxYlin")
         koefLin = VSize / maxYlin
         koefLog = VSize / maxYlog
         var Ylin: Float

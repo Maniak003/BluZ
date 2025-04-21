@@ -602,13 +602,25 @@ class BluetoothInterface(tv: TextView) {
                                         */
                                         iii = 1424                  // Смещение в байтах от начала буфера.
                                         jjj = 0
+                                        //var sm_test = 0.0
+                                        //var max_test = 0.0
+                                        //var tmp_test = 0.0
+                                        //var idx_test = 0
                                         val koefChan = 20.0 / 65535.0
                                         while (jjj < GO.drawSPECTER.ResolutionSpectr) {
                                             d0 = GO.receiveData[iii++]      // Выбираем младший байт
                                             d1 = GO.receiveData[iii++]      // Выбираем старший байт
+                                            /* Test */
+                                            //tmp_test = round(2.0.pow((d0 + d1 * 256u).toDouble() * koefChan)) - 1
+                                            //sm_test += tmp_test
+                                            //if (tmp_test > max_test) {
+                                            //    idx_test = jjj
+                                            //    max_test = tmp_test
+                                            //}
                                             /* Логарифмическое сжатие */
                                             GO.drawSPECTER.spectrData[jjj++] = round(2.0.pow((d0 + d1 * 256u).toDouble() * koefChan)) - 1
                                         }
+                                        //Log.d("BluZ-BT", "SpectrSUMM:$sm_test, MAX:$max_test ($idx_test)")
                                         GO.drawSPECTER.init()
                                         if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                                             /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
