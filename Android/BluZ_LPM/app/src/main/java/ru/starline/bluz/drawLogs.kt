@@ -30,12 +30,18 @@ class drawLogs {
     /*
     *   Обновление логов
     *
-    *	0 - Отсутствие события
-    *	1 - Включение прибора
-    *	2 - превышение уровня 1
-    *	3 - превышение уровня 2
-    *	4 - превышение уровня 3
-    *	5 - нормальный уровень
+    *	0 -     Отсутствие события
+    *	1 -     Включение прибора
+    *	2 -     превышение уровня 1
+    *	3 -     превышение уровня 2
+    *	4 -     превышение уровня 3
+    *	5 -     нормальный уровень
+    *   6 -     сброс дозиметра
+    *   7 -     сброс спектрометра
+    *   8 -     запись данных во флеш
+    *   9 -     запуск спектрометра
+    *   10 -    останов спектрометра
+    *
     */
     fun updateLogs() {
         logsText.text = ""
@@ -45,13 +51,19 @@ class drawLogs {
         var s: String = ""
         for (idx: Int in 0 until LOG_BUFFER_SIZE) {
             if (logData[idx].act > 0u) {
-                var eventStr: String = "Unknown"
+                var eventStr: String = ""
                 when (logData[idx].act.toInt() ) {
                     1 -> eventStr = "Turn on"
                     2 -> eventStr = "<font color=#FFBF00>Level 1"
                     3 -> eventStr = "<font color=#C80000>Level 2"
                     4 -> eventStr = "<font color=#B02EE8>Level 3"
                     5 -> eventStr = "<font color=#1AFF00>Normal"
+                    6 -> eventStr = "Dozimeter reset"
+                    7 -> eventStr = "Spectrometer reset"
+                    8 -> eventStr = "Write to flash"
+                    9 -> eventStr = "Start spectrometer"
+                    10 -> eventStr = "Stop spectrometer"
+                    else -> eventStr = "Unknown: ${logData[idx].act.toInt()}"
                 }
                 //Log.i("BluZ-BT", "LT: " + GO.messTm.toString())
                 var logTime = unixTime - (GO.messTm.toInt() - logData[idx].tm.toLong()) * 1000

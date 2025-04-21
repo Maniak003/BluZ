@@ -125,32 +125,11 @@ class NumberFragment : Fragment() {
         GO.cbVibroLevel2.isChecked = GO.propVibroLevel2
         GO.cbVibroLevel3.isChecked = GO.propVibroLevel3
 
-        /* Значения коэффициентов полинома */
-        val df = DecimalFormat("##0.#########", DecimalFormatSymbols(Locale.US))
-        var tmpA: String = ""
-        var tmpB: String = ""
-        var tmpC: String = ""
-        when (GO.spectrResolution) {
-            0 -> {
-                tmpA = df.format(GO.propCoef1024A)
-                tmpB = df.format(GO.propCoef1024B)
-                tmpC = df.format(GO.propCoef1024C)
-            }
-            1 -> {
-                tmpA = df.format(GO.propCoef2048A)
-                tmpB = df.format(GO.propCoef2048B)
-                tmpC = df.format(GO.propCoef2048C)
-            }
-            2 -> {
-                tmpA = df.format(GO.propCoef4096A)
-                tmpB = df.format(GO.propCoef4096B)
-                tmpC = df.format(GO.propCoef4096C)
-            }
-        }
-        GO.editPolinomA.setText(tmpA)
-        GO.editPolinomB.setText(tmpB)
-        GO.editPolinomC.setText(tmpC)
-
+        var EC: globalObj.energyCalcCoeff = globalObj.energyCalcCoeff("","","")
+        GO.reloadCoefEnergy(EC)
+        GO.editPolinomA.setText(EC.coeffA)
+        GO.editPolinomB.setText(EC.coeffB)
+        GO.editPolinomC.setText(EC.coeffC)
         /* CPS в uRh */
         GO.editCPS2Rh.setText(GO.propCPS2UR.toString())
 
@@ -455,12 +434,14 @@ class NumberFragment : Fragment() {
                     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
                     override fun afterTextChanged(s: Editable?) {
                         if(noChange) {
-                            if (GO.rbResolution1024.isChecked) {
-                                GO.propCoef1024A = GO.editPolinomA.text.toString().toFloat()
-                            } else if (GO.rbResolution2048.isChecked) {
-                                GO.propCoef2048A = GO.editPolinomA.text.toString().toFloat()
-                            } else if (GO.rbResolution4096.isChecked) {
-                                GO.propCoef4096A = GO.editPolinomA.text.toString().toFloat()
+                            if (GO.editPolinomA.text.isNotEmpty()) {
+                                if (GO.rbResolution1024.isChecked) {
+                                    GO.propCoef1024A = GO.editPolinomA.text.toString().toFloat()
+                                } else if (GO.rbResolution2048.isChecked) {
+                                    GO.propCoef2048A = GO.editPolinomA.text.toString().toFloat()
+                                } else if (GO.rbResolution4096.isChecked) {
+                                    GO.propCoef4096A = GO.editPolinomA.text.toString().toFloat()
+                                }
                             }
                         }
                     }
@@ -472,12 +453,14 @@ class NumberFragment : Fragment() {
                     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
                     override fun afterTextChanged(s: Editable?) {
                         if(noChange) {
-                            if (GO.rbResolution1024.isChecked) {
-                                GO.propCoef1024B = GO.editPolinomB.text.toString().toFloat()
-                            } else if (GO.rbResolution2048.isChecked) {
-                                GO.propCoef2048B = GO.editPolinomB.text.toString().toFloat()
-                            } else if (GO.rbResolution4096.isChecked) {
-                                GO.propCoef4096B = GO.editPolinomB.text.toString().toFloat()
+                            if (GO.editPolinomB.text.isNotEmpty()) {
+                                if (GO.rbResolution1024.isChecked) {
+                                    GO.propCoef1024B = GO.editPolinomB.text.toString().toFloat()
+                                } else if (GO.rbResolution2048.isChecked) {
+                                    GO.propCoef2048B = GO.editPolinomB.text.toString().toFloat()
+                                } else if (GO.rbResolution4096.isChecked) {
+                                    GO.propCoef4096B = GO.editPolinomB.text.toString().toFloat()
+                                }
                             }
                         }
                     }
@@ -489,12 +472,14 @@ class NumberFragment : Fragment() {
                     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
                     override fun afterTextChanged(s: Editable?) {
                         if(noChange) {
-                            if (GO.rbResolution1024.isChecked) {
-                                GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
-                            } else if (GO.rbResolution2048.isChecked) {
-                                GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
-                            } else if (GO.rbResolution4096.isChecked) {
-                                GO.propCoef4096C = GO.editPolinomC.text.toString().toFloat()
+                            if (GO.editPolinomC.text.isNotEmpty()) {
+                                if (GO.rbResolution1024.isChecked) {
+                                    GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
+                                } else if (GO.rbResolution2048.isChecked) {
+                                    GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
+                                } else if (GO.rbResolution4096.isChecked) {
+                                    GO.propCoef4096C = GO.editPolinomC.text.toString().toFloat()
+                                }
                             }
                         }
                     }
@@ -666,22 +651,51 @@ class NumberFragment : Fragment() {
                     */
                     /* Сохраненние настроек */
                     var convVal = ByteArray(4)
-                    /*
-                    * EEE754
-                    var convVal = ByteBuffer.allocate(4).putFloat(testD).array();
-                    GO.BTT.sendBuffer[3] = convVal[0].toUByte()
-                    GO.BTT.sendBuffer[4] = convVal[1].toUByte()
-                    GO.BTT.sendBuffer[5] = convVal[2].toUByte()
-                    GO.BTT.sendBuffer[6] = convVal[3].toUByte()
-                    */
 
+                    /* Перед сохранением загрузим текушие параметры из редактора */
+                    /* Звуковое сопровождение регистрации частицы */
+                    GO.propSoundKvant = GO.cbSoundKvant.isChecked
+                    /* Световое сопровождение регистрации частицы */
+                    GO.propLedKvant = GO.cbLedKvant.isChecked
+                    /* Запуск спектрометра при включении прибора (потребление 380uA) */
+                    GO.propAutoStartSpectrometr = GO.cbSpectrometr.isChecked
+
+                    GO.propLevel1 = GO.editLevel1.text.toString().toInt()              // Значение первого порога из редактора
+                    GO.propLevel2 = GO.editLevel2.text.toString().toInt()              // Значение второго порога из редактора
+                    GO.propLevel3 = GO.editLevel3.text.toString().toInt()              // Значение третьего порога из редактора
+
+                    GO.propSoundLevel1 = GO.cbSoundLevel1.isChecked
+                    GO.propSoundLevel2 = GO.cbSoundLevel2.isChecked
+                    GO.propSoundLevel3 = GO.cbSoundLevel3.isChecked
+
+                    GO.propVibroLevel1 = GO.cbVibroLevel1.isChecked
+                    GO.propVibroLevel2 = GO.cbVibroLevel2.isChecked
+                    GO.propVibroLevel3 = GO.cbVibroLevel3.isChecked
+
+                    /* Коэффициент пересчета CPS в uRh */
+                    GO.propCPS2UR = GO.editCPS2Rh.text.toString().toFloat()
+                    /* Уровень высокого напряжения */
+                    GO.propHVoltage = GO.editHVoltage.text.toString().toUShort()
+                    /* Уровень компаратора */
+                    GO.propComparator = GO.editComparator.text.toString().toUShort()
+
+                    if (GO.rbResolution1024.isChecked) {           // Разрешение прибора.
+                        GO.spectrResolution = 0
+                    } else if (GO.rbResolution2048.isChecked) {
+                        GO.spectrResolution = 1
+                    } else if (GO.rbResolution4096.isChecked) {
+                        GO.spectrResolution = 2
+                    } else {
+                        GO.spectrResolution = 0
+                    }
+
+                    /* Подготовка массива для передачи */
                     /* Первый порог */
                     convVal = ByteBuffer.allocate(4).putInt(GO.propLevel1).array();
                     GO.BTT.sendBuffer[4] = convVal[0].toUByte()
                     GO.BTT.sendBuffer[5] = convVal[1].toUByte()
                     GO.BTT.sendBuffer[6] = convVal[2].toUByte()
                     GO.BTT.sendBuffer[7] = convVal[3].toUByte()
-                    //convVal.
 
                     /* Второй порог */
                     convVal = ByteBuffer.allocate(4).putInt(GO.propLevel2).array();
@@ -902,23 +916,30 @@ class NumberFragment : Fragment() {
                 */
                 rbResolution.setOnCheckedChangeListener { _, checkedId -> view.findViewById<RadioButton>(checkedId)?.apply {
                         noChange = false
+                        val df = DecimalFormat(GO.acuricyPatern, DecimalFormatSymbols(Locale.US))
+                        var tmpA: String = ""
+                        var tmpB: String = ""
+                        var tmpC: String = ""
                         when (checkedId) {
                             GO.rbResolution1024.id -> {
-                                GO.editPolinomA.setText(GO.propCoef1024A.toString())
-                                GO.editPolinomB.setText(GO.propCoef1024B.toString())
-                                GO.editPolinomC.setText(GO.propCoef1024C.toString())
+                                tmpA = df.format(GO.propCoef1024A)
+                                tmpB = df.format(GO.propCoef1024B)
+                                tmpC = df.format(GO.propCoef1024C)
                             }
                             GO.rbResolution2048.id -> {
-                                GO.editPolinomA.setText(GO.propCoef2048A.toString())
-                                GO.editPolinomB.setText(GO.propCoef2048B.toString())
-                                GO.editPolinomC.setText(GO.propCoef2048C.toString())
+                                tmpA = df.format(GO.propCoef2048A)
+                                tmpB = df.format(GO.propCoef2048B)
+                                tmpC = df.format(GO.propCoef2048C)
                             }
                             GO.rbResolution4096.id -> {
-                                GO.editPolinomA.setText(GO.propCoef4096A.toString())
-                                GO.editPolinomB.setText(GO.propCoef4096B.toString())
-                                GO.editPolinomC.setText(GO.propCoef4096C.toString())
+                                tmpA = df.format(GO.propCoef4096A)
+                                tmpB = df.format(GO.propCoef4096B)
+                                tmpC = df.format(GO.propCoef4096C)
                             }
                         }
+                        GO.editPolinomA.setText(tmpA)
+                        GO.editPolinomB.setText(tmpB)
+                        GO.editPolinomC.setText(tmpC)
                         noChange = true
                     }
                 }

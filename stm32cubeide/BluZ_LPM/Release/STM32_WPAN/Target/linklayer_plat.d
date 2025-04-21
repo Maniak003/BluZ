@@ -72,9 +72,9 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
  ../System/Modules/RTDebug/RTDebug.h \
  ../System/Config/Debug_GPIO/debug_config.h \
  ../System/Modules/RTDebug/debug_signals.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_dma.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_icache.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_tim.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_dma.h \
  ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/simple_nvm_arbiter.h \
  ../System/Modules/Flash/simple_nvm_arbiter_common.h \
  ../System/Modules/utilities_common.h \
@@ -165,9 +165,9 @@ STM32_WPAN/Target/linklayer_plat.o: ../STM32_WPAN/Target/linklayer_plat.c \
 ../System/Modules/RTDebug/RTDebug.h:
 ../System/Config/Debug_GPIO/debug_config.h:
 ../System/Modules/RTDebug/debug_signals.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_dma.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_icache.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_tim.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_dma.h:
 ../Core/Inc/rw_FLASH.h:
 ../System/Modules/Flash/simple_nvm_arbiter.h:
 ../System/Modules/Flash/simple_nvm_arbiter_common.h:

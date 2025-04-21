@@ -33,6 +33,7 @@ extern "C" {
 #include "app_common.h"
 #include "app_debug.h"
 
+#include "stm32wbaxx_ll_dma.h"
 #include "stm32wbaxx_ll_icache.h"
 #include "stm32wbaxx_ll_tim.h"
 #include "stm32wbaxx_ll_bus.h"
@@ -42,7 +43,6 @@ extern "C" {
 #include "stm32wbaxx_ll_utils.h"
 #include "stm32wbaxx_ll_pwr.h"
 #include "stm32wbaxx_ll_gpio.h"
-#include "stm32wbaxx_ll_dma.h"
 
 #include "stm32wbaxx_ll_exti.h"
 
@@ -95,6 +95,7 @@ extern bool levelVibro1, levelVibro2, levelVibro3;
 extern bool flagTemperatureMess, autoStartSpecrometr;
 extern uint16_t HVoltage, comparatorLevel;
 extern LPTIM_HandleTypeDef hlptim2;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER];
 extern int indexDozimetrBufer;
 extern ADC_HandleTypeDef hadc4;

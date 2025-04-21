@@ -149,7 +149,7 @@
   *        for possible callback identifiers defined in HAL_PPP_CallbackIDTypeDef
   *        for each PPP peripheral).
   */
-#define  USE_HAL_ADC_REGISTER_CALLBACKS        1U /* ADC register callback enabled       */
+#define  USE_HAL_ADC_REGISTER_CALLBACKS        0U /* ADC register callback disabled       */
 #define  USE_HAL_COMP_REGISTER_CALLBACKS       0U /* COMP register callback disabled      */
 #define  USE_HAL_CRYP_REGISTER_CALLBACKS       0U /* CRYP register callback disabled      */
 #define  USE_HAL_HASH_REGISTER_CALLBACKS       0U /* HASH register callback disabled      */

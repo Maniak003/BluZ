@@ -77,9 +77,9 @@ Core/Src/rw_FLASH.o: ../Core/Src/rw_FLASH.c ../Core/Inc/rw_FLASH.h \
  ../System/Config/Debug_GPIO/debug_config.h \
  ../System/Modules/RTDebug/debug_signals.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_dma.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_icache.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_tim.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_dma.h \
  ../Core/Inc/rw_FLASH.h ../Utilities/tim_serv/stm32_timer.h \
  ../Utilities/sequencer/stm32_seq.h ../Utilities/lpm/tiny_lpm/stm32_lpm.h \
  ../Core/Inc/LTC1662.h
@@ -168,9 +168,9 @@ Core/Src/rw_FLASH.o: ../Core/Src/rw_FLASH.c ../Core/Inc/rw_FLASH.h \
 ../System/Config/Debug_GPIO/debug_config.h:
 ../System/Modules/RTDebug/debug_signals.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_dma.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_icache.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_tim.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_dma.h:
 ../Core/Inc/rw_FLASH.h:
 ../Utilities/tim_serv/stm32_timer.h:
 ../Utilities/sequencer/stm32_seq.h:

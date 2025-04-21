@@ -201,7 +201,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	/* Настройка температурных коэффициентов */
 	TK1 = (float) (TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP) / (float)(*TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR);
-	TK2 = (float) TEMPSENSOR_CAL1_TEMP - TK1 * (float) ( *(__IO uint16_t*) TEMPSENSOR_CAL1_ADDR);
+	TK2 = (float) TEMPSENSOR_CAL1_TEMP - TK1 * (float) *TEMPSENSOR_CAL1_ADDR;
 	TK1 = TK1 * ADC_VREF / ((float)VREFINT_CAL_VREF / 1000.0f);
   /* USER CODE END 1 */
 
@@ -289,7 +289,7 @@ int main(void)
 	  //UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
 	  //if (autoStartSpecrometr) {
 		  HAL_ADC_Start_DMA(&hadc4, TVLevel, 3);
-		  hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
+		  //hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
 		  /* Включим ADC для одного канала */
 		  //MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
 	  //} else {
@@ -771,7 +771,7 @@ void MX_ADC4_Init(void)
 	  hadc4.Init.LowPowerAutoWait = DISABLE;
 	  hadc4.Init.ContinuousConvMode = DISABLE;
 	  hadc4.Init.NbrOfConversion = 1;
-	  hadc4.Init.DiscontinuousConvMode = ENABLE;
+	  hadc4.Init.DiscontinuousConvMode = DISABLE;
 	  hadc4.Init.ExternalTrigConv = ADC_EXTERNALTRIG_EXT_IT15;
 	  hadc4.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
 	  hadc4.Init.DMAContinuousRequests = ENABLE;
@@ -845,11 +845,11 @@ void MX_GPDMA1_Init(void)
   /* USER CODE END GPDMA1_Init 0 */
 
   /* Peripheral clock enable */
-  __HAL_RCC_GPDMA1_CLK_ENABLE();
+  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPDMA1);
 
   /* GPDMA1 interrupt Init */
-    HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 4, 0);
-    HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
+  NVIC_SetPriority(GPDMA1_Channel0_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),4, 0));
+  NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
 
   /* USER CODE BEGIN GPDMA1_Init 1 */
 
@@ -1205,12 +1205,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : AIn_Pin */
-  GPIO_InitStruct.Pin = AIn_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(AIn_GPIO_Port, &GPIO_InitStruct);
-
   /*Configure GPIO pin : Sync_Pin */
   GPIO_InitStruct.Pin = Sync_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
@@ -1327,10 +1321,12 @@ void tempVoltMeasure(void) {
 		currVoltage = ADC_Switch_Channel(ADC_CHANNEL_7);				// Канал для измерения напряжения.
 
 		HAL_ADC_DeInit(&hadc4);											// Для снижения потребления
+		//HAL_DMA_DeInit(&handle_GPDMA1_Channel0);
 		dataType = tmp_data_type;										// Возвращаем исходный режим спектрометра
 		MX_ADC4_Init();
+		//MX_GPDMA1_Init();
 		HAL_ADC_Start_DMA(&hadc4, TVLevel, 1);
-		hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;					// Отключение прерывания по промежуточному значению.
+		//hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;					// Отключение прерывания по промежуточному значению.
 	}
 	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
 }
@@ -1346,6 +1342,16 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
   }
 }
 */
+
+/* Обработка прерываний по приходу импульсов */
+void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
+	  pulseCounter++;
+	  pulseCounterSecond++;
+		/* Оповещение об импульсе */
+	  if (LEDEnable) {
+		  NotifyAct(LED_NOTIFY, 0);
+	  }
+}
 
 /* USER CODE END 4 */
 
