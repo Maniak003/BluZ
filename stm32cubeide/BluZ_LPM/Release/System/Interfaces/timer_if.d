@@ -36,8 +36,6 @@ System/Interfaces/timer_if.o: ../System/Interfaces/timer_if.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
  ../System/Interfaces/timer_if.h ../Utilities/tim_serv/stm32_timer.h \
  ../Drivers/CMSIS/Include/cmsis_compiler.h ../Core/Inc/utilities_conf.h \
@@ -91,8 +89,6 @@ System/Interfaces/timer_if.o: ../System/Interfaces/timer_if.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h:
 ../System/Interfaces/timer_if.h:
 ../Utilities/tim_serv/stm32_timer.h:

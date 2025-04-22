@@ -332,7 +332,10 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
+  //HAL_PWREx_EnableStandbyIORetention(SOUND_GPIO_Port, SOUND_Pin);
 
+  //HAL_PWREx_EnableLPTIM1Retention();
+  //HAL_PWREx_EnableLPTIM2Retention();
   /* USER CODE END SystemPower_Config */
 }
 

@@ -67,9 +67,7 @@ extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
 extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
 extern DMA_QListTypeDef List_GPDMA1_Channel0;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
-extern LPTIM_HandleTypeDef hlptim1;
 extern RTC_HandleTypeDef hrtc;
-extern TIM_HandleTypeDef htim17;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -327,20 +325,6 @@ void GPDMA1_Channel0_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles LPTIM1 global interrupt.
-  */
-void LPTIM1_IRQHandler(void)
-{
-  /* USER CODE BEGIN LPTIM1_IRQn 0 */
-
-  /* USER CODE END LPTIM1_IRQn 0 */
-  HAL_LPTIM_IRQHandler(&hlptim1);
-  /* USER CODE BEGIN LPTIM1_IRQn 1 */
-
-  /* USER CODE END LPTIM1_IRQn 1 */
-}
-
-/**
   * @brief This function handles TIM16 global interrupt.
   */
 void TIM16_IRQHandler(void)
@@ -364,20 +348,6 @@ void TIM16_IRQHandler(void)
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
   /* USER CODE END TIM16_IRQn 1 */
-}
-
-/**
-  * @brief This function handles TIM17 global interrupt.
-  */
-void TIM17_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM17_IRQn 0 */
-
-  /* USER CODE END TIM17_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim17);
-  /* USER CODE BEGIN TIM17_IRQn 1 */
-
-  /* USER CODE END TIM17_IRQn 1 */
 }
 
 /**

@@ -89,7 +89,7 @@ extern uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET];
 extern uint16_t currTemperature, currVoltage;
 extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION], spectrometerTime, spectrometerPulse;
 extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, currentTime, pulseCounterSecond, CPS, intervalNow, TVLevel[3];
-extern bool SoundEnable, VibroEnable, LEDEnable;
+extern bool SoundEnable, VibroEnable, LEDEnable, LEDflag;
 extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
 extern bool flagTemperatureMess, autoStartSpecrometr;
@@ -105,6 +105,8 @@ struct LG {
 	uint32_t time;
 	uint8_t type;
 };
+
+extern struct LG logBuffer[LOG_BUFER_SIZE];
 
 union dataC {
 	float Float;
@@ -155,9 +157,7 @@ void MX_ICACHE_Init(void);
 void MX_RAMCFG_Init(void);
 void MX_RNG_Init(void);
 void MX_RTC_Init(void);
-void MX_LPTIM1_Init(void);
 void MX_LPTIM2_Init(void);
-void MX_TIM17_Init(void);
 
 /* USER CODE BEGIN EFP */
 void NotifyAct(uint8_t SRC, uint32_t repCnt);
@@ -200,6 +200,9 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define LED_NOTIFY   	4
 #define TEST_LED		1
 #define MEASURE_INTERVAL	1000
+#define VIBRO_TIME		50			// Время работы вибро
+#define VIBRO_PERIOD	100			// Интервал для вибро
+#define LED_PERIOD		50			// Время свечения светодиода
 
 #define SAMPLE_TIME		ADC_SAMPLETIME_12CYCLES_5		// 12.5 циклов для Sensl FC/FJ 60035
 //#define SAMPLE_TIME			ADC_SAMPLETIME_79CYCLES_5		// Циклов для MacroPixel SC-14x25c-SiPM-T
