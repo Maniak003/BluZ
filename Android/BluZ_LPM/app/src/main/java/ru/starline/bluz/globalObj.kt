@@ -196,12 +196,6 @@ class globalObj {
     public var propVibroLevel3: Boolean = true      // Разрешение вибро третьего уровня
     public var propAutoStartSpectrometr: Boolean = false
     public var propCPS2UR: Float = 0.0f             // Коэффициент пересчета CPS в uRh
-    public data class energyCalcCoeff (
-        var coeffA: String = "",
-        var coeffB: String = "",
-        var coeffC: String = ""
-    )
-
     public var propCoef1024A: Float = 0.0f          // Коэффициенты полинома преобразования канала в энергию
     public var propCoef1024B: Float = 0.0f
     public var propCoef1024C: Float = 0.0f
@@ -499,8 +493,9 @@ class globalObj {
     *   Чтение параметров прибора в закладку Setup
     */
     fun readConfigFormDevice() {
-        cbLedKvant.isChecked = GO.HWpropLedKvant
-        cbSoundKvant.isChecked = GO.HWpropSoundKvant
+        GO.propLedKvant = GO.HWpropLedKvant
+        //Log.d("BluZ-BT","LedKvant: ${GO.HWpropLedKvant}")
+        GO.propSoundKvant = GO.HWpropSoundKvant
         GO.propCoef1024A = GO.HWCoef1024A
         GO.propCoef1024B = GO.HWCoef1024B
         GO.propCoef1024C = GO.HWCoef1024C
@@ -670,28 +665,4 @@ class globalObj {
             GO.viewPager.setCurrentItem(4, false)
         }
     }
-
-    /* Перезагрузка элементов ввода коэффициентов полинома для пересчета канала в энергию */
-    fun reloadCoefEnergy(EC: energyCalcCoeff) {
-        /* Значения коэффициентов полинома */
-        val df = DecimalFormat(GO.acuricyPatern, DecimalFormatSymbols(Locale.US))
-        when (GO.spectrResolution) {
-            0 -> {
-                EC.coeffA = df.format(GO.propCoef1024A)
-                EC.coeffB = df.format(GO.propCoef1024B)
-                EC.coeffC = df.format(GO.propCoef1024C)
-            }
-            1 -> {
-                EC.coeffA = df.format(GO.propCoef2048A)
-                EC.coeffB = df.format(GO.propCoef2048B)
-                EC.coeffC = df.format(GO.propCoef2048C)
-            }
-            2 -> {
-                EC.coeffA = df.format(GO.propCoef4096A)
-                EC.coeffB = df.format(GO.propCoef4096B)
-                EC.coeffC = df.format(GO.propCoef4096C)
-            }
-        }
-    }
-
 }

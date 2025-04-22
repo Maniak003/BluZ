@@ -30,8 +30,6 @@
 "./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rng_ex.o"
 "./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc.o"
 "./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.o"
-"./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.o"
-"./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.o"
 "./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.o"
 "./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.o"
 "./Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.o"

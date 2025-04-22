@@ -36,8 +36,6 @@ STM32_WPAN/Target/ll_sys_if.o: ../STM32_WPAN/Target/ll_sys_if.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h \
  ../Core/Inc/app_conf.h ../System/Interfaces/hw_if.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_exti.h \
@@ -123,8 +121,6 @@ STM32_WPAN/Target/ll_sys_if.o: ../STM32_WPAN/Target/ll_sys_if.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h:

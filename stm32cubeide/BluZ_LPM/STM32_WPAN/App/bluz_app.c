@@ -161,6 +161,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     *                   1 - Команда очистки буфера спектра
                     *                   2 - Запуск/Останов спектрометра
                     *                   3 - Очистка буфера дозиметра
+                    *                   4 - Очистка лога
                     *
                     * 4,5,6,7       - Первый порог в uR
                     * 8,9,10,11     - Второй порог в uR
@@ -367,6 +368,13 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							dozimetrBuffer[ii] = 0;
 						}
 						logUpdate(6);
+						/* Очистка лога */
+					} else if (p_Notification->DataTransfered.p_Payload[3] == 4) {
+						for (int ii = 0; ii < LOG_BUFER_SIZE; ii++) {
+							logBuffer[ii].time = 0;
+							logBuffer[ii].type = 0;
+						}
+						logUpdate(11);
 					}
 				} else {
 				}

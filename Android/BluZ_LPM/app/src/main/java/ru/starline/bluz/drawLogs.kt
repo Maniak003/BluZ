@@ -63,6 +63,7 @@ class drawLogs {
                     8 -> eventStr = "Write to flash"
                     9 -> eventStr = "Start spectrometer"
                     10 -> eventStr = "Stop spectrometer"
+                    11 -> eventStr = "Clear logs"
                     else -> eventStr = "Unknown: ${logData[idx].act.toInt()}"
                 }
                 //Log.i("BluZ-BT", "LT: " + GO.messTm.toString())

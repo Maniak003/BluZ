@@ -330,6 +330,9 @@ typedef enum
   /* USER CODE BEGIN CFG_Task_Id_t */
   CFG_TASK_ADV_LP_REQ_ID,
   CFG_TASK_MEASURE_REQ_ID,
+  CFG_TASK_VIBRO_REQ_ID,
+  CFG_TASK_VIBROOFF_REQ_ID,
+  CFG_TASK_LED_REQ_ID,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -347,7 +350,7 @@ typedef enum
   CFG_SEQ_PRIO_0 = 0,
   CFG_SEQ_PRIO_1,
   /* USER CODE BEGIN CFG_SEQ_Prio_Id_t */
-
+  CFG_SEQ_PRIO_2,
   /* USER CODE END CFG_SEQ_Prio_Id_t */
   CFG_SEQ_PRIO_NBR /* Shall be LAST in the list */
 } CFG_SEQ_Prio_Id_t;

@@ -125,11 +125,32 @@ class NumberFragment : Fragment() {
         GO.cbVibroLevel2.isChecked = GO.propVibroLevel2
         GO.cbVibroLevel3.isChecked = GO.propVibroLevel3
 
-        var EC: globalObj.energyCalcCoeff = globalObj.energyCalcCoeff("","","")
-        GO.reloadCoefEnergy(EC)
-        GO.editPolinomA.setText(EC.coeffA)
-        GO.editPolinomB.setText(EC.coeffB)
-        GO.editPolinomC.setText(EC.coeffC)
+        /* Значения коэффициентов полинома */
+        val df = DecimalFormat(GO.acuricyPatern, DecimalFormatSymbols(Locale.US))
+        var tmpA: String = ""
+        var tmpB: String = ""
+        var tmpC: String = ""
+        when (GO.spectrResolution) {
+            0 -> {
+                tmpA = df.format(GO.propCoef1024A)
+                tmpB = df.format(GO.propCoef1024B)
+                tmpC = df.format(GO.propCoef1024C)
+            }
+            1 -> {
+                tmpA = df.format(GO.propCoef2048A)
+                tmpB = df.format(GO.propCoef2048B)
+                tmpC = df.format(GO.propCoef2048C)
+            }
+            2 -> {
+                tmpA = df.format(GO.propCoef4096A)
+                tmpB = df.format(GO.propCoef4096B)
+                tmpC = df.format(GO.propCoef4096C)
+            }
+        }
+
+        GO.editPolinomA.setText(tmpA)
+        GO.editPolinomB.setText(tmpB)
+        GO.editPolinomC.setText(tmpC)
         /* CPS в uRh */
         GO.editCPS2Rh.setText(GO.propCPS2UR.toString())
 
@@ -382,6 +403,7 @@ class NumberFragment : Fragment() {
                 /* Очистка логов */
                 val btnCleaarLog: Button = view.findViewById(R.id.buttonClearLog)
                 btnCleaarLog.setOnClickListener {
+                    GO.BTT.sendCommand(4u)      // Очистка лога.
                     Toast.makeText(GO.mainContext, R.string.resetLogs, Toast.LENGTH_LONG).show()
                 }
                 GO.drawLOG.logView = view.findViewById(R.id.logScrolView)

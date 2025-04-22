@@ -33,11 +33,9 @@ extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
 extern DMA_QListTypeDef List_GPDMA1_Channel0;
 extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
 extern DMA_QListTypeDef List_GPDMA1_Channel0;
-extern LPTIM_HandleTypeDef hlptim1;
 extern LPTIM_HandleTypeDef hlptim2;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern RNG_HandleTypeDef hrng;
-extern TIM_HandleTypeDef htim17;
 
 /* USER CODE BEGIN EV */
 
@@ -71,19 +69,15 @@ void MX_StandbyExit_PeripheralInit(void)
   memset(&List_GPDMA1_Channel0, 0, sizeof(List_GPDMA1_Channel0));
   memset(&Node_GPDMA1_Channel0, 0, sizeof(Node_GPDMA1_Channel0));
   memset(&List_GPDMA1_Channel0, 0, sizeof(List_GPDMA1_Channel0));
-  memset(&hlptim1, 0, sizeof(hlptim1));
   memset(&hlptim2, 0, sizeof(hlptim2));
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&hrng, 0, sizeof(hrng));
-  memset(&htim17, 0, sizeof(htim17));
 
   MX_GPIO_Init();
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RNG_Init();
-  MX_LPTIM1_Init();
   MX_LPTIM2_Init();
-  MX_TIM17_Init();
   CRCCTRL_Init();
 
 #if (CFG_DEBUGGER_LEVEL == 0)

@@ -46,7 +46,6 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 CRC_HandleTypeDef hcrc;
 
-LPTIM_HandleTypeDef hlptim1;
 LPTIM_HandleTypeDef hlptim2;
 
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
@@ -55,20 +54,18 @@ RNG_HandleTypeDef hrng;
 
 RTC_HandleTypeDef hrtc;
 
-TIM_HandleTypeDef htim17;
-
 /* USER CODE BEGIN PV */
 bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false;
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
 uint32_t pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
 int indexDozimetrBufer = 0;
-struct LG logBuffer[LOG_BUFER_SIZE];
 int logIndex = 0;	/* Текущий указатель на буфер лога */
 char uartBuffer[400] = {0,};
+struct LG logBuffer[LOG_BUFER_SIZE];
 /* Буфер для работы с flash */
 uint64_t PL[18] = {0,};
-uint8_t resolution = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
+uint8_t resolution = 0, repetionCount = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
 /*
  * 0 - Дозиметр и логи,
  * 1 - Дозиметр, логи и спектр 1024,
@@ -89,6 +86,7 @@ bool SoundEnable = true, VibroEnable = true, LEDEnable = false;		// Сопров
 bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активность звука для разных уровней
 bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
 bool startSpectrometr = false;
+bool vibroFlag = false, soundFlag = false;
 
 static const double KOEFCHAN = 65535.0 / CAPCHAN;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
 
@@ -116,7 +114,7 @@ uint16_t HVoltage = 256, comparatorLevel = 256;						// Уровни настр�
 
 uint8_t notifyFlags = 0;											// 1 - Звук, 2 - Вибро, 4 - Led
 
-UTIL_TIMER_Object_t timerMeasureInterval;
+UTIL_TIMER_Object_t timerMeasureInterval, timerVibro, timerVibroOff, timerLed;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -128,6 +126,13 @@ void updateMesurment(void);
 void updateMesurmentCb(void *arg);
 void tempVoltMeasure(void);
 void tempVoltADCInit(void);
+void vibroActivate(void);
+void updateVibroCb(void *arg);
+void vibroActivateOff(void);
+void updateVibroOffCb(void *arg);
+void updateLedCb (void *arg);
+void ledActivate(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -148,6 +153,7 @@ void tempVoltADCInit(void);
  *	8 -  Запись данных во флаш
  *	9 -  Запуск набора спектра
  *	10 - Останов набора спектра
+ *	11 - Очистка лога
  */
 void logUpdate(uint8_t act) {
 	logBuffer[logIndex].time = currentTime;
@@ -165,21 +171,25 @@ void logUpdate(uint8_t act) {
  */
 void NotifyAct(uint8_t SRC, uint32_t repCnt) {
 	if (SoundEnable || VibroEnable || TEST_LED) {
+		/* Аквация вибро и звука */
 		if (SRC & (SOUND_NOTIFY | VIBRO_NOTIFY)) {
-		/* Установим количество повторов */
-			hlptim1.Init.RepetitionCounter = repCnt;
-			if (HAL_LPTIM_Init(&hlptim1) == HAL_OK) {
-				notifyFlags = SRC;
-				/* Включаем звук и вибро */
-				HAL_LPTIM_OnePulse_Start_IT(&hlptim1, LPTIM_CHANNEL_1);
+			if (SRC & SOUND_NOTIFY) {
+				soundFlag = true;
 			}
+			if (SRC & VIBRO_NOTIFY) {
+				vibroFlag = true;
+			}
+		/* Установим количество повторов */
+			repetionCount = repCnt;
+			UTIL_TIMER_Start(&(timerVibro));
 		}
 	}
-	if (LEDEnable || TEST_LED) {
+
+	if (LEDEnable) {
 		if (SRC & LED_NOTIFY) {
 			LEDflag = true;
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_TIM_Base_Start_IT(&htim17);
+			UTIL_TIMER_Start(&(timerLed));
 		}
 	}
 }
@@ -238,10 +248,10 @@ int main(void)
   MX_RAMCFG_Init();
   MX_RNG_Init();
   MX_RTC_Init();
-  MX_LPTIM1_Init();
   MX_LPTIM2_Init();
-  MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
+  //NotifyAct(SOUND_NOTIFY, 2);
+  //HAL_Delay(1000);
   HAL_ADCEx_Calibration_Start(&hadc4);
   /* USER CODE END 2 */
 
@@ -272,6 +282,7 @@ int main(void)
   }
   /* Пересчет уровней в uint32_t для ускорения обработки */
   calcPulseLevel();
+
   /*
    * Настройка порога компаратора
    */
@@ -360,14 +371,30 @@ int main(void)
    * 652 или 1676 или 2700 или 4748 - Контрольная сумма.
    *
    */
-  /* Включим Vibro, Sound */
-
-  NotifyAct(SOUND_NOTIFY /*| VIBRO_NOTIFY*/, 1);
 
   /* Таймер для расчета статистики измерений */
   UTIL_SEQ_RegTask(1<<CFG_TASK_MEASURE_REQ_ID, UTIL_SEQ_RFU, updateMesurment);
   UTIL_TIMER_Create(&(timerMeasureInterval), MEASURE_INTERVAL, UTIL_TIMER_PERIODIC, &updateMesurmentCb, 0);
   UTIL_TIMER_Start(&(timerMeasureInterval));
+
+
+  /* Таймер для LED */
+  UTIL_SEQ_RegTask(1<<CFG_TASK_LED_REQ_ID, UTIL_SEQ_RFU, ledActivate);
+  UTIL_TIMER_Create(&(timerLed), LED_PERIOD, UTIL_TIMER_ONESHOT, &updateLedCb, 0);
+
+  /* Таймеры для управления вибро
+   *	 CFG_TASK_VIBRO_REQ_ID -- задает интервал между событиями
+   *	 CFG_TASK_OFFVIBRO_REQ_ID -- задает врямя работы вибро
+   *
+   */
+  UTIL_SEQ_RegTask(1<<CFG_TASK_VIBRO_REQ_ID, UTIL_SEQ_RFU, vibroActivate);
+  UTIL_TIMER_Create(&(timerVibro), VIBRO_PERIOD, UTIL_TIMER_ONESHOT, &updateVibroCb, 0);
+
+  UTIL_SEQ_RegTask(1<<CFG_TASK_VIBROOFF_REQ_ID, UTIL_SEQ_RFU, vibroActivateOff);
+  UTIL_TIMER_Create(&(timerVibroOff), VIBRO_TIME, UTIL_TIMER_ONESHOT, &updateVibroOffCb, 0);
+
+  /* Включим Vibro, Sound */
+  NotifyAct(SOUND_NOTIFY /*| VIBRO_NOTIFY*/, 1);
 
   tempVoltMeasure();
 
@@ -891,49 +918,6 @@ void MX_ICACHE_Init(void)
 }
 
 /**
-  * @brief LPTIM1 Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_LPTIM1_Init(void)
-{
-
-  /* USER CODE BEGIN LPTIM1_Init 0 */
-
-  /* USER CODE END LPTIM1_Init 0 */
-
-  LPTIM_OC_ConfigTypeDef sConfig1 = {0};
-
-  /* USER CODE BEGIN LPTIM1_Init 1 */
-
-  /* USER CODE END LPTIM1_Init 1 */
-  hlptim1.Instance = LPTIM1;
-  hlptim1.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
-  hlptim1.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV128;
-  hlptim1.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
-  hlptim1.Init.Period = 10000;
-  hlptim1.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
-  hlptim1.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
-  hlptim1.Init.Input1Source = LPTIM_INPUT1SOURCE_GPIO;
-  hlptim1.Init.Input2Source = LPTIM_INPUT2SOURCE_GPIO;
-  hlptim1.Init.RepetitionCounter = 0;
-  if (HAL_LPTIM_Init(&hlptim1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfig1.Pulse = 4000;
-  sConfig1.OCPolarity = LPTIM_OCPOLARITY_HIGH;
-  if (HAL_LPTIM_OC_ConfigChannel(&hlptim1, &sConfig1, LPTIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN LPTIM1_Init 2 */
-
-  /* USER CODE END LPTIM1_Init 2 */
-
-}
-
-/**
   * @brief LPTIM2 Initialization Function
   * @param None
   * @retval None
@@ -954,7 +938,7 @@ void MX_LPTIM2_Init(void)
   hlptim2.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
   hlptim2.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV1;
   hlptim2.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
-  hlptim2.Init.Period = 2540;
+  hlptim2.Init.Period = 6;
   hlptim2.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
   hlptim2.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
   hlptim2.Init.Input1Source = LPTIM_INPUT1SOURCE_GPIO;
@@ -964,7 +948,7 @@ void MX_LPTIM2_Init(void)
   {
     Error_Handler();
   }
-  sConfig1.Pulse = 1270;
+  sConfig1.Pulse = 3;
   sConfig1.OCPolarity = LPTIM_OCPOLARITY_HIGH;
   if (HAL_LPTIM_OC_ConfigChannel(&hlptim2, &sConfig1, LPTIM_CHANNEL_2) != HAL_OK)
   {
@@ -1104,72 +1088,6 @@ void MX_RTC_Init(void)
 }
 
 /**
-  * @brief TIM17 Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_TIM17_Init(void)
-{
-
-  /* USER CODE BEGIN TIM17_Init 0 */
-
-  /* USER CODE END TIM17_Init 0 */
-
-  TIM_OC_InitTypeDef sConfigOC = {0};
-  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
-
-  /* USER CODE BEGIN TIM17_Init 1 */
-
-  /* USER CODE END TIM17_Init 1 */
-  htim17.Instance = TIM17;
-  htim17.Init.Prescaler = 15;
-  htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim17.Init.Period = 1000;
-  htim17.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim17.Init.RepetitionCounter = 0;
-  htim17.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(&htim17) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_OC_Init(&htim17) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_OnePulse_Init(&htim17, TIM_OPMODE_SINGLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-  if (HAL_TIM_OC_ConfigChannel(&htim17, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
-  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-  sBreakDeadTimeConfig.DeadTime = 0;
-  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
-  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
-  sBreakDeadTimeConfig.BreakFilter = 0;
-  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-  if (HAL_TIMEx_ConfigBreakDeadTime(&htim17, &sBreakDeadTimeConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM17_Init 2 */
-
-  /* USER CODE END TIM17_Init 2 */
-
-}
-
-/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -1234,9 +1152,11 @@ void updateMesurment(void) {
 	//if (! connectFlag) {
 	//	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
 	//}
-	  intervalNow++;
+	  //NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 2);
 	  //HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+	  //HAL_GPIO_TogglePin(VIBRO_GPIO_Port, VIBRO_Pin);
 	  //NotifyAct(LED_NOTIFY, 0);
+	  intervalNow++;
 	  currentTimeAvg = currentTime++;
 	  pulseCounterAvg = pulseCounter;
 	  CPS = pulseCounterSecond;
@@ -1253,18 +1173,52 @@ void updateMesurment(void) {
 	 * Анализ CPS для управления порогами срабатывания сигнализации
 	 */
 	tmp_level = 0;
-	if ((level1 > 0) && (CPS > level1_cps)) {
+	uint8_t tmpNotify = 0;
+	if ((levelSound1 || levelVibro1) && (level1 > 0) && (CPS > level1_cps)) {
 		tmp_level = 1;
+		if (levelSound1) {					// Звук на перврм уровне разрешен
+			tmpNotify |=  SOUND_NOTIFY;
+		} else {
+			tmpNotify &=  ~SOUND_NOTIFY;
+		}
+
+		if (levelVibro1) {					// Вибро на первом уровне разрешено
+			tmpNotify |= VIBRO_NOTIFY;
+		} else {
+			tmpNotify &= ~VIBRO_NOTIFY;
+		}
 	}
-	if ((level2 > 0) && (CPS > level2_cps)) {
+	if ((levelSound2 || levelVibro2) && (level2 > 0) && (CPS > level2_cps)) {
 		tmp_level = 2;
+		if (levelSound2) {					// Звук на втором уровне разрешен
+			tmpNotify |=  SOUND_NOTIFY;
+		} else {
+			tmpNotify &=  ~SOUND_NOTIFY;
+		}
+
+		if (levelVibro2) {					// Вибро на втором уровне разрешено
+			tmpNotify |= VIBRO_NOTIFY;
+		} else {
+			tmpNotify &= ~VIBRO_NOTIFY;
+		}
 	}
-	if ((level3 > 0) && (CPS > level3_cps)) {
+	if ((levelSound3 || levelVibro3) && (level3 > 0) && (CPS > level3_cps)) {
 		tmp_level = 3;
+		if (levelSound3) {					// Звук на третьем уровне разрешен
+			tmpNotify |=  SOUND_NOTIFY;
+		} else {
+			tmpNotify &=  ~SOUND_NOTIFY;
+		}
+
+		if (levelVibro3) {					// Вибро на третьем уровне разрешено
+			tmpNotify |= VIBRO_NOTIFY;
+		} else {
+			tmpNotify &= ~VIBRO_NOTIFY;
+		}
 	}
 	/* Тревога если превышение. */
-	if (tmp_level > 0) {
-		NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, tmp_level - 1);
+	if ((tmp_level > 0) && (tmpNotify > 0)) {
+		NotifyAct(tmpNotify, tmp_level);
 	}
 
 	if (currentLevel != tmp_level) {
@@ -1342,6 +1296,48 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
   }
 }
 */
+
+void updateLedCb (void *arg) {
+	UTIL_SEQ_SetTask(1<<CFG_TASK_LED_REQ_ID, CFG_SEQ_PRIO_2);
+}
+
+void updateVibroCb(void *arg) {
+	UTIL_SEQ_SetTask(1<<CFG_TASK_VIBRO_REQ_ID, CFG_SEQ_PRIO_2);
+}
+
+void updateVibroOffCb(void *arg) {
+	UTIL_SEQ_SetTask(1<<CFG_TASK_VIBROOFF_REQ_ID, CFG_SEQ_PRIO_2);
+}
+
+/* Таймер для задания интерваля для вибро и звука*/
+void vibroActivate(void) {
+	if (vibroFlag) {
+		HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_SET);
+	}
+	if (soundFlag) {
+		HAL_LPTIM_PWM_Start(&hlptim2, LPTIM_CHANNEL_2);
+	}
+	if (vibroFlag || soundFlag) {
+		UTIL_TIMER_Start(&(timerVibroOff));
+		if (--repetionCount > 0) {
+			UTIL_TIMER_Start(&(timerVibro));
+		} else {
+			vibroFlag = false;
+			soundFlag = false;
+		}
+	}
+}
+
+/* Таймер для отключения LED*/
+void ledActivate(void) {
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+}
+
+/* Таймер для отключения вибро */
+void vibroActivateOff(void) {
+	HAL_LPTIM_PWM_Stop(&hlptim2, LPTIM_CHANNEL_2);
+	HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
+}
 
 /* Обработка прерываний по приходу импульсов */
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
