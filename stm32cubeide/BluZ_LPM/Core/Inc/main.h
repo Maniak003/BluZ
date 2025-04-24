@@ -202,7 +202,7 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define MEASURE_INTERVAL	1000
 #define VIBRO_TIME		50			// Время работы вибро
 #define VIBRO_PERIOD	100			// Интервал для вибро
-#define LED_PERIOD		50			// Время свечения светодиода
+#define LED_PERIOD		1			// Время свечения светодиода
 
 #define SAMPLE_TIME		ADC_SAMPLETIME_12CYCLES_5		// 12.5 циклов для Sensl FC/FJ 60035
 //#define SAMPLE_TIME			ADC_SAMPLETIME_79CYCLES_5		// Циклов для MacroPixel SC-14x25c-SiPM-T

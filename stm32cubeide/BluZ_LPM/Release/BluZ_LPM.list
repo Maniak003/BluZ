@@ -2466,7 +2466,7 @@ Disassembly of section .text:
  8001b66:	f008 fe3b 	bl	800a7e0 <UTIL_SEQ_RegTask>
  8001b6a:	4b85      	ldr	r3, [pc, #532]	@ (8001d80 <main+0x348>)
  8001b6c:	4622      	mov	r2, r4
- 8001b6e:	2132      	movs	r1, #50	@ 0x32
+ 8001b6e:	2101      	movs	r1, #1
  8001b70:	4884      	ldr	r0, [pc, #528]	@ (8001d84 <main+0x34c>)
  8001b72:	9400      	str	r4, [sp, #0]
  8001b74:	f008 fe4c 	bl	800a810 <UTIL_TIMER_Create>
