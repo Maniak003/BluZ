@@ -4,6 +4,7 @@ import android.content.ClipData.Item
 import android.content.Context
 import android.text.Html
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -662,6 +663,10 @@ class globalObj {
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(GO.btnSetup)
             Toast.makeText(GO.mainContext, "MAC address not set.\nScan your device.", Toast.LENGTH_LONG ).show()
+            GO.txtStat1.visibility = View.INVISIBLE
+            GO.txtStat2.visibility = View.INVISIBLE
+            GO.txtStat3.visibility = View.INVISIBLE
+            GO.txtIsotopInfo.visibility = View.INVISIBLE
             GO.viewPager.setCurrentItem(4, false)
         }
     }

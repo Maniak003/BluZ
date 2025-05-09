@@ -2,13 +2,18 @@ package ru.starline.bluz
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.FragmentActivity
 import kotlin.system.exitProcess
 
@@ -32,6 +37,19 @@ public class MainActivity : FragmentActivity() {
         setContentView(R.layout.activity_main)
         GO.mainContext = applicationContext
         enableEdgeToEdge()
+        //enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(Color. TRANSPARENT, Color. TRANSPARENT), navigationBarStyle = SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim))
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window,
+            window.decorView.findViewById(android.R.id.content)).let { controller ->
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+
+            // When the screen is swiped up at the bottom
+            // of the application, the navigationBar shall
+            // appear for some time
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
         GO.drawSPECTER = drawSpecter()
         GO.drawDOZIMETER = drawDozimeter()
         GO.drawLOG = drawLogs()
