@@ -1174,46 +1174,38 @@ void updateMesurment(void) {
 	 */
 	tmp_level = 0;
 	uint8_t tmpNotify = 0;
-	if ((levelSound1 || levelVibro1) && (level1 > 0) && (CPS > level1_cps)) {
+	if ((level1 > 0) && (CPS > level1_cps)) {
 		tmp_level = 1;
-		if (levelSound1) {					// Звук на перврм уровне разрешен
-			tmpNotify |=  SOUND_NOTIFY;
-		} else {
-			tmpNotify &=  ~SOUND_NOTIFY;
-		}
+		if (levelSound1 || levelVibro1) {
+			if (levelSound1) {					// Звук на перврм уровне разрешен
+				tmpNotify = SOUND_NOTIFY;
+			}
 
-		if (levelVibro1) {					// Вибро на первом уровне разрешено
-			tmpNotify |= VIBRO_NOTIFY;
-		} else {
-			tmpNotify &= ~VIBRO_NOTIFY;
+			if (levelVibro1) {					// Вибро на первом уровне разрешено
+				tmpNotify |= VIBRO_NOTIFY;
+			}
 		}
 	}
-	if ((levelSound2 || levelVibro2) && (level2 > 0) && (CPS > level2_cps)) {
+	if ((level2 > 0) && (CPS > level2_cps)) {
 		tmp_level = 2;
+		tmpNotify = 0;
 		if (levelSound2) {					// Звук на втором уровне разрешен
-			tmpNotify |=  SOUND_NOTIFY;
-		} else {
-			tmpNotify &=  ~SOUND_NOTIFY;
+			tmpNotify = SOUND_NOTIFY;
 		}
 
 		if (levelVibro2) {					// Вибро на втором уровне разрешено
 			tmpNotify |= VIBRO_NOTIFY;
-		} else {
-			tmpNotify &= ~VIBRO_NOTIFY;
 		}
 	}
-	if ((levelSound3 || levelVibro3) && (level3 > 0) && (CPS > level3_cps)) {
+	if ((level3 > 0) && (CPS > level3_cps)) {
 		tmp_level = 3;
+		tmpNotify = 0;
 		if (levelSound3) {					// Звук на третьем уровне разрешен
-			tmpNotify |=  SOUND_NOTIFY;
-		} else {
-			tmpNotify &=  ~SOUND_NOTIFY;
+			tmpNotify = SOUND_NOTIFY;
 		}
 
 		if (levelVibro3) {					// Вибро на третьем уровне разрешено
 			tmpNotify |= VIBRO_NOTIFY;
-		} else {
-			tmpNotify &= ~VIBRO_NOTIFY;
 		}
 	}
 	/* Тревога если превышение. */
@@ -1266,11 +1258,11 @@ void tempVoltMeasure(void) {
 		HAL_ADC_DeInit(&hadc4);											// Для снижения потребления
 	} else {
 		/* Измерение температуры и напряжения в режиме спектрометра */
-		uint8_t tmp_data_type = dataType;
-		HAL_ADC_Stop_DMA(&hadc4);
+		uint8_t tmp_data_type = dataType;								// Сохраним текущий режим.
+		HAL_ADC_Stop_DMA(&hadc4);										// Отключим набор спектра
 		HAL_ADC_DeInit(&hadc4);
 		dataType = 0;
-		MX_ADC4_Init();
+		MX_ADC4_Init();													// Инициализируем ADC в режиме для программного запуска.
 		currTemperature = ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR); 	// Канал для измерения температуры
 		currVoltage = ADC_Switch_Channel(ADC_CHANNEL_7);				// Канал для измерения напряжения.
 
@@ -1278,9 +1270,12 @@ void tempVoltMeasure(void) {
 		//HAL_DMA_DeInit(&handle_GPDMA1_Channel0);
 		dataType = tmp_data_type;										// Возвращаем исходный режим спектрометра
 		MX_ADC4_Init();
+		//HAL_ADCEx_Calibration_Start(&hadc4);
+		LL_ADC_StartCalibration(ADC4);									// Запуск калибровки.
+		while (LL_ADC_IsCalibrationOnGoing(ADC4) != 0);					// Ожидаем конца калибровки.
 		//MX_GPDMA1_Init();
 		HAL_ADC_Start_DMA(&hadc4, TVLevel, 1);
-		//hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;					// Отключение прерывания по промежуточному значению.
+		//hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;				// Отключение прерывания по промежуточному значению.
 	}
 	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
 }
@@ -1312,10 +1307,11 @@ void updateVibroOffCb(void *arg) {
 /* Таймер для задания интерваля для вибро и звука*/
 void vibroActivate(void) {
 	if (vibroFlag) {
-		HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_SET);
+		//HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_SET);
+		VIBRO_GPIO_Port->BSRR = (uint32_t) VIBRO_Pin;		// Включение вибро.
 	}
 	if (soundFlag) {
-		HAL_LPTIM_PWM_Start(&hlptim2, LPTIM_CHANNEL_2);
+		HAL_LPTIM_PWM_Start(&hlptim2, LPTIM_CHANNEL_2);		// Включение звука.
 	}
 	if (vibroFlag || soundFlag) {
 		UTIL_TIMER_Start(&(timerVibroOff));
@@ -1330,13 +1326,15 @@ void vibroActivate(void) {
 
 /* Таймер для отключения LED*/
 void ledActivate(void) {
-	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+	//HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+	LED_GPIO_Port->BRR = (uint32_t) LED_Pin;
 }
 
 /* Таймер для отключения вибро */
 void vibroActivateOff(void) {
-	HAL_LPTIM_PWM_Stop(&hlptim2, LPTIM_CHANNEL_2);
-	HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
+	HAL_LPTIM_PWM_Stop(&hlptim2, LPTIM_CHANNEL_2);		// Отключение звука.
+	//HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
+	VIBRO_GPIO_Port->BRR = (uint32_t) VIBRO_Pin;		// Отключение вибро.
 }
 
 /* Обработка прерываний по приходу импульсов */
