@@ -355,12 +355,12 @@ int main(void)
    *     6 - Вибро второго уровня
    *     7 - Вибро третьего уровня
    *     8 - Автозапуск спектрометра при включении
-   * 31, 32 - Коэффициент полинома A для 1024 каналов
-   * 33, 34 - Коэффициент полинома B для 1024 каналов
-   * 35, 36 - Коэффициент полинома C для 1024 каналов
-   * 37, 38 - Коэффициент полинома A для 1024 каналов
-   * 39, 40 - Коэффициент полинома B для 1024 каналов
-   * 41, 42 - Коэффициент полинома C для 1024 каналов
+   * 31, 32 - Коэффициент полинома A для 2048 каналов
+   * 33, 34 - Коэффициент полинома B для 2048 каналов
+   * 35, 36 - Коэффициент полинома C для 2048 каналов
+   * 37, 38 - Коэффициент полинома A для 4096 каналов
+   * 39, 40 - Коэффициент полинома B для 4096 каналов
+   * 41, 42 - Коэффициент полинома C для 4096 каналов
    * 43, 44 - Время работы спектрометра в секундах
    * 45, 46 - Количество импульсов в спектре
    *
@@ -575,6 +575,7 @@ int main(void)
 	  transmitBuffer[idxCS] = 0;
 	  kkk = 0;
 	  for (int iii = 0; iii < countMTU; iii++) {
+		  /* Передача возможна только при подключеном клиенте */
 		  if ( ! connectFlag) {
 			  break;
 		  }
@@ -803,17 +804,17 @@ void MX_ADC4_Init(void)
 	  hadc4.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
 	  hadc4.Init.DMAContinuousRequests = ENABLE;
 	  hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
-	  hadc4.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
-	  hadc4.Init.SamplingTimeCommon1 = SAMPLE_TIME;
+	  hadc4.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+	  //hadc4.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
+	  hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_12CYCLES_5;		// для Sensl FC/FJ60035 + NaI:Tl
+	  //hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_79CYCLES_5;		// для MacroPixel SC-14x25c-SiPM-T
 	  hadc4.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_814CYCLES_5;
 	  hadc4.Init.OversamplingMode = DISABLE;
 	  if (HAL_ADC_Init(&hadc4) != HAL_OK)
 	  {
 	    Error_Handler();
 	  }
-
-	  /** Configure Regular Channel
-	  */
+	  /* Configure Regular Channel */
 	  sConfig.Channel = ADC_CHANNEL_9;
 	  sConfig.Rank = ADC_REGULAR_RANK_1;
 	  sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;

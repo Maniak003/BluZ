@@ -200,21 +200,18 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define LED_NOTIFY   	4
 #define TEST_LED		1
 #define MEASURE_INTERVAL	1000
-#define VIBRO_TIME		50			// Время работы вибро
-#define VIBRO_PERIOD	100			// Интервал для вибро
-#define LED_PERIOD		1			// Время свечения светодиода
-
-#define SAMPLE_TIME		ADC_SAMPLETIME_12CYCLES_5		// 12.5 циклов для Sensl FC/FJ 60035
-//#define SAMPLE_TIME			ADC_SAMPLETIME_79CYCLES_5		// Циклов для MacroPixel SC-14x25c-SiPM-T
+#define VIBRO_TIME		50								// Время работы вибро
+#define VIBRO_PERIOD	100								// Интервал для вибро
+#define LED_PERIOD		1								// Время свечения светодиода
 
 //#define DEBUG_USER
 
 /*
  * TODO -- Нужно получить реальное напряжение питания
  */
-#define ADC_VREF 2.8f					// Напряжение питания.
+#define ADC_VREF 2.8f									// Напряжение питания.
 //#define ADC_VREF_COEF 4.2f / 4080.0f
-#define ADC_VREF_COEF 4.2f / 3970.0f	// Коэффициент завист от делиителя напряжения. Нужно подбирать на полностью заряженном аккумуляторе.
+static const float ADC_VREF_COEF = 4.2f / 3970.0f;		// Коэффициент завист от делителя напряжения. Нужно подбирать на полностью заряженном аккумуляторе.
 
 /* USER CODE END Private defines */
 
