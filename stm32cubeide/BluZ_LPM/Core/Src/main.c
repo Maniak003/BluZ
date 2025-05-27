@@ -803,7 +803,8 @@ void MX_ADC4_Init(void)
 	  hadc4.Init.ExternalTrigConv = ADC_EXTERNALTRIG_EXT_IT15;
 	  hadc4.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
 	  hadc4.Init.DMAContinuousRequests = ENABLE;
-	  hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
+	  //hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
+	  hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_LOW;
 	  hadc4.Init.Overrun = ADC_OVR_DATA_PRESERVED;
 	  //hadc4.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
 	  hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_12CYCLES_5;		// для Sensl FC/FJ60035 + NaI:Tl
@@ -1272,8 +1273,8 @@ void tempVoltMeasure(void) {
 		dataType = tmp_data_type;										// Возвращаем исходный режим спектрометра
 		MX_ADC4_Init();
 		//HAL_ADCEx_Calibration_Start(&hadc4);
-		LL_ADC_StartCalibration(ADC4);									// Запуск калибровки.
-		while (LL_ADC_IsCalibrationOnGoing(ADC4) != 0);					// Ожидаем конца калибровки.
+		//LL_ADC_StartCalibration(ADC4);								// Запуск калибровки.
+		//while (LL_ADC_IsCalibrationOnGoing(ADC4) != 0);				// Ожидаем конца калибровки.
 		//MX_GPDMA1_Init();
 		HAL_ADC_Start_DMA(&hadc4, TVLevel, 1);
 		//hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;				// Отключение прерывания по промежуточному значению.
@@ -1305,7 +1306,7 @@ void updateVibroOffCb(void *arg) {
 	UTIL_SEQ_SetTask(1<<CFG_TASK_VIBROOFF_REQ_ID, CFG_SEQ_PRIO_2);
 }
 
-/* Таймер для задания интерваля для вибро и звука*/
+/* Таймер для задания интервала для вибро и звука*/
 void vibroActivate(void) {
 	if (vibroFlag) {
 		//HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_SET);
@@ -1315,9 +1316,9 @@ void vibroActivate(void) {
 		HAL_LPTIM_PWM_Start(&hlptim2, LPTIM_CHANNEL_2);		// Включение звука.
 	}
 	if (vibroFlag || soundFlag) {
-		UTIL_TIMER_Start(&(timerVibroOff));
+		UTIL_TIMER_Start(&(timerVibroOff));					// Таймер для отключения (vibroActivateOff()) звука/вибро.
 		if (--repetionCount > 0) {
-			UTIL_TIMER_Start(&(timerVibro));
+			UTIL_TIMER_Start(&(timerVibro));				// Повторный вызов (vibroActivate()) для включения звука/вибро.
 		} else {
 			vibroFlag = false;
 			soundFlag = false;
