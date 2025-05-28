@@ -512,10 +512,10 @@ int main(void)
 	  */
 	  Temperature.Float = TK1 * (float) currTemperature + TK2;
 	  //Temperature.Float = (float) currTemperature;
-	  //Temperature.Float = 20.0;
 	  Voltage.Float = currVoltage * ADC_VREF_COEF;
 	  //Voltage.Float = 4.2;
 
+	  /* Сохранение температуры в буфер для передачи */
 	  transmitBuffer[13] = Temperature.Uint[0];
 	  transmitBuffer[14] = Temperature.Uint[1];
 
@@ -567,7 +567,7 @@ int main(void)
 	  /* Время работы спектрометра */
 	  transmitBuffer[43] = spectrometerTime & 0xFFFF;
 	  transmitBuffer[44] = (spectrometerTime >> 16) & 0xFFFF;
-	  /* Время работы спектрометра */
+	  /* Количество импульсов спектрометра */
 	  transmitBuffer[45] = spectrometerPulse & 0xFFFF;
 	  transmitBuffer[46] = (spectrometerPulse >> 16) & 0xFFFF;
 

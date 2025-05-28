@@ -611,13 +611,6 @@ class BluetoothInterface(tv: TextView) {
                                                 while (jjj < GO.drawSPECTER.ResolutionSpectr) {
                                                     d0 = GO.receiveData[iii++]      // Выбираем младший байт
                                                     d1 = GO.receiveData[iii++]      // Выбираем старший байт
-                                                    /* Test */
-                                                    //tmp_test = round(2.0.pow((d0 + d1 * 256u).toDouble() * koefChan)) - 1
-                                                    //sm_test += tmp_test
-                                                    //if (tmp_test > max_test) {
-                                                    //    idx_test = jjj
-                                                    //    max_test = tmp_test
-                                                    //}
                                                     /* Логарифмическое сжатие */
                                                     GO.drawSPECTER.spectrData[jjj++] = round(2.0.pow((d0 + d1 * 256u).toDouble() * koefChan)) - 1
                                                 }
