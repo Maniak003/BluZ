@@ -97,7 +97,7 @@ static void BLUZ_Rx_SendNotification(void);
 static void BLUZ_Tx_SendNotification(void);
 
 /* USER CODE BEGIN PFP */
-static uint8_t Notification_Data_Buffer[DATA_NOTIFICATION_MAX_PACKET_SIZE]; /* DATA_NOTIFICATION_MAX_PACKET_SIZE data + CRC */
+//static uint8_t Notification_Data_Buffer[DATA_NOTIFICATION_MAX_PACKET_SIZE]; /* DATA_NOTIFICATION_MAX_PACKET_SIZE data + CRC */
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -539,21 +539,14 @@ __USED void BLUZ_Tx_SendNotification(void) /* Property Notification */
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 void BleStackCB_Process(void);
-void sendData( uint8_t *dataSpectrBufer )
-{
+void sendData( uint8_t *dataSpectrBufer ) {
 	if (connectFlag) {
 	  tBleStatus status = BLE_STATUS_INVALID_PARAMS;
-	  //uint8_t crc_result;
-
-		/*Data Packet to send to remote*/
-		//Notification_Data_Buffer[0] += 1;
-		/* compute CRC */
-		//crc_result = APP_BLE_ComputeCRC8((uint8_t*) Notification_Data_Buffer, (MTUSizeValue - 1));
-		//Notification_Data_Buffer[MTUSizeValue - 1] = crc_result;
-		for (int iii = 0; iii < MTUSizeValue; iii++) {
-			Notification_Data_Buffer[iii] = dataSpectrBufer[iii];
-		}
-		BZ_Context.TxData.p_Payload = Notification_Data_Buffer;
+		//for (int iii = 0; iii < MTUSizeValue; iii++) {
+		//	Notification_Data_Buffer[iii] = dataSpectrBufer[iii];
+		//}
+		//BZ_Context.TxData.p_Payload = Notification_Data_Buffer;
+		BZ_Context.TxData.p_Payload = dataSpectrBufer;
 		BZ_Context.TxData.Length =  MTUSizeValue;
 
 		status = BLUZ_UpdateValue(BLUZ_RX, (BLUZ_Data_t *) &BZ_Context.TxData);
