@@ -59,6 +59,10 @@ bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false,
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
 uint32_t pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
+#ifdef MEDIAN
+uint32_t MA[3];
+uint16_t medianIdx;
+#endif
 int indexDozimetrBufer = 0;
 int logIndex = 0;	/* Текущий указатель на буфер лога */
 char uartBuffer[400] = {0,};
@@ -443,17 +447,29 @@ int main(void)
 	  }
 	  if (dataType > 0) {							/* Нужно передавать спектр ? */
 		  /* Test */
-		  //for (int jjj = 0; jjj < nm_channel; jjj++) {
-			//  tmpSpecterBuffer[jjj] = jjj;
-		  //}
-		  //tmpSpecterBuffer[200] = 100;
-		  //tmpSpecterBuffer[300] = 100;
-		  //tmpSpecterBuffer[500] = 100;
-		  //tmpSpecterBuffer[900] = 100;
+		  /*
 		  for (int jjj = 0; jjj < nm_channel; jjj++) {
+			  tmpSpecterBuffer[jjj] = jjj * 100;
+		  }*/
+		  /* Медианный фильтр для устранения артефактов ADC */
+		#ifdef MEDIAN
+		  MA[0] = 0;
+		  MA[1] = 0;
+		  MA[2] = 0;
+		  medianIdx = 0;
+		#endif
+		  double tmpLog;
+		  uint32_t tmpData;
+		  for (int jjj = 0; jjj < nm_channel; jjj++) {
+			  tmpData = tmpSpecterBuffer[kkk++];
+			#ifdef MEDIAN
+			  MA[medianIdx] = tmpData;
+			  tmpData = (MA[0] < MA[1]) ? ((MA[1] < MA[2]) ? MA[1] : ((MA[2] < MA[0]) ? MA[0] : MA[2])) : ((MA[0] < MA[2]) ? MA[0] : ((MA[2] < MA[1]) ? MA[1] : MA[2]));
+			  if (++medianIdx >= 3) {
+				  medianIdx = 0;
+			  }
+			#endif
 			  /* Логарифмическое зжатие */
-			  double tmpLog;
-			  uint32_t tmpData = tmpSpecterBuffer[kkk++];
 			  tmpLog = log2(tmpData + 1) * (double) KOEFCHAN;
 			  transmitBuffer[jjj + SPECTER_OFFSET] = (uint16_t) tmpLog;
 		  }

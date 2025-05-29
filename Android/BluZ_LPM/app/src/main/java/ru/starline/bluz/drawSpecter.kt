@@ -30,10 +30,13 @@ class drawSpecter {
     public var spectrData: DoubleArray = DoubleArray(4096)
     public var tmpSpecterData: DoubleArray = DoubleArray(4096)
     public var flagSMA: Boolean = false
+    public var flagMEDIAN: Boolean = false
     public var ResolutionSpectr: Int = 1024;
     public var koefLog: Double = 1.0
     public var koefLin: Double = 1.0
     public var xSize: Double = 1.0
+    private var MF: DoubleArray = DoubleArray(3)
+    private var indexMF: Int = 0
 
     /* Установка рабочих параметров и создание необходимых объектов */
     fun init() {
@@ -66,9 +69,15 @@ class drawSpecter {
          *  Подготовка массива для отрисовки данных
          *  Функии фильтрации
          */
+
         var tmpSM: Double
+        for (idx: Int in 0 until 3) {
+            MF[idx] = 0.0
+        }
+        indexMF = 0
         for (ttt: Int in 0 until ResolutionSpectr - GO.windowSMA) {
             if (ttt > GO.rejectChann) {
+                /* SMA фильтр */
                 if (flagSMA) {
                     /* SMA */
                     tmpSM = 0.0
@@ -79,6 +88,14 @@ class drawSpecter {
                 } else {
                     /* Без преобразования */
                     tmpSpecterData[ttt] = spectrData[ttt]
+                }
+                /* Медианный фильтр */
+                if (flagMEDIAN) {
+                    MF[indexMF] = tmpSpecterData[ttt]
+                    tmpSpecterData[ttt] = MF.sorted()[1]
+                    if (++indexMF >= 3) {
+                        indexMF = 0
+                    }
                 }
             } else {
                 tmpSpecterData[ttt] = 0.0       // Удалим данные из не используемых каналов
