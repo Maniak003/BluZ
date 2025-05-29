@@ -212,6 +212,7 @@ class NumberFragment : Fragment() {
                 }
 
                 val CBSMA: CheckBox = view.findViewById(R.id.cbSMA)
+                val CBMEDIAN: CheckBox = view.findViewById(R.id.cbMED)
 
                 /*
                 *   Калибровка
@@ -280,11 +281,27 @@ class NumberFragment : Fragment() {
                 }
                 GO.propButtonInit = false
                 CBSMA.isChecked = GO.drawSPECTER.flagSMA
+                CBMEDIAN.isChecked = GO.drawSPECTER.flagMEDIAN
                 GO.propButtonInit = true
 
                 CBSMA.setOnCheckedChangeListener {buttonView, isChecked ->
                     if (GO.propButtonInit) {
                         GO.drawSPECTER.flagSMA = isChecked
+                        if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
+                            /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
+                            //Log.d("BluZ-BT", "call drawSPEC")
+                            GO.drawSPECTER.clearSpecter()
+                            GO.drawSPECTER.redrawSpecter(GO.specterType)
+                        } else {
+                            //GO.drawObjectInit = true
+                            Log.e("BluZ-BT", "drawSPEC is null")
+                        }
+                    }
+                }
+
+                CBMEDIAN.setOnCheckedChangeListener {buttonView, isChecked ->
+                    if (GO.propButtonInit) {
+                        GO.drawSPECTER.flagMEDIAN = isChecked
                         if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                             /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
                             //Log.d("BluZ-BT", "call drawSPEC")

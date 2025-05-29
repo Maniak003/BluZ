@@ -203,6 +203,7 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define VIBRO_TIME		50								// Время работы вибро
 #define VIBRO_PERIOD	100								// Интервал для вибро
 #define LED_PERIOD		1								// Время свечения светодиода
+//#define MEDIAN											// Включить медианный фильтр
 
 //#define DEBUG_USER
 
