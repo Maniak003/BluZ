@@ -129,6 +129,7 @@
                     android:layout_weight="1"
                     android:buttonTint="@color/buttonColor"
                     android:text="S"
+                    android:textAlignment="viewStart"
                     android:textColor="@color/labelTextColor2"
                     android:textSize="10sp" />
 
@@ -136,12 +137,13 @@
                     android:id="@+id/cbMED"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="-5dp"
+                    android:layout_marginLeft="-3dp"
                     android:layout_marginTop="-5dp"
                     android:layout_marginBottom="-5dp"
                     android:layout_weight="1"
                     android:buttonTint="@color/buttonColor"
                     android:text="M"
+                    android:textAlignment="viewStart"
                     android:textColor="@color/labelTextColor2"
                     android:textSize="10sp" />
             </LinearLayout>

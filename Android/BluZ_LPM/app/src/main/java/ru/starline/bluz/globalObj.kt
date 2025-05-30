@@ -79,8 +79,10 @@ class globalObj {
     public lateinit var drawDOZIMETER: drawDozimeter
     public lateinit var drawCURSOR: drawCursor
     public lateinit var drawLOG: drawLogs
+    public lateinit var drawExamp: drawExmple
     public var drawObjectInit: Boolean = true
     public var drawDozObjectInit: Boolean = true
+    public var exampleObjectInit: Boolean = true
     public var pagerFrame: Int = 1
     public lateinit var BTT:  BluetoothInterface
     public var initBT: Boolean = false

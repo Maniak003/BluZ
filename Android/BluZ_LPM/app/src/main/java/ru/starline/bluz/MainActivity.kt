@@ -15,6 +15,12 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.Timer
+import java.util.TimerTask
 import kotlin.system.exitProcess
 
 public val GO: globalObj = globalObj()
@@ -54,6 +60,7 @@ public class MainActivity : FragmentActivity() {
         GO.drawDOZIMETER = drawDozimeter()
         GO.drawLOG = drawLogs()
         GO.drawCURSOR = drawCursor()
+        GO.drawExamp = drawExmple()
         GO.adapter = NumberAdapter(this)
         GO.indicatorBT = findViewById(R.id.indicatorBT)
         GO.viewPager = findViewById(R.id.VPMain)
@@ -194,6 +201,13 @@ public class MainActivity : FragmentActivity() {
             GO.viewPager.setCurrentItem(4, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(GO.btnSetup)
+            /*
+            * TODO -- Нужно разобраться с этой ерундой.
+            */
+            lifecycleScope.launch {
+                delay(100L)
+                GO.drawExamp.exampRedraw()
+            }
         }
         GO.bColor.initColor(btnSpecter, btnHistory, btnDozimeter, btnLog, GO.btnSetup)
         GO.bColor.resetToDefault()
