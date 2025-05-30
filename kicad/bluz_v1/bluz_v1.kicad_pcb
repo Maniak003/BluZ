@@ -2892,7 +2892,7 @@
       (effects (font (size 0.5 0.5) (thickness 0.07)) (justify mirror))
       (tstamp 8335b027-e0d3-4149-8385-e434a5f72294)
     )
-    (fp_text value "NX2010SA-32.768" (at 0 -1.8) (layer "B.Fab")
+    (fp_text value "NX2012SA-32.768" (at 0 -1.8) (layer "B.Fab")
       (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
       (tstamp 979c238d-100d-49cc-97ff-2f2005aa69af)
     )
