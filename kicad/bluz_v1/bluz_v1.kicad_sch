@@ -5752,7 +5752,7 @@
     (property "Reference" "Y2" (id 0) (at 113.665 81.2632 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "NX1610-32.768" (id 1) (at 115.57 80.645 0))
+    (property "Value" "NX2010SA-32.768" (id 1) (at 115.57 80.645 0))
     (property "Footprint" "My-library:Crystal_SMD_2012-2Pin_2.0x1.2mm" (id 2) (at 113.665 86.36 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -7089,7 +7089,7 @@
       (reference "Y1") (unit 1) (value "NX1612SA-32MHz") (footprint "My-library:NX1612SA")
     )
     (path "/5f4215d5-5c6c-4709-b145-abb58fc32108"
-      (reference "Y2") (unit 1) (value "NX1610-32.768") (footprint "My-library:Crystal_SMD_2012-2Pin_2.0x1.2mm")
+      (reference "Y2") (unit 1) (value "NX2010SA-32.768") (footprint "My-library:Crystal_SMD_2012-2Pin_2.0x1.2mm")
     )
   )
 )
