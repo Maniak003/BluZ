@@ -39,11 +39,14 @@ import ru.starline.bluz.globalObj
 import kotlin.concurrent.thread
 import kotlin.math.round
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
 import java.lang.Math.pow
 import java.lang.Math.sqrt
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+import kotlin.system.exitProcess
 
 
 /*
@@ -136,8 +139,25 @@ class BluetoothInterface(tv: TextView) {
             }
         }
         //BTS.startScan(leScanCallback)
-        BTS.startScan(filterList, scanSetting, leScanCallback)
-        Log.d("BluZ-BT", "LE scanning.")
+        if (!BTA.isEnabled()) {
+            MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
+                withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                    Toast.makeText(GO.mainContext, "BlueTooth disable ?\nProgram terminate.", Toast.LENGTH_LONG ).show()
+                    GO.adapter.fragment.let {
+                        GO.scanButton.setTextColor(GO.mainContext.getResources().getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                        GO.scanButton.setText(GO.mainContext.getString(R.string.textScan))
+                    }
+                    MainScope().launch {
+                        delay(3000L)
+                        //finishAndRemoveTask()
+                        exitProcess(-1)
+                    }
+                }
+            }
+        } else {
+            BTS.startScan(filterList, scanSetting, leScanCallback)
+            Log.d("BluZ-BT", "LE scanning.")
+        }
     }
     @SuppressLint("MissingPermission")
     fun stopScan() {

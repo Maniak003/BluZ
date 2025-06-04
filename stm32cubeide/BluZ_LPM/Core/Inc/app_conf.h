@@ -141,7 +141,7 @@
  * Maximum number of simultaneous connections and advertising that the device will support.
  * This setting should not exceed the number of BLE connection supported by BLE host stack.
  */
-#define CFG_BLE_NUM_LINK            (2)
+#define CFG_BLE_NUM_LINK            (1)
 
 /**
  * Maximum number of Services that can be stored in the GATT database.

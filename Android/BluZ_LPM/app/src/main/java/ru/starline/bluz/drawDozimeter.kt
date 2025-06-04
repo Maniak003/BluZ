@@ -100,11 +100,12 @@ class drawDozimeter {
         }
         oldY = dozVSize - (dozimeterData[0] - minY) * dozKoef
         oldYSMA = dozVSize - (dozimeterSMA[0] - minY) * dozKoef
-        oldX = offsetX.toDouble() * dozxSize
-        Log.d("BluZ-BT", "Draw dozimeter. VSize $dozVSize, MAX: $maxY, MIN[$mIdx]: $minY")
-        for (idx in 1 until dozimeterSize) {
+        oldX = offsetX.toDouble()
+        dozxSize = ((dozHSize - offsetX) / dozimeterSize).toDouble()
+        Log.d("BluZ-BT", "Draw dozimeter. dozxSize: $dozxSize  VSize $dozVSize, MAX: $maxY, MIN[$mIdx]: $minY")
+        for (idx in 0 until dozimeterSize) {
             dozY = (dozVSize - (dozimeterData[idx] - minY) * dozKoef).toFloat()
-            dozX = ((idx + offsetX) * dozxSize).toFloat()
+            dozX = ((idx) * dozxSize  + offsetX).toFloat()
             dozCanvas.drawLine(
                 oldX.toFloat(),       // Начальный X
                 oldY.toFloat(),       // Начальный Y
