@@ -232,51 +232,58 @@ class NumberFragment : Fragment() {
                         GO.viewPager.setCurrentItem(4, false)
                         GO.bColor.resetToDefault()
                         GO.bColor.setToActive(GO.btnSetup)
+                    } else {
+                        calState = 0
                     }
                     btnConfirmCalibrate.text = "X"
                     btnCalibrate.text = "1"
                 }
                 btnCalibrate = view.findViewById(R.id.buttonCalibrate)
                 btnCalibrate.setOnClickListener {
+                    btnConfirmCalibrate.text = "X"
                     if (GO.drawCURSOR.drawCursorInit) {
                         val builder: AlertDialog.Builder = AlertDialog.Builder(it.context)
-                        builder.setTitle("Enter energy for chanal " + GO.drawCURSOR.curChan.toString() + ", point: " + (calState + 1).toString())
+                        builder.setTitle("Enter energy for channel " + GO.drawCURSOR.curChan.toString() + ", point: " + (calState + 1).toString())
                         val inEnergy = EditText(context)
                         inEnergy.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
                         inEnergy.inputType = InputType.TYPE_CLASS_NUMBER
                         builder.setView(inEnergy)
                         builder.setPositiveButton("Add") { dialog, which ->
-                            matrx.sysArray[calState][1] = inEnergy.text.toString().toDouble()
-                            matrx.sysArray[calState][0] = GO.drawCURSOR.curChan.toDouble()
-                            calState++
-                            if (calState > 2) {
-                                calState = 0
-                                btnConfirmCalibrate.text = "V"
-                                btnCalibrate.text = "1"
-                                matrx.sysEq()
-                                when (GO.spectrResolution) {
-                                    0 -> {  // 1024
-                                        GO.propCoef1024A = matrx.cA
-                                        GO.propCoef1024B = matrx.cB
-                                        GO.propCoef1024C = matrx.cC
+                            if (inEnergy.text.isNotEmpty()) {
+                                matrx.sysArray[calState][1] = inEnergy.text.toString().toDouble()
+                                matrx.sysArray[calState][0] = GO.drawCURSOR.curChan.toDouble()
+                                calState++
+                                if (calState > 2) {
+                                    calState = 0
+                                    btnConfirmCalibrate.text = "V"
+                                    btnCalibrate.text = "1"
+                                    matrx.sysEq()
+                                    when (GO.spectrResolution) {
+                                        0 -> {  // 1024
+                                            GO.propCoef1024A = matrx.cA
+                                            GO.propCoef1024B = matrx.cB
+                                            GO.propCoef1024C = matrx.cC
+                                        }
+
+                                        1 -> {  // 2048
+                                            GO.propCoef2048A = matrx.cA
+                                            GO.propCoef2048B = matrx.cB
+                                            GO.propCoef2048C = matrx.cC
+                                        }
+
+                                        2 -> {  // 4096
+                                            GO.propCoef4096A = matrx.cA
+                                            GO.propCoef4096B = matrx.cB
+                                            GO.propCoef4096C = matrx.cC
+                                        }
                                     }
-                                    1 -> {  // 2048
-                                        GO.propCoef2048A = matrx.cA
-                                        GO.propCoef2048B = matrx.cB
-                                        GO.propCoef2048C = matrx.cC
-                                    }
-                                    2 -> {  // 4096
-                                        GO.propCoef4096A = matrx.cA
-                                        GO.propCoef4096B = matrx.cB
-                                        GO.propCoef4096C = matrx.cC
-                                    }
+                                } else {
+                                    btnCalibrate.text = (calState + 1).toString()
                                 }
-                            } else {
-                                btnCalibrate.text = (calState + 1).toString()
                             }
                         }
                             .setNegativeButton("Cancel") { dialog, which ->
-                                // Do something else.
+                                // Исполняемый код
                         }
                         builder.create()
                         builder.show()
@@ -287,6 +294,7 @@ class NumberFragment : Fragment() {
                 CBMEDIAN.isChecked = GO.drawSPECTER.flagMEDIAN
                 GO.propButtonInit = true
 
+                /* Управление SMA фильтром */
                 CBSMA.setOnCheckedChangeListener {buttonView, isChecked ->
                     if (GO.propButtonInit) {
                         GO.drawSPECTER.flagSMA = isChecked
@@ -302,6 +310,7 @@ class NumberFragment : Fragment() {
                     }
                 }
 
+                /* Управление медианным фильтром */
                 CBMEDIAN.setOnCheckedChangeListener {buttonView, isChecked ->
                     if (GO.propButtonInit) {
                         GO.drawSPECTER.flagMEDIAN = isChecked
