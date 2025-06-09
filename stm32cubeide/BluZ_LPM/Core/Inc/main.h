@@ -129,7 +129,7 @@ extern union dataC enCoefA2048, enCoefB2048, enCoefC2048;
 extern union dataC enCoefA4096, enCoefB4096, enCoefC4096;
 extern union dataA Temperature, Voltage;
 extern union dataA AvgCPS;
-extern uint16_t MTUSizeValue;
+extern uint16_t MTUSizeValue, dozimetrAquracy;
 
 void sendData( uint8_t *dataSpectrBufer );
 void logUpdate(uint8_t act);

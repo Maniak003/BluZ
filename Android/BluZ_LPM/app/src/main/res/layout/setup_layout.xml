@@ -685,6 +685,27 @@
                             android:text="@string/textRes4096"
                             android:textColor="@color/editTextColor" />
                     </RadioGroup>
+
+                    <TextView
+                        android:id="@+id/textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="15dp"
+                        android:layout_weight="0"
+                        android:text="Aqur:"
+                        android:textColor="@color/labelTextColor"
+                        android:textSize="14sp" />
+
+                    <EditText
+                        android:id="@+id/editAquracy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0"
+                        android:ems="10"
+                        android:inputType="number"
+                        android:text="100"
+                        android:textColor="@color/editTextColor"
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout
