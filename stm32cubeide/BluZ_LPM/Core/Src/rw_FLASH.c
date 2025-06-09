@@ -187,7 +187,7 @@ HAL_StatusTypeDef writeFlash() {
 HAL_StatusTypeDef readFlash() {
 
 	uint16_t idxPL = 2;
-	/* Flash уже инициализирована ? */
+	/* Flash уже инициализирована ?  */
 
 	//int jjj = 0;
 
@@ -322,6 +322,7 @@ HAL_StatusTypeDef readFlash() {
 		tmpData = PL[idxPL++];						// 14, 15
 		enCoefC4096.Uint32 = tmpData & 0xFFFFFFFF;
 
+		/* Количество импульсов до усреднения для дозиметра */
 		dozimetrAquracy = (tmpData >> 32) & 0xFFFF;
 		if ((dozimetrAquracy == 0xFFFF) || (dozimetrAquracy == 0)) {
 			dozimetrAquracy = 100;
