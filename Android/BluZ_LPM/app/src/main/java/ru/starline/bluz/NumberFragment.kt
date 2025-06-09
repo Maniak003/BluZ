@@ -165,6 +165,9 @@ class NumberFragment : Fragment() {
         /* SMA window */
         GO.editSMA.setText(GO.windowSMA.toString())
         GO.propButtonInit = true                   // Включим реакцию в листенерах компонентов
+
+        /* Точность усреднения для дозиметра, количество импульсов */
+        GO.aqureEdit.setText(GO.aqureValue.toString())
     }
 
     override fun onCreateView(
@@ -450,7 +453,7 @@ class NumberFragment : Fragment() {
                 GO.rbLineSpectr = view.findViewById(R.id.rbLine)
                 GO.cbSoundKvant = view.findViewById(R.id.CBsoundKvant)
                 GO.cbLedKvant = view.findViewById(R.id.CBledKvant)
-                GO.cbMarker = view.findViewById(R.id.CBSpectrometer)
+                //GO.cbMarker = view.findViewById(R.id.CBSpectrometer)
                 GO.editPolinomA = view.findViewById(R.id.editPolA)
                 GO.editPolinomB = view.findViewById(R.id.editPolB)
                 GO.editPolinomC = view.findViewById(R.id.editPolC)
@@ -476,6 +479,7 @@ class NumberFragment : Fragment() {
                 GO.rbSpctTypeSPE = view.findViewById(R.id.rbSPE)
                 GO.rbSpctType = view.findViewById(R.id.rbSpctType)
                 GO.textMACADR = view.findViewById(R.id.textMACADDR)
+                GO.aqureEdit = view.findViewById(R.id.editAquracy)
 
                 reloadConfigParameters()
 
@@ -614,6 +618,10 @@ class NumberFragment : Fragment() {
                     } else {
                         GO.spectrResolution = 0
                     }
+
+                    /* Точность усреднения для дозиметра, количество импульсов */
+                    GO.aqureValue = GO.aqureEdit.text.toString().toInt()
+
                     Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())
 
                     GO.writeConfigParameters()      // Сохраненние конфигурации.
@@ -697,6 +705,7 @@ class NumberFragment : Fragment() {
                     * 51,52,53,54   - Коэффициент A полинома преобразования канала в энергию для 4096.
                     * 55,56,57,58   - Коэффициент B полинома преобразования канала в энергию для 4096.
                     * 59,60,61,62   - Коэффициент C полинома преобразования канала в энергию для 4096.
+                    * 63,64         - Точность усреднения дозиметра, количество импульсов.
                     *
                     * 242, 243      - Контрольная сумма
                     */
@@ -865,6 +874,10 @@ class NumberFragment : Fragment() {
                     GO.BTT.sendBuffer[60] = convVal[1].toUByte()
                     GO.BTT.sendBuffer[61] = convVal[2].toUByte()
                     GO.BTT.sendBuffer[62] = convVal[3].toUByte()
+
+                    /* Количество усредняемых импульсов для дозиметра */
+                    GO.BTT.sendBuffer[63] = (GO.aqureEdit.text.toString().toUShort() and 255u).toUByte()
+                    GO.BTT.sendBuffer[64] = ((GO.aqureEdit.text.toString().toInt() shr 8).toUShort() and 255u).toUByte()
 
                     /* Уровень высокого напряжения */
                     GO.BTT.sendBuffer[33] = (GO.propHVoltage and 255u).toUByte()

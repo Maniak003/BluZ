@@ -146,7 +146,7 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData = enCoefA4096.Uint32 | ((uint64_t)enCoefB4096.Uint32 << 32);
 	PL[idxPL++] = tmpData;					// 12, 13
 
-	tmpData = enCoefC4096.Uint32;
+	tmpData = enCoefC4096.Uint32 | (uint64_t)dozimetrAquracy << 32;
 	PL[idxPL++] = tmpData;					// 14, 15
 
 	PL[idxPL++] = 0xDDDDDDFFCCCCCCFF;		// 16, 17
@@ -280,7 +280,6 @@ HAL_StatusTypeDef readFlash() {
 		comparatorLevel = (tmpData >> 22) & 0x3FF;	// DAC компаратора с 22 по 31 разряды
 
 		/* Коэффицент пересчета cps в uRh */
-		//tmpData = *(__IO uint32_t*) ((uint32_t) CONVERT_CPS2RH);
 		calcCoeff.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
 
 		/* Значения порогов */
@@ -290,73 +289,43 @@ HAL_StatusTypeDef readFlash() {
 		level3 = (tmpData >> 32) & 0xFFFF;
 
 		/* Коэффициент A полинома преобразования канала в энергию для 1024 каналов*/
-		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A1024_ADDRESS);
 		tmpData = PL[idxPL++];						// 6, 7
 		enCoefA1024.Uint32 = tmpData & 0xFFFFFFFF;
-		//enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		//enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		//enCoefA1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент B полинома преобразования канала в энергию для 1024 каналов */
-		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B1024_ADDRESS);
 		enCoefB1024.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
-		//enCoefB1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		//enCoefB1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		//enCoefB1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
-		/* Коэффициент B полинома преобразования канала в энергию для 1024 каналов */
-		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C1024_ADDRESS);
+		/* Коэффициент C полинома преобразования канала в энергию для 1024 каналов */
 		tmpData = PL[idxPL++];						// 8, 9
 		enCoefC1024.Uint32 = tmpData & 0xFFFFFFFF;
-		//enCoefC1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		//enCoefC1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		//enCoefC1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент A полинома преобразования канала в энергию для 2048 каналов*/
-		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A2048_ADDRESS);
 		enCoefA2048.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
-		//enCoefA1024.Uint[1] = tmpData >> 8 & 0x000000FF;
-		//enCoefA1024.Uint[2] = tmpData >> 16 & 0x000000FF;
-		//enCoefA1024.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент B полинома преобразования канала в энергию для 2048 каналов */
-		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B2048_ADDRESS);
 		tmpData = PL[idxPL++];						// 10, 11
 		enCoefB2048.Uint32 = tmpData & 0xFFFFFFFF;
-		//enCoefB2048.Uint[1] = tmpData >> 8 & 0x000000FF;
-		//enCoefB2048.Uint[2] = tmpData >> 16 & 0x000000FF;
-		//enCoefB2048.Uint[3] = tmpData >> 24 & 0x000000FF;
 
-		/* Коэффициент B полинома преобразования канала в энергию для 2048 каналов */
-		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C2048_ADDRESS);
+		/* Коэффициент C полинома преобразования канала в энергию для 2048 каналов */
 		enCoefC2048.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
-		//enCoefC2048.Uint[1] = tmpData >> 8 & 0x000000FF;
-		//enCoefC2048.Uint[2] = tmpData >> 16 & 0x000000FF;
-		//enCoefC2048.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент A полинома преобразования канала в энергию для 4096 каналов*/
 		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_A4096_ADDRESS);
 		tmpData = PL[idxPL++];						// 12, 13
 		enCoefA4096.Uint32 = tmpData & 0xFFFFFFFF;
-		//enCoefA4096.Uint[1] = tmpData >> 8 & 0x000000FF;
-		//enCoefA4096.Uint[2] = tmpData >> 16 & 0x000000FF;
-		//enCoefA4096.Uint[3] = tmpData >> 24 & 0x000000FF;
 
 		/* Коэффициент B полинома преобразования канала в энергию для 4096 каналов */
-		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_B4096_ADDRESS);
 		enCoefB4096.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
-		//enCoefB4096.Uint[1] = tmpData >> 8 & 0x000000FF;
-		//enCoefB4096.Uint[2] = tmpData >> 16 & 0x000000FF;
-		//enCoefB4096.Uint[3] = tmpData >> 24 & 0x000000FF;
 
-		/* Коэффициент B полинома преобразования канала в энергию для 4096 каналов */
+		/* Коэффициент C полинома преобразования канала в энергию для 4096 каналов */
 		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C4096_ADDRESS);
 		tmpData = PL[idxPL++];						// 14, 15
 		enCoefC4096.Uint32 = tmpData & 0xFFFFFFFF;
-		//enCoefC4096.Uint[1] = tmpData >> 8 & 0x000000FF;
-		//enCoefC4096.Uint[2] = tmpData >> 16 & 0x000000FF;
-		//enCoefC4096.Uint[3] = tmpData >> 24 & 0x000000FF;
 
+		dozimetrAquracy = (tmpData >> 32) & 0xFFFF;
+		if ((dozimetrAquracy == 0xFFFF) || (dozimetrAquracy == 0)) {
+			dozimetrAquracy = 100;
+		}
 		/*bzero((char *) uartBuffer, sizeof(uartBuffer));
 		sprintf(uartBuffer,
 				"Sound: %d\n\r"

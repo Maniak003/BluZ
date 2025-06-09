@@ -17,6 +17,7 @@ import androidx.annotation.Nullable
 import androidx.core.text.HtmlCompat
 import androidx.loader.content.Loader.ForceLoadContentObserver
 import androidx.viewpager2.widget.ViewPager2
+import ru.starline.bluz.GO
 import java.sql.Array
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -71,6 +72,7 @@ class globalObj {
     public val propCfgRejectCann: String = "RejectConn"
     public val propCfgSaveSpecterType: String = "saveSpecterType"
     public val acuricyPatern : String = "###0.#######"
+    public val propAquracy : String = "AquracyDozimeter"
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var LEMAC: String = ""
@@ -144,6 +146,8 @@ class globalObj {
     lateinit var rbSpctTypeBq: RadioButton
     lateinit var rbSpctTypeSPE: RadioButton
     lateinit var rbSpctType : RadioGroup
+    lateinit var aqureEdit : EditText
+    var aqureValue: Int = 100
     /*
     *   Цвета для курсора
     */
@@ -314,6 +318,7 @@ class globalObj {
     public var HWCoef4096A: Float = 0.0f
     public var HWCoef4096B: Float = 0.0f
     public var HWCoef4096C: Float = 0.0f
+    public var HWAqureValue: UShort = 0u
 
     /*
     *   Вывод статистики для дозиметра и спектрометра
@@ -525,6 +530,7 @@ class globalObj {
         GO.propHVoltage = GO.HWpropHVoltage
         GO.propComparator = GO.HWpropComparator
         GO.propAutoStartSpectrometr = GO.HWpropAutoStartSpectrometr
+        GO.aqureValue = GO.HWAqureValue.toInt()
     }
     /*
     *   Запись всех параметров в конфигурационный файл
@@ -573,6 +579,7 @@ class globalObj {
         GO.PP.setPropBoolean(propCfgLedKvant, GO.propLedKvant)
         GO.PP.setPropBoolean(propCfgSoundKvant, GO.propSoundKvant)
         GO.PP.setPropInt(propCfgSpectrGraphType, GO.specterGraphType)
+        GO.PP.setPropInt(propAquracy, GO.aqureValue)    // Точность усреднения для дозиметра, количество импульсов.
     }
 
     /*
@@ -648,6 +655,7 @@ class globalObj {
         *   1 - SPE
         */
         GO.saveSpecterType = GO.PP.getPropInt(propCfgSaveSpecterType)
+        GO.aqureValue = GO.PP.getPropInt(propAquracy)
 
     }
 

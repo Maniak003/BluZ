@@ -191,6 +191,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     * 					5 -
                     * 					6 -
                     * 					7 -
+                    * 63, 64		- Точность расчета для дозиметра. Количество импульсов в усреднении.
                     *
                     * 242, 243      - Контрольная сумма
                     */
@@ -283,6 +284,8 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						enCoefC4096.Uint[1] = p_Notification->DataTransfered.p_Payload[61];
 						enCoefC4096.Uint[0] = p_Notification->DataTransfered.p_Payload[62];
 
+						/* Точность усреднения для дозиметра, количество импульсов */
+						dozimetrAquracy = p_Notification->DataTransfered.p_Payload[63] | ((uint16_t) p_Notification->DataTransfered.p_Payload[64] << 8);
 
 						/* Уровни компаратора и высокого напряжения */
 						HVoltage = p_Notification->DataTransfered.p_Payload[33] | (p_Notification->DataTransfered.p_Payload[34] << 8);

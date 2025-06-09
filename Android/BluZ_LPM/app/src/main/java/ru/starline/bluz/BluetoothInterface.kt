@@ -607,7 +607,9 @@ class BluetoothInterface(tv: TextView) {
                                     GO.HWCoef4096A = java.lang.Float.intBitsToFloat((GO.receiveData[74] + (GO.receiveData[75] * 256u)  + (GO.receiveData[76] * 65536u) + (GO.receiveData[77] * 16777216u)).toInt())
                                     GO.HWCoef4096B = java.lang.Float.intBitsToFloat((GO.receiveData[78] + (GO.receiveData[79] * 256u)  + (GO.receiveData[80] * 65536u) + (GO.receiveData[81] * 16777216u)).toInt())
                                     GO.HWCoef4096C = java.lang.Float.intBitsToFloat((GO.receiveData[82] + (GO.receiveData[83] * 256u)  + (GO.receiveData[84] * 65536u) + (GO.receiveData[85] * 16777216u)).toInt())
-
+                                    /* Количество импульсов до усреднения для дозиметра */
+                                    GO.HWAqureValue = (GO.receiveData[94] + (GO.receiveData[95] * 256u)).toUShort()
+                                    //Log.d("BluZ-BT", "L:${GO.receiveData[94]}, H:${GO.receiveData[95]}")
                                     /*
                                     *   Спектр
                                     */

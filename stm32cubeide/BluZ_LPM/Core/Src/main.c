@@ -59,6 +59,15 @@ bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false,
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
 uint32_t pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
+/*
+ *	Точность измерения дозиметра
+ *	1 sigma <10% -  100
+ *	2 sigma <10% -  400
+ *	3 sigma <10% -  900
+ *	4 sigma <10% - 1600
+ */
+uint16_t dozimetrAquracy = 100, edgeCounter = 0;
+uint32_t aquracyInterval;
 #ifdef MEDIAN
 uint32_t MA[3];
 uint16_t medianIdx;
@@ -367,6 +376,7 @@ int main(void)
    * 41, 42 - Коэффициент полинома C для 4096 каналов
    * 43, 44 - Время работы спектрометра в секундах
    * 45, 46 - Количество импульсов в спектре
+   * 47		- Точность расчета для дозиметра, количество импульсов для усреднения.
    *
    * 50  - Данные дозиметра
    * 572 - Данные лога
@@ -586,6 +596,8 @@ int main(void)
 	  /* Количество импульсов спектрометра */
 	  transmitBuffer[45] = spectrometerPulse & 0xFFFF;
 	  transmitBuffer[46] = (spectrometerPulse >> 16) & 0xFFFF;
+	  /* Точность дозиметра, количество импульсов для усреднения. */
+	  transmitBuffer[47] = dozimetrAquracy;
 
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
 	  transmitBuffer[idxCS] = 0;
@@ -1175,6 +1187,7 @@ void updateMesurment(void) {
 	  //HAL_GPIO_TogglePin(VIBRO_GPIO_Port, VIBRO_Pin);
 	  //NotifyAct(LED_NOTIFY, 0);
 	  intervalNow++;
+	  aquracyInterval++;
 	  currentTimeAvg = currentTime++;
 	  pulseCounterAvg = pulseCounter;
 	  CPS = pulseCounterSecond;
@@ -1182,10 +1195,12 @@ void updateMesurment(void) {
 		  spectrometerTime++;
 	  }
 	  /* Массив для гистограммы уровней */
+	  /*
 	  if (indexDozimetrBufer >= SIZE_DOZIMETR_BUFER) {
 		indexDozimetrBufer = 0;
 	  }
 	  dozimetrBuffer[indexDozimetrBufer++] = pulseCounterSecond;
+	  */
 	  pulseCounterSecond = 0;
 	/*
 	 * Анализ CPS для управления порогами срабатывания сигнализации
@@ -1357,11 +1372,23 @@ void vibroActivateOff(void) {
 
 /* Обработка прерываний по приходу импульсов */
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
-	  pulseCounter++;
-	  pulseCounterSecond++;
+	  pulseCounter++;					// Общее количество импульсов с начала измерения
+	  pulseCounterSecond++;				// Количество импульсов за последнюю секунду
 		/* Оповещение об импульсе */
 	  if (LEDEnable) {
 		  NotifyAct(LED_NOTIFY, 0);
+	  }
+	  /* Расчет с учетом точности */
+	  if (edgeCounter++ >= dozimetrAquracy) {
+		  if (aquracyInterval > 0) {
+			  if (indexDozimetrBufer >= SIZE_DOZIMETR_BUFER) {
+				indexDozimetrBufer = 0;
+			  }
+			  dozimetrBuffer[indexDozimetrBufer++] = edgeCounter / aquracyInterval;
+			  //dozimetrBuffer[indexDozimetrBufer++] = 1;
+			  aquracyInterval = 0;
+			  edgeCounter = 0;
+		  }
 	  }
 }
 
