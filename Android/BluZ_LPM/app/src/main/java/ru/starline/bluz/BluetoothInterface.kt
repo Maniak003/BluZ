@@ -93,6 +93,7 @@ class BluetoothInterface(tv: TextView) {
     private var wrCharacteristic:BluetoothGattCharacteristic? = null
     @OptIn(ExperimentalUnsignedTypes::class)
     public var receiveBuffer = UByteArray(255)
+    @OptIn(ExperimentalUnsignedTypes::class)
     public var sendBuffer = UByteArray(255)
     public var testIdx: Int = 0
     public var testIdx2: Int = 0
@@ -307,6 +308,7 @@ class BluetoothInterface(tv: TextView) {
         }
 
         @SuppressLint("MissingPermission")
+        @Deprecated("Deprecated in Java")
         override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
             Log.d("BluZ-BT", "mtu size $mtu, status $status")
             if (status == BluetoothGatt.GATT_SUCCESS) {
@@ -359,6 +361,7 @@ class BluetoothInterface(tv: TextView) {
         /*
         *      Прием данных
         */
+        @Deprecated("Deprecated in Java")
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
             //delegate!!.onCharacteristicChanged(gatt, characteristic)
             if (characteristic == rdCharacteristic) { // NOPMD - test object identity
@@ -495,11 +498,11 @@ class BluetoothInterface(tv: TextView) {
                             + " numMTU: " + numberMTU.toString() + " indexData: " + indexData.toString() + " endOfData: " + endOfData.toString())
                     */
                     var idx = indexData
-                    var d0: UByte
+                    var d00: UByte
                     while (idx <= endOfData) {
-                        d0 = data[idx++].toUByte()
-                        checkSumm =  (checkSumm + d0).toUShort()
-                        GO.receiveData[idxArray++] = d0
+                        d00 = data[idx++].toUByte()
+                        checkSumm =  (checkSumm + d00).toUShort()
+                        GO.receiveData[idxArray++] = d00
                     }
                     /*
                     Log.d("BluZ-BT", "Receive: " + data.size.toString()+ " real size: " + testIdx2.toString() + " "
@@ -716,6 +719,7 @@ class BluetoothInterface(tv: TextView) {
     * 3             -   Код команды
     * 242, 243      -   Контрольная сумма
     */
+    @OptIn(ExperimentalUnsignedTypes::class)
     fun sendCommand(cmd: UByte) {
         GO.BTT.sendBuffer[0] = '<'.code.toUByte()
         GO.BTT.sendBuffer[1] = 'S'.code.toUByte()
@@ -783,7 +787,7 @@ class BluetoothInterface(tv: TextView) {
     // Broadcast приемник
     private val mGattUpdateReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val action = intent.action
+            //val action = intent.action
             Log.i("BluZ-BT", "Broadcast.")
         }
     }
