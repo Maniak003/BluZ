@@ -44,19 +44,9 @@ uint8_t retryCount;
 
 void CB_SMA (SNVMA_Callback_Status_t os) {
 	if (os != SNVMA_OPERATION_COMPLETE) {
-		if (retryCount++ < 3) {
+		if (retryCount++ < 3) {		// Ограничим количество повторов, что бы не испортить eeprom.
 			SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
 		}
-	//} else {
-	//	if (*(__IO uint32_t*) (MAGIC_KEY_ADDRESS) != MAGIC_KEY) {
-	//		if (retryCount++ < 3) {
-	//			SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
-	//		} else {
-	//			//bzero((char *) uartBuffer, sizeof(uartBuffer));
-	//			//sprintf(uartBuffer, "Error\n\r");
-	//			//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-	//		}
-	//	}
 	}
 
 }
@@ -64,7 +54,7 @@ void CB_SMA (SNVMA_Callback_Status_t os) {
 
 /* Запись параметров во flash контроллера */
 HAL_StatusTypeDef writeFlash() {
-	FD_FlashOp_Status_t stat_ok = FD_FLASHOP_SUCCESS;
+	//FD_FlashOp_Status_t stat_ok = FD_FLASHOP_SUCCESS;
 	SNVMA_Cmd_Status_t stat_cmd;
 	uint16_t idxPL = 1;
 	uint64_t tmpData = 0;
@@ -180,7 +170,7 @@ HAL_StatusTypeDef writeFlash() {
 	}
 
 
-	return stat_ok;
+	return HAL_OK;
 }
 
 /* Чтение параметров из flash контроллера */
