@@ -74,9 +74,7 @@ STM32_WPAN/Target/ll_sys_if.o: ../STM32_WPAN/Target/ll_sys_if.c \
  ../System/Modules/Flash/simple_nvm_arbiter_common.h \
  ../System/Modules/utilities_common.h \
  ../System/Config/Flash/simple_nvm_arbiter_conf.h \
- ../System/Modules/Flash/simple_nvm_arbiter_common.h \
- ../System/Modules/Flash/rf_timing_synchro.h \
- ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h ../Core/Inc/main.h \
  ../Utilities/tim_serv/stm32_timer.h ../Utilities/sequencer/stm32_seq.h \
  ../Utilities/lpm/tiny_lpm/stm32_lpm.h ../Core/Inc/LTC1662.h \
  ../Core/Inc/app_common.h ../System/Config/Log/log_module.h \
@@ -167,8 +165,6 @@ STM32_WPAN/Target/ll_sys_if.o: ../STM32_WPAN/Target/ll_sys_if.c \
 ../System/Modules/utilities_common.h:
 ../System/Config/Flash/simple_nvm_arbiter_conf.h:
 ../System/Modules/Flash/simple_nvm_arbiter_common.h:
-../System/Modules/Flash/rf_timing_synchro.h:
-../System/Modules/Flash/flash_driver.h:
 ../Core/Inc/main.h:
 ../Utilities/tim_serv/stm32_timer.h:
 ../Utilities/sequencer/stm32_seq.h:

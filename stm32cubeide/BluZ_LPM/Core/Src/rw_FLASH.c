@@ -139,33 +139,11 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData = enCoefC4096.Uint32 | (uint64_t)dozimetrAquracy << 32;
 	PL[idxPL++] = tmpData;					// 14, 15
 
-	PL[idxPL++] = 0xDDDDDDFFCCCCCCFF;		// 16, 17
+	//PL[idxPL++] = 0xDDDDDDFFCCCCCCFF;		// 16, 17
 	//PL[idxPL++] = MAGIC_KEY;		// 20, 21
-	/* Test */
-	//PL[1] = 0x11111111;
-
-	/*
-	NVM_Init(PL, 8, 8);
-	stat_cmd = SNVMA_Register (APP_BLE_NvmBuffer, (uint32_t *)PL, sizeof(PL) / 4);
-	bzero((char *) uartBuffer, sizeof(uartBuffer));
-	if (stat_cmd == SNVMA_ERROR_OK) {
-		//sprintf(uartBuffer, "SNVMA_Register complete\n\r");
-		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-	} else {
-		sprintf(uartBuffer, "SNVMA_Register false: %d\n\r", stat_cmd);
-		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-		return HAL_ERROR;
-	}
-	*/
 	retryCount = 0;	// Количество повторов записи
 	stat_cmd = SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
-	//bzero((char *) uartBuffer, sizeof(uartBuffer));
-	if (stat_cmd == SNVMA_ERROR_OK) {
-		//sprintf(uartBuffer, "SNVMA_Write complete\n\r");
-		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-	} else {
-		//sprintf(uartBuffer, "SNVMA_Write false: %d\n\r", stat_cmd);
-		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
+	if (stat_cmd != SNVMA_ERROR_OK) {
 		return HAL_ERROR;
 	}
 
@@ -177,26 +155,6 @@ HAL_StatusTypeDef writeFlash() {
 HAL_StatusTypeDef readFlash() {
 
 	uint16_t idxPL = 2;
-	/* Flash уже инициализирована ?  */
-
-	//int jjj = 0;
-
-	//for (int iii = 0; iii < sizeof(PL) / 4; iii++) {
-		//uint32_t addr = START_FLASH_ADDRESS + FLASH_CONFIG_OFFSET + iii * 4;
-		//bzero((char *) uartBuffer, sizeof(uartBuffer));
-		//sprintf(uartBuffer, "0x%04lX:0x%08lX ", addr, *(__IO uint32_t*) addr);
-		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-		//if (jjj++ >= 3) {
-		//	jjj = 0;
-		//	HAL_UART_Transmit(&huart2, (uint8_t *) "\n\r", 2, 100);
-		//}
-	//}
-	//HAL_UART_Transmit(&huart2, (uint8_t *)"\n\r", 2, 100);
-
-	//if (*(__IO uint32_t*) (MAGIC_KEY_ADDRESS) == MAGIC_KEY) {
-		//bzero((char *) uartBuffer, sizeof(uartBuffer));
-		//sprintf(uartBuffer, "Magic key found.\n\r");
-		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
 		/*
 		 *  Чтение flash в конфигурационные переменные
@@ -243,17 +201,13 @@ HAL_StatusTypeDef readFlash() {
 		 *	5			--	Уровень второго порога
 		 *	6			--	Уровень третьего порога
 		 *	7			--	N/A
-		 *	8			--	Коэффициент A пересчета канала в энергию
-		 *	9			--	Коэффициент B пересчета канала в энергию
-		 *	10			--	Коэффициент C пересчета канала в энергию
+		 *	8			--	Коэффициент A пересчета канала в энергию для 1024
+		 *	9			--	Коэффициент B пересчета канала в энергию для 1024
+		 *	10			--	Коэффициент C пересчета канала в энергию для 1024
 		 *
 		 */
-		//bzero((char *) uartBuffer, sizeof(uartBuffer));
-		//sprintf(uartBuffer, "0x%04lX:0x%08lX\n\r", CONVERT_CPS2RH, *(__IO uint32_t*) ((uint32_t) CONVERT_CPS2RH));
-		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 
 		/* Параметры устройства */
-		//uint32_t tmpData = *(__IO uint32_t*) ((uint32_t) PARAMETERS_ADDRESS);
 		uint64_t tmpData = PL[idxPL++];				// 2, 3
 		SoundEnable = tmpData & 1;
 		LEDEnable = tmpData & 1 << 1;
@@ -317,79 +271,6 @@ HAL_StatusTypeDef readFlash() {
 		if ((dozimetrAquracy == 0xFFFF) || (dozimetrAquracy == 0)) {
 			dozimetrAquracy = 100;
 		}
-		/*bzero((char *) uartBuffer, sizeof(uartBuffer));
-		sprintf(uartBuffer,
-				"Sound: %d\n\r"
-				"LED: %d\n\r"
-				"Vibro: %d\n\r"
-				"levelSound1: %d\n\r"
-				"levelSound2: %d\n\r"
-				"levelSound3: %d\n\r"
-				"levelVibro1: %d\n\r"
-				"levelVibro2: %d\n\r"
-				"levelVibro3: %d\n\r"
-				"autoStartSpecrometr: %d\n\r"
-				"Resolution: %d\n\r"
-				"HVoltage: %d\n\r"
-				"comparatorLevel: %d\n\r"
-				"calcCoeff: %f\n\r"
-				"level1: %d\n\r"
-				"level2: %d\n\r"
-				"level3: %d\n\r"
-				"enCoefA: %f\n\r"
-				"enCoefB: %f\n\r"
-				"enCoefC: %f\n\r",
-				SoundEnable,
-				LEDEnable,
-				VibroEnable,
-				levelSound1,
-				levelSound2,
-				levelSound3,
-				levelVibro1,
-				levelVibro2,
-				levelVibro3,
-				autoStartSpecrometr,
-				resolution, HVoltage, comparatorLevel, calcCoeff.Float, level1, level2, level3, enCoefA.Float, enCoefB.Float, enCoefC.Float);
-		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);*/
-
-	//} else { // Ключ не найден, нужно инициализировать flash
-		//bzero((char *) uartBuffer, sizeof(uartBuffer));
-		//sprintf(uartBuffer, "Magic key not found.\n\r");
-		//HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-
-		/*
-		 *	Параметры по умолчанию
-		 */
-		/*
-		SoundEnable = true;
-		LEDEnable = false;
-		VibroEnable = true;
-		levelSound1 = true;
-		levelSound2 = true;
-		levelSound3 = true;
-		levelVibro1 = true;
-		levelVibro2 = true;
-		levelVibro3 = true;
-		resolution = 0;
-		HVoltage = 200;					// ~30V
-		comparatorLevel = 600;			// ~33mV
-		level1 = 30;
-		level2 = 60;
-		level3 = 120;
-		calcCoeff.Float = 0.7f;
-		enCoefA1024.Float = 0.001f;
-		enCoefB1024.Float = 1.1;
-		enCoefC1024.Float = 2.2;
-		enCoefA2048.Float = 0.001f;
-		enCoefB2048.Float = 1.1;
-		enCoefC2048.Float = 2.2;
-		enCoefA4096.Float = 0.001f;
-		enCoefB4096.Float = 1.1;
-		enCoefC4096.Float = 2.2;
-		//if(writeFlash() == HAL_OK) {	}
-	//}
-
-	 */
 	return HAL_OK;
 
 }
