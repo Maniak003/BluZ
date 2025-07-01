@@ -9,9 +9,9 @@
 #define INC_RW_FLASH_H_
 
 #include <simple_nvm_arbiter.h>
-#include <rf_timing_synchro.h>
+//#include <rf_timing_synchro.h>
 //#include <flash_manager.h>
-#include <flash_driver.h>
+//#include <flash_driver.h>
 #include "main.h"
 
 #define FLASH_BLOCK_SIZE 0x04000											// Размер блока 8k

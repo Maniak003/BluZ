@@ -75,9 +75,7 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
  ../System/Modules/Flash/simple_nvm_arbiter_common.h \
  ../System/Modules/utilities_common.h \
  ../System/Config/Flash/simple_nvm_arbiter_conf.h \
- ../System/Modules/Flash/simple_nvm_arbiter_common.h \
- ../System/Modules/Flash/rf_timing_synchro.h \
- ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h ../Core/Inc/main.h \
  ../Utilities/tim_serv/stm32_timer.h ../Utilities/sequencer/stm32_seq.h \
  ../Utilities/lpm/tiny_lpm/stm32_lpm.h ../Core/Inc/LTC1662.h \
  ../Core/Inc/app_entry.h ../Core/Inc/stm32_rtos.h \
@@ -87,7 +85,8 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
  ../System/Modules/MemoryManager/stm32_mm.h ../STM32_WPAN/App/app_ble.h \
  ../STM32_WPAN/Target/ll_sys_if.h ../System/Config/LowPower/app_sys.h \
  ../System/Modules/otp.h ../System/Modules/scm.h \
- ../STM32_WPAN/Target/bpka.h ../System/Modules/Flash/flash_manager.h
+ ../STM32_WPAN/Target/bpka.h ../System/Modules/Flash/flash_driver.h \
+ ../System/Modules/Flash/flash_manager.h
 ../Core/Inc/app_common.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
@@ -175,8 +174,6 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
 ../System/Modules/utilities_common.h:
 ../System/Config/Flash/simple_nvm_arbiter_conf.h:
 ../System/Modules/Flash/simple_nvm_arbiter_common.h:
-../System/Modules/Flash/rf_timing_synchro.h:
-../System/Modules/Flash/flash_driver.h:
 ../Core/Inc/main.h:
 ../Utilities/tim_serv/stm32_timer.h:
 ../Utilities/sequencer/stm32_seq.h:
@@ -194,4 +191,5 @@ Core/Src/app_entry.o: ../Core/Src/app_entry.c ../Core/Inc/app_common.h \
 ../System/Modules/otp.h:
 ../System/Modules/scm.h:
 ../STM32_WPAN/Target/bpka.h:
+../System/Modules/Flash/flash_driver.h:
 ../System/Modules/Flash/flash_manager.h:

@@ -54,9 +54,7 @@ Core/Src/rw_FLASH.o: ../Core/Src/rw_FLASH.c ../Core/Inc/rw_FLASH.h \
  ../Core/Inc/app_conf.h ../Utilities/misc/stm32_mem.h \
  ../Core/Inc/utilities_conf.h ../Utilities/misc/stm32_tiny_vsnprintf.h \
  ../System/Config/Flash/simple_nvm_arbiter_conf.h \
- ../System/Modules/Flash/simple_nvm_arbiter_common.h \
- ../System/Modules/Flash/rf_timing_synchro.h \
- ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h \
+ ../System/Modules/Flash/simple_nvm_arbiter_common.h ../Core/Inc/main.h \
  ../Core/Inc/app_entry.h ../Core/Inc/app_common.h \
  ../System/Interfaces/hw.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h \
@@ -142,8 +140,6 @@ Core/Src/rw_FLASH.o: ../Core/Src/rw_FLASH.c ../Core/Inc/rw_FLASH.h \
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
 ../System/Config/Flash/simple_nvm_arbiter_conf.h:
 ../System/Modules/Flash/simple_nvm_arbiter_common.h:
-../System/Modules/Flash/rf_timing_synchro.h:
-../System/Modules/Flash/flash_driver.h:
 ../Core/Inc/main.h:
 ../Core/Inc/app_entry.h:
 ../Core/Inc/app_common.h:
