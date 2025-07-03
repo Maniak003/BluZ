@@ -187,7 +187,7 @@ class globalObj {
     public var tempMC: Float = 0.0f                 // Температура МК
     public var pulsePerSec: UInt = 0u               // CPS за короткий интервал.
     public var rejectChann: Int = 10                // Количество каналов от начала, не отображаемых на гистограмме
-    public var realResolution: Int = 10             // Разрешение на линии 662 кЭв в каналах
+    public var realResolution: Int = 30             // Разрешение на линии 662 кЭв в каналах
 
     /* Параметры для хранения в приборе */
     public var propSoundKvant: Boolean = false      // Озвучка прихода частицы
