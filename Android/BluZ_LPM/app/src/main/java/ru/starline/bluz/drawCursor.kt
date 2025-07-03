@@ -156,14 +156,14 @@ class drawCursor {
                         */
                         var cntFon : Int = GO.realResolution * (GO.drawSPECTER.tmpSpecterData[isotop.Channel - GO.realResolution].toInt() + GO.drawSPECTER.tmpSpecterData[isotop.Channel + GO.realResolution].toInt())
 
-                        /* Получим количествоо импульсов в диапазоне разрешения */
+                        /* Получим количество импульсов в диапазоне разрешения */
                         var cntPulse: Int = 0
                         for (ixCh in isotop.Channel - GO.realResolution .. isotop.Channel + GO.realResolution) {
                             cntPulse += GO.drawSPECTER.tmpSpecterData[ixCh].toInt()
                         }
                         /* Расчет активности */
                         cntPulse -= cntFon
-                        var activ: Float = isotop.Activity.toFloat() * cntPulse / GO.messTm.toFloat()
+                        var activ: Float = isotop.Activity.toFloat() * cntPulse / GO.spectrometerTime.toFloat()
                         if (activ < 0.0f) {     // Да, такое может быть из-за не правильного расчета фона
                             activ = 0.0f
                         }
