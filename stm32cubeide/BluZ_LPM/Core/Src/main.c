@@ -57,7 +57,7 @@ RTC_HandleTypeDef hrtc;
 /* USER CODE BEGIN PV */
 bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false;
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
-uint32_t pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
+uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
 /*
  *	Точность измерения дозиметра

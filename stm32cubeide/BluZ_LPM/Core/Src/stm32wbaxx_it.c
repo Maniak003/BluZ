@@ -294,29 +294,24 @@ void GPDMA1_Channel0_IRQHandler(void)
 		switch (resolution) {
 		/* 1024 */
 		case 0:
-			if (tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF)] < LIMITCHAN) {
-				tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF)]++;
-			}
+			tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 2) & 0x3FF;
 			/* Тест */
 			//tmpSpecterBuffer[500]++;
 			break;
 		/* 2048 */
 		case 1:
-			if (tmpSpecterBuffer[((TVLevel[0] >> 1) & 0x7FF)] < LIMITCHAN) {
-				tmpSpecterBuffer[((TVLevel[0] >> 1) & 0x7FF)]++;
-			}
+			tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 1) & 0x7FF;
 			break;
 		/* 4096 */
 		case 2:
-			if (tmpSpecterBuffer[(TVLevel[0] & 0xFFF)] < LIMITCHAN) {
-				tmpSpecterBuffer[(TVLevel[0] & 0xFFF)]++;
-			}
+			tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 1) & 0xFFF;
 			break;
 		default:
-			if (tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF)] < LIMITCHAN) {
-				tmpSpecterBuffer[((TVLevel[0] >> 2) & 0x3FF)]++;
-			}
+			tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 2) & 0x3FF;
 			break;
+		}
+		if (tmpSpecterBuffer[tmpLevel] < LIMITCHAN) {
+			tmpSpecterBuffer[tmpLevel]++;
 		}
 	}
 	//HAL_ADC_Stop_DMA(&hadc4);

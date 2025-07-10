@@ -10,8 +10,8 @@
 ../Core/Src/stm32wbaxx_it.c:216:6:RTC_IRQHandler	1
 ../Core/Src/stm32wbaxx_it.c:228:6:RCC_IRQHandler	3
 ../Core/Src/stm32wbaxx_it.c:258:6:EXTI15_IRQHandler	1
-../Core/Src/stm32wbaxx_it.c:280:6:GPDMA1_Channel0_IRQHandler	9
-../Core/Src/stm32wbaxx_it.c:330:6:TIM16_IRQHandler	2
-../Core/Src/stm32wbaxx_it.c:356:6:RADIO_IRQHandler	2
-../Core/Src/stm32wbaxx_it.c:378:6:WKUP_IRQHandler	1
-../Core/Src/stm32wbaxx_it.c:392:6:HASH_IRQHandler	3
+../Core/Src/stm32wbaxx_it.c:280:6:GPDMA1_Channel0_IRQHandler	5
+../Core/Src/stm32wbaxx_it.c:325:6:TIM16_IRQHandler	2
+../Core/Src/stm32wbaxx_it.c:351:6:RADIO_IRQHandler	2
+../Core/Src/stm32wbaxx_it.c:373:6:WKUP_IRQHandler	1
+../Core/Src/stm32wbaxx_it.c:387:6:HASH_IRQHandler	3
