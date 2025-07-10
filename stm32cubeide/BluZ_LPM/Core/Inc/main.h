@@ -82,6 +82,7 @@ extern "C" {
 #define MAX_RESOLUTION 4096
 #define CAPCHAN 20											/* Количество разрядов в канале */
 #define LIMITCHAN (uint32_t) (1 << CAPCHAN)					/* Максимальное значение канала */
+#define OFFSET_CHAN		1U									/* Смещение канала для усредненния */
 
 extern uint16_t MTUSizeValue;
 extern uint8_t resolution, dataType;
@@ -100,6 +101,7 @@ extern uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER];
 extern int indexDozimetrBufer;
 extern ADC_HandleTypeDef hadc4;
 extern uint64_t PL[18];
+extern uint32_t tmpLevel;
 
 struct LG {
 	uint32_t time;
