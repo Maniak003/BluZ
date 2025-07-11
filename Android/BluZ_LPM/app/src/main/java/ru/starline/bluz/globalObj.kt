@@ -444,7 +444,7 @@ class globalObj {
         isotopList[idxIst++] = IsotopsCls(538, "Pb-212,Th-232,Ac-228", 0, 0)            // 30
         isotopList[idxIst++] = IsotopsCls(583, "Tl-208, Th-232, Ac-228", 0, 0)          // 31
         isotopList[idxIst++] = IsotopsCls(609, "Ra-226, Pb-214, Bi-214", 0, 0)          // 32
-        isotopList[idxIst++] = IsotopsCls(662, "Ba-137, Cs-137", 838, 0)                // 33
+        isotopList[idxIst++] = IsotopsCls(662, "Ba-137, Cs-137", 1683, 0)               // 33
         isotopList[idxIst++] = IsotopsCls(750, "U-238, U-235, Pa-234m", 0, 0)           // 34
         isotopList[idxIst++] = IsotopsCls(911, "Th-232, Pb-212, Ac-228, Tl-208", 0, 0)  // 35
         isotopList[idxIst++] = IsotopsCls(920, "Tl-20", 0, 0)                           // 36
@@ -652,7 +652,7 @@ class globalObj {
         /*
         *   Формат для сохранения спектра
         *   0 - BqMon
-        *   1 - SPE
+        *   1 - CSV
         */
         GO.saveSpecterType = GO.PP.getPropInt(propCfgSaveSpecterType)
         GO.aqureValue = GO.PP.getPropInt(propAquracy)
