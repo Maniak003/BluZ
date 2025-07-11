@@ -16,6 +16,8 @@ import java.lang.Math.log
 import java.lang.Math.round
 import java.lang.Math.sqrt
 import java.util.Locale
+import kotlin.math.ln
+import androidx.core.graphics.createBitmap
 
 
 /**
@@ -47,7 +49,7 @@ class drawSpecter {
                 Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize")
             } else {
                 /* Подготавливаем bitmap для рисования */
-                specBitmap = Bitmap.createBitmap(HSize, VSize, Bitmap.Config.ARGB_8888)
+                specBitmap = createBitmap(HSize, VSize)
                 specCanvas = Canvas(specBitmap)
                 GO.drawObjectInit = false
             }
@@ -125,7 +127,7 @@ class drawSpecter {
             if (maxYlin < tmpSpecterData[idx]) {
                 maxYlin = tmpSpecterData[idx]
             }
-            tmpLog = log(tmpSpecterData[idx])
+            tmpLog = ln(tmpSpecterData[idx])
             if (maxYlog < tmpLog) {
                 maxYlog = tmpLog
             }
@@ -138,7 +140,7 @@ class drawSpecter {
         for (idx in 0..ResolutionSpectr - 1) {
             Ylin = (VSize - tmpSpecterData[idx] * koefLin).toFloat()
             if (tmpSpecterData[idx] != 0.0) {
-                Ylog = (VSize - log(tmpSpecterData[idx]) * koefLog).toFloat()
+                Ylog = (VSize - ln(tmpSpecterData[idx]) * koefLog).toFloat()
             } else {
                 Ylog = VSize.toFloat()
             }

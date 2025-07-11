@@ -8,7 +8,9 @@ import android.graphics.PorterDuffXfermode
 import android.util.Log
 import android.widget.ImageView
 import java.lang.Math.log
+import kotlin.math.ln
 import kotlin.math.round
+import androidx.core.graphics.withRotation
 
 class drawCursor {
     public var oldX: Float = 0.0f
@@ -118,7 +120,7 @@ class drawCursor {
                 if (GO.drawSPECTER.tmpSpecterData[curChan] == 1.0) {    // Курсор по линейному графику при 0 значения логарифмического.
                     Ylog = (VSize - GO.drawSPECTER.koefLin).toFloat()
                 } else {
-                    Ylog = (VSize - log(GO.drawSPECTER.tmpSpecterData[curChan]) * GO.drawSPECTER.koefLog).toFloat()
+                    Ylog = (VSize - ln(GO.drawSPECTER.tmpSpecterData[curChan]) * GO.drawSPECTER.koefLog).toFloat()
                 }
             } else {
                 Ylog = VSize.toFloat()
@@ -128,14 +130,13 @@ class drawCursor {
             cursorCanvas.drawCircle(x, Ylog, 10.0f, aCursor)
             aCursor.style = Paint.Style.FILL;
             cursorCanvas.drawText(tmpCounts.toString(), x + 10, Ylog + 4, aCursor) // Counts
-            cursorCanvas.save()
-            cursorCanvas.rotate(90f, x + 3, Ylog + 10 /*HSize - textVShift*/)
-            if(cfA == 0.0f) {
-                cursorCanvas.drawText(tmpEnergy.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
-            } else {
-                cursorCanvas.drawText(tmpEnergy.toString() + "keV/" + tmpChann.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
-            }
-            cursorCanvas.restore();
+            cursorCanvas.withRotation(90f, x + 3, Ylog + 10 /*HSize - textVShift*/) {
+                if (cfA == 0.0f) {
+                    drawText(tmpEnergy.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
+                } else {
+                    drawText(tmpEnergy.toString() + "keV/" + tmpChann.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
+                }
+            };
 
             oldX = x
             oldY = y
@@ -154,12 +155,12 @@ class drawCursor {
                         *   Расчитываем фоновую активность
                         *   (Y[isotop.Channel - GO.realResolution] + Y[isotop.Channel + GO.realResolution]) / 2 * 2 * GO.realResolution
                         */
-                        var cntFon : Int = GO.realResolution * (GO.drawSPECTER.tmpSpecterData[isotop.Channel - GO.realResolution].toInt() + GO.drawSPECTER.tmpSpecterData[isotop.Channel + GO.realResolution].toInt())
+                        var cntFon : Int = GO.realResolution * (GO.drawSPECTER.spectrData[isotop.Channel - GO.realResolution].toInt() + GO.drawSPECTER.spectrData[isotop.Channel + GO.realResolution].toInt())
 
                         /* Получим количество импульсов в диапазоне разрешения */
                         var cntPulse: Int = 0
                         for (ixCh in isotop.Channel - GO.realResolution .. isotop.Channel + GO.realResolution) {
-                            cntPulse += GO.drawSPECTER.tmpSpecterData[ixCh].toInt()
+                            cntPulse += GO.drawSPECTER.spectrData[ixCh].toInt()
                         }
                         /* Расчет активности */
                         cntPulse -= cntFon
