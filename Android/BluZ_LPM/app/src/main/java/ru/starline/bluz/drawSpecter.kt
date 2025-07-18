@@ -127,11 +127,12 @@ class drawSpecter {
             if (maxYlin < tmpSpecterData[idx]) {
                 maxYlin = tmpSpecterData[idx]
             }
-            tmpLog = ln(tmpSpecterData[idx])
-            if (maxYlog < tmpLog) {
-                maxYlog = tmpLog
-            }
+            //tmpLog = ln(tmpSpecterData[idx])
+            //if (maxYlog < tmpLog) {
+            //    maxYlog = tmpLog
+            //}
         }
+        maxYlog = ln(maxYlin);
         //Log.d("BluZ-BT", "MAX: : $maxYlin")
         koefLin = VSize / maxYlin
         koefLog = VSize / maxYlog
