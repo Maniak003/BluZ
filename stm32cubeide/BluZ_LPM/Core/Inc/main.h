@@ -85,7 +85,7 @@ extern "C" {
 #define OFFSET_CHAN		1U									/* Смещение канала для усредненния */
 
 extern uint16_t MTUSizeValue;
-extern uint8_t resolution, dataType;
+extern uint8_t resolutionSpecter, dataType;
 extern uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET];
 extern uint16_t currTemperature, currVoltage;
 extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION], spectrometerTime, spectrometerPulse;

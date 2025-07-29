@@ -504,11 +504,11 @@ class BluetoothInterface(tv: TextView) {
                         checkSumm =  (checkSumm + d00).toUShort()
                         GO.receiveData[idxArray++] = d00
                     }
-                    /*
-                    Log.d("BluZ-BT", "Receive: " + data.size.toString()+ " real size: " + testIdx2.toString() + " "
-                            + data[48] + " idx:" + idxArray + " " + data[2] + " " + data[3] + " " + data[4] + " " + data[240] + " " + data[241] + " " + data[242].toUByte() + " " + data[243].toUByte()
-                            + " numMTU: " + numberMTU.toString() + " indexData: " + indexData.toString() + " endOfData: " + endOfData.toString())
-                    */
+
+                    //Log.d("BluZ-BT", "Receive: " + data.size.toString()+ " real size: " + testIdx2.toString() + " "
+                    //        + data[48] + " idx:" + idxArray + " " + data[2] + " " + data[3] + " " + data[4] + " " + data[240] + " " + data[241] + " " + data[242].toUByte() + " " + data[243].toUByte()
+                    //        + " numMTU: " + numberMTU.toString() + " indexData: " + indexData.toString() + " endOfData: " + endOfData.toString())
+
 
                     if (numberMTU == 0) {       // Прием последнего блока
                         var tmpCS: UShort

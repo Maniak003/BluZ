@@ -292,7 +292,34 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						comparatorLevel = p_Notification->DataTransfered.p_Payload[35] | (p_Notification->DataTransfered.p_Payload[36] << 8);
 
 						/* Разрешение спектра. 0 - 1024, 1 - 2048, 2 - 4096 */
-						resolution = p_Notification->DataTransfered.p_Payload[37];
+						if (resolutionSpecter != p_Notification->DataTransfered.p_Payload[37]) {
+							resolutionSpecter = p_Notification->DataTransfered.p_Payload[37];
+							/* Если разрешение изменяется - нужно очистить спектр */
+							for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
+								tmpSpecterBuffer[iii] = 0;
+							}
+							spectrometerPulse = 0;
+							spectrometerTime = 0;
+							logUpdate(7);
+							/* Если включен спектрометр, нужно установить тип передачи */
+							if (dataType > 0) {
+								switch (resolutionSpecter) {
+								case 0:
+									dataType = 1;
+									break;
+								case 1:
+									dataType = 2;
+									break;
+								case 2:
+									dataType = 3;
+									break;
+								default:
+									dataType = 1;
+									resolutionSpecter = 0;
+									break;
+								}
+							}
+						}
 
 						/* Вывод конфига для отладки */
 						#ifdef DEBUG_USER
@@ -335,7 +362,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						HAL_ADC_DeInit(&hadc4);
 						//HAL_DMA_DeInit(&handle_GPDMA1_Channel0);
 						if (dataType == 0) {											// Переключение в режим спектрометра
-							switch (resolution) {
+							switch (resolutionSpecter) {
 							case 0:
 								dataType = 1;
 								break;
@@ -347,7 +374,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 								break;
 							default:
 								dataType = 1;
-								resolution = 0;
+								resolutionSpecter = 0;
 								break;
 							}
 							MX_ADC4_Init();

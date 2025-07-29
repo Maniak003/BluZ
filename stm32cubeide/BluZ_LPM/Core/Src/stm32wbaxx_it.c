@@ -291,7 +291,7 @@ void GPDMA1_Channel0_IRQHandler(void)
 		* 1 - 2048 каналов
 		* 2 - 4096 каналов
 		*/
-		switch (resolution) {
+		switch (resolutionSpecter) {
 		/* 1024 */
 		case 0:
 			tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 2) & 0x3FF;
@@ -304,7 +304,7 @@ void GPDMA1_Channel0_IRQHandler(void)
 			break;
 		/* 4096 */
 		case 2:
-			tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 1) & 0xFFF;
+			tmpLevel = (TVLevel[0] + OFFSET_CHAN) & 0xFFF;
 			break;
 		default:
 			tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 2) & 0x3FF;

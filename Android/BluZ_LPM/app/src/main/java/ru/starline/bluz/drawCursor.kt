@@ -91,6 +91,9 @@ class drawCursor {
 
             /* Указатель горизонтального положения */
             curChan = (x / GO.drawSPECTER.xSize).toInt()
+            if (curChan > 4095) {
+                curChan = 4095
+            }
             when (GO.spectrResolution) {
                 0 -> {  // 1024
                     cfA = GO.propCoef1024A

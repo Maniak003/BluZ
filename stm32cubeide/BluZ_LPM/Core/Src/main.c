@@ -78,8 +78,9 @@ char uartBuffer[400] = {0,};
 struct LG logBuffer[LOG_BUFER_SIZE];
 /* Буфер для работы с flash */
 uint64_t PL[18] = {0,};
-uint8_t resolution = 0, repetionCount = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
+uint8_t resolutionSpecter = 0, repetionCount = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
 /*
+ * dataType
  * 0 - Дозиметр и логи,
  * 1 - Дозиметр, логи и спектр 1024,
  * 2 - Дозиметр, логи и спектр 2048,
@@ -167,6 +168,7 @@ void ledActivate(void);
  *	9 -  Запуск набора спектра
  *	10 - Останов набора спектра
  *	11 - Очистка лога
+ *	12 - Сброс спектрометра при переключении разрешения
  */
 void logUpdate(uint8_t act) {
 	logBuffer[logIndex].time = currentTime;
@@ -275,7 +277,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   if (readFlash() == HAL_OK) {}
   if (autoStartSpecrometr) {
-	  switch (resolution) {
+	  switch (resolutionSpecter) {
 	  case 0:
 		  dataType = 1;
 		  break;
@@ -287,7 +289,7 @@ int main(void)
 		  break;
 	  default:
 		  dataType = 1;
-	  	  resolution = 0;
+		  resolutionSpecter = 0;
 		  break;
 	  }
   } else {
@@ -457,10 +459,10 @@ int main(void)
 	  }
 	  if (dataType > 0) {							/* Нужно передавать спектр ? */
 		  /* Test */
-		  /*
-		  for (int jjj = 0; jjj < nm_channel; jjj++) {
-			  tmpSpecterBuffer[jjj] = jjj * 100;
-		  }*/
+
+		  //for (int jjj = 0; jjj < nm_channel; jjj++) {
+			//  tmpSpecterBuffer[jjj] = jjj * 100;
+		  //}
 		  /* Медианный фильтр для устранения артефактов ADC */
 		#ifdef MEDIAN
 		  MA[0] = 0;
@@ -626,7 +628,7 @@ int main(void)
 		  /*
 		   * TODO -- требуется задержка в передаче, иначе не все пакеты принимаются
 		   */
-		  HAL_Delay(40);
+		  HAL_Delay(60);
 			#ifdef DEBUG_USER
 			bzero((char *) uartBuffer, sizeof(uartBuffer));
 			sprintf(uartBuffer, "MTU: %d\n\r", iii);

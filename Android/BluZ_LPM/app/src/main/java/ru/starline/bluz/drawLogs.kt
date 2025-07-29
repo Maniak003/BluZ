@@ -41,7 +41,8 @@ class drawLogs {
     *   8 -     запись данных во флеш
     *   9 -     запуск спектрометра
     *   10 -    останов спектрометра
-    *
+    *   11 -    Очистка лога
+    *   12 -    Сброс спектрометра при переключении разрешения
     */
     fun updateLogs() {
         logsText.text = ""
@@ -58,12 +59,13 @@ class drawLogs {
                     3 -> eventStr = "<font color=#C80000>Level 2"
                     4 -> eventStr = "<font color=#B02EE8>Level 3"
                     5 -> eventStr = "<font color=#1AFF00>Normal"
-                    6 -> eventStr = "Dozimeter reset"
+                    6 -> eventStr = "Dosimeter reset"
                     7 -> eventStr = "Spectrometer reset"
                     8 -> eventStr = "Write to flash"
                     9 -> eventStr = "Start spectrometer"
                     10 -> eventStr = "Stop spectrometer"
                     11 -> eventStr = "Clear logs"
+                    12 -> eventStr = "Change resolution"
                     else -> eventStr = "Unknown: ${logData[idx].act.toInt()}"
                 }
                 //Log.i("BluZ-BT", "LT: " + GO.messTm.toString())
