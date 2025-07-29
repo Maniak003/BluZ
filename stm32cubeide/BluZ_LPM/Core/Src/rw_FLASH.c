@@ -99,7 +99,7 @@ HAL_StatusTypeDef writeFlash() {
 		tmpData |= 1 << 8;
 	}
 
-	switch (resolution) {
+	switch (resolutionSpecter) {
 		case 0: break;
 		case 1: {
 			tmpData |= 1 << 9;
@@ -219,7 +219,7 @@ HAL_StatusTypeDef readFlash() {
 		levelVibro2 = tmpData & 1 << 7;
 		levelVibro3 = tmpData & 1 << 8;
 		autoStartSpecrometr = tmpData & 1 << 11;
-		resolution = (tmpData >> 9) & 0x3;			// Разрешение спектра с 9 по 10 разряды
+		resolutionSpecter = (tmpData >> 9) & 0x3;			// Разрешение спектра с 9 по 10 разряды
 		HVoltage = (tmpData >> 12) & 0x3FF;			// DAC высокое напряжение с 12 по 21 разряды
 		comparatorLevel = (tmpData >> 22) & 0x3FF;	// DAC компаратора с 22 по 31 разряды
 

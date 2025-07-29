@@ -46,7 +46,7 @@ class drawSpecter {
             HSize = imgView.width
             VSize = imgView.height
             if ((HSize == 0) or (VSize == 0)) {
-                Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize")
+                Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize, Res: $ResolutionSpectr")
             } else {
                 /* Подготавливаем bitmap для рисования */
                 specBitmap = createBitmap(HSize, VSize)
@@ -62,7 +62,7 @@ class drawSpecter {
     }
 
     fun redrawSpecter(spType: Int) {
-        Log.d("BluZ-BT", "Type: $spType HSize: $HSize VSize: $VSize")
+        Log.d("BluZ-BT", "Type: $spType HSize: $HSize VSize: $VSize, Res: $ResolutionSpectr")
         //Log.d("BluZ-BT", "Draw specter.")
         var paintLin: Paint = Paint()
         var paintLog: Paint = Paint()
@@ -123,7 +123,7 @@ class drawSpecter {
         var tmpLog: Double
 
         /* Поиск максимального значения для масштабирования */
-        for (idx in GO.rejectChann..ResolutionSpectr - 1) {
+        for (idx in GO.rejectChann .. ResolutionSpectr - 1) {
             if (maxYlin < tmpSpecterData[idx]) {
                 maxYlin = tmpSpecterData[idx]
             }
@@ -138,7 +138,7 @@ class drawSpecter {
         koefLog = VSize / maxYlog
         var Ylin: Float
         var Ylog: Float
-        for (idx in 0..ResolutionSpectr - 1) {
+        for (idx in 0 until ResolutionSpectr) {
             Ylin = (VSize - tmpSpecterData[idx] * koefLin).toFloat()
             if (tmpSpecterData[idx] != 0.0) {
                 Ylog = (VSize - ln(tmpSpecterData[idx]) * koefLog).toFloat()
