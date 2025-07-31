@@ -241,10 +241,15 @@ class BluetoothInterface(tv: TextView) {
                         //finish()
                     }
                     if (!gatt.requestMtu(MAX_MTU)) {  // Изменяем MTU
-                        Log.i("BluZ-BT", "MTU set failed.")
+                        Log.e("BluZ-BT", "MTU set failed.")
                         //finish()
                     } else {
                         GO.initBT = true
+                    }
+                    if( !gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)) {
+                        Log.e("BluZ-BT", "Hi priority set failed.")
+                    } else {
+                        Log.i("BluZ-BT", "Hi priority set Ok.")
                     }
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {

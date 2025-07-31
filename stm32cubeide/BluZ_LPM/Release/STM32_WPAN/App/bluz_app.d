@@ -102,7 +102,8 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
  ../Middlewares/ST/STM32_WPAN/ble/svc/Inc/svc_ctl.h \
  ../Middlewares/ST/STM32_WPAN/ble/svc/Inc/uuid.h \
  ../STM32_WPAN/App/bluz_app.h ../STM32_WPAN/App/bluz.h \
- ../Core/Inc/stm32_rtos.h
+ ../Core/Inc/stm32_rtos.h \
+ ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_raw_api.h
 ../Core/Inc/main.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h:
 ../Core/Inc/stm32wbaxx_hal_conf.h:
@@ -223,3 +224,4 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
 ../STM32_WPAN/App/bluz_app.h:
 ../STM32_WPAN/App/bluz.h:
 ../Core/Inc/stm32_rtos.h:
+../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_raw_api.h:
