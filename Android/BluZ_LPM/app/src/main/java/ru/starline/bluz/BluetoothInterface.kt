@@ -229,10 +229,10 @@ class BluetoothInterface(tv: TextView) {
                     MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                         withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
                             tv.setBackgroundColor(GO.mainContext.getColor(R.color.Yellow))
-                            if (GO.btnSpecterSSisInit) {
+                            //if (GO.btnSpecterSSisInit) {
                                 //GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
                                 //GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
-                            }
+                            //}
                         }
                     }
                     Log.i("BluZ-BT", "Gatt connect success.")
@@ -246,6 +246,7 @@ class BluetoothInterface(tv: TextView) {
                     } else {
                         GO.initBT = true
                     }
+                    /* Ускоряем обмен данными */
                     if( !gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)) {
                         Log.e("BluZ-BT", "Hi priority set failed.")
                     } else {
