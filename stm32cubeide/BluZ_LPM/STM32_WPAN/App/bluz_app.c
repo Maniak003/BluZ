@@ -33,6 +33,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stm32_lpm.h>
+#include <ble_raw_api.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -124,7 +125,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 
     case BLUZ_RX_NOTIFY_DISABLED_EVT:
       /* USER CODE BEGIN Service1Char1_NOTIFY_DISABLED_EVT */
-
+    	connectFlag = false;
       /* USER CODE END Service1Char1_NOTIFY_DISABLED_EVT */
       break;
 
@@ -467,6 +468,17 @@ void BLUZ_APP_EvtRx(BLUZ_APP_ConnHandleNotEvt_t *p_Notification)
     case BLUZ_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
       	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+      	//uint16_t connection_handle = p_Notification->ConnectionHandle;
+      	//hci_le_connection_update_cp0 cp;
+      	//cp.Connection_Handle = connection_handle;
+      	//cp.Conn_Interval_Min = 6;   // 7.5 ms (6 * 1.25)
+      	//cp.Conn_Interval_Max = 6;   // 7.5 ms
+      	//cp.Conn_Latency = 0;        // No latency
+      	//cp.Supervision_Timeout = 400; // 4 seconds
+      	//hci_le_set_phy(p_Notification->ConnectionHandle, 0, HCI_TX_PHYS_LE_1M_PREF, HCI_RX_PHYS_LE_1M_PREF, 0);
+      	hci_le_set_phy(p_Notification->ConnectionHandle, 0, HCI_TX_PHYS_LE_2M_PREF, HCI_RX_PHYS_LE_2M_PREF, 0);
+      	//aci_hci_send_cmd(&cp, HCI_LE_CONNECTION_UPDATE, sizeof(cp));
+
       	//SystemClock_Config();
       	//PeriphCommonClock_Config();
     	//MX_GPIO_Init();
@@ -474,7 +486,7 @@ void BLUZ_APP_EvtRx(BLUZ_APP_ConnHandleNotEvt_t *p_Notification)
 		//MX_LPTIM1_Init();
 		//MX_LPTIM2_Init();
 		//MX_TIM17_Init();
-    	connectFlag = true;
+    	//connectFlag = true;
     	//HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
       /* USER CODE END Service1_APP_CONN_HANDLE_EVT */
       break;
