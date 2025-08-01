@@ -126,7 +126,7 @@ class BluetoothInterface(tv: TextView) {
     @SuppressLint("MissingPermission")
     fun startScan(textMAC: EditText/*, startBTN: Button*/) {
         val scanFilter: ScanFilter = ScanFilter.Builder().setDeviceName(GO.propCfgBLEDeviceName).build()
-        val scanSetting: ScanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
+        val scanSetting: ScanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
         val filterList = ArrayList<ScanFilter>()
         filterList.add(scanFilter)
         //GO.adapter.fragment.let {

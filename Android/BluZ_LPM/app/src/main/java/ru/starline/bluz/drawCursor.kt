@@ -94,7 +94,7 @@ class drawCursor {
             if (curChan > 4095) {
                 curChan = 4095
             }
-            when (GO.spectrResolution) {
+            when (GO.specterType) {
                 0 -> {  // 1024
                     cfA = GO.propCoef1024A
                     cfB = GO.propCoef1024B

@@ -109,7 +109,7 @@ class globalObj {
     public lateinit var txtIsotopInfo: TextView         // Текст для вывода данных об изотопе
     public var configDataReady: Boolean = false         // Флаг готовности параметров из прибора
     public var propButtonInit: Boolean = false          // Флаг активности изменения состояния переключателей
-    public var bluetoothRunning: Boolean = false            // Флаг активности таймера
+    public var bluetoothRunning: Boolean = false        // Флаг активности таймера
     //private var saveStat1: String = ""
     //private var saveStat2: String = ""
     //private var saveStat3: String = ""
@@ -177,6 +177,7 @@ class globalObj {
     public var specterType: Int = 0                 // Разрешение спектра полученное из прибора
     public var specterGraphType: Int = 0            // Тип отображаемого спектра 0 - Линия, 1 - Гистограмма
     public var spectrResolution: Int = 0            // Разрешение спектра из настроек
+    public var needCalibrate: Boolean = false       // Флаг для инициализации закладки настроек под текущее разрешение прибора
     public var sendCS: UShort = 0u
     public var PCounter: UInt = 0u                  // Всего принято частиц
     public var cps: Float = 0.0f                    // Среднее cps

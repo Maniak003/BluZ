@@ -228,7 +228,8 @@ class NumberFragment : Fragment() {
                 btnConfirmCalibrate = view.findViewById(R.id.buttonConfirmCalibrate)
                 btnConfirmCalibrate.setOnClickListener {
                     if (btnConfirmCalibrate.text == "V") {
-                        /* Отключаем показ статистики */
+                        GO.needCalibrate = true
+                        /* Отключаем показ статистики для перехода в настройки */
                         GO.txtStat1.visibility = View.INVISIBLE
                         GO.txtStat2.visibility = View.INVISIBLE
                         GO.txtStat3.visibility = View.INVISIBLE
@@ -241,6 +242,7 @@ class NumberFragment : Fragment() {
                     btnConfirmCalibrate.text = "X"
                     btnCalibrate.text = "1"
                 }
+                /* Обработка кнопки ввода данных для калибровки */
                 btnCalibrate = view.findViewById(R.id.buttonCalibrate)
                 btnCalibrate.setOnClickListener {
                     btnConfirmCalibrate.text = "X"
@@ -261,7 +263,7 @@ class NumberFragment : Fragment() {
                                     btnConfirmCalibrate.text = "V"
                                     btnCalibrate.text = "1"
                                     matrx.sysEq()
-                                    when (GO.spectrResolution) {
+                                    when (GO.specterType) {
                                         0 -> {  // 1024
                                             GO.propCoef1024A = matrx.cA
                                             GO.propCoef1024B = matrx.cB
@@ -490,13 +492,16 @@ class NumberFragment : Fragment() {
                     override fun afterTextChanged(s: Editable?) {
                         if(noChange) {
                             if (GO.editPolinomA.text.isNotEmpty()) {
-                                if (GO.rbResolution1024.isChecked) {
-                                    GO.propCoef1024A = GO.editPolinomA.text.toString().toFloat()
-                                } else if (GO.rbResolution2048.isChecked) {
-                                    GO.propCoef2048A = GO.editPolinomA.text.toString().toFloat()
-                                } else if (GO.rbResolution4096.isChecked) {
-                                    GO.propCoef4096A = GO.editPolinomA.text.toString().toFloat()
-                                }
+                                try {
+                                    if (GO.rbResolution1024.isChecked) {
+                                        GO.propCoef1024A =
+                                            GO.editPolinomA.text.toString().toFloat()
+                                    } else if (GO.rbResolution2048.isChecked) {
+                                        GO.propCoef2048A = GO.editPolinomA.text.toString().toFloat()
+                                    } else if (GO.rbResolution4096.isChecked) {
+                                        GO.propCoef4096A = GO.editPolinomA.text.toString().toFloat()
+                                    }
+                                } catch (e: NumberFormatException) {}
                             }
                         }
                     }
@@ -509,6 +514,7 @@ class NumberFragment : Fragment() {
                     override fun afterTextChanged(s: Editable?) {
                         if(noChange) {
                             if (GO.editPolinomB.text.isNotEmpty()) {
+                                try {
                                 if (GO.rbResolution1024.isChecked) {
                                     GO.propCoef1024B = GO.editPolinomB.text.toString().toFloat()
                                 } else if (GO.rbResolution2048.isChecked) {
@@ -516,6 +522,7 @@ class NumberFragment : Fragment() {
                                 } else if (GO.rbResolution4096.isChecked) {
                                     GO.propCoef4096B = GO.editPolinomB.text.toString().toFloat()
                                 }
+                                } catch (e: NumberFormatException) {}
                             }
                         }
                     }
@@ -528,6 +535,7 @@ class NumberFragment : Fragment() {
                     override fun afterTextChanged(s: Editable?) {
                         if(noChange) {
                             if (GO.editPolinomC.text.isNotEmpty()) {
+                                try {
                                 if (GO.rbResolution1024.isChecked) {
                                     GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
                                 } else if (GO.rbResolution2048.isChecked) {
@@ -535,6 +543,7 @@ class NumberFragment : Fragment() {
                                 } else if (GO.rbResolution4096.isChecked) {
                                     GO.propCoef4096C = GO.editPolinomC.text.toString().toFloat()
                                 }
+                                } catch (e: NumberFormatException) {}
                             }
                         }
                     }
