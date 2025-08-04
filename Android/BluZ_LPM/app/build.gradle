@@ -20,9 +20,9 @@ android {
     defaultConfig {
         applicationId "ru.starline.bluz"
         minSdk 27
-        targetSdk 35
-        versionCode 8
-        versionName "1.8"
+        targetSdk 36
+        versionCode 9
+        versionName "1.9"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,6 +42,8 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
+    buildToolsVersion '36.0.0'
+    ndkVersion '29.0.13846066 rc3'
     //buildToolsVersion '35.0.0 rc2'
 }
 
