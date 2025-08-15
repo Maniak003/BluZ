@@ -1,3 +1,0 @@
-../STM32_WPAN/App/bluz.c:125:30:BLUZ_EventHandler	32	static
-../STM32_WPAN/App/bluz.c:347:6:BLUZ_Init	72	static
-../STM32_WPAN/App/bluz.c:466:12:BLUZ_UpdateValue	16	static

@@ -1,3 +1,0 @@
-../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c:107:13:LL_GPIO_DeInit	5
-../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c:152:13:LL_GPIO_Init	6
-../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c:225:6:LL_GPIO_StructInit	1

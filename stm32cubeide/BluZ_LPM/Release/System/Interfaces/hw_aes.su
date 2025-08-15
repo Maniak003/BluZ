@@ -1,7 +1,0 @@
-../System/Interfaces/hw_aes.c:46:5:HW_AES_Enable	8	static,ignoring_inline_asm
-../System/Interfaces/hw_aes.c:70:6:HW_AES_SetKey	32	static
-../System/Interfaces/hw_aes.c:135:6:HW_AES_Crypt	0	static
-../System/Interfaces/hw_aes.c:159:6:HW_AES_Disable	8	static,ignoring_inline_asm
-../System/Interfaces/hw_aes.c:181:6:HW_AES_InitCcm	40	static
-../System/Interfaces/hw_aes.c:238:6:HW_AES_EndCcm	24	static
-../System/Interfaces/hw_aes.c:263:6:HW_AES_SetLast	0	static
