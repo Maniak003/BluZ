@@ -22,6 +22,6 @@
 ../Core/Src/main.c:1299:10:ADC_Switch_Channel	1
 ../Core/Src/main.c:1313:6:TVMeasure	2
 ../Core/Src/main.c:1204:6:updateMesurment	18
-../Core/Src/main.c:228:5:main	16
+../Core/Src/main.c:228:5:main	17
 ../Core/Src/main.c:1402:6:HAL_GPIO_EXTI_Rising_Callback	5
 ../Core/Src/main.c:1429:6:Error_Handler	1
