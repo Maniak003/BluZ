@@ -79,21 +79,41 @@ extern "C" {
 #define CHANNELS_1024	1024
 #define CHANNELS_2048	2048
 #define CHANNELS_4096	4096
-#define MAX_RESOLUTION 4096
+#define MAX_RESOLUTION 	4096
 #define CAPCHAN 20											/* Количество разрядов в канале */
 #define LIMITCHAN (uint32_t) (1 << CAPCHAN)					/* Максимальное значение канала */
 #define OFFSET_CHAN		1U									/* Смещение канала для усредненния */
+#define DEFAULTAQR		100									/* Точность дозиметра по умолчанию */
+
+typedef enum spectrResolution {
+	resolution1024,
+	resolution2048,
+	resolution4096
+} spectrResolution_t;
+
+typedef enum sendDataTypes {
+	onlyDozimeter,
+	dozimeterSpecter1024,
+	dozimeterSpecter2048,
+	dozimeterSpecter4096,
+	dozimeterHistory1024,
+	dozimeterHistory2048,
+	dozimeterHistory4096
+} sendDataTypes_t;
 
 extern uint16_t MTUSizeValue;
-extern uint8_t resolutionSpecter, dataType;
+extern spectrResolution_t resolutionSpecter;
+extern sendDataTypes_t dataType;
 extern uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET];
 extern uint16_t currTemperature, currVoltage;
 extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION], spectrometerTime, spectrometerPulse;
+extern uint32_t historySpecterBuffer[MAX_RESOLUTION];
 extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, currentTime, pulseCounterSecond, CPS, intervalNow, TVLevel[3];
 extern bool SoundEnable, VibroEnable, LEDEnable, LEDflag;
 extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
 extern bool flagTemperatureMess, autoStartSpecrometr;
+extern bool history_active;
 extern uint16_t HVoltage, comparatorLevel;
 extern LPTIM_HandleTypeDef hlptim2;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -102,6 +122,22 @@ extern int indexDozimetrBufer;
 extern ADC_HandleTypeDef hadc4;
 extern uint64_t PL[18];
 extern uint32_t tmpLevel;
+
+typedef enum logTypes {
+	nonLog,
+	powerOnLog,
+	level1Log,
+	level2Log,
+	level3Log,
+	level0Log,
+	resDozimeterLog,
+	resSpectrometerLog,
+	writeFlashLog,
+	startSpectrometerLog,
+	stopSpectrometerLog,
+	clearLog,
+	changeResolutionLog
+} logTypes_t;
 
 struct LG {
 	uint32_t time;

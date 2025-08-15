@@ -66,7 +66,7 @@ uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
  *	3 sigma <10% -  900
  *	4 sigma <10% - 1600
  */
-uint16_t dozimetrAquracy = 100, edgeCounter = 0;
+uint16_t dozimetrAquracy = DEFAULTAQR, edgeCounter = 0;
 uint32_t aquracyInterval;
 #ifdef MEDIAN
 uint32_t MA[3];
@@ -78,7 +78,8 @@ char uartBuffer[400] = {0,};
 struct LG logBuffer[LOG_BUFER_SIZE];
 /* Буфер для работы с flash */
 uint64_t PL[18] = {0,};
-uint8_t resolutionSpecter = 0, repetionCount = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
+spectrResolution_t resolutionSpecter = resolution1024;
+uint8_t repetionCount = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
 /*
  * dataType
  * 0 - Дозиметр и логи,
@@ -89,10 +90,11 @@ uint8_t resolutionSpecter = 0, repetionCount = 0; /* 0 - 1024, 1 - 2048, 2 - 409
  * 5 - Дозиметр, логи и история 2048
  * 6 - Дозиметр, логи и история 4096
  */
-uint8_t dataType = 0;
+sendDataTypes_t dataType = onlyDozimeter;
 uint8_t tmpBTBuffer[DATA_NOTIFICATION_MAX_PACKET_SIZE] = {0,};
 uint16_t currTemperature = 0, currVoltage = 0;
 uint32_t tmpSpecterBuffer[MAX_RESOLUTION];
+uint32_t historySpecterBuffer[MAX_RESOLUTION];
 
 /* Настройки прибора */
 uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET] = {0,};
@@ -101,6 +103,7 @@ bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активн
 bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
 bool startSpectrometr = false;
 bool vibroFlag = false, soundFlag = false;
+bool history_active = false; // Флаг набора истории.
 
 static const double KOEFCHAN = 65535.0 / CAPCHAN;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
 
@@ -138,7 +141,7 @@ static void SystemPower_Config(void);
 /* USER CODE BEGIN PFP */
 void updateMesurment(void);
 void updateMesurmentCb(void *arg);
-void tempVoltMeasure(void);
+void TVMeasure(void);
 void tempVoltADCInit(void);
 void vibroActivate(void);
 void updateVibroCb(void *arg);
@@ -170,7 +173,9 @@ void ledActivate(void);
  *	11 - Очистка лога
  *	12 - Сброс спектрометра при переключении разрешения
  */
-void logUpdate(uint8_t act) {
+
+
+void logUpdate(logTypes_t act) {
 	logBuffer[logIndex].time = currentTime;
 	logBuffer[logIndex++].type = act;
 	if (logIndex >= LOG_BUFER_SIZE) {		// Переполнение лога
@@ -251,7 +256,7 @@ int main(void)
   SystemPower_Config();
 
   /* USER CODE BEGIN SysInit */
-  dataType = 0;
+  dataType = onlyDozimeter;
 
   /* USER CODE END SysInit */
 
@@ -278,22 +283,22 @@ int main(void)
   if (readFlash() == HAL_OK) {}
   if (autoStartSpecrometr) {
 	  switch (resolutionSpecter) {
-	  case 0:
-		  dataType = 1;
+	  case resolution1024:
+		  dataType = dozimeterSpecter1024;
 		  break;
-	  case 1:
-		  dataType = 2;
+	  case resolution2048:
+		  dataType = dozimeterSpecter2048;
 		  break;
-	  case 2:
-		  dataType = 3;
+	  case resolution4096:
+		  dataType = dozimeterSpecter2048;
 		  break;
 	  default:
-		  dataType = 1;
-		  resolutionSpecter = 0;
+		  dataType = dozimeterSpecter1024;
+		  resolutionSpecter = resolution1024;
 		  break;
 	  }
   } else {
-	  dataType = 0;
+	  dataType = onlyDozimeter;
   }
   /* Пересчет уровней в uint32_t для ускорения обработки */
   calcPulseLevel();
@@ -311,10 +316,11 @@ int main(void)
   //setLevelOnPort(CHANNEL_B, 200);
 
   /* Запуск набора спектра при активном автостарте */
-  if (dataType > 0) {
+  if (dataType > onlyDozimeter) {
 	  //UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
 	  //if (autoStartSpecrometr) {
-		  HAL_ADC_Start_DMA(&hadc4, TVLevel, 3);
+		  //HAL_ADC_Start_DMA(&hadc4, TVLevel, 1);
+		  logUpdate(startSpectrometerLog);
 		  //hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
 		  /* Включим ADC для одного канала */
 		  //MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
@@ -326,7 +332,7 @@ int main(void)
   pulseCounter = 0;
   pulseCounterSecond = 0;
   currentTime = 0;
-  logUpdate(1);	// Добавляем запись в логе о начале работы.
+  logUpdate(powerOnLog);	// Добавляем запись в логе о начале работы.
 
   /*
    * Значения заголовка и формат данных для передачи
@@ -412,7 +418,7 @@ int main(void)
   /* Включим Vibro, Sound */
   NotifyAct(SOUND_NOTIFY /*| VIBRO_NOTIFY*/, 1);
 
-  tempVoltMeasure();
+  TVMeasure();
 
   while (1)
   {
@@ -436,28 +442,43 @@ int main(void)
 	  int kkk = 0;
 	  uint16_t nm_channel = 0;
 	  switch (dataType) {
-  	  case 0:										/* Передача данных дозиметра и лога */
+  	  case onlyDozimeter:										/* Передача данных дозиметра и лога */
   		  countMTU = NUMBER_MTU_DOZR;
   		  idxCS =  NUMBER_MTU_DOZR * 244 / 2 - 1;
   		  nm_channel = 0;
   		  break;
-  	  case 1:
+  	  case dozimeterSpecter1024:
   		  countMTU = NUMBER_MTU_1024;				/* Передача данных дозиметра, лога и спектра 1024 */
   		  idxCS = NUMBER_MTU_1024 * 244 / 2 - 1;
   		  nm_channel = CHANNELS_1024;
   		  break;
-  	  case 2:
+  	  case dozimeterSpecter2048:
   		  countMTU = NUMBER_MTU_2048;				/* Передача данных дозиметра, лога и спектра 2048 */
   		  idxCS = NUMBER_MTU_2048 * 244 / 2 - 1;
   		  nm_channel = CHANNELS_2048;
   		  break;
-  	  case 3:
+  	  case dozimeterSpecter4096:
+  		  countMTU = NUMBER_MTU_4096;				/* Передача данных дозиметра, лога и спектра 4096 */
+  		  idxCS = NUMBER_MTU_4096 * 244 / 2 - 1;
+  		  nm_channel = CHANNELS_4096;
+  		  break;
+  	  case dozimeterHistory1024:
+  		  countMTU = NUMBER_MTU_1024;				/* Передача данных дозиметра, лога и спектра 1024 */
+  		  idxCS = NUMBER_MTU_1024 * 244 / 2 - 1;
+  		  nm_channel = CHANNELS_1024;
+  		  break;
+  	  case dozimeterHistory2048:
+  		  countMTU = NUMBER_MTU_2048;				/* Передача данных дозиметра, лога и спектра 2048 */
+  		  idxCS = NUMBER_MTU_2048 * 244 / 2 - 1;
+  		  nm_channel = CHANNELS_2048;
+  		  break;
+  	  case dozimeterHistory4096:
   		  countMTU = NUMBER_MTU_4096;				/* Передача данных дозиметра, лога и спектра 4096 */
   		  idxCS = NUMBER_MTU_4096 * 244 / 2 - 1;
   		  nm_channel = CHANNELS_4096;
   		  break;
 	  }
-	  if (dataType > 0) {							/* Нужно передавать спектр ? */
+	  if (dataType > onlyDozimeter) {							/* Нужно передавать спектр ? */
 		  /* Test */
 
 		  //for (int jjj = 0; jjj < nm_channel; jjj++) {
@@ -776,7 +797,7 @@ void MX_ADC4_Init(void)
   ADC_ChannelConfTypeDef sConfig = {0};
 
   /* USER CODE BEGIN ADC4_Init 1 */
-  if (dataType == 0) {
+  if (dataType == onlyDozimeter) {
 	  /* ACD конфигурация для дозиметра */
   /* USER CODE END ADC4_Init 1 */
 
@@ -1193,7 +1214,7 @@ void updateMesurment(void) {
 	  currentTimeAvg = currentTime++;
 	  pulseCounterAvg = pulseCounter;
 	  CPS = pulseCounterSecond;
-	  if (dataType > 0) {
+	  if (dataType > onlyDozimeter) {
 		  spectrometerTime++;
 	  }
 	  /* Массив для гистограммы уровней */
@@ -1244,8 +1265,13 @@ void updateMesurment(void) {
 		}
 	}
 	/* Тревога если превышение. */
-	if ((tmp_level > 0) && (tmpNotify > 0)) {
-		NotifyAct(tmpNotify, tmp_level);
+	if (tmp_level > 0) {
+		history_active = true;
+		if (tmpNotify > 0) {
+			NotifyAct(tmpNotify, tmp_level);
+		}
+	} else {
+		history_active = false;
 	}
 
 	if (currentLevel != tmp_level) {
@@ -1258,15 +1284,15 @@ void updateMesurment(void) {
 		 *	5 - нормальный уровень
 		 */
 		if (tmp_level == 0) {
-			logUpdate((uint8_t) 5);					// Нормальный уровень
+			logUpdate(level0Log);					// Нормальный уровень
 		} else {
-			logUpdate((uint8_t) tmp_level + 1);		// Превышение уровня
+			logUpdate((logTypes_t) tmp_level + 1);		// Превышение уровня
 		}
 	}
 	/* Измерение напряжения батареи и температуры МК */
     if (interval4 <= intervalNow) {
     	interval4 = intervalNow + INTERVAL4;
-    	tempVoltMeasure();
+    	TVMeasure();
     }
 }
 
@@ -1284,8 +1310,8 @@ uint32_t ADC_Switch_Channel(uint32_t channel) {
 	return tmp_level;
 }
 
-void tempVoltMeasure(void) {
-	if (dataType == 0 ) {
+void TVMeasure(void) {
+	if (dataType == onlyDozimeter ) {
 		//UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
 		MX_ADC4_Init();
 		currTemperature = ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR);	// Канал для измерения температуры
@@ -1293,10 +1319,10 @@ void tempVoltMeasure(void) {
 		HAL_ADC_DeInit(&hadc4);											// Для снижения потребления
 	} else {
 		/* Измерение температуры и напряжения в режиме спектрометра */
-		uint8_t tmp_data_type = dataType;								// Сохраним текущий режим.
+		sendDataTypes_t tmp_data_type = dataType;								// Сохраним текущий режим.
 		HAL_ADC_Stop_DMA(&hadc4);										// Отключим набор спектра
 		HAL_ADC_DeInit(&hadc4);
-		dataType = 0;
+		dataType = onlyDozimeter;
 		MX_ADC4_Init();													// Инициализируем ADC в режиме для программного запуска.
 		currTemperature = ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR); 	// Канал для измерения температуры
 		currVoltage = ADC_Switch_Channel(ADC_CHANNEL_7);				// Канал для измерения напряжения.

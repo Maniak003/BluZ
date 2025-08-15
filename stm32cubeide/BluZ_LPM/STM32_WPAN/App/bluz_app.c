@@ -163,6 +163,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     *                   2 - Запуск/Останов спектрометра
                     *                   3 - Очистка буфера дозиметра
                     *                   4 - Очистка лога
+                    *                   5 - Запрос на передачу спектра истории превышений
                     *
                     * 4,5,6,7       - Первый порог в uR
                     * 8,9,10,11     - Второй порог в uR
@@ -293,30 +294,30 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						comparatorLevel = p_Notification->DataTransfered.p_Payload[35] | (p_Notification->DataTransfered.p_Payload[36] << 8);
 
 						/* Разрешение спектра. 0 - 1024, 1 - 2048, 2 - 4096 */
-						if (resolutionSpecter != p_Notification->DataTransfered.p_Payload[37]) {
-							resolutionSpecter = p_Notification->DataTransfered.p_Payload[37];
+						if (resolutionSpecter != (spectrResolution_t) p_Notification->DataTransfered.p_Payload[37]) {
+							resolutionSpecter = (spectrResolution_t) p_Notification->DataTransfered.p_Payload[37];
 							/* Если разрешение изменяется - нужно очистить спектр */
 							for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
 								tmpSpecterBuffer[iii] = 0;
 							}
 							spectrometerPulse = 0;
 							spectrometerTime = 0;
-							logUpdate(7);
+							logUpdate(resSpectrometerLog);
 							/* Если включен спектрометр, нужно установить тип передачи */
-							if (dataType > 0) {
+							if (dataType > onlyDozimeter) {
 								switch (resolutionSpecter) {
-								case 0:
-									dataType = 1;
+								case resolution1024:
+									dataType = dozimeterSpecter1024;
 									break;
-								case 1:
-									dataType = 2;
+								case resolution2048:
+									dataType = dozimeterSpecter2048;
 									break;
-								case 2:
-									dataType = 3;
+								case resolution4096:
+									dataType = dozimeterSpecter4096;
 									break;
 								default:
-									dataType = 1;
-									resolutionSpecter = 0;
+									dataType = dozimeterSpecter1024;
+									resolutionSpecter = resolution1024;
 									break;
 								}
 							}
@@ -348,7 +349,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						 */
 						writeFlash();
 						calcPulseLevel();	 // Обновление порогов
-						logUpdate(8);
+						logUpdate(writeFlashLog);
 
 					/* Очистка буфера спектра */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 1) {		// Очистка буфера спектрометра
@@ -357,38 +358,38 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						}
 						spectrometerPulse = 0;
 						spectrometerTime = 0;
-						logUpdate(7);
+						logUpdate(writeFlashLog);
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 2) {		// Запуск/останов спектрометра
 						HAL_ADC_Stop_DMA(&hadc4);
 						HAL_ADC_DeInit(&hadc4);
 						//HAL_DMA_DeInit(&handle_GPDMA1_Channel0);
-						if (dataType == 0) {											// Переключение в режим спектрометра
+						if (dataType == onlyDozimeter) {											// Переключение в режим спектрометра
 							switch (resolutionSpecter) {
-							case 0:
-								dataType = 1;
+							case resolution1024:
+								dataType = dozimeterSpecter1024;
 								break;
-							case 1:
-								dataType = 2;
+							case resolution2048:
+								dataType = dozimeterSpecter2048;
 								break;
-							case 2:
-								dataType = 3;
+							case resolution4096:
+								dataType = dozimeterSpecter4096;
 								break;
 							default:
-								dataType = 1;
-								resolutionSpecter = 0;
+								dataType = dozimeterSpecter1024;
+								resolutionSpecter = resolution1024;
 								break;
 							}
 							MX_ADC4_Init();
 							//MX_GPDMA1_Init();
 							HAL_ADC_Start_DMA(&hadc4, TVLevel, 1);
 							//hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;
-							logUpdate(9);
+							logUpdate(startSpectrometerLog);
 							/* Включим ADC для одного канала */
 							//MODIFY_REG(hadc4.Instance->CHSELR, ADC_CHSELR_SQ_ALL, ((ADC_CHSELR_SQ2 | ADC_CHSELR_SQ3 | ADC_CHSELR_SQ4 | ADC_CHSELR_SQ5 | ADC_CHSELR_SQ6 | ADC_CHSELR_SQ7 | ADC_CHSELR_SQ8) << (((1UL - 1UL) * ADC_REGULAR_RANK_2) & 0x1FUL)) | (hadc4.ADCGroupRegularSequencerRanks));
 						} else {
-							dataType = 0;												// Переключение в режим дозиметра
+							dataType = onlyDozimeter;												// Переключение в режим дозиметра
 							MX_ADC4_Init();
-							logUpdate(10);
+							logUpdate(stopSpectrometerLog);
 						}
 					/* Сброс дозиметра */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 3) {
@@ -398,14 +399,17 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						for (int ii = 0; ii < SIZE_DOZIMETR_BUFER; ii++) {
 							dozimetrBuffer[ii] = 0;
 						}
-						logUpdate(6);
+						logUpdate(resDozimeterLog);
 						/* Очистка лога */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 4) {
 						for (int ii = 0; ii < LOG_BUFER_SIZE; ii++) {
 							logBuffer[ii].time = 0;
 							logBuffer[ii].type = 0;
 						}
-						logUpdate(11);
+						logUpdate(clearLog);
+						/* Запрос на передачу спектра истории */
+					} else if (p_Notification->DataTransfered.p_Payload[3] == 5) {
+
 					}
 				} else {
 				}

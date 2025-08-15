@@ -1,6 +1,6 @@
 ../STM32_WPAN/App/bluz_app.c:105:6:BLUZ_Notification	24	static
-../STM32_WPAN/App/bluz_app.c:457:6:BLUZ_APP_EvtRx	24	static
-../STM32_WPAN/App/bluz_app.c:514:6:BLUZ_APP_Init	0	static
-../STM32_WPAN/App/bluz_app.c:534:13:BLUZ_Rx_SendNotification	0	static
-../STM32_WPAN/App/bluz_app.c:558:13:BLUZ_Tx_SendNotification	0	static
-../STM32_WPAN/App/bluz_app.c:584:6:sendData	8	static
+../STM32_WPAN/App/bluz_app.c:461:6:BLUZ_APP_EvtRx	24	static
+../STM32_WPAN/App/bluz_app.c:518:6:BLUZ_APP_Init	0	static
+../STM32_WPAN/App/bluz_app.c:538:13:BLUZ_Rx_SendNotification	0	static
+../STM32_WPAN/App/bluz_app.c:562:13:BLUZ_Tx_SendNotification	0	static
+../STM32_WPAN/App/bluz_app.c:588:6:sendData	8	static
