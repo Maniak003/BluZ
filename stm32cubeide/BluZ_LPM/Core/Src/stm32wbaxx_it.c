@@ -284,7 +284,7 @@ void GPDMA1_Channel0_IRQHandler(void)
   /* USER CODE END GPDMA1_Channel0_IRQn 0 */
   HAL_DMA_IRQHandler(&handle_GPDMA1_Channel0);
   /* USER CODE BEGIN GPDMA1_Channel0_IRQn 1 */
-	if (dataType > 0) {
+	if (dataType > onlyDozimeter) {
 		spectrometerPulse++;
 		/*
 		* 0 - 1024 канала
@@ -293,17 +293,17 @@ void GPDMA1_Channel0_IRQHandler(void)
 		*/
 		switch (resolutionSpecter) {
 		/* 1024 */
-		case 0:
+		case resolution1024:
 			tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 2) & 0x3FF;
 			/* Тест */
 			//tmpSpecterBuffer[500]++;
 			break;
 		/* 2048 */
-		case 1:
+		case resolution2048:
 			tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 1) & 0x7FF;
 			break;
 		/* 4096 */
-		case 2:
+		case resolution4096:
 			tmpLevel = (TVLevel[0] + OFFSET_CHAN) & 0xFFF;
 			break;
 		default:
@@ -312,6 +312,12 @@ void GPDMA1_Channel0_IRQHandler(void)
 		}
 		if (tmpSpecterBuffer[tmpLevel] < LIMITCHAN) {
 			tmpSpecterBuffer[tmpLevel]++;
+		}
+		/* Накопление спектра при превышении уровней */
+		if (history_active) {
+			if (historySpecterBuffer[tmpLevel] < LIMITCHAN) {
+				historySpecterBuffer[tmpLevel]++;
+			}
 		}
 	}
 	//HAL_ADC_Stop_DMA(&hadc4);
