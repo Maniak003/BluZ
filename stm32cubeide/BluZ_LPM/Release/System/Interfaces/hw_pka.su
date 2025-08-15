@@ -1,8 +1,0 @@
-../System/Interfaces/hw_pka.c:38:5:HW_PKA_Enable	16	static,ignoring_inline_asm
-../System/Interfaces/hw_pka.c:82:6:HW_PKA_WriteSingleInput	0	static
-../System/Interfaces/hw_pka.c:91:6:HW_PKA_WriteOperand	12	static
-../System/Interfaces/hw_pka.c:109:6:HW_PKA_Start	0	static
-../System/Interfaces/hw_pka.c:121:5:HW_PKA_EndOfOperation	0	static
-../System/Interfaces/hw_pka.c:129:10:HW_PKA_ReadSingleOutput	0	static
-../System/Interfaces/hw_pka.c:138:6:HW_PKA_ReadResult	0	static
-../System/Interfaces/hw_pka.c:152:6:HW_PKA_Disable	0	static,ignoring_inline_asm

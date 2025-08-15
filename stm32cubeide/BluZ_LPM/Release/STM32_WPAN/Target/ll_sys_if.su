@@ -1,6 +1,0 @@
-../STM32_WPAN/Target/ll_sys_if.c:178:6:ll_sys_sleep_clock_source_selection	16	static
-../STM32_WPAN/Target/ll_sys_if.c:82:6:ll_sys_bg_process_init	0	static
-../STM32_WPAN/Target/ll_sys_if.c:93:6:ll_sys_schedule_bg_process	0	static
-../STM32_WPAN/Target/ll_sys_if.c:103:6:ll_sys_schedule_bg_process_isr	0	static
-../STM32_WPAN/Target/ll_sys_if.c:113:6:ll_sys_config_params	8	static
-../STM32_WPAN/Target/ll_sys_if.c:206:6:ll_sys_reset	8	static

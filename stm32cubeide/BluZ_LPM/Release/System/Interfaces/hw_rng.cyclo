@@ -1,9 +1,0 @@
-../System/Interfaces/hw_rng.c:26:13:RNG_KERNEL_CLK_ON	2
-../System/Interfaces/hw_rng.c:38:13:RNG_KERNEL_CLK_OFF	1
-../System/Interfaces/hw_rng.c:80:6:HW_RNG_EnableClock	2
-../System/Interfaces/hw_rng.c:100:6:HW_RNG_DisableClock	4
-../System/Interfaces/hw_rng.c:66:6:HW_RNG_Disable	1
-../System/Interfaces/hw_rng.c:155:12:HW_RNG_Run.constprop	10
-../System/Interfaces/hw_rng.c:240:6:HW_RNG_Start	3
-../System/Interfaces/hw_rng.c:260:6:HW_RNG_Get	3
-../System/Interfaces/hw_rng.c:290:5:HW_RNG_Process	6
