@@ -290,7 +290,7 @@ int main(void)
 		  dataType = dozimeterSpecter2048;
 		  break;
 	  case resolution4096:
-		  dataType = dozimeterSpecter2048;
+		  dataType = dozimeterSpecter4096;
 		  break;
 	  default:
 		  dataType = dozimeterSpecter1024;
