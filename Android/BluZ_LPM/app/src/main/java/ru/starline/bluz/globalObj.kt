@@ -73,16 +73,19 @@ class globalObj {
     public val propCfgSaveSpecterType: String = "saveSpecterType"
     public val acuricyPatern : String = "###0.#######"
     public val propAquracy : String = "AquracyDozimeter"
+    public val propBitsChan: String = "BitsOfChannel"
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var LEMAC: String = ""
     public lateinit var mainContext: Context
     public lateinit var drawSPECTER: drawSpecter
+    public lateinit var drawHISTORY: drawHistory
     public lateinit var drawDOZIMETER: drawDozimeter
     public lateinit var drawCURSOR: drawCursor
     public lateinit var drawLOG: drawLogs
     public lateinit var drawExamp: drawExmple
     public var drawObjectInit: Boolean = true
+    public var drawObjectInitHistory: Boolean = true
     public var drawDozObjectInit: Boolean = true
     public var exampleObjectInit: Boolean = true
     public var pagerFrame: Int = 1
@@ -147,7 +150,9 @@ class globalObj {
     lateinit var rbSpctTypeSPE: RadioButton
     lateinit var rbSpctType : RadioGroup
     lateinit var aqureEdit : EditText
+    lateinit var bitsChannelEdit: EditText
     var aqureValue: Int = 100
+    var bitsChannel:Int = 20
     /*
     *   Цвета для курсора
     */
@@ -276,6 +281,10 @@ class globalObj {
                            * 37, 38 - Коэффициент полинома A для 4096 каналов
                            * 39, 40 - Коэффициент полинома B для 4096 каналов
                            * 41, 42 - Коэффициент полинома C для 4096 каналов
+                           * 43, 44 - Время работы спектрометра в секундах
+                           * 45, 46 - Количество импульсов от спектрометра
+                           *    47  - Погрешность измерения дозиметра
+                           *  48(L) - Разрдность канала (младший байт)
                            * 49  - Конец заголовка
                            *
                            * 50  - Данные дозиметра
@@ -320,6 +329,7 @@ class globalObj {
     public var HWCoef4096B: Float = 0.0f
     public var HWCoef4096C: Float = 0.0f
     public var HWAqureValue: UShort = 0u
+    public var HWBitsChan: UByte = 0u
 
     /*
     *   Вывод статистики для дозиметра и спектрометра
@@ -532,6 +542,14 @@ class globalObj {
         GO.propComparator = GO.HWpropComparator
         GO.propAutoStartSpectrometr = GO.HWpropAutoStartSpectrometr
         GO.aqureValue = GO.HWAqureValue.toInt()
+        if (GO.HWBitsChan.toInt() < 16 || GO.HWBitsChan.toInt() > 32) {
+            GO.bitsChannel = 20
+        } else {
+            GO.bitsChannel = GO.HWBitsChan.toInt()
+        }
+
+        /* Текущее разрешение спектрометра */
+        GO.spectrResolution = GO.HWspectrResolution
     }
     /*
     *   Запись всех параметров в конфигурационный файл
@@ -581,6 +599,7 @@ class globalObj {
         GO.PP.setPropBoolean(propCfgSoundKvant, GO.propSoundKvant)
         GO.PP.setPropInt(propCfgSpectrGraphType, GO.specterGraphType)
         GO.PP.setPropInt(propAquracy, GO.aqureValue)    // Точность усреднения для дозиметра, количество импульсов.
+        GO.PP.setPropInt(propBitsChan, GO.bitsChannel)  // Количество  бит в канале
     }
 
     /*
@@ -657,6 +676,10 @@ class globalObj {
         */
         GO.saveSpecterType = GO.PP.getPropInt(propCfgSaveSpecterType)
         GO.aqureValue = GO.PP.getPropInt(propAquracy)
+        GO.bitsChannel = GO.PP.getPropInt(propBitsChan)
+        if (GO.bitsChannel < 16 || GO.bitsChannel > 32) {
+            GO.bitsChannel = 20
+        }
 
     }
 

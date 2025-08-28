@@ -168,6 +168,9 @@ class NumberFragment : Fragment() {
 
         /* Точность усреднения для дозиметра, количество импульсов */
         GO.aqureEdit.setText(GO.aqureValue.toString())
+
+        /* Количество бит в канале */
+        GO.bitsChannelEdit.setText(GO.bitsChannel.toString())
     }
 
     override fun onCreateView(
@@ -402,6 +405,13 @@ class NumberFragment : Fragment() {
             /*
             *   Обекты закладки история
             */
+                GO.drawHISTORY.imgView = view.findViewById(R.id.historyView)
+                /* Запрос данных истории из прибора */
+                val btnHistoryLoad: Button = view.findViewById(R.id.buttonLoadHistory)
+                btnHistoryLoad.setOnClickListener {
+                    GO.BTT.sendCommand(5u)      // Запрос исторического спектра
+                    Toast.makeText(GO.mainContext, R.string.historyRequest, Toast.LENGTH_LONG).show()
+                }
                 /* Сохранение исторического спектра в файл */
                 val btnHistorySave: Button = view.findViewById(R.id.buttonHistorySave)
                 btnHistorySave.setOnClickListener {
@@ -482,6 +492,7 @@ class NumberFragment : Fragment() {
                 GO.rbSpctType = view.findViewById(R.id.rbSpctType)
                 GO.textMACADR = view.findViewById(R.id.textMACADDR)
                 GO.aqureEdit = view.findViewById(R.id.editAquracy)
+                GO.bitsChannelEdit = view.findViewById(R.id.editBitsChannel)
 
                 reloadConfigParameters()
 
@@ -631,6 +642,12 @@ class NumberFragment : Fragment() {
                     /* Точность усреднения для дозиметра, количество импульсов */
                     GO.aqureValue = GO.aqureEdit.text.toString().toInt()
 
+                    /* Количество бит в канале */
+                    GO.bitsChannel = GO.bitsChannelEdit.text.toString().toInt()
+                    if (GO.bitsChannel < 16 || GO.bitsChannel > 32) {
+                        GO.bitsChannel = 20
+                    }
+
                     Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())
 
                     GO.writeConfigParameters()      // Сохраненние конфигурации.
@@ -715,6 +732,7 @@ class NumberFragment : Fragment() {
                     * 55,56,57,58   - Коэффициент B полинома преобразования канала в энергию для 4096.
                     * 59,60,61,62   - Коэффициент C полинома преобразования канала в энергию для 4096.
                     * 63,64         - Точность усреднения дозиметра, количество импульсов.
+                    * 65            - Разрядность канала (16 - 31 бит)
                     *
                     * 242, 243      - Контрольная сумма
                     */
@@ -887,6 +905,9 @@ class NumberFragment : Fragment() {
                     /* Количество усредняемых импульсов для дозиметра */
                     GO.BTT.sendBuffer[63] = (GO.aqureEdit.text.toString().toUShort() and 255u).toUByte()
                     GO.BTT.sendBuffer[64] = ((GO.aqureEdit.text.toString().toInt() shr 8).toUShort() and 255u).toUByte()
+
+                    /* Разрадность канала */
+                    GO.BTT.sendBuffer[65] = GO.bitsChannelEdit.toString().toUByte()
 
                     /* Уровень высокого напряжения */
                     GO.BTT.sendBuffer[33] = (GO.propHVoltage and 255u).toUByte()

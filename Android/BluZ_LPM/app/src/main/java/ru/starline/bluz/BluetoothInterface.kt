@@ -401,6 +401,7 @@ class BluetoothInterface(tv: TextView) {
                                 GO.specterType = 0 // Определяет размер по горизонтали
                                 GO.drawSPECTER.ResolutionSpectr = 1024
                                 endOfData = data.size - 5
+                                GO.HWspectrResolution = 0
                             }
                             /* Данные дозиметра, лога и спектра 2048 */
                             2 -> {
@@ -408,12 +409,35 @@ class BluetoothInterface(tv: TextView) {
                                 GO.specterType = 1
                                 GO.drawSPECTER.ResolutionSpectr = 2048
                                 endOfData = data.size - 5
+                                GO.HWspectrResolution = 1
                             }
                             /* Данные дозиметра, лога и спектра 4096 */
                             3 -> {
                                 numberMTU = 40     // Количество пакетов (MTU) для передачи
                                 GO.specterType = 2
                                 GO.drawSPECTER.ResolutionSpectr = 4096
+                                endOfData = data.size - 5
+                                GO.HWspectrResolution = 2
+                            }
+                            /* Данные дозиметра, лога и истории 1024 */
+                            4 -> {
+                                numberMTU = 16     // Количество пакетов (MTU) для передачи
+                                GO.specterType = 0 // Определяет размер по горизонтали
+                                GO.drawHISTORY.ResolutionHistory = 1024
+                                endOfData = data.size - 5
+                            }
+                            /* Данные дозиметра, лога и истории 2048 */
+                            5 -> {
+                                numberMTU = 23     // Количество пакетов (MTU) для передачи
+                                GO.specterType = 1
+                                GO.drawHISTORY.ResolutionHistory = 2048
+                                endOfData = data.size - 5
+                            }
+                            /* Данные дозиметра, лога и истории 4096 */
+                            6 -> {
+                                numberMTU = 40     // Количество пакетов (MTU) для передачи
+                                GO.specterType = 2
+                                GO.drawHISTORY.ResolutionHistory = 4096
                                 endOfData = data.size - 5
                             }
                         }
@@ -479,6 +503,8 @@ class BluetoothInterface(tv: TextView) {
                            * 41, 42 - Коэффициент полинома C для 4096 каналов
                            * 43, 44 - Время работы спектрометра в секундах
                            * 45, 46 - Количество импульсов от спектрометра
+                           *    47  - Погрешность измерения дозиметра
+                           *  48(L) - Разрдность канала (младший байт)
                            * 49  - Конец заголовка
                            *
                            * 50  - Данные дозиметра
@@ -615,53 +641,85 @@ class BluetoothInterface(tv: TextView) {
                                     GO.HWCoef4096C = java.lang.Float.intBitsToFloat((GO.receiveData[82] + (GO.receiveData[83] * 256u)  + (GO.receiveData[84] * 65536u) + (GO.receiveData[85] * 16777216u)).toInt())
                                     /* Количество импульсов до усреднения для дозиметра */
                                     GO.HWAqureValue = (GO.receiveData[94] + (GO.receiveData[95] * 256u)).toUShort()
+                                    /* Количество бит в канале */
+                                    GO.HWBitsChan = GO.receiveData[96].toUByte()
+                                    if (GO.HWBitsChan < 16u || GO.HWBitsChan > 32u) {
+                                        GO.HWBitsChan = 20u
+                                    }
                                     //Log.d("BluZ-BT", "L:${GO.receiveData[94]}, H:${GO.receiveData[95]}")
+
                                     /*
-                                    *   Спектр
+                                    *   История
                                     */
-                                    if (dataType > 0) {             // Данные спектрометра
-                                        if (GO.btnSpecterSSisInit) {
-                                                /* Кнопка для включени/выключения спектрометра */
-                                                GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
-                                                GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
-                                                /*
-                                        *   Смещение от начала буфера
-                                        *   HEADER_OFFSET 50
-                                        *   SIZE_DOZIMETR_BUFER 512
-                                        *   LOG_BUFER_SIZE 50
-                                        *   LOG_OFFSET = HEADER_OFFSET + SIZE_DOZIMETR_BUFER = (uint16_t)562 - 1124 байта
-                                        *   SPECTER_OFFSET = LOG_OFFSET + LOG_BUFER_SIZE * 3 = (uint16_t)712 - 1424 байта
-                                        */
-                                                iii = 1424                  // Смещение в байтах от начала буфера.
-                                                jjj = 0
-                                                //var sm_test = 0.0
-                                                //var max_test = 0.0
-                                                //var tmp_test = 0.0
-                                                //var idx_test = 0
-                                                val koefChan = 20.0 / 65535.0
-                                                while (jjj < GO.drawSPECTER.ResolutionSpectr) {
-                                                    d0 = GO.receiveData[iii++]      // Выбираем младший байт
-                                                    d1 = GO.receiveData[iii++]      // Выбираем старший байт
-                                                    /* Логарифмическое сжатие */
-                                                    GO.drawSPECTER.spectrData[jjj++] = round(2.0.pow((d0 + d1 * 256u).toDouble() * koefChan)) - 1
-                                                }
-                                                //Log.d("BluZ-BT", "SpectrSUMM:$sm_test, MAX:$max_test ($idx_test)")
-                                                GO.drawSPECTER.init()
-                                                if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
-                                                    /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
-                                                    //Log.d("BluZ-BT", "call drawSPEC")
-                                                    GO.drawSPECTER.clearSpecter()
-                                                    GO.drawSPECTER.redrawSpecter(GO.specterType)
-                                                } else {
-                                                    //GO.drawObjectInit = true
-                                                    Log.e("BluZ-BT", "drawSPEC is null")
-                                                }
-                                            }
+                                    if (dataType > 3 && dataType < 7) {
+                                        iii = 1424                  // Смещение в байтах от начала буфера.
+                                        jjj = 0
+                                        val koefChan = GO.HWBitsChan.toDouble() / 65535.0
+                                        while (jjj < GO.drawHISTORY.ResolutionHistory) {
+                                            d0 = GO.receiveData[iii++]      // Выбираем младший байт
+                                            d1 = GO.receiveData[iii++]      // Выбираем старший байт
+                                            /* Логарифмическое сжатие */
+                                            GO.drawHISTORY.historyData[jjj++] = round(2.0.pow((d0 + d1 * 256u).toDouble() * koefChan)) - 1
+                                        }
+                                        //Log.d("BluZ-BT", "SpectrSUMM:$sm_test, MAX:$max_test ($idx_test)")
+                                        GO.drawHISTORY.init()
+                                        if (GO.drawHISTORY.VSize > 0 && GO.drawHISTORY.HSize > 0) {
+                                            /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
+                                            //Log.d("BluZ-BT", "call drawSPEC")
+                                            GO.drawHISTORY.clearHistory()
+                                            GO.drawHISTORY.redrawSpecter(GO.specterType)
+                                        } else {
+                                            //GO.drawObjectInit = true
+                                            Log.e("BluZ-BT", "drawHISTORY is null")
+                                        }
                                     } else {
-                                        /* Кнопка для включени/выключения спектрометра */
-                                        if (GO.btnSpecterSSisInit) {
-                                            GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop)
-                                            GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.buttonTextColor))
+                                        /*
+                                        *   Спектр
+                                        */
+                                        if (dataType > 0 && dataType < 4) {             // Данные спектрометра
+                                            if (GO.btnSpecterSSisInit) {
+                                                    /* Кнопка для включени/выключения спектрометра */
+                                                    GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
+                                                    GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
+                                                    /*
+                                            *   Смещение от начала буфера
+                                            *   HEADER_OFFSET 50
+                                            *   SIZE_DOZIMETR_BUFER 512
+                                            *   LOG_BUFER_SIZE 50
+                                            *   LOG_OFFSET = HEADER_OFFSET + SIZE_DOZIMETR_BUFER = (uint16_t)562 - 1124 байта
+                                            *   SPECTER_OFFSET = LOG_OFFSET + LOG_BUFER_SIZE * 3 = (uint16_t)712 - 1424 байта
+                                            */
+                                                    iii = 1424                  // Смещение в байтах от начала буфера.
+                                                    jjj = 0
+                                                    //var sm_test = 0.0
+                                                    //var max_test = 0.0
+                                                    //var tmp_test = 0.0
+                                                    //var idx_test = 0
+                                                    val koefChan = GO.HWBitsChan.toDouble() / 65535.0
+                                                    while (jjj < GO.drawSPECTER.ResolutionSpectr) {
+                                                        d0 = GO.receiveData[iii++]      // Выбираем младший байт
+                                                        d1 = GO.receiveData[iii++]      // Выбираем старший байт
+                                                        /* Логарифмическое сжатие */
+                                                        GO.drawSPECTER.spectrData[jjj++] = round(2.0.pow((d0 + d1 * 256u).toDouble() * koefChan)) - 1
+                                                    }
+                                                    //Log.d("BluZ-BT", "SpectrSUMM:$sm_test, MAX:$max_test ($idx_test)")
+                                                    GO.drawSPECTER.init()
+                                                    if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
+                                                        /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
+                                                        //Log.d("BluZ-BT", "call drawSPEC")
+                                                        GO.drawSPECTER.clearSpecter()
+                                                        GO.drawSPECTER.redrawSpecter(GO.specterType)
+                                                    } else {
+                                                        //GO.drawObjectInit = true
+                                                        Log.e("BluZ-BT", "drawSPEC is null")
+                                                    }
+                                                }
+                                        } else {
+                                            /* Кнопка для включени/выключения спектрометра */
+                                            if (GO.btnSpecterSSisInit) {
+                                                GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop)
+                                                GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.buttonTextColor))
+                                            }
                                         }
                                     }
                                 }
