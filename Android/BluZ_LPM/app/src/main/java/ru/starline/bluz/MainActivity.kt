@@ -58,6 +58,7 @@ public class MainActivity : FragmentActivity() {
         }
         GO.drawSPECTER = drawSpecter()
         GO.drawDOZIMETER = drawDozimeter()
+        GO.drawHISTORY = drawHistory()
         GO.drawLOG = drawLogs()
         GO.drawCURSOR = drawCursor()
         GO.drawExamp = drawExmple()
