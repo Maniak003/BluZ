@@ -907,7 +907,7 @@ class NumberFragment : Fragment() {
                     GO.BTT.sendBuffer[64] = ((GO.aqureEdit.text.toString().toInt() shr 8).toUShort() and 255u).toUByte()
 
                     /* Разрадность канала */
-                    GO.BTT.sendBuffer[65] = GO.bitsChannelEdit.toString().toUByte()
+                    GO.BTT.sendBuffer[65] = GO.bitsChannelEdit.text.toString().toUByte()
 
                     /* Уровень высокого напряжения */
                     GO.BTT.sendBuffer[33] = (GO.propHVoltage and 255u).toUByte()

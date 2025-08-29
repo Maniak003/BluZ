@@ -55,7 +55,7 @@ RNG_HandleTypeDef hrng;
 RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN PV */
-bool connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false;
+bool historyRequest = false, connectFlag = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false;
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
 uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
@@ -80,6 +80,7 @@ struct LG logBuffer[LOG_BUFER_SIZE];
 uint64_t PL[18] = {0,};
 spectrResolution_t resolutionSpecter = resolution1024;
 uint8_t repetionCount = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
+uint8_t bitsOfChannal;	// Разрядность канала
 /*
  * dataType
  * 0 - Дозиметр и логи,
@@ -105,15 +106,8 @@ bool startSpectrometr = false;
 bool vibroFlag = false, soundFlag = false;
 bool history_active = false; // Флаг набора истории.
 
-static const double KOEFCHAN = 65535.0 / CAPCHAN;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
-
-
-/*
-union dataC {
-	float Float;
-	uint8_t Uint[4];
-};
-*/
+double CoefChan;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
+uint32_t limitChan;
 
 /* Коэффициенты для коррекции температуры */
 float TK1, TK2;
@@ -172,6 +166,7 @@ void ledActivate(void);
  *	10 - Останов набора спектра
  *	11 - Очистка лога
  *	12 - Сброс спектрометра при переключении разрешения
+ *	13 - Изменение разрядности
  */
 
 
@@ -302,6 +297,8 @@ int main(void)
   }
   /* Пересчет уровней в uint32_t для ускорения обработки */
   calcPulseLevel();
+  CoefChan = 65535.0 / (double) bitsOfChannal;
+  limitChan = 1 << bitsOfChannal;
 
   /*
    * Настройка порога компаратора
@@ -385,6 +382,7 @@ int main(void)
    * 43, 44 - Время работы спектрометра в секундах
    * 45, 46 - Количество импульсов в спектре
    * 47		- Точность расчета для дозиметра, количество импульсов для усреднения.
+   * 48(L)	- Разрядность канала
    *
    * 50  - Данные дозиметра
    * 572 - Данные лога
@@ -432,6 +430,26 @@ int main(void)
 	  //HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	  /* Шаблон заголовка */
 	  uint16_t countMTU = 4;
+	  sendDataTypes_t tmpDataType;
+	  tmpDataType = dataType;
+	  if (historyRequest) {
+		  	  historyRequest = false;
+			switch (resolutionSpecter) {
+			case resolution1024:
+				dataType = dozimeterHistory1024;
+				break;
+			case resolution2048:
+				dataType = dozimeterHistory2048;
+				break;
+			case resolution4096:
+				dataType = dozimeterHistory4096;
+				break;
+			default:
+				dataType = dozimeterHistory1024;
+				resolutionSpecter = resolution1024;
+				break;
+			}
+	  }
 
 	  transmitBuffer[0] = ((uint16_t) '<' & 0xFF) | (((uint16_t)'B' << 8) & 0xFF00);
 	  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((dataType << 8) & 0xFF00);
@@ -480,7 +498,6 @@ int main(void)
 	  }
 	  if (dataType > onlyDozimeter) {							/* Нужно передавать спектр ? */
 		  /* Test */
-
 		  //for (int jjj = 0; jjj < nm_channel; jjj++) {
 			//  tmpSpecterBuffer[jjj] = jjj * 100;
 		  //}
@@ -492,21 +509,22 @@ int main(void)
 		  medianIdx = 0;
 		#endif
 		  double tmpLog;
-		  uint32_t tmpData;
+		  uint32_t tmpSpectrData;
 		  for (int jjj = 0; jjj < nm_channel; jjj++) {
-			  tmpData = tmpSpecterBuffer[kkk++];
+			  tmpSpectrData = tmpSpecterBuffer[kkk++];
 			#ifdef MEDIAN
-			  MA[medianIdx] = tmpData;
-			  tmpData = (MA[0] < MA[1]) ? ((MA[1] < MA[2]) ? MA[1] : ((MA[2] < MA[0]) ? MA[0] : MA[2])) : ((MA[0] < MA[2]) ? MA[0] : ((MA[2] < MA[1]) ? MA[1] : MA[2]));
+			  MA[medianIdx] = tmpSpectrData;
+			  tmpSpectrData = (MA[0] < MA[1]) ? ((MA[1] < MA[2]) ? MA[1] : ((MA[2] < MA[0]) ? MA[0] : MA[2])) : ((MA[0] < MA[2]) ? MA[0] : ((MA[2] < MA[1]) ? MA[1] : MA[2]));
 			  if (++medianIdx >= 3) {
 				  medianIdx = 0;
 			  }
 			#endif
-			  /* Логарифмическое зжатие */
-			  tmpLog = log2(tmpData + 1) * (double) KOEFCHAN;
+			  /* Логарифмическое сжатие */
+			  tmpLog = log2(tmpSpectrData + 1) * (double) CoefChan;
 			  transmitBuffer[jjj + SPECTER_OFFSET] = (uint16_t) tmpLog;
 		  }
 	  }
+	  dataType = tmpDataType;	// Востановление исходного типа данных после передачи истории
 		  /* Подготавливаем данные дозиметра */
 	  uint16_t ddd = indexDozimetrBufer;
 	  for (uint16_t jjj = HEADER_OFFSET; jjj < HEADER_OFFSET + SIZE_DOZIMETR_BUFER; jjj++) {
@@ -621,6 +639,8 @@ int main(void)
 	  transmitBuffer[46] = (spectrometerPulse >> 16) & 0xFFFF;
 	  /* Точность дозиметра, количество импульсов для усреднения. */
 	  transmitBuffer[47] = dozimetrAquracy;
+	  /* Разрядность канала */
+	  transmitBuffer[48] = (uint16_t) bitsOfChannal & 0xFF;
 
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
 	  transmitBuffer[idxCS] = 0;

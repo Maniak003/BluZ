@@ -81,7 +81,6 @@ extern "C" {
 #define CHANNELS_4096	4096
 #define MAX_RESOLUTION 	4096
 #define CAPCHAN 20											/* Количество разрядов в канале */
-#define LIMITCHAN (uint32_t) (1 << CAPCHAN)					/* Максимальное значение канала */
 #define OFFSET_CHAN		1U									/* Смещение канала для усредненния */
 #define DEFAULTAQR		100									/* Точность дозиметра по умолчанию */
 
@@ -109,11 +108,12 @@ extern uint16_t currTemperature, currVoltage;
 extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION], spectrometerTime, spectrometerPulse;
 extern uint32_t historySpecterBuffer[MAX_RESOLUTION];
 extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, currentTime, pulseCounterSecond, CPS, intervalNow, TVLevel[3];
+extern uint32_t interval2;
 extern bool SoundEnable, VibroEnable, LEDEnable, LEDflag;
 extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
 extern bool flagTemperatureMess, autoStartSpecrometr;
-extern bool history_active;
+extern bool history_active, historyRequest;
 extern uint16_t HVoltage, comparatorLevel;
 extern LPTIM_HandleTypeDef hlptim2;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -122,6 +122,8 @@ extern int indexDozimetrBufer;
 extern ADC_HandleTypeDef hadc4;
 extern uint64_t PL[18];
 extern uint32_t tmpLevel;
+extern uint32_t limitChan;
+extern double CoefChan;
 
 typedef enum logTypes {
 	nonLog,
@@ -136,7 +138,8 @@ typedef enum logTypes {
 	startSpectrometerLog,
 	stopSpectrometerLog,
 	clearLog,
-	changeResolutionLog
+	changeResolutionLog,
+	changeBitsOfChan
 } logTypes_t;
 
 struct LG {
@@ -146,6 +149,10 @@ struct LG {
 
 extern struct LG logBuffer[LOG_BUFER_SIZE];
 
+union dataB {
+	float Float;
+	uint32_t Uint32;
+};
 union dataC {
 	float Float;
 	uint16_t Uint16[2];
@@ -161,6 +168,7 @@ union dataA {
 
 extern uint32_t level1_cps, level2_cps, level3_cps, tmp_level;
 extern uint16_t level1, level2, level3;
+extern uint8_t bitsOfChannal;
 extern union dataC calcCoeff;
 extern union dataC enCoefA1024, enCoefB1024, enCoefC1024;
 extern union dataC enCoefA2048, enCoefB2048, enCoefC2048;
