@@ -136,7 +136,7 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData = enCoefA4096.Uint32 | ((uint64_t)enCoefB4096.Uint32 << 32);
 	PL[idxPL++] = tmpData;					// 12, 13
 
-	tmpData = enCoefC4096.Uint32 | (uint64_t)dozimetrAquracy << 32;
+	tmpData = enCoefC4096.Uint32 | ((uint64_t)dozimetrAquracy << 32) | (((uint64_t) bitsOfChannal & 0xFF) << 48);
 	PL[idxPL++] = tmpData;					// 14, 15
 
 	//PL[idxPL++] = 0xDDDDDDFFCCCCCCFF;		// 16, 17
@@ -270,6 +270,11 @@ HAL_StatusTypeDef readFlash() {
 		dozimetrAquracy = (tmpData >> 32) & 0xFFFF;
 		if ((dozimetrAquracy == 0xFFFF) || (dozimetrAquracy == 0)) {
 			dozimetrAquracy = 100;
+		}
+		/* Разрядность канала */
+		bitsOfChannal = (tmpData >> 48) & 0xFF;
+		if ((bitsOfChannal < 16) || (bitsOfChannal > 32)) {
+			bitsOfChannal = CAPCHAN;
 		}
 	return HAL_OK;
 

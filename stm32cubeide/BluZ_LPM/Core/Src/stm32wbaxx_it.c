@@ -310,12 +310,21 @@ void GPDMA1_Channel0_IRQHandler(void)
 			tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 2) & 0x3FF;
 			break;
 		}
-		if (tmpSpecterBuffer[tmpLevel] < LIMITCHAN) {
+
+		/* Счетчик 32 разряда */
+		if (tmpSpecterBuffer[tmpLevel] < 0xFFFFFFFF) {
 			tmpSpecterBuffer[tmpLevel]++;
+			/* Изменение разрядности канала если данные не помещаются */
+			if (tmpSpecterBuffer[tmpLevel] >= limitChan) {
+				bitsOfChannal++;
+				CoefChan = 65535.0 / (double) bitsOfChannal;
+				limitChan = 1 << bitsOfChannal;
+			}
 		}
+
 		/* Накопление спектра при превышении уровней */
 		if (history_active) {
-			if (historySpecterBuffer[tmpLevel] < LIMITCHAN) {
+			if (historySpecterBuffer[tmpLevel] < 0xFFFFFFFF) {
 				historySpecterBuffer[tmpLevel]++;
 			}
 		}

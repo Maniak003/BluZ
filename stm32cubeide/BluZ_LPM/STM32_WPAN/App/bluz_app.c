@@ -289,6 +289,14 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						/* Точность усреднения для дозиметра, количество импульсов */
 						dozimetrAquracy = p_Notification->DataTransfered.p_Payload[63] | ((uint16_t) p_Notification->DataTransfered.p_Payload[64] << 8);
 
+						/* Разрядность канала */
+						if (p_Notification->DataTransfered.p_Payload[65] < 16 || p_Notification->DataTransfered.p_Payload[65] > 32) {
+							bitsOfChannal = CAPCHAN;
+						} else if (bitsOfChannal != (uint32_t) p_Notification->DataTransfered.p_Payload[65]) {
+							bitsOfChannal = (uint32_t) p_Notification->DataTransfered.p_Payload[65];
+							CoefChan = 65535.0 / (double) bitsOfChannal;
+						}
+
 						/* Уровни компаратора и высокого напряжения */
 						HVoltage = p_Notification->DataTransfered.p_Payload[33] | (p_Notification->DataTransfered.p_Payload[34] << 8);
 						comparatorLevel = p_Notification->DataTransfered.p_Payload[35] | (p_Notification->DataTransfered.p_Payload[36] << 8);
@@ -409,7 +417,8 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						logUpdate(clearLog);
 						/* Запрос на передачу спектра истории */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 5) {
-
+						historyRequest = true;
+						interval2 = 0;
 					}
 				} else {
 				}
