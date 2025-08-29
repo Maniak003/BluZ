@@ -669,7 +669,7 @@ int main(void)
 		  /*
 		   * TODO -- требуется задержка в передаче, иначе не все пакеты принимаются
 		   */
-		  HAL_Delay(10);
+		  HAL_Delay(1);
 			#ifdef DEBUG_USER
 			bzero((char *) uartBuffer, sizeof(uartBuffer));
 			sprintf(uartBuffer, "MTU: %d\n\r", iii);
