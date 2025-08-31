@@ -208,7 +208,7 @@ class NumberFragment : Fragment() {
                 GO.drawCURSOR.cursorView = view.findViewById(R.id.cursorView)
 
                 GO.drawSPECTER.imgView = view.findViewById(R.id.specterView)
-                GO.drawSPECTER.imgView.setOnTouchListener { v, event ->
+                GO.drawSPECTER.imgView.setOnTouchListener { _, event ->
                     val x: Float = event.x
                     val y: Float = event.y
                     if ((event.getAction() == MotionEvent.ACTION_DOWN)|| (event.getAction() == MotionEvent.ACTION_MOVE)) {
@@ -256,7 +256,7 @@ class NumberFragment : Fragment() {
                         inEnergy.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
                         inEnergy.inputType = InputType.TYPE_CLASS_NUMBER
                         builder.setView(inEnergy)
-                        builder.setPositiveButton("Add") { dialog, which ->
+                        builder.setPositiveButton("Add") { _, _ ->
                             if (inEnergy.text.isNotEmpty()) {
                                 matrx.sysArray[calState][1] = inEnergy.text.toString().toDouble()
                                 matrx.sysArray[calState][0] = GO.drawCURSOR.curChan.toDouble()
@@ -290,7 +290,7 @@ class NumberFragment : Fragment() {
                                 }
                             }
                         }
-                            .setNegativeButton("Cancel") { dialog, which ->
+                            .setNegativeButton("Cancel") { _, _ ->
                                 // Исполняемый код
                         }
                         builder.create()
@@ -303,7 +303,7 @@ class NumberFragment : Fragment() {
                 GO.propButtonInit = true
 
                 /* Управление SMA фильтром */
-                CBSMA.setOnCheckedChangeListener {buttonView, isChecked ->
+                CBSMA.setOnCheckedChangeListener {_, isChecked ->
                     if (GO.propButtonInit) {
                         GO.drawSPECTER.flagSMA = isChecked
                         if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
@@ -319,7 +319,7 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Управление медианным фильтром */
-                CBMEDIAN.setOnCheckedChangeListener {buttonView, isChecked ->
+                CBMEDIAN.setOnCheckedChangeListener {_, isChecked ->
                     if (GO.propButtonInit) {
                         GO.drawSPECTER.flagMEDIAN = isChecked
                         if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
@@ -737,7 +737,7 @@ class NumberFragment : Fragment() {
                     * 242, 243      - Контрольная сумма
                     */
                     /* Сохраненние настроек */
-                    var convVal = ByteArray(4)
+                    //var convVal = ByteArray(4)
 
                     /* Перед сохранением загрузим текушие параметры из редактора */
                     /* Звуковое сопровождение регистрации частицы */
@@ -778,7 +778,7 @@ class NumberFragment : Fragment() {
 
                     /* Подготовка массива для передачи */
                     /* Первый порог */
-                    convVal = ByteBuffer.allocate(4).putInt(GO.propLevel1).array();
+                    var convVal = ByteBuffer.allocate(4).putInt(GO.propLevel1).array();
                     GO.BTT.sendBuffer[4] = convVal[0].toUByte()
                     GO.BTT.sendBuffer[5] = convVal[1].toUByte()
                     GO.BTT.sendBuffer[6] = convVal[2].toUByte()
