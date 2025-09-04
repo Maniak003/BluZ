@@ -17,6 +17,7 @@ import android.bluetooth.le.ScanSettings
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.provider.Settings.Global.getString
 import android.text.Html
 import android.text.TextUtils
@@ -68,12 +69,11 @@ TX_UUID   : 0000fe82-8e22-4541-9d4c-21edae82ed19
 /**
  * Created by ed on 20,июнь,2024
  */
-class BluetoothInterface(tv: TextView) {
+class BluetoothInterface() {
     private var LEMACADDRESS: String = ""
     private val BTM = GO.mainContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private val BTA = BTM.adapter
     private val BTS = BTA.bluetoothLeScanner
-    private var indBT: TextView = tv
     lateinit var txtMACADDRESS: EditText
     //lateinit var startButton: Button
     //private var delegate: BLUZDelegate = BLUZDelegate()
@@ -126,7 +126,7 @@ class BluetoothInterface(tv: TextView) {
     @SuppressLint("MissingPermission")
     fun startScan(textMAC: EditText/*, startBTN: Button*/) {
         val scanFilter: ScanFilter = ScanFilter.Builder().setDeviceName(GO.propCfgBLEDeviceName).build()
-        val scanSetting: ScanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).build()
+        val scanSetting: ScanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).setReportDelay(0).build()
         val filterList = ArrayList<ScanFilter>()
         filterList.add(scanFilter)
         //GO.adapter.fragment.let {
@@ -134,8 +134,8 @@ class BluetoothInterface(tv: TextView) {
         //}
         txtMACADDRESS = textMAC // Установить текст для редактирования
         //startButton = startBTN
-        MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
-            withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+        MainScope().launch {                               // Конструкция необходима для модификации чужого контекста
+            withContext(Dispatchers.Main) {       // Иначе перестает переключаться ViewPage2
                 textMAC.setText(GO.mainContext.getString(R.string.defaultMAC))
             }
         }
@@ -179,7 +179,7 @@ class BluetoothInterface(tv: TextView) {
             }
             writeBuffer = ArrayList() // Буфер для передачи.
             Log.d("BluZ-BT", "Accept connect...")
-            if (!BTA.isEnabled()) {
+            if (!BTA.isEnabled) {
                 MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                     withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
                         Toast.makeText(GO.mainContext, "BlueTooth disable ?\nProgram terminated.", Toast.LENGTH_LONG ).show()
@@ -228,7 +228,7 @@ class BluetoothInterface(tv: TextView) {
                     /* Прибор подключен, меняем цвет индикатора. */
                     MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                         withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
-                            tv.setBackgroundColor(GO.mainContext.getColor(R.color.Yellow))
+                            GO.indicatorBT.setBackgroundColor(GO.mainContext.getColor(R.color.Yellow))
                             //if (GO.btnSpecterSSisInit) {
                                 //GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop2)
                                 //GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
@@ -257,7 +257,7 @@ class BluetoothInterface(tv: TextView) {
                     /* Прибор отключен, меняем цвет индикатора */
                     MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                         withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
-                            tv.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
+                            GO.indicatorBT.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
                             if (GO.btnSpecterSSisInit) {
                                 //GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop)
                                 //GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.buttonTextColor))
@@ -312,7 +312,7 @@ class BluetoothInterface(tv: TextView) {
                 writeNext()
             }
         }
-
+/*
         @SuppressLint("MissingPermission")
         @Deprecated("Deprecated in Java")
         override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
@@ -363,6 +363,69 @@ class BluetoothInterface(tv: TextView) {
             }
             // continues asynchronously in onDescriptorWrite()
         }
+*/
+
+        @SuppressLint("MissingPermission")
+        override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
+            Log.d("BluZ-BT", "mtu size $mtu, status $status")
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                val payloadSize: Int = mtu - 3
+                Log.d("BluZ-BT", "payload size $payloadSize")
+            }
+
+            if (wrCharacteristic == null) {
+                Log.e("BluZ-BT", "Error: characteristic not writable - 1")
+                return
+            } else {
+                val writeProperties = wrCharacteristic!!.properties
+                if ((writeProperties and (BluetoothGattCharacteristic.PROPERTY_WRITE +
+                            BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) == 0) {
+                    Log.e("BluZ-BT", "Error: characteristic not writable - 2")
+                    return
+                }
+            }
+
+            if (!gatt.setCharacteristicNotification(rdCharacteristic, true)) {
+                Log.e("BluZ-BT", "Error: no notification for read characteristic")
+                return
+            }
+
+            val readDescriptor = rdCharacteristic!!.getDescriptor(BLUETOOTH_LE_CCCD)
+            if (readDescriptor == null) {
+                Log.e("BluZ-BT", "Error: no BLUETOOTH_LE_CCCD descriptor for read characteristic")
+                return
+            }
+
+            val readProperties = rdCharacteristic!!.properties
+            val descriptorValue: ByteArray
+
+            if ((readProperties and BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) {
+                Log.d("BluZ-BT", "enable read indication")
+                descriptorValue = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+            } else if ((readProperties and BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
+                Log.d("BluZ-BT", "enable read notification")
+                descriptorValue = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+            } else {
+                Log.e("BluZ-BT", "Error: no indication/notification for read characteristic ($readProperties)")
+                return
+            }
+
+            // Обновленная часть - заменяем устаревший метод
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // Новый способ для Android 13+
+                val result = gatt.writeDescriptor(readDescriptor, descriptorValue)
+                if (result != 0) {
+                    Log.e("BluZ-BT", "Error: failed to write descriptor")
+                }
+            } else {
+                // Совместимость для старых версий
+                readDescriptor.value = descriptorValue
+                if (!gatt.writeDescriptor(readDescriptor)) {
+                    Log.e("BluZ-BT", "Error: failed to write descriptor")
+                }
+            }
+        }
+
 
         /*
         *      Прием данных
@@ -425,6 +488,7 @@ class BluetoothInterface(tv: TextView) {
                                 GO.specterType = 0 // Определяет размер по горизонтали
                                 GO.drawHISTORY.ResolutionHistory = 1024
                                 endOfData = data.size - 5
+                                GO.HWspectrResolution = 0
                             }
                             /* Данные дозиметра, лога и истории 2048 */
                             5 -> {
@@ -432,6 +496,7 @@ class BluetoothInterface(tv: TextView) {
                                 GO.specterType = 1
                                 GO.drawHISTORY.ResolutionHistory = 2048
                                 endOfData = data.size - 5
+                                GO.HWspectrResolution = 1
                             }
                             /* Данные дозиметра, лога и истории 4096 */
                             6 -> {
@@ -439,6 +504,7 @@ class BluetoothInterface(tv: TextView) {
                                 GO.specterType = 2
                                 GO.drawHISTORY.ResolutionHistory = 4096
                                 endOfData = data.size - 5
+                                GO.HWspectrResolution = 2
                             }
                         }
                         GO.PCounter = (data[10].toUByte() + data[11].toUByte() * 256u + data[12].toUByte() * 65536u + data[13].toUByte() * 16777216u).toUInt()
@@ -552,11 +618,19 @@ class BluetoothInterface(tv: TextView) {
                             MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                                 withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
                                     /* Контрольная сумма совпала, меняем цвет индикатора */
-                                    tv.setBackgroundColor(GO.mainContext.getColor(R.color.Green))
+                                    GO.indicatorBT.setBackgroundColor(GO.mainContext.getColor(R.color.Green))
                                     
                                     /* Количество импульсов и время набора спектра */
-                                    GO.spectrometerTime = GO.receiveData[86] + GO.receiveData[87] * 256u + GO.receiveData[88] * 65536u + GO.receiveData[89] * 16777216u
-                                    GO.spectrometerPulse = GO.receiveData[90] + GO.receiveData[91] * 256u + GO.receiveData[92] * 65536u + GO.receiveData[93] * 16777216u
+                                    //GO.spectrometerTime = GO.receiveData[86] + GO.receiveData[87] * 256u + GO.receiveData[88] * 65536u + GO.receiveData[89] * 16777216u
+                                    //GO.spectrometerPulse = GO.receiveData[90] + GO.receiveData[91] * 256u + GO.receiveData[92] * 65536u + GO.receiveData[93] * 16777216u
+                                    GO.spectrometerTime = ((GO.receiveData[89].toULong() shl 24) or
+                                            (GO.receiveData[88].toULong() shl 16) or
+                                            (GO.receiveData[87].toULong() shl 8) or
+                                            GO.receiveData[86].toULong()).toUInt()
+                                    GO.spectrometerPulse = ((GO.receiveData[93].toULong() shl 24) or
+                                            (GO.receiveData[92].toULong() shl 16) or
+                                            (GO.receiveData[91].toULong() shl 8) or
+                                            GO.receiveData[90].toULong()).toUInt()
                                     /*
                                     *  Вывод статистики
                                     *  Перевод в дни, часы, минуты, секунды
@@ -564,9 +638,10 @@ class BluetoothInterface(tv: TextView) {
                                     GO.showStatistics()
 
                                     /* Перевод CPS в uRh */
-                                    var doze: Float =  Math.round(GO.pulsePerSec.toFloat() * GO.propCPS2UR * 100.0f) / 100.0f
-                                    var avgDoze : Float = (Math.round(GO.cps * GO.propCPS2UR * 100.0f) / 100.0f).toFloat()
+                                    var doze: Float =  kotlin.math.round(GO.pulsePerSec.toFloat() * GO.propCPS2UR * 100.0f) / 100.0f
+                                    var avgDoze : Float = kotlin.math.round(GO.cps * GO.propCPS2UR * 100.0f) / 100.0f
                                     GO.txtStat3.setText("CPS:${GO.pulsePerSec} ($doze uRh) Avg:$avgDoze uRh")
+                                    //GO.txtStat3.setText(GO.mainContext.getString(R.string.cps_status, GO.pulsePerSec, doze, avgDoze))
 
                                     /*
                                     *   Загрузка данных спектрометра дозиметра и логов из массивов.
@@ -740,7 +815,7 @@ class BluetoothInterface(tv: TextView) {
         connected = false
         MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
             withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
-                indBT.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
+                GO.indicatorBT.setBackgroundColor(GO.mainContext.getColor(R.color.Red))
             }
         }
         if (gatt == null) {
@@ -834,7 +909,7 @@ class BluetoothInterface(tv: TextView) {
             if (data.size > payloadSize) {
                 for (i in 1 until (data.size + payloadSize - 1) / payloadSize) {
                     val from: Int = i * payloadSize
-                    val to = Math.min(from + payloadSize, data.size)
+                    val to = kotlin.math.min(from + payloadSize, data.size)
                     writeBuffer!!.add(Arrays.copyOfRange(data, from, to))
                     Log.d("BluZ-BT", "write queued, len=" + (to - from))
                 }

@@ -26,7 +26,7 @@ class SaveBqMon {
     *   Сохранение спектра с учетом разрешения.
     */
     fun saveSpecter() {
-        when (GO.specterType) {
+        when (GO.HWspectrResolution) {
             0 -> {  /* Разрешение 1024 */
                 if (GO.saveSpecterType == 0) {
                     saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
@@ -218,7 +218,9 @@ class SaveBqMon {
                 "<EndTime>" + endTime + "</EndTime>\n" +
                 "<PresetTime>" + GO.spectrometerTime.toString() + "</PresetTime>\n" +
                 "<EnergySpectrum>\n" +
-                "<NumberOfChannels>1024</NumberOfChannels>\n" +
+                "<NumberOfChannels>" +
+                resolution.toString() +
+                "</NumberOfChannels>\n" +
                 /* Correct by Am6er */
                 /*"<ChannelPitch>0.0221</ChannelPitch>\n" +*/
                 "<ChannelPitch>1</ChannelPitch>\n" +
