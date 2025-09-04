@@ -1,27 +1,30 @@
 package ru.starline.bluz
 
 import android.Manifest
+import android.app.AlertDialog
+import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.Timer
-import java.util.TimerTask
 import kotlin.system.exitProcess
+
 
 public val GO: globalObj = globalObj()
 
@@ -31,12 +34,47 @@ public var PI: Int = 0
 
 public class MainActivity : FragmentActivity() {
 
-    /*
-    override fun onStart() {
-        super.onStart()
-        GO.drawSPEC.init()
-        GO.drawSPEC.clearSpecter()
-    }*/
+    override fun onResume() {
+        super.onResume()
+        // Проверяем разрешения при возврате из настроек
+        if (hasPendingPermissionCheck) {
+            hasPendingPermissionCheck = false
+            checkAndRequestPermissions()
+        }
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        Log.d("BluZ-BT", "Получен результат запроса разрешений: $permissions")
+
+        // Проверяем, все ли разрешения получены
+        val allGranted = permissions.values.all { it }
+
+        if (allGranted) {
+            Log.d("BluZ-BT", "All permission granted!")
+            GO.allPermissionAccept = true
+            GO.startBluetoothTimer()
+            // initApplication()
+        } else {
+            // Проверяем, нужно ли показать объяснение или отправить в настройки
+            if (shouldShowRequestPermissionRationale(permissions.keys.toTypedArray())) {
+                // Показываем диалог с объяснением
+                showPermissionExplanationDialog(permissions.keys.toTypedArray())
+            } else {
+                // Разрешения отклонены навсегда - отправляем в настройки
+                showSettingsDialog()
+            }
+        }
+    }
+
+/*
+override fun onStart() {
+    super.onStart()
+    GO.drawSPEC.init()
+    GO.drawSPEC.clearSpecter()
+}*/
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,26 +126,7 @@ public class MainActivity : FragmentActivity() {
         /*
         *   Проверка и запрос разрешений.
         */
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.NEARBY_WIFI_DEVICES) == PackageManager.PERMISSION_GRANTED)
-        {
-            /* Все нужные разрешения имеются */
-        } else {
-            val permissionsRq = arrayOf(
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.BLUETOOTH_CONNECT,
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.NEARBY_WIFI_DEVICES
-            )
-            ActivityCompat.requestPermissions(this, permissionsRq, 0)
-        }
-
+        checkAndRequestPermissions()
         /*
         * Основные кнопки
         */
@@ -221,6 +240,104 @@ public class MainActivity : FragmentActivity() {
         GO.readConfigParameters()
         /* Загрузка справочника изотопов */
         GO.loadIsotop()
-        GO.startBluetoothTimer()
+        //if (GO.allPermissionAccept) {
+            GO.startBluetoothTimer()
+        //}
+    }
+    private fun checkAndRequestPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+
+        // Проверяем location permissions
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        // Bluetooth permissions для Android 12+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
+            }
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.BLUETOOTH_SCAN)
+            }
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            // Проверяем, нужно ли показать объяснение
+            //if (shouldShowRequestPermissionRationale(permissionsToRequest.toTypedArray())) {
+                // Показываем объяснение перед запросом
+                //showInitialPermissionExplanationDialog(permissionsToRequest.toTypedArray())
+            //} else {
+                // Просто запрашиваем разрешения
+                requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
+            //}
+        } else {
+            // Все разрешения уже есть
+            GO.allPermissionAccept = true
+            //GO.startBluetoothTimer()
+        }
+    }
+
+    // Проверяет, нужно ли показать объяснение для хотя бы одного разрешения
+    private fun shouldShowRequestPermissionRationale(permissions: Array<String>): Boolean {
+        return permissions.any { permission ->
+            ActivityCompat.shouldShowRequestPermissionRationale(this, permission)
+        }
+    }
+
+    // Диалог с объяснением перед первым запросом
+    private fun showInitialPermissionExplanationDialog(permissions: Array<String>) {
+        AlertDialog.Builder(this)
+            .setTitle("Need permission.")
+            .setMessage("For BLE need permissions.")
+            .setPositiveButton("Grant") { _, _ ->
+                requestPermissionLauncher.launch(permissions)
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                finish()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    // Диалог с объяснением после отказа
+    private fun showPermissionExplanationDialog(permissions: Array<String>) {
+        AlertDialog.Builder(this)
+            .setTitle("Need permission")
+            .setMessage("For BLE need permissions.")
+            .setPositiveButton("Retry") { _, _ ->
+                requestPermissionLauncher.launch(permissions)
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                finish()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    // Флаг для отслеживания возврата из настроек
+    private var hasPendingPermissionCheck = false
+
+    // Диалог для перехода в настройки
+    private fun showSettingsDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Permission disabled.")
+            .setMessage("Permission disabled permanently. Need grant necessary permissions in setup.")
+            .setPositiveButton("Settings") { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val uri = Uri.fromParts("package", packageName, null)
+                intent.data = uri
+                hasPendingPermissionCheck = true
+                startActivity(intent)
+                // Не закрываем сразу, чтобы пользователь мог вернуться
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                finish()
+            }
+            .setCancelable(false)
+            .show()
     }
 }
+
+

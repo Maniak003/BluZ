@@ -76,6 +76,7 @@ class globalObj {
     public val propBitsChan: String = "BitsOfChannel"
 
     public var receiveData: UByteArray = UByteArray(9760)
+    public var allPermissionAccept: Boolean = false
     public var LEMAC: String = ""
     public lateinit var mainContext: Context
     public lateinit var drawSPECTER: drawSpecter
@@ -374,12 +375,12 @@ class globalObj {
         var pulseS: Int
         if (GO.viewPager.currentItem == 0) {        // Статистика для спектрометра
             /* Расчет погрешности по трем сигмам для спектрометра */
-            aquracy3S = 300.0 / Math.sqrt(GO.spectrometerPulse.toDouble())
+            aquracy3S = 300.0 / kotlin.math.sqrt(GO.spectrometerPulse.toDouble())
             cpsS = GO.spectrometerPulse.toFloat() / GO.spectrometerTime.toFloat()
             pulseS = GO.spectrometerPulse.toInt()
         } else { // Статистика для дозиметра
             /* Расчет погрешности по трем сигмам для дозиметра */
-            aquracy3S = 300.0 / Math.sqrt(GO.PCounter.toDouble())
+            aquracy3S = 300.0 / kotlin.math.sqrt(GO.PCounter.toDouble())
             cpsS = GO.cps
             pulseS = GO.PCounter.toInt()
         }
@@ -634,7 +635,7 @@ class globalObj {
         //Log.d("BluZ-BT", "Reject chann: " +GO.rejectCann )
         if (! bluetoothRunning) {
             bluetoothRunning = true
-            GO.BTT = BluetoothInterface(GO.indicatorBT)
+            GO.BTT = BluetoothInterface()
         }
         /*
         *       Параметры прибора

@@ -27,14 +27,18 @@ class intervalTimer {
 
 internal class MyTimerTask : TimerTask() {
     override fun run() {
-        if (GO.needTerminate) {     // Завершение приложения
-            System.exit(0)
-        }
-        if (GO.BTT.connected) {
-            // BT connected
+        if (GO.allPermissionAccept) {
+            if (GO.needTerminate) {     // Завершение приложения
+                System.exit(0)
+            }
+            if (GO.BTT.connected) {
+                // BT connected
+            } else {
+                GO.BTT.destroyDevice()
+                GO.BTT.initLeDevice()
+            }
         } else {
-            GO.BTT.destroyDevice()
-            GO.BTT.initLeDevice()
+            GO.BTT.connected = false
         }
     }
 }
