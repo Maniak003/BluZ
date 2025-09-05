@@ -54,10 +54,12 @@ dependencies {
     implementation libs.material
     implementation libs.androidx.activity
     implementation libs.androidx.constraintlayout
+    implementation libs.play.services.maps
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core
 
     implementation libs.material
     implementation libs.androidx.viewpager2
+    implementation 'com.yandex.android:maps.mobile:4.19.0-lite'
 }

@@ -17,6 +17,7 @@ import androidx.annotation.Nullable
 import androidx.core.text.HtmlCompat
 import androidx.loader.content.Loader.ForceLoadContentObserver
 import androidx.viewpager2.widget.ViewPager2
+import com.yandex.mapkit.mapview.MapView
 import ru.starline.bluz.GO
 import java.sql.Array
 import java.text.DecimalFormat
@@ -105,6 +106,8 @@ class globalObj {
     public lateinit var btnReadFromDevice: Button
     public lateinit var btnWriteToDevice: Button
     public lateinit var btnSetup: ImageButton
+    public lateinit var  btnMap: ImageButton
+    public lateinit var mapView: MapView
     public var needTerminate: Boolean = false
     public val tmFull = intervalTimer()
     public lateinit var txtStat1: TextView

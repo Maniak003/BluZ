@@ -21,6 +21,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import com.yandex.mapkit.MapKitFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.system.exitProcess
@@ -110,6 +111,11 @@ override fun onStart() {
         GO.txtStat2 = findViewById(R.id.textStatistic2)
         GO.txtStat3 = findViewById(R.id.textStatistic3)
         GO.txtIsotopInfo = findViewById(R.id.textIsotopInfo)
+
+        /* Янидекс карта */
+        MapKitFactory.setApiKey("API-YANDEX-KEY")
+        MapKitFactory.initialize(this)
+
 
         /*
         *   Тексты форматов для сохранения
@@ -229,7 +235,21 @@ override fun onStart() {
                 GO.drawExamp.exampRedraw()
             }
         }
-        GO.bColor.initColor(btnSpecter, btnHistory, btnDozimeter, btnLog, GO.btnSetup)
+
+        /* Окно с картой */
+        GO.btnMap = findViewById(R.id.buttonMap)
+        GO.btnMap.setOnClickListener {
+            /* Скрыть статистику */
+            GO.txtStat1.visibility = View.INVISIBLE
+            GO.txtStat2.visibility = View.INVISIBLE
+            GO.txtStat3.visibility = View.INVISIBLE
+            GO.txtIsotopInfo.visibility = View.INVISIBLE
+            GO.viewPager.setCurrentItem(5, false)
+            GO.bColor.resetToDefault()
+            GO.bColor.setToActive(GO.btnMap)
+        }
+
+        GO.bColor.initColor(btnSpecter, btnHistory, btnDozimeter, btnLog, GO.btnSetup, GO.btnMap)
         GO.bColor.resetToDefault()
         GO.bColor.setToActive(btnSpecter)  // Активная закладка.
 

@@ -23,6 +23,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.yandex.mapkit.MapKitFactory
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -189,6 +190,8 @@ class NumberFragment : Fragment() {
             layoutNumber = R.layout.log_layout
         } else if (GO.pagerFrame == 4) {
             layoutNumber = R.layout.setup_layout
+        } else if (GO.pagerFrame == 5) {
+            layoutNumber = R.layout.map_layout
         }
         return inflater.inflate(layoutNumber, container, false)
     }
@@ -1303,6 +1306,11 @@ class NumberFragment : Fragment() {
                     override fun onStartTrackingTouch(seekBar: SeekBar) {}
                     override fun onStopTrackingTouch(seekBar: SeekBar) {}
                 })
+            } else if (getInt(ARG_OBJECT) == 5) {
+                /* Яндекс API */
+                GO.mapView = view.findViewById(R.id.mapview)
+                MapKitFactory.getInstance().onStart()
+                GO.mapView.onStart()
             }
         }
     }
