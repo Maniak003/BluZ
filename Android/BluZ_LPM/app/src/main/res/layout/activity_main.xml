@@ -186,6 +186,13 @@
                 android:src="@drawable/ic_action_optionapp" />
 
             <ImageButton
+                android:id="@+id/buttonMap"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/buttonColor"
+                android:src="@drawable/ic_menu_gallery" />
+
+            <ImageButton
                 android:id="@+id/buttonExit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

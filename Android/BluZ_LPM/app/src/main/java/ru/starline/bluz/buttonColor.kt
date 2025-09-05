@@ -15,14 +15,16 @@ class buttonColor {
     lateinit var bDosimetr: ImageButton
     lateinit var bLog: ImageButton
     lateinit var bSetup: ImageButton
+    lateinit var bMap: ImageButton
 
     /* Настройка указателей на кнопки */
-    fun initColor(b1: ImageButton, b2: ImageButton, b3: ImageButton, b4: ImageButton, b5: ImageButton) {
+    fun initColor(b1: ImageButton, b2: ImageButton, b3: ImageButton, b4: ImageButton, b5: ImageButton, b6: ImageButton) {
         bSpectr = b1
         bHistory = b2
         bDosimetr = b3
         bLog = b4
         bSetup = b5
+        bMap = b6
     }
 
     /* Установим цвета по умолчанию для всех кнопок */
@@ -32,6 +34,7 @@ class buttonColor {
         bDosimetr.setBackgroundTintList(ColorStateList.valueOf(GO.mainContext.getResources().getColor(R.color.buttonColor, GO.mainContext.theme)))
         bLog.setBackgroundTintList(ColorStateList.valueOf(GO.mainContext.getResources().getColor(R.color.buttonColor, GO.mainContext.theme)))
         bSetup.setBackgroundTintList(ColorStateList.valueOf(GO.mainContext.getResources().getColor(R.color.buttonColor, GO.mainContext.theme)))
+        bMap.setBackgroundTintList(ColorStateList.valueOf(GO.mainContext.getResources().getColor(R.color.buttonColor, GO.mainContext.theme)))
     }
 
     /* Установка активной кнопки */

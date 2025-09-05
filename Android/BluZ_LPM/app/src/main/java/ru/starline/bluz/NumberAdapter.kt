@@ -10,7 +10,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
  */
 class NumberAdapter(fragment: FragmentActivity) : FragmentStateAdapter(fragment) {
     public lateinit var fragment: NumberFragment
-    override fun getItemCount(): kotlin.Int = 5
+    override fun getItemCount(): kotlin.Int = 6
     override fun createFragment(position: kotlin.Int): androidx.fragment.app.Fragment {
         fragment = NumberFragment()
         fragment.arguments = Bundle().apply {
