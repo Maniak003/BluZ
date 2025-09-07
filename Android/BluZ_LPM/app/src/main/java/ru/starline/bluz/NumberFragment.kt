@@ -401,7 +401,7 @@ class NumberFragment : Fragment() {
                 val btnClearSpecter : Button = view.findViewById(R.id.buttonClearSpectr)
                 btnClearSpecter.setOnClickListener {
                     GO.BTT.sendCommand(1u)      // Очистка буфера спектрометра.
-                    GO.drawSPECTER.clearSpecter()
+                    GO.drawSPECTER.resetSpecter()
                 }
 
             } else if (getInt(ARG_OBJECT) == 1) {   // История
