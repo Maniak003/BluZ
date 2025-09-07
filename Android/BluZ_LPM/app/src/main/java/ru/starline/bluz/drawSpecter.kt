@@ -202,4 +202,19 @@ class drawSpecter {
             Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize")
         }
     }
+    fun resetSpecter() {
+        //Log.d("BluZ-BT", "Clear specter.")
+        for (ttt: Int in 0 until 4096) {
+            tmpSpecterData[ttt] = 0.0
+            spectrData[ttt] = 0.0
+        }
+        if ((HSize > 0) and (VSize > 0)) {
+            //specBitmap = Bitmap.createBitmap(HSize, VSize, Bitmap.Config.ARGB_8888)
+            //specCanvas = Canvas(specBitmap)
+            specCanvas.drawColor(Color.argb(255, 0, 0, 0))
+            imgView.setImageBitmap(specBitmap)
+        } else {
+            Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize")
+        }
+    }
 }

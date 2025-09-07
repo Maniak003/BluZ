@@ -720,8 +720,8 @@ class BluetoothInterface() {
                                     //GO.HWCoef4096B = java.lang.Float.intBitsToFloat((GO.receiveData[78] + (GO.receiveData[79] * 256u)  + (GO.receiveData[80] * 65536u) + (GO.receiveData[81] * 16777216u)).toInt())
                                     //GO.HWCoef4096C = java.lang.Float.intBitsToFloat((GO.receiveData[82] + (GO.receiveData[83] * 256u)  + (GO.receiveData[84] * 65536u) + (GO.receiveData[85] * 16777216u)).toInt())
                                     GO.HWCoef4096A = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 74, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
-                                    GO.HWCoef4096B = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 79, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
-                                    GO.HWCoef4096C = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 83, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef4096B = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 78, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef4096C = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 82, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
                                     /* Количество импульсов до усреднения для дозиметра */
                                     //GO.HWAqureValue = (GO.receiveData[94] + (GO.receiveData[95] * 256u)).toUShort()
                                     GO.HWAqureValue = ((GO.receiveData[95].toUInt() shl 8) or GO.receiveData[94].toUInt()).toUShort()

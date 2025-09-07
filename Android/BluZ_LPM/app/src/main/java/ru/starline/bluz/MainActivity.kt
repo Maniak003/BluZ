@@ -113,7 +113,8 @@ override fun onStart() {
         GO.txtIsotopInfo = findViewById(R.id.textIsotopInfo)
 
         /* Янидекс карта */
-        MapKitFactory.setApiKey("API-YANDEX-KEY")
+        //MapKitFactory.setApiKey("API-YANDEX-KEY")
+        MapKitFactory.setApiKey("58731571-ff3d-4eff-89c9-89d613a5d1b3")
         MapKitFactory.initialize(this)
 
 
