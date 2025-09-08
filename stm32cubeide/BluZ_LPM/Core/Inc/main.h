@@ -83,6 +83,7 @@ extern "C" {
 #define CAPCHAN 20											/* Количество разрядов в канале */
 #define OFFSET_CHAN		1U									/* Смещение канала для усредненния */
 #define DEFAULTAQR		100									/* Точность дозиметра по умолчанию */
+#define SEND_DELAY 8										/* Задержка в ms между передачами MTU */
 
 typedef enum spectrResolution {
 	resolution1024,
