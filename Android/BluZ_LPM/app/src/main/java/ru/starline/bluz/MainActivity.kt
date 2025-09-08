@@ -26,7 +26,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.system.exitProcess
 
-
 public val GO: globalObj = globalObj()
 
 
@@ -114,7 +113,7 @@ override fun onStart() {
 
         /* Янидекс карта */
         //MapKitFactory.setApiKey("API-YANDEX-KEY")
-        MapKitFactory.setApiKey("58731571-ff3d-4eff-89c9-89d613a5d1b3")
+        MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)
         MapKitFactory.initialize(this)
 
 
