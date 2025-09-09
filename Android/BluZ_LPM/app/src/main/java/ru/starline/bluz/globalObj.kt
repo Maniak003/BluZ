@@ -236,6 +236,9 @@ class globalObj {
     public var saveSpecterType1: String = ""
     public var saveSpecterType2: String = ""
 
+    /* GPS */
+    public var Latitude: Double = 0.0
+    public var Longitude: Double = 0.0
     /*
     * Формат буфера для передачи
                            * Значения заголовка и формат данных для передачи
