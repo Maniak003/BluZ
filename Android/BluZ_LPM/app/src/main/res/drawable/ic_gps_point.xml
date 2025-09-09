@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <!-- res/drawable/ic_map_dot.xml -->
+    <vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="5dp"
+        android:height="5dp"
+        android:viewportWidth="5"
+        android:viewportHeight="5">
+        <!-- Круг: центр (2.5, 2.5), радиус 2.5 -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M 2.5,2.5
+                          m -2.5,0
+                          a 2.5,2.5 0 1,1 5,0
+                          a 2.5,2.5 0 1,1 -5,0" />
+    </vector>

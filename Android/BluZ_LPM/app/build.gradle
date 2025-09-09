@@ -25,6 +25,9 @@ android {
             keyPassword 'Vfnfljh123'
         }
     }
+    packagingOptions {
+        exclude "res/**/*.arb"
+    }
     namespace 'ru.starline.bluz'
     compileSdk 36
     buildFeatures {
@@ -39,6 +42,7 @@ android {
         versionName '1.11'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "MAPKIT_API_KEY", "\"${mapkitApiKey}\""
+        resConfigs "ru", "en"
     }
 
     buildTypes {
@@ -59,6 +63,15 @@ android {
     buildToolsVersion '36.0.0'
     ndkVersion '29.0.13846066 rc3'
     //buildToolsVersion '35.0.0 rc2'
+    splits {
+        abi {
+            reset()
+            include 'arm64-v8a' // Оставь только нужные
+            //include 'arm64-v8a', 'armeabi-v7a' // Оставь только нужные
+            // exclude 'x86', 'x86_64' — не нужны для реальных устройств
+            universalApk false // не генерировать "универсальный" APK
+        }
+    }
 }
 
 dependencies {

@@ -2,7 +2,12 @@ package ru.starline.bluz
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
@@ -22,8 +27,14 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.blue
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.fragment.app.Fragment
 import com.yandex.mapkit.MapKitFactory
+import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.CameraPosition
+import com.yandex.runtime.image.ImageProvider
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -33,6 +44,7 @@ import java.text.DecimalFormatSymbols
 import java.util.Locale
 import java.util.Timer
 import java.util.TimerTask
+import androidx.core.graphics.createBitmap
 
 const val ARG_OBJECT = "oblect"
 
@@ -197,7 +209,7 @@ class NumberFragment : Fragment() {
     }
 
     @OptIn(ExperimentalUnsignedTypes::class)
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint("ClickableViewAccessibility", "MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         arguments?.takeIf { it.containsKey(ARG_OBJECT) }?.apply {
             //var ps = getInt(ARG_OBJECT)
@@ -1307,6 +1319,55 @@ class NumberFragment : Fragment() {
                     override fun onStopTrackingTouch(seekBar: SeekBar) {}
                 })
             } else if (getInt(ARG_OBJECT) == 5) {
+                /* Добавление поинта */
+                var btnAddPoint: Button = view.findViewById(R.id.buttonAddPoint)
+                btnAddPoint.setOnClickListener {
+                    val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
+                    DrawableCompat.setTint(drawable, Color.RED)
+                    val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+                    val canvas = Canvas(bitmap)
+                    drawable.setBounds(0, 0, canvas.width, canvas.height)
+                    drawable.draw(canvas)
+
+                    //val imageProvider = ImageProvider.fromResource(GO.mainContext, R.drawable.ic_gps_point)
+                    for (iii in 0..20) {
+                        val placemark = GO.mapView.map.mapObjects.addPlacemark().apply {
+                            geometry = Point(GO.Latitude + (iii / 5000.0), GO.Longitude)
+                            setIcon(ImageProvider.fromBitmap(bitmap))
+                        }
+                    }
+                }
+
+                /* Показать текущую позицию */
+                var btnMapLocate: Button = view.findViewById(R.id.buttonMapLocate)
+                btnMapLocate.setOnClickListener {
+                    /*
+                    Get GPS location
+                    */
+                    try {
+                        val lm = GO.mainContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                        val loc: Location? = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                        if (loc != null) {
+                            GO.Latitude = loc.latitude
+                            GO.Longitude = loc.longitude
+                            //locationStr = " Lat: ${loc.latitude} Lng: ${loc.longitude} Alt: ${loc.altitude} Speed: ${loc.speed}"
+                        } else {
+                            Toast.makeText(context, "GPS error.", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "GPS write error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                    GO.mapView.map.move(
+                        CameraPosition(
+                            Point(GO.Latitude, GO.Longitude),
+                            /* zoom = */ 15.0f,
+                            /* azimuth = */ 0.0f,
+                            /* tilt = */ 30.0f
+                        )
+                    )
+
+                }
+
                 /* Яндекс API */
                 GO.mapView = view.findViewById(R.id.mapview)
                 MapKitFactory.getInstance().onStart()
