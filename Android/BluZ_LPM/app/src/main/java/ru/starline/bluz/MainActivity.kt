@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Canvas
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -16,12 +18,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.yandex.mapkit.MapKitFactory
+import com.yandex.runtime.image.ImageProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.system.exitProcess
@@ -115,6 +120,32 @@ override fun onStart() {
         //MapKitFactory.setApiKey("API-YANDEX-KEY")
         MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)
         MapKitFactory.initialize(this)
+        val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
+        DrawableCompat.setTint(drawable, Color.RED)
+        var bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+        var canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        GO.impRED = ImageProvider.fromBitmap(bitmap)
+        DrawableCompat.setTint(drawable, Color.YELLOW)
+        bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+        canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        GO.impYELLOW = ImageProvider.fromBitmap(bitmap)
+        DrawableCompat.setTint(drawable, Color.BLUE)
+        bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+        canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        GO.impBLUE = ImageProvider.fromBitmap(bitmap)
+        DrawableCompat.setTint(drawable, Color.GREEN)
+        bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+        canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        GO.impGREEN = ImageProvider.fromBitmap(bitmap)
+
 
 
         /*
@@ -308,32 +339,20 @@ override fun onStart() {
 
     // Диалог с объяснением перед первым запросом
     private fun showInitialPermissionExplanationDialog(permissions: Array<String>) {
-        AlertDialog.Builder(this)
-            .setTitle("Need permission.")
-            .setMessage("For BLE need permissions.")
-            .setPositiveButton("Grant") { _, _ ->
+        AlertDialog.Builder(this).setTitle("Need permission.").setMessage("For BLE need permissions.").setPositiveButton("Grant") { _, _ ->
                 requestPermissionLauncher.launch(permissions)
-            }
-            .setNegativeButton("Cancel") { _, _ ->
+            }.setNegativeButton("Cancel") { _, _ ->
                 finish()
-            }
-            .setCancelable(false)
-            .show()
+            }.setCancelable(false).show()
     }
 
     // Диалог с объяснением после отказа
     private fun showPermissionExplanationDialog(permissions: Array<String>) {
-        AlertDialog.Builder(this)
-            .setTitle("Need permission")
-            .setMessage("For BLE need permissions.")
-            .setPositiveButton("Retry") { _, _ ->
+        AlertDialog.Builder(this).setTitle("Need permission").setMessage("For BLE need permissions.").setPositiveButton("Retry") { _, _ ->
                 requestPermissionLauncher.launch(permissions)
-            }
-            .setNegativeButton("Cancel") { _, _ ->
+            }.setNegativeButton("Cancel") { _, _ ->
                 finish()
-            }
-            .setCancelable(false)
-            .show()
+            }.setCancelable(false).show()
     }
 
     // Флаг для отслеживания возврата из настроек
