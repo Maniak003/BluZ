@@ -517,9 +517,11 @@ class BluetoothInterface() {
                         //var tmpInt = (data[22].toUByte() + data[23].toUByte() * 256u + data[24].toUByte() * 65536u + data[25].toUByte() * 16777216u).toUInt()
                         var tmpInt = java.nio.ByteBuffer.wrap(data, 22, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).int.toUInt()
                         GO.cps = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()) * 100) / 100
-                        tmpInt = (data[26].toUByte() + data[27].toUByte() * 256u + data[28].toUByte() * 65536u + data[29].toUByte() * 16777216u).toUInt()
+                        //tmpInt = (data[26].toUByte() + data[27].toUByte() * 256u + data[28].toUByte() * 65536u + data[29].toUByte() * 16777216u).toUInt()
+                        tmpInt = java.nio.ByteBuffer.wrap(data, 26, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).int.toUInt()
                         GO.tempMC = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()))
-                        tmpInt = (data[30].toUByte() + data[31].toUByte() * 256u + data[32].toUByte() * 65536u + data[33].toUByte() * 16777216u).toUInt()
+                        //tmpInt = (data[30].toUByte() + data[31].toUByte() * 256u + data[32].toUByte() * 65536u + data[33].toUByte() * 16777216u).toUInt()
+                        tmpInt = java.nio.ByteBuffer.wrap(data, 30, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).int.toUInt()
                         GO.battLevel = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()) * 100) / 100
                         var pulseCounter = GO.PCounter
                         Log.d("BluZ-BT", "Start detect. Size: $numberMTU, Type: $dataType, Pulse: $pulseCounter, Temp:" + GO.tempMC.toString() + ", Volt:" + GO.battLevel .toString())

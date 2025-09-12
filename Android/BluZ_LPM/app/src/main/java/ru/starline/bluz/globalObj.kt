@@ -2,6 +2,10 @@ package ru.starline.bluz
 
 import android.content.ClipData.Item
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.location.Location
 import android.text.Html
 import android.util.Log
@@ -15,6 +19,9 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.Nullable
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.text.HtmlCompat
 import androidx.loader.content.Loader.ForceLoadContentObserver
 import androidx.viewpager2.widget.ViewPager2
@@ -726,4 +733,23 @@ class globalObj {
             GO.viewPager.setCurrentItem(4, false)
         }
     }
+
+    /* Создание радужного массива */
+    private lateinit var bitmap: Bitmap
+    private lateinit var canvas: Canvas
+    val imp = arrayOfNulls<ImageProvider?>(256)
+    fun createRainbowColors() {
+        val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
+        bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+        canvas = Canvas(bitmap)
+        for (i in 0 until 256) {
+            val hue = i * 270f / 255f  // От 0 до ~270 градусов
+            val hsv = floatArrayOf(hue, 1.0f, 1.0f)  // Насыщенность и яркость = 100%
+            DrawableCompat.setTint(drawable, Color.HSVToColor(hsv))
+            drawable.setBounds(0, 0, canvas.width, canvas.height)
+            drawable.draw(canvas)
+            imp[i] = ImageProvider.fromBitmap(bitmap.copy(Bitmap.Config.ARGB_8888, false))
+        }
+    }
+
 }

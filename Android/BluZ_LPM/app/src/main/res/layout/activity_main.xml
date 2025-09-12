@@ -154,6 +154,7 @@
                 android:id="@+id/buttonSpecter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:src="@drawable/ic_action_spectrapp" />
 
@@ -161,6 +162,7 @@
                 android:id="@+id/buttonHistory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:src="@drawable/ic_action_historyapp" />
 
@@ -168,6 +170,7 @@
                 android:id="@+id/buttonDosimeter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:src="@drawable/ic_action_dosimetrapp" />
 
@@ -175,6 +178,7 @@
                 android:id="@+id/buttonLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:src="@drawable/ic_action_logapp" />
 
@@ -182,6 +186,7 @@
                 android:id="@+id/buttonSetup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:src="@drawable/ic_action_optionapp" />
 
@@ -189,6 +194,7 @@
                 android:id="@+id/buttonMap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:src="@drawable/ic_menu_gallery" />
 
@@ -196,6 +202,7 @@
                 android:id="@+id/buttonExit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:src="@drawable/ic_action_closeapp" />
 
