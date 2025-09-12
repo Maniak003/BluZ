@@ -11,8 +11,7 @@ import com.google.android.gms.location.*
 
 class ContinuousLocationManager(
     private val context: Bundle,
-    private val onLocationUpdate: (Location) -> Unit
-) {
+    private val onLocationUpdate: (Location) -> Unit) {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
@@ -20,7 +19,14 @@ class ContinuousLocationManager(
 
     init {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(GO.mainContext)
-        setupLocationCallback()
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                result.lastLocation?.let { location ->
+                    onLocationUpdate(location)
+                }
+            }
+        }
+        //setupLocationCallback()
     }
 
     private fun setupLocationCallback() {
@@ -40,7 +46,7 @@ class ContinuousLocationManager(
             return
         }
 
-        val request = LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 5000) // каждые 5 сек
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000) // каждые 5 сек
             .setWaitForAccurateLocation(false)
             .setMinUpdateIntervalMillis(5000)
             .setMaxUpdateDelayMillis(1000)

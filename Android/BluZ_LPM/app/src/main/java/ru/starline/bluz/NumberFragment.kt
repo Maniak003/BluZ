@@ -1322,13 +1322,21 @@ class NumberFragment : Fragment() {
                     //drawable.draw(canvas)
                     //val imp1 = ImageProvider.fromBitmap(bitmap)
 
-                    //val imageProvider = ImageProvider.fromResource(GO.mainContext, R.drawable.ic_gps_point)
-                    //for (iii in 0..2000) {
-                    //    val placemark = GO.map?.mapObjects?.addPlacemark().apply {
-                    //        this?.geometry = Point(GO.Latitude + (iii / 50000.0), GO.Longitude)
-                    //        this!!.setIcon(imp1)
-                    //    }
-                    //}
+                    //val imageProvider = ImageProvider.fromResource(GO.mainContext, R.drawable.ic_gps_point
+                    /*  Test */
+                    /*for (iii in 0 until 256) {
+                        val placemark = GO.map?.mapObjects?.addPlacemark().apply {
+                            this?.geometry = Point(GO.lastPointLoc.latitude + (iii / 50000.0), GO.lastPointLoc.longitude)
+                            //this!!.setIcon(GO.imp[iii]!!)
+                            this!!.setIcon(GO.impGREEN)
+                        }
+                    }*/
+                    val placemark = GO.map?.mapObjects?.addPlacemark().apply {
+                        this?.geometry = Point(GO.lastPointLoc.latitude, GO.lastPointLoc.longitude)
+                        //this!!.setIcon(GO.imp[iii]!!)
+                        this!!.setIcon(GO.impGREEN)
+                    }
+
                 }
 
                 /* Показать текущую позицию */
@@ -1360,6 +1368,7 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Яндекс API */
+                GO.createRainbowColors()
                 val lm = GO.mainContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
                 GO.lastPointLoc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)!!
                 GO.mapView = view.findViewById(R.id.mapview)
@@ -1372,31 +1381,40 @@ class NumberFragment : Fragment() {
                 // Создаём менеджер
                 GO.locationManager = ContinuousLocationManager(this) { location ->
                     // Этот блок вызывается при каждом обновлении
-                    requireActivity().runOnUiThread {
-                        // Событие обновления координат, далее проверяем - насколько изменилась дистанция.
-                        val results = FloatArray(1)
-                        Location.distanceBetween(location.latitude, location.longitude, GO.lastPointLoc.latitude, GO.lastPointLoc.longitude, results)
-                        /* Расчитываем средний cps за интервал между метками*/
-                        var cpsAveredge : Float = GO.cpsAVG / GO.cpsIntervalCount
-                        var imp: ImageProvider
-                        if (cpsAveredge < GO.propLevel1.toFloat()) {
-                            imp = GO.impBLUE
-                        } else if (cpsAveredge < GO.propLevel2.toFloat()) {
-                            imp = GO.impGREEN
-                        } else if (cpsAveredge < GO.propLevel3.toFloat()) {
-                            imp = GO.impYELLOW
-                        } else {
-                            imp = GO.impRED
-                        }
-                        Log.i("BluZ-BT", "Lat: ${location.latitude}, Lng: ${location.longitude}, Accuracy: ${location.accuracy}, cps:${cpsAveredge}")
-                        if (results[0] > 10.0) { // Если изменение более 10 метров - добавляем маркер.
-                            GO.lastPointLoc = location
-                            GO.placemark = GO.map?.mapObjects?.addPlacemark().apply {
-                                this?.geometry = Point(location.latitude, location.longitude)
-                                this!!.setIcon(imp)
+                    if (isAdded) {
+                        activity?.runOnUiThread {
+                            // Событие обновления координат, далее проверяем - насколько изменилась дистанция.
+                            val results = FloatArray(1)
+                            Location.distanceBetween(
+                                location.latitude,
+                                location.longitude,
+                                GO.lastPointLoc.latitude,
+                                GO.lastPointLoc.longitude,
+                                results
+                            )
+                            /* Расчитываем средний cps за интервал между метками*/
+                            val cpsAveredge: Float = GO.cpsAVG / GO.cpsIntervalCount
+                            val imp = when {
+                                cpsAveredge < GO.propLevel1.toFloat() -> GO.impBLUE
+                                cpsAveredge < GO.propLevel2.toFloat() -> GO.impGREEN
+                                cpsAveredge < GO.propLevel3.toFloat() -> GO.impYELLOW
+                                else -> GO.impRED
                             }
-                        } else {
-                            GO.placemark!!.setIcon(imp)
+                            Log.i(
+                                "BluZ-BT",
+                                "Lat: ${location.latitude}, Lng: ${location.longitude}, Accuracy: ${location.accuracy}, cps:${cpsAveredge}"
+                            )
+                            GO.cpsAVG = 0.0f
+                            GO.cpsIntervalCount = 0
+                            if (location.accuracy < 10.0f && results[0] > 10.0f) { // Если изменение более 10 метров - добавляем маркер.
+                                GO.lastPointLoc = location
+                                GO.placemark = GO.map?.mapObjects?.addPlacemark().apply {
+                                    this?.geometry = Point(location.latitude, location.longitude)
+                                    this!!.setIcon(imp)
+                                }
+                            } else {
+                                //GO.placemark!!.setIcon(imp)
+                            }
                         }
                     }
                 }
