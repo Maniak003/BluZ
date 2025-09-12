@@ -507,10 +507,15 @@ class BluetoothInterface() {
                                 GO.HWspectrResolution = 2
                             }
                         }
-                        GO.PCounter = (data[10].toUByte() + data[11].toUByte() * 256u + data[12].toUByte() * 65536u + data[13].toUByte() * 16777216u).toUInt()
-                        GO.pulsePerSec  = (data[14].toUByte() + data[15].toUByte() * 256u + data[16].toUByte() * 65536u + data[17].toUByte() * 16777216u).toUInt()
+                        //GO.PCounter = (data[10].toUByte() + data[11].toUByte() * 256u + data[12].toUByte() * 65536u + data[13].toUByte() * 16777216u).toUInt()
+                        GO.PCounter = java.nio.ByteBuffer.wrap(data, 10, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).int.toUInt()
+                        //GO.pulsePerSec  = (data[14].toUByte() + data[15].toUByte() * 256u + data[16].toUByte() * 65536u + data[17].toUByte() * 16777216u).toUInt()
+                        GO.pulsePerSec = java.nio.ByteBuffer.wrap(data, 14, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).int.toUInt()
+                        GO.cpsAVG += GO.pulsePerSec.toFloat()
+                        GO.cpsIntervalCount++
                         GO.messTm =  (data[18].toUByte() + data[19].toUByte() * 256u + data[20].toUByte() * 65536u + data[21].toUByte() * 16777216u).toUInt()
-                        var tmpInt = (data[22].toUByte() + data[23].toUByte() * 256u + data[24].toUByte() * 65536u + data[25].toUByte() * 16777216u).toUInt()
+                        //var tmpInt = (data[22].toUByte() + data[23].toUByte() * 256u + data[24].toUByte() * 65536u + data[25].toUByte() * 16777216u).toUInt()
+                        var tmpInt = java.nio.ByteBuffer.wrap(data, 22, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).int.toUInt()
                         GO.cps = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()) * 100) / 100
                         tmpInt = (data[26].toUByte() + data[27].toUByte() * 256u + data[28].toUByte() * 65536u + data[29].toUByte() * 16777216u).toUInt()
                         GO.tempMC = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()))

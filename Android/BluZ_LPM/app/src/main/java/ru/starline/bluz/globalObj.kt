@@ -2,6 +2,7 @@ package ru.starline.bluz
 
 import android.content.ClipData.Item
 import android.content.Context
+import android.location.Location
 import android.text.Html
 import android.util.Log
 import android.view.View
@@ -17,6 +18,7 @@ import androidx.annotation.Nullable
 import androidx.core.text.HtmlCompat
 import androidx.loader.content.Loader.ForceLoadContentObserver
 import androidx.viewpager2.widget.ViewPager2
+import com.yandex.mapkit.map.MapWindow
 import com.yandex.mapkit.mapview.MapView
 import ru.starline.bluz.GO
 import java.sql.Array
@@ -26,6 +28,9 @@ import java.util.Locale
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
+import com.yandex.mapkit.map.Map
+import com.yandex.mapkit.map.PlacemarkMapObject
+import com.yandex.runtime.image.ImageProvider
 
 /**
  * Created by ed on 27,июнь,2024
@@ -121,6 +126,17 @@ class globalObj {
     //private var saveStat2: String = ""
     //private var saveStat3: String = ""
 
+    /* GPS */
+    public var mapWindow: MapWindow? = null
+    public var map: Map? = null
+    public var locationManager: ContinuousLocationManager? = null
+    public var placemark: PlacemarkMapObject? = null
+    public lateinit var lastPointLoc: Location
+    public lateinit var impRED: ImageProvider
+    public lateinit var impYELLOW: ImageProvider
+    public lateinit var impBLUE: ImageProvider
+    public lateinit var impGREEN: ImageProvider
+
     /*
     *   Элементы управления закладки Setup
     */
@@ -190,6 +206,8 @@ class globalObj {
     public var sendCS: UShort = 0u
     public var PCounter: UInt = 0u                  // Всего принято частиц
     public var cps: Float = 0.0f                    // Среднее cps
+    public var cpsAVG: Float = 0.0f                 // Среднее значение за длительный интервал.
+    public var cpsIntervalCount: Int = 0            // Количество интервалов для усреднения CPS
     public var messTm:UInt = 0u                     // Время измерения
     public var spectrometerTime:UInt = 0u           // Время работы спектрометра
     public var spectrometerPulse: UInt = 0u         // Количество импульсов от спектрометра
@@ -236,9 +254,6 @@ class globalObj {
     public var saveSpecterType1: String = ""
     public var saveSpecterType2: String = ""
 
-    /* GPS */
-    public var Latitude: Double = 0.0
-    public var Longitude: Double = 0.0
     /*
     * Формат буфера для передачи
                            * Значения заголовка и формат данных для передачи
