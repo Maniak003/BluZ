@@ -645,6 +645,7 @@ int main(void)
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
 	  transmitBuffer[idxCS] = 0;
 	  kkk = 0;
+	  uint8_t delayInterval = 0;
 	  for (int iii = 0; iii < countMTU; iii++) {
 		  /* Передача возможна только при подключеном клиенте */
 		  if ( ! connectFlag) {
@@ -669,7 +670,10 @@ int main(void)
 		  /*
 		   * TODO -- требуется задержка в передаче, иначе не все пакеты принимаются
 		   */
-		  HAL_Delay(SEND_DELAY);
+		  //if (delayInterval++ > DELAY_INTERVAL) {
+			//  delayInterval = 0;
+			  HAL_Delay(SEND_DELAY);
+		  //}
 			#ifdef DEBUG_USER
 			bzero((char *) uartBuffer, sizeof(uartBuffer));
 			sprintf(uartBuffer, "MTU: %d\n\r", iii);
