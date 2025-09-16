@@ -87,6 +87,7 @@ class globalObj {
     public val acuricyPatern : String = "###0.#######"
     public val propAquracy : String = "AquracyDozimeter"
     public val propBitsChan: String = "BitsOfChannel"
+    public val propFullScrn: String = "FullScreen"
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var allPermissionAccept: Boolean = false
@@ -180,6 +181,8 @@ class globalObj {
     lateinit var bitsChannelEdit: EditText
     var aqureValue: Int = 100
     var bitsChannel:Int = 20
+    public lateinit var cbFullScrn: CheckBox            // Управление полноэкранным режимом
+    public var fullScrn: Boolean = false                // Флаг для полноэкранного режима
     /*
     *   Цвета для курсора
     */
@@ -629,6 +632,7 @@ class globalObj {
         GO.PP.setPropInt(propCfgSpectrGraphType, GO.specterGraphType)
         GO.PP.setPropInt(propAquracy, GO.aqureValue)    // Точность усреднения для дозиметра, количество импульсов.
         GO.PP.setPropInt(propBitsChan, GO.bitsChannel)  // Количество  бит в канале
+        GO.PP.setPropBoolean(propFullScrn, GO.fullScrn)
     }
 
     /*
@@ -709,7 +713,7 @@ class globalObj {
         if (GO.bitsChannel < 16 || GO.bitsChannel > 32) {
             GO.bitsChannel = 20
         }
-
+        GO.fullScrn = GO.PP.getPropBoolean(propFullScrn)
     }
 
     /* Запуск таймера для автоматического подключения */
