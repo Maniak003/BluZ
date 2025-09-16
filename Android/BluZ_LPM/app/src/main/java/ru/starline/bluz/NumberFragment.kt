@@ -37,6 +37,7 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Locale
 import androidx.core.graphics.createBitmap
+import androidx.core.view.WindowCompat
 
 const val ARG_OBJECT = "oblect"
 
@@ -176,6 +177,9 @@ class NumberFragment : Fragment() {
 
         /* Количество бит в канале */
         GO.bitsChannelEdit.setText(GO.bitsChannel.toString())
+
+        /* Полноэкранный режим */
+        GO.cbFullScrn.isChecked = GO.fullScrn
     }
 
     override fun onCreateView(
@@ -500,8 +504,28 @@ class NumberFragment : Fragment() {
                 GO.textMACADR = view.findViewById(R.id.textMACADDR)
                 GO.aqureEdit = view.findViewById(R.id.editAquracy)
                 GO.bitsChannelEdit = view.findViewById(R.id.editBitsChannel)
+                GO.cbFullScrn = view.findViewById(R.id.CBFullScreen)
 
                 reloadConfigParameters()
+
+                /* Изменение полноэкранного режима включение / выключение видимости баров */
+                GO.cbFullScrn.setOnCheckedChangeListener { buttonView, isChecked ->
+                    GO.fullScrn = isChecked
+                    val window = requireActivity().window
+                    val decorView = window.decorView
+                    WindowCompat.setDecorFitsSystemWindows(window, !isChecked)
+                    val insetsController = WindowCompat.getInsetsController(window, decorView)
+
+                    if (isChecked) {
+                        // Прозрачный статус-бар
+                        window.statusBarColor = Color.TRANSPARENT
+                        insetsController.isAppearanceLightStatusBars = false // белые иконки
+                    } else {
+                        // Возвращаем цвет
+                        window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.black)
+                        insetsController.isAppearanceLightStatusBars = true // чёрные иконки на светлом фоне
+                    }
+                }
 
                 /* Измененние коэффициента A для разных разрешений */
                 GO.editPolinomA.addTextChangedListener(object : TextWatcher {

@@ -85,19 +85,18 @@ override fun onStart() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         GO.mainContext = applicationContext
-        enableEdgeToEdge()
+        /* Использование всего экрана, место занятое челкой, тоже используется. */
+        //enableEdgeToEdge()
         //enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(Color. TRANSPARENT, Color. TRANSPARENT), navigationBarStyle = SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim))
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowInsetsControllerCompat(window,
-            window.decorView.findViewById(android.R.id.content)).let { controller ->
+        //WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window,window.decorView.findViewById(android.R.id.content)).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
 
             // When the screen is swiped up at the bottom
             // of the application, the navigationBar shall
             // appear for some time
-            controller.systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
         GO.drawSPECTER = drawSpecter()
         GO.drawDOZIMETER = drawDozimeter()
@@ -289,6 +288,9 @@ override fun onStart() {
         */
         GO.PP = propControl()
         GO.readConfigParameters()
+        if (GO.fullScrn) {
+            enableEdgeToEdge()
+        }
         /* Загрузка справочника изотопов */
         GO.loadIsotop()
         //if (GO.allPermissionAccept) {
