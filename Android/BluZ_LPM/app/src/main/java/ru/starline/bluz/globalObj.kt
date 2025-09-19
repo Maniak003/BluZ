@@ -38,6 +38,8 @@ import kotlin.math.sqrt
 import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.runtime.image.ImageProvider
+import ru.starline.bluz.data.AppDatabase
+import ru.starline.bluz.data.dao.DosimeterDao
 
 /**
  * Created by ed on 27,июнь,2024
@@ -144,6 +146,7 @@ class globalObj {
     public lateinit var impYELLOW: ImageProvider
     public lateinit var impBLUE: ImageProvider
     public lateinit var impGREEN: ImageProvider
+    public var currentTrck: Long = 0L
 
     /*
     *   Элементы управления закладки Setup
@@ -755,5 +758,20 @@ class globalObj {
             imp[i] = ImageProvider.fromBitmap(bitmap.copy(Bitmap.Config.ARGB_8888, false))
         }
     }
+
+    /* База данных */
+
+    private var _database: AppDatabase? = null
+
+    val database: AppDatabase
+        get() {
+            if (_database == null) {
+                _database = AppDatabase.getDatabase(mainContext)
+            }
+            return _database!!
+        }
+
+    val dao: DosimeterDao
+        get() = database.dosimeterDao()
 
 }
