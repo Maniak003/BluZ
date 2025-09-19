@@ -29,6 +29,8 @@ import com.yandex.mapkit.MapKitFactory
 import com.yandex.runtime.image.ImageProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import ru.starline.bluz.data.entity.PointType
+import ru.starline.bluz.data.entity.Track
 import kotlin.system.exitProcess
 
 public val GO: globalObj = globalObj()
@@ -114,7 +116,31 @@ override fun onStart() {
         GO.txtStat2 = findViewById(R.id.textStatistic2)
         GO.txtStat3 = findViewById(R.id.textStatistic3)
         GO.txtIsotopInfo = findViewById(R.id.textIsotopInfo)
+        lifecycleScope.launch {
+            val dao = GO.dao
+            /* Создание справочника типов данных */
+            if (dao.getAllPointTypes().isEmpty()) {
+                dao.insertPointType(PointType(0, "CPS"))
+                dao.insertPointType(PointType(0, "Temperature"))
+                dao.insertPointType(PointType(0, "Magnetic Field"))
+                dao.insertPointType(PointType(0, "Only location"))
+            }
+            /* Создание первого трека */
+            if (dao.getActiveTracks().isEmpty()) {
+                dao.insertTrack(Track(0, "Default track", System.currentTimeMillis() / 1000))
+            }
 
+            /* Получим текущий трек для начала записи. */
+            var tmpTrack = dao.getCurrentTrack()
+            if (tmpTrack != null) {
+                GO.currentTrck = tmpTrack
+            } else {
+                tmpTrack = dao.getFirstTrack()
+                dao.activateTrack(tmpTrack)
+                GO.currentTrck = tmpTrack
+            }
+            Log.i("BluZ-BT", "Current track ID: ${GO.currentTrck}")
+        }
         /* Янидекс карта */
         //MapKitFactory.setApiKey("API-YANDEX-KEY")
         MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)

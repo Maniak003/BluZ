@@ -38,6 +38,10 @@ import java.text.DecimalFormatSymbols
 import java.util.Locale
 import androidx.core.graphics.createBitmap
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import ru.starline.bluz.data.entity.Track
+import ru.starline.bluz.data.entity.TrackDetail
 
 const val ARG_OBJECT = "oblect"
 
@@ -1335,6 +1339,82 @@ class NumberFragment : Fragment() {
                     override fun onStopTrackingTouch(seekBar: SeekBar) {}
                 })
             } else if (getInt(ARG_OBJECT) == 5) {
+                /* Работа с картой и треками */
+
+                /* Создание нового трека */
+                val btnNewTrack : Button = view.findViewById(R.id.buttonNewTrack)
+                btnNewTrack.setOnClickListener {
+                    val context = requireContext()
+
+                    // Создаём EditText для ввода имени
+                    val input = EditText(context)
+                    input.hint = "Введите название трека"
+
+                    // Диалог
+                    AlertDialog.Builder(context)
+                        .setTitle("New track")
+                        .setView(input) // добавляем поле ввода
+                        .setPositiveButton("Create") { dialog, _ ->
+                            val name = input.text.toString().trim()
+                            if (name.isEmpty()) {
+                                Toast.makeText(context, "Имя не может быть пустым", Toast.LENGTH_SHORT).show()
+                                return@setPositiveButton
+                            }
+
+                            // Запускаем корутину для сохранения в БД
+                            lifecycleScope.launch {
+                                try {
+                                    val newTrack = Track(
+                                        id = 0,
+                                        name = name,
+                                        createdAt = System.currentTimeMillis() / 1000,
+                                        isActive = false,
+                                        isHidden = false
+                                    )
+                                    val trackId = GO.dao.insertTrack(newTrack)
+
+                                    // Сразу делаем активным
+                                    //GO.dao.deactivateAllTracks()
+                                    //GO.dao.activateTrack(trackId)
+                                    //GO.currentTrck = trackId
+
+                                    //Toast.makeText(context, "Track '$name' created", Toast.LENGTH_LONG).show()
+
+                                    // Здесь необходимо обновление списка.
+                                    //refreshTrackList()
+
+                                } catch (e: Exception) {
+                                    Log.e("TrackDialog", "Error create track", e)
+                                    //Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                            dialog.dismiss()
+                        }
+                        .setNegativeButton("Close") { dialog, _ ->
+                            dialog.cancel()
+                        }
+                        .show()
+                }
+
+
+                /* Выбор трека для отображения */
+                val btnTrackList : Button = view.findViewById(R.id.buttonTracks)
+                btnTrackList.setOnClickListener {
+                    lifecycleScope.launch {
+                        val tracks = GO.dao.getAllTracks()
+                        val names = tracks.map { it.name }.toTypedArray()
+
+                        AlertDialog.Builder(requireContext())
+                            .setTitle("Select track")
+                            .setItems(names) { _, which ->
+                                val selectedTrack = tracks[which]
+                                //selectTrack(selectedTrack) // Трек выбран, нужно обработать
+                            }
+                            .setNegativeButton("Close", null)
+                            .show()
+                    }
+                }
+
                 /* Добавление поинта */
                 var btnAddPoint: Button = view.findViewById(R.id.buttonAddPoint)
                 btnAddPoint.setOnClickListener {
@@ -1400,7 +1480,7 @@ class NumberFragment : Fragment() {
                 GO.map = GO.mapWindow?.map
                 MapKitFactory.getInstance().onStart()
                 GO.mapView.onStart()
-                GO.map?.isRotateGesturesEnabled = false         // Отключим поворот карты
+                //GO.map?.isRotateGesturesEnabled = false         // Отключим поворот карты
                 GO.map?.set2DMode(true)
                 // Создаём менеджер
                 GO.locationManager = ContinuousLocationManager(this) { location ->
@@ -1425,9 +1505,22 @@ class NumberFragment : Fragment() {
                                 else -> GO.impRED
                             }
                             Log.i(
-                                "BluZ-BT",
-                                "Lat: ${location.latitude}, Lng: ${location.longitude}, Accuracy: ${location.accuracy}, cps:${cpsAveredge}"
+                                "BluZ-BT","Lat: ${location.latitude}, Lng: ${location.longitude}, Accuracy: ${location.accuracy}, cps:${cpsAveredge}, CT: ${GO.currentTrck}"
                             )
+                            if (GO.currentTrck > 0 && cpsAveredge > 0) {
+                                val trcDet = TrackDetail(
+                                    0,
+                                    GO.currentTrck,
+                                    1,
+                                    location.latitude,
+                                    location.longitude,
+                                    cpsAveredge.toDouble(),
+                                    System.currentTimeMillis() / 1000
+                                )
+                                lifecycleScope.launch {
+                                    GO.dao.insertPoint(trcDet)
+                                }
+                            }
                             GO.cpsAVG = 0.0f
                             GO.cpsIntervalCount = 0
                             if (location.accuracy < 10.0f && results[0] > 10.0f) { // Если изменение более 10 метров - добавляем маркер.

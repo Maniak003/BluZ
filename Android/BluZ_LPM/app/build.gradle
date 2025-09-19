@@ -3,12 +3,19 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     //id 'com.android.application' version '8.5.0' apply false
     //id 'com.android.library' version '8.5.0' apply false
+    id 'kotlin-kapt'
+    //id 'com.google.devtools.ksp' //version '1.9.20-1.0.15'
 }
 
 ext {
     mapkitApiKey = getMapkitApiKey()
 }
 
+//configurations.all {
+ //   resolutionStrategy {
+  //      force 'org.jetbrains:annotations:23.0.0'
+   // }
+//}
 private String getMapkitApiKey() {
     def properties = new Properties()
     project.file("local.properties").withInputStream { properties.load(it) }
@@ -26,7 +33,9 @@ android {
         }
     }
     packagingOptions {
-        exclude "res/**/*.arb"
+        resources {
+            excludes += ['res/**/*.arb']
+        }
     }
     namespace 'ru.starline.bluz'
     compileSdk 36
@@ -42,24 +51,39 @@ android {
         versionName '1.11'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "MAPKIT_API_KEY", "\"${mapkitApiKey}\""
-        resConfigs "ru", "en"
+        resourceConfigurations += ['ru', 'en']
     }
 
     buildTypes {
         release {
             minifyEnabled true
-            shrinkResources = true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.debug
+            debuggable false
+        }
+        releaseTest {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+            debuggable true
+        }
+        //debuggableRelease.initWith(release)
+        debug {
+            minifyEnabled false
+            debuggable true // только для отладки
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
     kotlinOptions {
-        jvmTarget = '17'
+        //jvmTarget = '17'
     }
+
     buildToolsVersion '36.0.0'
     ndkVersion '29.0.13846066 rc3'
     //buildToolsVersion '35.0.0 rc2'
@@ -72,21 +96,44 @@ android {
             universalApk false // не генерировать "универсальный" APK
         }
     }
+    configurations {
+        [
+                "implementation",
+                "api",
+                "compileOnly",
+                "runtimeOnly",
+                "debugImplementation",
+                "releaseImplementation"
+        ].each { name ->
+            getByName(name) {
+                exclude group: 'com.intellij', module: 'annotations'
+            }
+        }
+    }
+}
+
+kotlin {
+    jvmToolchain(17) // ✅ Единая точка настройки
 }
 
 dependencies {
-
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
     implementation libs.material
     implementation libs.androidx.activity
     implementation libs.androidx.constraintlayout
     implementation libs.play.services.maps
-    testImplementation libs.junit
-    androidTestImplementation libs.androidx.junit
-    androidTestImplementation libs.androidx.espresso.core
-
-    implementation libs.material
     implementation libs.androidx.viewpager2
     implementation 'com.yandex.android:maps.mobile:4.19.0-lite'
-}
+
+    // Room — только через libs.versions.toml
+    implementation libs.androidx.room.runtime
+    implementation libs.androidx.room.ktx
+    kapt libs.androidx.room.compiler
+
+    // Ключево: metadata для kapt
+    kapt libs.kotlinx.metadata.jvm
+
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core}

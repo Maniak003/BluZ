@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
-                android:text="Record"
+                android:text="@string/textRecord"
                 android:textAllCaps="false"
                 android:textColor="@color/buttonTextColor"
                 android:textSize="12sp" />
@@ -42,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
-                android:text="Locate"
+                android:text="@string/textLocateMap"
                 android:textAllCaps="false"
                 android:textColor="@color/buttonTextColor"
                 android:textSize="12sp" />
@@ -53,8 +53,29 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
-                android:text="Add"
+                android:text="@string/textAddGPS"
                 android:textAllCaps="false"
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/buttonTracks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
+                android:backgroundTint="@color/buttonColor"
+                android:text="@string/textTrack"
+                android:textAllCaps="false"
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/buttonNewTrack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
+                android:backgroundTint="@color/buttonColor"
+                android:text="@string/newTarck"
                 android:textColor="@color/buttonTextColor"
                 android:textSize="12sp" />
         </LinearLayout>

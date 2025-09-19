@@ -13,12 +13,11 @@ class ContinuousLocationManager(
     private val context: Bundle,
     private val onLocationUpdate: (Location) -> Unit) {
 
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(GO.mainContext)
     private lateinit var locationCallback: LocationCallback
     private var isTracking = false
 
     init {
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(GO.mainContext)
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 result.lastLocation?.let { location ->
