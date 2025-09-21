@@ -843,7 +843,7 @@ void MX_ADC4_Init(void)
   hadc4.Init.DMAContinuousRequests = ENABLE;
   hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
   hadc4.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-  hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_12CYCLES_5;
+  hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_1CYCLE_5;
   hadc4.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_814CYCLES_5;
   hadc4.Init.OversamplingMode = DISABLE;
   if (HAL_ADC_Init(&hadc4) != HAL_OK)
@@ -882,8 +882,10 @@ void MX_ADC4_Init(void)
 	  //hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_LOW;
 	  //hadc4.Init.Overrun = ADC_OVR_DATA_PRESERVED;
 	  hadc4.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
-	  hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_1CYCLE_5;		// для Sensl FC/FJ60035 + NaI:Tl
+	  hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_1CYCLE_5;			// для LaBr3:Ce
 	  //hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_3CYCLES_5;		// для Sensl FC/FJ60035 + NaI:Tl
+	  //hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_7CYCLES_5;
+	  //hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_12CYCLES_5;
 	  //hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_79CYCLES_5;		// для MacroPixel SC-14x25c-SiPM-T
 	  hadc4.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_814CYCLES_5;
 	  hadc4.Init.OversamplingMode = DISABLE;
