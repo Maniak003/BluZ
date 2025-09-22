@@ -90,6 +90,7 @@ class globalObj {
     public val propAquracy : String = "AquracyDozimeter"
     public val propBitsChan: String = "BitsOfChannel"
     public val propFullScrn: String = "FullScreen"
+    public val propNightMode: String = "NightMapMode"
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var allPermissionAccept: Boolean = false
@@ -147,6 +148,12 @@ class globalObj {
     public lateinit var impBLUE: ImageProvider
     public lateinit var impGREEN: ImageProvider
     public var currentTrck: Long = 0L
+    public lateinit var currentTrackName: TextView
+    public var currentTrack4Show: Long = 0L
+    public var nightMapModeEnab: Boolean = false
+    public lateinit var cbNightMapMode: CheckBox
+    public lateinit var recordTrc: Button
+    public var trackIsRecordeed: Boolean = false
 
     /*
     *   Элементы управления закладки Setup
@@ -633,9 +640,10 @@ class globalObj {
         GO.PP.setPropBoolean(propCfgLedKvant, GO.propLedKvant)
         GO.PP.setPropBoolean(propCfgSoundKvant, GO.propSoundKvant)
         GO.PP.setPropInt(propCfgSpectrGraphType, GO.specterGraphType)
-        GO.PP.setPropInt(propAquracy, GO.aqureValue)    // Точность усреднения для дозиметра, количество импульсов.
-        GO.PP.setPropInt(propBitsChan, GO.bitsChannel)  // Количество  бит в канале
-        GO.PP.setPropBoolean(propFullScrn, GO.fullScrn)
+        GO.PP.setPropInt(propAquracy, GO.aqureValue)                        // Точность усреднения для дозиметра, количество импульсов.
+        GO.PP.setPropInt(propBitsChan, GO.bitsChannel)                      // Количество  бит в канале
+        GO.PP.setPropBoolean(propFullScrn, GO.fullScrn)                     // Полноэкранный режим
+        GO.PP.setPropBoolean(propNightMode, GO.nightMapModeEnab)            // Ночной режим для карты
     }
 
     /*
@@ -717,6 +725,7 @@ class globalObj {
             GO.bitsChannel = 20
         }
         GO.fullScrn = GO.PP.getPropBoolean(propFullScrn)
+        GO.nightMapModeEnab = GO.PP.getPropBoolean(propNightMode)
     }
 
     /* Запуск таймера для автоматического подключения */

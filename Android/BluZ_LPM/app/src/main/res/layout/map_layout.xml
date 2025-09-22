@@ -10,7 +10,16 @@
     <com.yandex.mapkit.mapview.MapView
         android:id="@+id/mapview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent" >
+
+        <TextView
+            android:id="@+id/textCurrentTrack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="Current track:"
+            android:textColor="@color/Green" />
+    </com.yandex.mapkit.mapview.MapView>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -76,6 +85,7 @@
                 android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/newTarck"
+                android:textAllCaps="false"
                 android:textColor="@color/buttonTextColor"
                 android:textSize="12sp" />
         </LinearLayout>

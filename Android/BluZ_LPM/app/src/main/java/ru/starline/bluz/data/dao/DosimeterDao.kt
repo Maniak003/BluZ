@@ -24,6 +24,7 @@ interface DosimeterDao {
     @Query("SELECT * FROM tracks WHERE is_hidden = 0")
     fun getActiveTracksFlow(): Flow<Track>
 
+    /* Получение точек по track_id */
     @Query("SELECT * FROM track_details WHERE track_id = :trackId ORDER BY timestamp")
     suspend fun getPointsForTrack(trackId: Long): List<TrackDetail>
 

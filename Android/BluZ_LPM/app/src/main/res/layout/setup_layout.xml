@@ -362,19 +362,22 @@
                     android:layout_weight="0"
                     android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/textView26"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:text="Full scr"
-                        android:textColor="@color/labelTextColor" />
-
                     <CheckBox
                         android:id="@+id/CBFullScreen"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1" />
+                        android:layout_weight="0"
+                        android:text="Full scr"
+                        android:textColor="@color/editTextColor" />
+
+                    <CheckBox
+                        android:id="@+id/CBNightMode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:layout_weight="0"
+                        android:text="Night Map"
+                        android:textColor="@color/editTextColor" />
 
                     <Space
                         android:layout_width="match_parent"
