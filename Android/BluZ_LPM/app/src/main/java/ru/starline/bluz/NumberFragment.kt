@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
@@ -17,6 +18,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
+import android.view.WindowManager
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -24,6 +27,7 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
@@ -39,9 +43,12 @@ import java.util.Locale
 import androidx.core.graphics.createBitmap
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import com.yandex.mapkit.Animation
+import com.yandex.mapkit.geometry.BoundingBox
 import kotlinx.coroutines.launch
 import ru.starline.bluz.data.entity.Track
 import ru.starline.bluz.data.entity.TrackDetail
+import kotlin.math.abs
 
 const val ARG_OBJECT = "oblect"
 
@@ -184,6 +191,9 @@ class NumberFragment : Fragment() {
 
         /* Полноэкранный режим */
         GO.cbFullScrn.isChecked = GO.fullScrn
+
+        /* Ночной режим для карты */
+        GO.cbNightMapMode.isChecked = GO.nightMapModeEnab
     }
 
     override fun onCreateView(
@@ -509,8 +519,14 @@ class NumberFragment : Fragment() {
                 GO.aqureEdit = view.findViewById(R.id.editAquracy)
                 GO.bitsChannelEdit = view.findViewById(R.id.editBitsChannel)
                 GO.cbFullScrn = view.findViewById(R.id.CBFullScreen)
+                GO.cbNightMapMode = view.findViewById(R.id.CBNightMode)
 
                 reloadConfigParameters()
+
+                /* Изменение отображения режима карты */
+                GO.cbNightMapMode.setOnCheckedChangeListener { buttonView, isChecked ->
+                    GO.nightMapModeEnab = isChecked
+                }
 
                 /* Изменение полноэкранного режима включение / выключение видимости баров */
                 GO.cbFullScrn.setOnCheckedChangeListener { buttonView, isChecked ->
@@ -523,12 +539,55 @@ class NumberFragment : Fragment() {
                     if (isChecked) {
                         // Прозрачный статус-бар
                         window.statusBarColor = Color.TRANSPARENT
-                        insetsController.isAppearanceLightStatusBars = false // белые иконки
+                        //insetsController.isAppearanceLightStatusBars = false // белые иконки
+                        //Разрешаем рисовать ПОД челкой
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                        }
                     } else {
                         // Возвращаем цвет
                         window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.black)
-                        insetsController.isAppearanceLightStatusBars = true // чёрные иконки на светлом фоне
+                        //insetsController.isAppearanceLightStatusBars = true // чёрные иконки на светлом фоне
+                        // Возвращаем стандартное поведение для челки
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+                        }
                     }
+
+                    /*
+                    if (isChecked) {
+                        // Скрываем НАВИГАЦИОННУЮ панель (не статус-бар!)
+                        insetsController.hide(WindowInsets.Type.navigationBars())
+
+                        // Делаем статус-бар прозрачным, но оставляем его (значки времени и т.д.)
+                        window.statusBarColor = Color.TRANSPARENT
+                        insetsController.isAppearanceLightStatusBars = false // белые иконки
+
+                        // Разрешаем рисовать ПОД челкой
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            window.attributes.layoutInDisplayCutoutMode =
+                                if (isChecked) {
+                                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                                } else {
+                                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+                                }
+                        }
+
+                    } else {
+                        // Возвращаем всё обратно
+                        insetsController.show(WindowInsets.Type.navigationBars())
+                        insetsController.show(WindowInsets.Type.statusBars())
+
+                        window.statusBarColor = ContextCompat.getColor(requireContext(), R.color.black)
+                        insetsController.isAppearanceLightStatusBars = true
+
+                        // Возвращаем стандартное поведение для челки
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            window.attributes.layoutInDisplayCutoutMode =
+                                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+                        }
+                    }
+                    */
                 }
 
                 /* Измененние коэффициента A для разных разрешений */
@@ -1341,6 +1400,31 @@ class NumberFragment : Fragment() {
             } else if (getInt(ARG_OBJECT) == 5) {
                 /* Работа с картой и треками */
 
+
+                /* Кнопка запуска/остановкм записи трека. */
+                GO.recordTrc = view.findViewById(R.id.buttonRecord)
+                GO.recordTrc.setOnClickListener {
+                    if (GO.trackIsRecordeed) {
+                        /* Здесь останавливаем запись трека */
+                        GO.recordTrc.text = getString(R.string.startRec)
+                        GO.recordTrc.setTextColor(resources.getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                        GO.trackIsRecordeed = false
+                        GO.locationManager?.stopLocationUpdates()
+                    } else {
+                        /* Здесь начинаем запись трека */
+                        GO.recordTrc.text = getString(R.string.stopRec)
+                        GO.recordTrc.setTextColor(Color.RED)
+                        GO.trackIsRecordeed = true
+                        /* Запускаем менеджер обновления и записи данных */
+                        GO.locationManager?.startLocationUpdates()
+                        GO.currentTrck = GO.currentTrack4Show
+                    }
+                }
+
+
+                /* Название отображаемого трека */
+                GO.currentTrackName = view.findViewById(R.id.textCurrentTrack)
+
                 /* Создание нового трека */
                 val btnNewTrack : Button = view.findViewById(R.id.buttonNewTrack)
                 btnNewTrack.setOnClickListener {
@@ -1350,42 +1434,31 @@ class NumberFragment : Fragment() {
                     val input = EditText(context)
                     input.hint = "Введите название трека"
 
-                    // Диалог
+                    // Диалог создания нового трека
                     AlertDialog.Builder(context)
                         .setTitle("New track")
                         .setView(input) // добавляем поле ввода
                         .setPositiveButton("Create") { dialog, _ ->
                             val name = input.text.toString().trim()
                             if (name.isEmpty()) {
-                                Toast.makeText(context, "Имя не может быть пустым", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Name is empty.", Toast.LENGTH_SHORT).show()
                                 return@setPositiveButton
                             }
 
                             // Запускаем корутину для сохранения в БД
                             lifecycleScope.launch {
                                 try {
-                                    val newTrack = Track(
-                                        id = 0,
-                                        name = name,
-                                        createdAt = System.currentTimeMillis() / 1000,
-                                        isActive = false,
-                                        isHidden = false
-                                    )
-                                    val trackId = GO.dao.insertTrack(newTrack)
-
+                                    val newTrack = Track( id = 0, name = name, createdAt = System.currentTimeMillis() / 1000, isActive = false, isHidden = false)
+                                    GO.currentTrack4Show = GO.dao.insertTrack(newTrack)
+                                    GO.map?.mapObjects?.clear()
                                     // Сразу делаем активным
                                     //GO.dao.deactivateAllTracks()
                                     //GO.dao.activateTrack(trackId)
                                     //GO.currentTrck = trackId
-
-                                    //Toast.makeText(context, "Track '$name' created", Toast.LENGTH_LONG).show()
-
                                     // Здесь необходимо обновление списка.
                                     //refreshTrackList()
-
                                 } catch (e: Exception) {
                                     Log.e("TrackDialog", "Error create track", e)
-                                    //Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_LONG).show()
                                 }
                             }
                             dialog.dismiss()
@@ -1404,11 +1477,89 @@ class NumberFragment : Fragment() {
                         val tracks = GO.dao.getAllTracks()
                         val names = tracks.map { it.name }.toTypedArray()
 
+                        /* Изменение стиля диалогового окна, для уменьшения межстрочных интервалов */
+                        val adapter = object : ArrayAdapter<String>(requireContext(), R.layout.item_track_dialog, names) {
+                            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                                val view = super.getView(position, convertView, parent)
+                                val textView = view.findViewById<TextView>(R.id.textView)
+                                textView.text = names[position]
+                                return view
+                            }
+                        }
+
                         AlertDialog.Builder(requireContext())
                             .setTitle("Select track")
-                            .setItems(names) { _, which ->
+                            //.setItems(names) { _, which ->
+                            .setAdapter(adapter) { _, which ->
+                                GO.map?.mapObjects?.clear()                 // Очистим карту от старых объектов.
                                 val selectedTrack = tracks[which]
-                                //selectTrack(selectedTrack) // Трек выбран, нужно обработать
+                                GO.currentTrackName.text =  getString(R.string.current_track_label, selectedTrack.name)
+                                GO.currentTrack4Show = selectedTrack.id     // Запомним текущий отображаемый трек.
+                                lifecycleScope.launch {
+                                    val trcDet = GO.dao.getPointsForTrack(GO.currentTrack4Show)
+                                    for (detLoc in trcDet) {
+                                        if (detLoc.value > 0 && detLoc.latitude != 0.0 && detLoc.longitude != 0.0) {
+                                            val imp = when {        // Цвет метки в зависимости от CPS.
+                                                detLoc.value < GO.propLevel1.toFloat() -> GO.impBLUE
+                                                detLoc.value < GO.propLevel2.toFloat() -> GO.impGREEN
+                                                detLoc.value < GO.propLevel3.toFloat() -> GO.impYELLOW
+                                                else -> GO.impRED
+                                            }
+                                            GO.placemark =
+                                                GO.map?.mapObjects?.addPlacemark().apply {
+                                                    this?.geometry = Point(detLoc.latitude, detLoc.longitude)
+                                                    this!!.setIcon(imp)
+                                                }
+                                        }
+                                    }
+                                    /* Попробуем отобразить весь трек на экране */
+                                    if (trcDet.isNotEmpty()) {
+                                        val points = trcDet.map { Point(it.latitude, it.longitude) }
+                                        // Если одна точка — просто центрируем на ней
+                                        if (points.size == 1) {
+                                            GO.map?.move(
+                                                CameraPosition(points.first(), 15f, 0f, 0f),
+                                                Animation(Animation.Type.SMOOTH, 1f),
+                                                null
+                                            )
+                                        } else {
+                                            val latitudes = points.map { it.latitude }
+                                            val longitudes = points.map { it.longitude }
+                                            val southWest = Point(latitudes.minOf { it }, longitudes.minOf { it })
+                                            val northEast = Point(latitudes.maxOf { it }, longitudes.maxOf { it })
+                                            val latDiff = abs(northEast.latitude - southWest.latitude)
+                                            val lonDiff = abs(northEast.longitude - southWest.longitude)
+
+                                            val minLat = latitudes.minOf { it }
+                                            val maxLat = latitudes.maxOf { it }
+                                            val minLon = longitudes.minOf { it }
+                                            val maxLon = longitudes.maxOf { it }
+
+                                            // Диагональ трека — максимальное расстояние между точками
+                                            var maxDistance = 0.0
+                                            for (p1 in points) {
+                                                for (p2 in points) {
+                                                    val dist = GO.locationManager?.haversineDistance(p1.latitude, p1.longitude, p2.latitude, p2.longitude)
+                                                    if (dist!! > maxDistance) maxDistance = dist
+                                                }
+                                            }
+
+                                            /* Вычисляем широту центра трека для учета искажения Меркатора */
+                                            val centerLat = (southWest.latitude + northEast.latitude) / 2
+                                            // Вычисляем zoom с учетом кривизны земли
+                                            //val zoom = GO.locationManager?.calculateZoomFromDiagonal(GO.mapView, maxDistance)
+                                            // Вычисляем zoom без учета кривизны земли.
+                                            val zoom = GO.locationManager?.calculateZoomLevel(GO.mapView, latDiff, lonDiff, centerLat)
+                                            val center = Point( (centerLat),(southWest.longitude + northEast.longitude) / 2 )
+                                            // Перемещаем камеру, чтобы все точки были видны
+                                            GO.map?.move(
+                                                CameraPosition(center, zoom!!, 0f, 0f),
+                                                Animation(Animation.Type.SMOOTH, 0.0f),
+                                                null
+                                            )
+                                        }
+                                    }
+                                }
                             }
                             .setNegativeButton("Close", null)
                             .show()
@@ -1482,6 +1633,7 @@ class NumberFragment : Fragment() {
                 GO.mapView.onStart()
                 //GO.map?.isRotateGesturesEnabled = false         // Отключим поворот карты
                 GO.map?.set2DMode(true)
+                GO.map?.isNightModeEnabled = GO.nightMapModeEnab
                 // Создаём менеджер
                 GO.locationManager = ContinuousLocationManager(this) { location ->
                     // Этот блок вызывается при каждом обновлении
@@ -1508,15 +1660,7 @@ class NumberFragment : Fragment() {
                                 "BluZ-BT","Lat: ${location.latitude}, Lng: ${location.longitude}, Accuracy: ${location.accuracy}, cps:${cpsAveredge}, CT: ${GO.currentTrck}"
                             )
                             if (GO.currentTrck > 0 && cpsAveredge > 0) {
-                                val trcDet = TrackDetail(
-                                    0,
-                                    GO.currentTrck,
-                                    1,
-                                    location.latitude,
-                                    location.longitude,
-                                    cpsAveredge.toDouble(),
-                                    System.currentTimeMillis() / 1000
-                                )
+                                val trcDet = TrackDetail(0, GO.currentTrck,1,location.latitude,location.longitude,cpsAveredge.toDouble(), System.currentTimeMillis() / 1000)
                                 lifecycleScope.launch {
                                     GO.dao.insertPoint(trcDet)
                                 }
@@ -1535,7 +1679,6 @@ class NumberFragment : Fragment() {
                         }
                     }
                 }
-                GO.locationManager?.startLocationUpdates()
             }
         }
     }

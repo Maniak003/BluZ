@@ -5,6 +5,7 @@ plugins {
     //id 'com.android.library' version '8.5.0' apply false
     id 'kotlin-kapt'
     //id 'com.google.devtools.ksp' //version '1.9.20-1.0.15'
+    //id("com.google.devtools.ksp") version "1.9.20-1.0.15" apply false
 }
 
 ext {
@@ -110,6 +111,13 @@ android {
             }
         }
     }
+    //kapt {
+    //    arguments {
+    //        arg("room.schemaLocation", "$projectDir/schemas".toString())
+    //        arg("room.incremental", "true")
+    //        arg("room.expandProjection", "true")
+    //    }
+    //}
 }
 
 kotlin {
@@ -128,10 +136,10 @@ dependencies {
 
     // Room — только через libs.versions.toml
     implementation libs.androidx.room.runtime
-    implementation libs.androidx.room.ktx
+    implementation libs.androidx.runtime
+    //implementation libs.androidx.room.ktx
     kapt libs.androidx.room.compiler
-
-    // Ключево: metadata для kapt
+    //ksp libs.androidx.room.compiler
     kapt libs.kotlinx.metadata.jvm
 
     testImplementation libs.junit
