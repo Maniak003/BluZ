@@ -9,6 +9,7 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -43,11 +44,17 @@ import java.util.Locale
 import androidx.core.graphics.createBitmap
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.android.play.core.integrity.e
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.geometry.BoundingBox
 import kotlinx.coroutines.launch
 import ru.starline.bluz.data.entity.Track
 import ru.starline.bluz.data.entity.TrackDetail
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
 import kotlin.math.abs
 
 const val ARG_OBJECT = "oblect"
@@ -96,6 +103,10 @@ class NumberFragment : Fragment() {
         GO.propButtonInit = false                               // Отключим реакцию в листенерах компонентов
         if (GO.LEMAC.isNotEmpty()) {
             GO.textMACADR.setText(GO.LEMAC)
+        }
+        when (GO.saveTrackType) {
+            0 -> GO.rbKMLType.isChecked = true
+            1 -> GO.rbGPXType.isChecked = true
         }
         when (GO.saveSpecterType) {
             0 -> {
@@ -520,6 +531,9 @@ class NumberFragment : Fragment() {
                 GO.bitsChannelEdit = view.findViewById(R.id.editBitsChannel)
                 GO.cbFullScrn = view.findViewById(R.id.CBFullScreen)
                 GO.cbNightMapMode = view.findViewById(R.id.CBNightMode)
+                GO.rbGPXType = view.findViewById(R.id.rbGPX)
+                GO.rbKMLType = view.findViewById(R.id.rbKML)
+                GO.rbTrackFmt = view.findViewById(R.id.RGTrackFormat)
 
                 reloadConfigParameters()
 
@@ -1077,6 +1091,27 @@ class NumberFragment : Fragment() {
                 rgTypeSpec = view.findViewById(R.id.rgTypeSpectr)
                 rbResolution = view.findViewById(R.id.RGResolution)
 
+                /* Переключатель формата для сохранения спектра */
+                GO.rbTrackFmt.setOnCheckedChangeListener { _, checkedId -> view.findViewById<RadioButton>(checkedId)?.apply {
+                    noChange = false
+                    when (checkedId) {
+                        GO.rbKMLType.id -> {
+                            GO.saveTrackType = 0
+                            if (GO.isButtonSaveTrackInitialized) {
+                                GO.buttonSaveTrack.text = resources.getString(R.string.textKML)
+                            }
+                        }
+                        GO.rbGPXType.id -> {
+                            GO.saveTrackType = 1
+                            if (GO.isButtonSaveTrackInitialized) {
+                                GO.buttonSaveTrack.text = resources.getString(R.string.textGPX)
+                            }
+                        }
+                    }
+                    noChange = true
+                }
+                }
+
                 /*
                 *   Выбор типа сохранения спектра
                 */
@@ -1400,8 +1435,99 @@ class NumberFragment : Fragment() {
             } else if (getInt(ARG_OBJECT) == 5) {
                 /* Работа с картой и треками */
 
+                /* Сохранения трека */
+                GO.buttonSaveTrack = view.findViewById(R.id.buttonSaveTrack)
+                GO.buttonSaveTrack.setOnClickListener {
+                    when (GO.saveTrackType) {
+                        /* KML формат */
+                        0 -> {
+                            val sdf = SimpleDateFormat("dd.MM.yy HH:mm:ss", Locale.getDefault())
+                            /* Создадим файл для сохранения трека */
+                            val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
+                            val bluzDir = File("$documentsDir/BluZ")
+                            /* Проверяем наличие каталока приложения в Documents */
+                            if (!bluzDir.exists()) {
+                                bluzDir.mkdirs()        // Создаем если отсутствует
+                            }
+                            /* Формируем имя файла для сохранения трека */
+                            val fileKML = File("$documentsDir/BluZ/${GO.curretnTrcName}.kml")
+                            /* Если файл существует - удаляем */
+                            if (fileKML.exists()) {
+                                fileKML.delete()
+                            }
+                            Log.i("BluZ-BT", "File: $fileKML")
+                            try {
+                                /* Пробуем создать файл */
+                                if (fileKML.createNewFile()) {
+                                    Log.d("BluZ-BT", "File create Ok.")
+                                    val outputStream = FileOutputStream(fileKML)
+                                    var kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_header).bufferedReader().use { it.readText() }
+                                    val kmlHdr = kmlTmp.replace("____NAME____", GO.curretnTrcName).replace("____DECRIPTION____", "BluZ KML")
 
-                /* Кнопка запуска/остановкм записи трека. */
+                                    kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_style).bufferedReader().use { it.readText() }
+                                    val kmlStl = kmlTmp.replace("____STYLEID____", "blueStyle").replace("____COLOR____", "ffff0000")
+                                    kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_point).bufferedReader().use { it.readText() }
+
+                                    /* Записываем заголовок файла */
+                                    outputStream.write(kmlHdr.toByteArray())
+                                    /* Записываем стили */
+                                    outputStream.write(kmlStl.toByteArray())
+
+                                    lifecycleScope.launch {
+                                        /* Выбираем точки для теккущего трека */
+                                        val trcDet = GO.dao.getPointsForTrack(GO.currentTrack4Show)
+                                        for (detLoc in trcDet) {
+                                            if (detLoc.latitude != 0.0 && detLoc.longitude != 0.0) {
+                                                var imp =
+                                                    when {        // Цвет метки в зависимости от CPS.
+                                                        detLoc.cps < GO.propLevel1.toFloat() -> GO.impBLUE
+                                                        detLoc.cps < GO.propLevel2.toFloat() -> GO.impGREEN
+                                                        detLoc.cps < GO.propLevel3.toFloat() -> GO.impYELLOW
+                                                        detLoc.cps > GO.propLevel3.toFloat() -> GO.impRED
+                                                        else -> GO.impBLACK
+                                                    }
+                                                /* Если CPS не определен */
+                                                if (detLoc.cps < 0) {
+                                                    imp = GO.impBLACK
+                                                }
+                                                val kmlPnt = kmlTmp.replace("____POINTNAME____","Point " + detLoc.id.toString())
+                                                    .replace("____STRING1____","Time:" + sdf.format(Date(detLoc.timestamp * 1000)))
+                                                    .replace("____STRING2____","CPS:" + detLoc.cps.toString())
+                                                    .replace("____STRING3____","Speed:" + detLoc.speed.toString())
+                                                    .replace("____STRING4____","Altit:" + detLoc.altitude.toString())
+                                                    .replace("____STRING5____","Accur:" + detLoc.accuracy.toString())
+                                                    .replace("____STRING6____","Magn:" + detLoc.magnitude.toString())
+                                                    .replace("____LOCATIONSTR____",detLoc.longitude.toString() + "," + detLoc.latitude.toString() + "," + detLoc.altitude.toString())
+                                                    .replace("____POINTSTYLE____", "blueStyle")
+                                                /* Записываем поинт */
+                                                outputStream.write(kmlPnt.toByteArray())
+                                            }
+                                        }
+                                        kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_footer).bufferedReader().use { it.readText() }
+                                        outputStream.write(kmlTmp.toByteArray())
+                                        outputStream.close()
+                                        Toast.makeText(context, "Save complete.", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            } catch (e: IOException) {
+                                Toast.makeText(context, "Error save file. ${e.toString()}", Toast.LENGTH_SHORT).show()
+                                Log.e("BluZ-BT", "Error: .", e)
+                            }
+                        }
+
+                        /* GPX формат */
+                        1-> {
+
+                        }
+                    }
+                }
+
+                when (GO.saveTrackType) {
+                    0 -> GO.buttonSaveTrack.text = resources.getString(R.string.textKML)
+                    1 -> GO.buttonSaveTrack.text = resources.getString(R.string.textGPX)
+                }
+
+                /* Кнопка запуска/остановки записи трека. */
                 GO.recordTrc = view.findViewById(R.id.buttonRecord)
                 GO.recordTrc.setOnClickListener {
                     if (GO.trackIsRecordeed) {
@@ -1420,7 +1546,6 @@ class NumberFragment : Fragment() {
                         GO.currentTrck = GO.currentTrack4Show
                     }
                 }
-
 
                 /* Название отображаемого трека */
                 GO.currentTrackName = view.findViewById(R.id.textCurrentTrack)
@@ -1493,17 +1618,23 @@ class NumberFragment : Fragment() {
                             .setAdapter(adapter) { _, which ->
                                 GO.map?.mapObjects?.clear()                 // Очистим карту от старых объектов.
                                 val selectedTrack = tracks[which]
+                                GO.curretnTrcName = selectedTrack.name
                                 GO.currentTrackName.text =  getString(R.string.current_track_label, selectedTrack.name)
                                 GO.currentTrack4Show = selectedTrack.id     // Запомним текущий отображаемый трек.
                                 lifecycleScope.launch {
-                                    val trcDet = GO.dao.getPointsForTrack(GO.currentTrack4Show)
+                                 val trcDet = GO.dao.getPointsForTrack(GO.currentTrack4Show)
                                     for (detLoc in trcDet) {
-                                        if (detLoc.value > 0 && detLoc.latitude != 0.0 && detLoc.longitude != 0.0) {
-                                            val imp = when {        // Цвет метки в зависимости от CPS.
-                                                detLoc.value < GO.propLevel1.toFloat() -> GO.impBLUE
-                                                detLoc.value < GO.propLevel2.toFloat() -> GO.impGREEN
-                                                detLoc.value < GO.propLevel3.toFloat() -> GO.impYELLOW
-                                                else -> GO.impRED
+                                        if (detLoc.latitude != 0.0 && detLoc.longitude != 0.0) {
+                                            var imp = when {        // Цвет метки в зависимости от CPS.
+                                                detLoc.cps < GO.propLevel1.toFloat() -> GO.impBLUE
+                                                detLoc.cps < GO.propLevel2.toFloat() -> GO.impGREEN
+                                                detLoc.cps < GO.propLevel3.toFloat() -> GO.impYELLOW
+                                                detLoc.cps > GO.propLevel3.toFloat() -> GO.impRED
+                                                else -> GO.impBLACK
+                                            }
+                                            /* Если CPS не определен */
+                                            if (detLoc.cps < 0) {
+                                                imp = GO.impBLACK
                                             }
                                             GO.placemark =
                                                 GO.map?.mapObjects?.addPlacemark().apply {
@@ -1530,10 +1661,10 @@ class NumberFragment : Fragment() {
                                             val latDiff = abs(northEast.latitude - southWest.latitude)
                                             val lonDiff = abs(northEast.longitude - southWest.longitude)
 
-                                            val minLat = latitudes.minOf { it }
-                                            val maxLat = latitudes.maxOf { it }
-                                            val minLon = longitudes.minOf { it }
-                                            val maxLon = longitudes.maxOf { it }
+                                            //val minLat = latitudes.minOf { it }
+                                            //val maxLat = latitudes.maxOf { it }
+                                            //val minLon = longitudes.minOf { it }
+                                            //val maxLon = longitudes.maxOf { it }
 
                                             // Диагональ трека — максимальное расстояние между точками
                                             var maxDistance = 0.0
@@ -1551,7 +1682,7 @@ class NumberFragment : Fragment() {
                                             // Вычисляем zoom без учета кривизны земли.
                                             val zoom = GO.locationManager?.calculateZoomLevel(GO.mapView, latDiff, lonDiff, centerLat)
                                             val center = Point( (centerLat),(southWest.longitude + northEast.longitude) / 2 )
-                                            // Перемещаем камеру, чтобы все точки были видны
+                                            // Перемещаем камеру, что бы все точки были видны
                                             GO.map?.move(
                                                 CameraPosition(center, zoom!!, 0f, 0f),
                                                 Animation(Animation.Type.SMOOTH, 0.0f),
@@ -1567,7 +1698,7 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Добавление поинта */
-                var btnAddPoint: Button = view.findViewById(R.id.buttonAddPoint)
+                val btnAddPoint: Button = view.findViewById(R.id.buttonAddPoint)
                 btnAddPoint.setOnClickListener {
                     //val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
                     //DrawableCompat.setTint(drawable, Color.RED)
@@ -1595,13 +1726,14 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Показать текущую позицию */
-                var btnMapLocate: Button = view.findViewById(R.id.buttonMapLocate)
+                val btnMapLocate: Button = view.findViewById(R.id.buttonMapLocate)
                 btnMapLocate.setOnClickListener {
                     /*
                     Get GPS location
                     */
                     try {
                         //val lm = GO.mainContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                        //val loc: Location? = lm.getCurrentLocation(Context.LOCATION_SERVICE, )
                         //val loc: Location? = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                         //if (loc != null) {
                         //    GO.Latitude = loc.latitude
@@ -1623,7 +1755,7 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Яндекс API */
-                GO.createRainbowColors()
+                GO.createRainbowColors()        // Создание градиента для меток.
                 val lm = GO.mainContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
                 GO.lastPointLoc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)!!
                 GO.mapView = view.findViewById(R.id.mapview)
@@ -1649,26 +1781,42 @@ class NumberFragment : Fragment() {
                                 results
                             )
                             /* Расчитываем средний cps за интервал между метками*/
-                            val cpsAveredge: Float = GO.cpsAVG / GO.cpsIntervalCount
+                            var cpsAveredge: Float = GO.cpsAVG / GO.cpsIntervalCount
                             val imp = when {
                                 cpsAveredge < GO.propLevel1.toFloat() -> GO.impBLUE
                                 cpsAveredge < GO.propLevel2.toFloat() -> GO.impGREEN
                                 cpsAveredge < GO.propLevel3.toFloat() -> GO.impYELLOW
-                                else -> GO.impRED
+                                cpsAveredge > GO.propLevel3.toFloat() -> GO.impRED
+                                else -> GO.impBLACK
                             }
                             Log.i(
                                 "BluZ-BT","Lat: ${location.latitude}, Lng: ${location.longitude}, Accuracy: ${location.accuracy}, cps:${cpsAveredge}, CT: ${GO.currentTrck}"
                             )
-                            if (GO.currentTrck > 0 && cpsAveredge > 0) {
-                                val trcDet = TrackDetail(0, GO.currentTrck,1,location.latitude,location.longitude,cpsAveredge.toDouble(), System.currentTimeMillis() / 1000)
+                            if (GO.currentTrck > 0) {
+                                /* Если CPS не определено - заменим значение на -1,
+                                для точной идентификации не определенного значения */
+                                if (cpsAveredge.isNaN() or (cpsAveredge == 0.0f)) {
+                                    cpsAveredge = -1.0f
+                                }
+                                val trcDet = TrackDetail(
+                                    0,
+                                    GO.currentTrck,
+                                    location.latitude,
+                                    location.longitude,
+                                    location.accuracy,
+                                    cpsAveredge,
+                                    location.altitude,
+                                    location.speed,
+                                    0.0,
+                                    System.currentTimeMillis() / 1000)
                                 lifecycleScope.launch {
                                     GO.dao.insertPoint(trcDet)
                                 }
                             }
                             GO.cpsAVG = 0.0f
                             GO.cpsIntervalCount = 0
-                            if (location.accuracy < 10.0f && results[0] > 10.0f) { // Если изменение более 10 метров - добавляем маркер.
-                                GO.lastPointLoc = location
+                            if (/*location.accuracy < 10.0f && */results[0] > 10.0f) { // Если изменение более 10 метров - добавляем маркер.
+                                GO.lastPointLoc = location      // Последняя сохраненная координата.
                                 GO.placemark = GO.map?.mapObjects?.addPlacemark().apply {
                                     this?.geometry = Point(location.latitude, location.longitude)
                                     this!!.setIcon(imp)

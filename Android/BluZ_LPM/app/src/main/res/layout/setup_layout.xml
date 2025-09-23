@@ -108,7 +108,8 @@
                                     android:layout_weight="1"
                                     android:checked="true"
                                     android:text="Line"
-                                    android:textColor="@color/editTextColor" />
+                                    android:textColor="@color/editTextColor"
+                                    android:textSize="12sp" />
 
                                 <RadioButton
                                     android:id="@+id/rbGistogram"
@@ -116,7 +117,8 @@
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
                                     android:text="Gisto"
-                                    android:textColor="@color/editTextColor" />
+                                    android:textColor="@color/editTextColor"
+                                    android:textSize="12sp" />
 
                             </RadioGroup>
 
@@ -145,7 +147,8 @@
                         android:layout_weight="1"
                         android:checked="true"
                         android:text="@string/RBLine"
-                        android:textColor="@color/editTextColor" />
+                        android:textColor="@color/editTextColor"
+                        android:textSize="12sp" />
 
                     <RadioButton
                         android:id="@+id/RBLg"
@@ -153,7 +156,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/RBLog"
-                        android:textColor="@color/editTextColor" />
+                        android:textColor="@color/editTextColor"
+                        android:textSize="12sp" />
 
                     <RadioButton
                         android:id="@+id/RBFoneLin"
@@ -161,7 +165,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/RBFoneLin"
-                        android:textColor="@color/editTextColor" />
+                        android:textColor="@color/editTextColor"
+                        android:textSize="12sp" />
 
                     <RadioButton
                         android:id="@+id/RBFoneLg"
@@ -169,7 +174,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/RBFoneLog"
-                        android:textColor="@color/editTextColor" />
+                        android:textColor="@color/editTextColor"
+                        android:textSize="12sp" />
                 </RadioGroup>
 
                 <LinearLayout
@@ -368,7 +374,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
                         android:text="Full scr"
-                        android:textColor="@color/editTextColor" />
+                        android:textColor="@color/editTextColor"
+                        android:textSize="12sp" />
 
                     <CheckBox
                         android:id="@+id/CBNightMode"
@@ -376,8 +383,43 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="5dp"
                         android:layout_weight="0"
-                        android:text="Night Map"
-                        android:textColor="@color/editTextColor" />
+                        android:text="Night"
+                        android:textColor="@color/editTextColor"
+                        android:textSize="12sp" />
+
+                    <RadioGroup
+                        android:id="@+id/RGTrackFormat"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0"
+                        android:orientation="horizontal">
+
+                        <Space
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1" />
+
+                        <RadioButton
+                            android:id="@+id/rbKML"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="-5dp"
+                            android:layout_weight="1"
+                            android:checked="true"
+                            android:text="KML"
+                            android:textColor="@color/editTextColor"
+                            android:textSize="12sp" />
+
+                        <RadioButton
+                            android:id="@+id/rbGPX"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="-5dp"
+                            android:layout_weight="1"
+                            android:text="GPX"
+                            android:textColor="@color/editTextColor"
+                            android:textSize="12sp" />
+                    </RadioGroup>
 
                     <Space
                         android:layout_width="match_parent"
@@ -418,7 +460,7 @@
                         android:layout_weight="1"
                         android:text="@string/soundKvant"
                         android:textColor="@color/editTextColor"
-                        android:textSize="14sp" />
+                        android:textSize="12sp" />
 
                     <CheckBox
                         android:id="@+id/CBledKvant"
@@ -426,7 +468,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/ledKvant"
-                        android:textColor="@color/editTextColor" />
+                        android:textColor="@color/editTextColor"
+                        android:textSize="12sp" />
 
                     <CheckBox
                         android:id="@+id/CBSpectrometer"
@@ -434,7 +477,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/autoStart"
-                        android:textColor="@color/editTextColor" />
+                        android:textColor="@color/editTextColor"
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -677,7 +721,7 @@
                         android:layout_weight="0"
                         android:text="@string/textResolution"
                         android:textColor="@color/labelTextColor"
-                        android:textSize="14sp" />
+                        android:textSize="12sp" />
 
                     <RadioGroup
                         android:id="@+id/RGResolution"
@@ -694,7 +738,8 @@
                             android:layout_marginBottom="-2dp"
                             android:checked="true"
                             android:text="@string/textRes1024"
-                            android:textColor="@color/editTextColor" />
+                            android:textColor="@color/editTextColor"
+                            android:textSize="12sp" />
 
                         <RadioButton
                             android:id="@+id/RBResol2048"
@@ -703,7 +748,8 @@
                             android:layout_marginTop="-2dp"
                             android:layout_marginBottom="-2dp"
                             android:text="@string/textRes2048"
-                            android:textColor="@color/editTextColor" />
+                            android:textColor="@color/editTextColor"
+                            android:textSize="12sp" />
 
                         <RadioButton
                             android:id="@+id/RBResol4096"
@@ -712,7 +758,8 @@
                             android:layout_marginTop="-2dp"
                             android:layout_marginBottom="-2dp"
                             android:text="@string/textRes4096"
-                            android:textColor="@color/editTextColor" />
+                            android:textColor="@color/editTextColor"
+                            android:textSize="12sp" />
                     </RadioGroup>
 
                     <TextView
@@ -723,7 +770,7 @@
                         android:layout_weight="0"
                         android:text="Aqur:"
                         android:textColor="@color/labelTextColor"
-                        android:textSize="14sp" />
+                        android:textSize="12sp" />
 
                     <EditText
                         android:id="@+id/editAquracy"
