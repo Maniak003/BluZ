@@ -1,0 +1,15 @@
+    <Placemark>
+      <name>____POINTNAME____</name>
+      <description><![CDATA[
+        ____STRING1____
+        ____STRING2____
+        ____STRING3____
+        ____STRING4____
+        ____STRING5____
+        ____STRING6____
+      ]]></description>
+      <styleUrl>____POINTSTYLE____</styleUrl>
+      <Point>
+        <coordinates>____LOCATIONSTR____</coordinates>
+      </Point>
+    </Placemark>

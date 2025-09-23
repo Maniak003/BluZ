@@ -88,6 +88,17 @@
                 android:textAllCaps="false"
                 android:textColor="@color/buttonTextColor"
                 android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/buttonSaveTrack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
+                android:backgroundTint="@color/buttonColor"
+                android:text="Save"
+                android:textAllCaps="false"
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
         </LinearLayout>
 
     </LinearLayout>

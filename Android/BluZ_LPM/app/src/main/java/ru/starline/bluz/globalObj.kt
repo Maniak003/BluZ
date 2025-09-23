@@ -91,6 +91,7 @@ class globalObj {
     public val propBitsChan: String = "BitsOfChannel"
     public val propFullScrn: String = "FullScreen"
     public val propNightMode: String = "NightMapMode"
+    public val propSaveTrackType: String = "SaveTrackType"
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var allPermissionAccept: Boolean = false
@@ -143,18 +144,26 @@ class globalObj {
     public var locationManager: ContinuousLocationManager? = null
     public var placemark: PlacemarkMapObject? = null
     public lateinit var lastPointLoc: Location
+    public lateinit var impBLACK: ImageProvider
     public lateinit var impRED: ImageProvider
     public lateinit var impYELLOW: ImageProvider
     public lateinit var impBLUE: ImageProvider
     public lateinit var impGREEN: ImageProvider
     public var currentTrck: Long = 0L
     public lateinit var currentTrackName: TextView
+    public var curretnTrcName: String = ""
     public var currentTrack4Show: Long = 0L
     public var nightMapModeEnab: Boolean = false
     public lateinit var cbNightMapMode: CheckBox
     public lateinit var recordTrc: Button
     public var trackIsRecordeed: Boolean = false
-
+    public var saveTrackType: Int = 0
+    public lateinit var rbTrackFmt: RadioGroup
+    public lateinit var rbKMLType: RadioButton
+    public lateinit var rbGPXType: RadioButton
+    public lateinit var buttonSaveTrack: Button
+    val isButtonSaveTrackInitialized
+        get() = ::buttonSaveTrack.isInitialized
     /*
     *   Элементы управления закладки Setup
     */
@@ -644,6 +653,7 @@ class globalObj {
         GO.PP.setPropInt(propBitsChan, GO.bitsChannel)                      // Количество  бит в канале
         GO.PP.setPropBoolean(propFullScrn, GO.fullScrn)                     // Полноэкранный режим
         GO.PP.setPropBoolean(propNightMode, GO.nightMapModeEnab)            // Ночной режим для карты
+        GO.PP.setPropInt(propSaveTrackType, GO.saveTrackType)               // Формат для сохранения трека
     }
 
     /*
@@ -726,6 +736,7 @@ class globalObj {
         }
         GO.fullScrn = GO.PP.getPropBoolean(propFullScrn)
         GO.nightMapModeEnab = GO.PP.getPropBoolean(propNightMode)
+        GO.saveTrackType = GO.PP.getPropInt(propSaveTrackType)
     }
 
     /* Запуск таймера для автоматического подключения */
@@ -753,13 +764,13 @@ class globalObj {
     /* Создание радужного массива */
     private lateinit var bitmap: Bitmap
     private lateinit var canvas: Canvas
-    val imp = arrayOfNulls<ImageProvider?>(256)
+    val imp = arrayOfNulls<ImageProvider?>(16)
     fun createRainbowColors() {
         val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
         bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
         canvas = Canvas(bitmap)
-        for (i in 0 until 256) {
-            val hue = i * 270f / 255f  // От 0 до ~270 градусов
+        for (i in 0 until 16) {
+            val hue = i * 270f / 16f  // От 0 до ~270 градусов
             val hsv = floatArrayOf(hue, 1.0f, 1.0f)  // Насыщенность и яркость = 100%
             DrawableCompat.setTint(drawable, Color.HSVToColor(hsv))
             drawable.setBounds(0, 0, canvas.width, canvas.height)

@@ -29,7 +29,6 @@ import com.yandex.mapkit.MapKitFactory
 import com.yandex.runtime.image.ImageProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ru.starline.bluz.data.entity.PointType
 import ru.starline.bluz.data.entity.Track
 import kotlin.system.exitProcess
 
@@ -118,13 +117,6 @@ override fun onStart() {
         GO.txtIsotopInfo = findViewById(R.id.textIsotopInfo)
         lifecycleScope.launch {
             val dao = GO.dao
-            /* Создание справочника типов данных */
-            if (dao.getAllPointTypes().isEmpty()) {
-                dao.insertPointType(PointType(0, "CPS"))
-                dao.insertPointType(PointType(0, "Temperature"))
-                dao.insertPointType(PointType(0, "Magnetic Field"))
-                dao.insertPointType(PointType(0, "Only location"))
-            }
             /* Создание первого трека */
             if (dao.getActiveTracks().isEmpty()) {
                 dao.insertTrack(Track(0, "Default track", System.currentTimeMillis() / 1000))
@@ -170,6 +162,12 @@ override fun onStart() {
         drawable.setBounds(0, 0, canvas.width, canvas.height)
         drawable.draw(canvas)
         GO.impGREEN = ImageProvider.fromBitmap(bitmap)
+        DrawableCompat.setTint(drawable, Color.BLACK)
+        bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+        canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        GO.impBLACK = ImageProvider.fromBitmap(bitmap)
 
 
 

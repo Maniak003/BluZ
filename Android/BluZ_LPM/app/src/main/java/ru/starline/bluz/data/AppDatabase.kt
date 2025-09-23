@@ -5,12 +5,11 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import ru.starline.bluz.data.dao.DosimeterDao
-import ru.starline.bluz.data.entity.PointType
 import ru.starline.bluz.data.entity.Track
 import ru.starline.bluz.data.entity.TrackDetail
 
 @Database(
-    entities = [Track::class, PointType::class, TrackDetail::class],
+    entities = [Track::class, TrackDetail::class],
     version = 1,
     exportSchema = true
 )

@@ -1,0 +1,9 @@
+    <Style id="____STYLEID____">
+      <IconStyle>
+        <color>____COLOR____</color>
+        <scale>1.2</scale>
+        <Icon>
+          <href>https://maps.google.com/mapfiles/kml/paddle/red-stars.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
