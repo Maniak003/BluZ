@@ -24,6 +24,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.SeekBar
@@ -53,6 +54,7 @@ import ru.starline.bluz.data.entity.TrackDetail
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.math.RoundingMode
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.math.abs
@@ -1442,6 +1444,7 @@ class NumberFragment : Fragment() {
                         /* KML формат */
                         0 -> {
                             val sdf = SimpleDateFormat("dd.MM.yy HH:mm:ss", Locale.getDefault())
+                            val df = DecimalFormat("#.##").apply{roundingMode = RoundingMode.HALF_UP}
                             /* Создадим файл для сохранения трека */
                             val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
                             val bluzDir = File("$documentsDir/BluZ")
@@ -1449,69 +1452,90 @@ class NumberFragment : Fragment() {
                             if (!bluzDir.exists()) {
                                 bluzDir.mkdirs()        // Создаем если отсутствует
                             }
-                            /* Формируем имя файла для сохранения трека */
-                            val fileKML = File("$documentsDir/BluZ/${GO.curretnTrcName}.kml")
-                            /* Если файл существует - удаляем */
-                            if (fileKML.exists()) {
-                                fileKML.delete()
-                            }
-                            Log.i("BluZ-BT", "File: $fileKML")
-                            try {
-                                /* Пробуем создать файл */
-                                if (fileKML.createNewFile()) {
-                                    Log.d("BluZ-BT", "File create Ok.")
-                                    val outputStream = FileOutputStream(fileKML)
-                                    var kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_header).bufferedReader().use { it.readText() }
-                                    val kmlHdr = kmlTmp.replace("____NAME____", GO.curretnTrcName).replace("____DECRIPTION____", "BluZ KML")
+                            if (GO.curretnTrcName.isNotEmpty()) {
+                                /* Формируем имя файла для сохранения трека */
+                                val fileKML = File("$documentsDir/BluZ/${GO.curretnTrcName}.kml")
+                                /* Если файл существует - удаляем */
+                                if (fileKML.exists()) {
+                                    fileKML.delete()
+                                }
+                                Log.i("BluZ-BT", "File: $fileKML")
+                                try {
+                                    /* Пробуем создать файл */
+                                    if (fileKML.createNewFile()) {
+                                        Log.d("BluZ-BT", "File create Ok.")
+                                        val outputStream = FileOutputStream(fileKML)
+                                        var kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_header).bufferedReader().use { it.readText() }
+                                        val kmlHdr = kmlTmp.replace("____NAME____", GO.curretnTrcName).replace("____DECRIPTION____", "BluZ KML")
+                                        /* Записываем заголовок файла */
+                                        outputStream.write(kmlHdr.toByteArray())
 
-                                    kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_style).bufferedReader().use { it.readText() }
-                                    val kmlStl = kmlTmp.replace("____STYLEID____", "blueStyle").replace("____COLOR____", "ffff0000")
-                                    kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_point).bufferedReader().use { it.readText() }
+                                        /*
+                                        * icon https://maps.google.com/mapfiles/kml/paddle/red-stars.png
+                                        *         <Icon>
+                                        *            <href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png</href>
+                                        *            </Icon>
+                                        *
+                                        */
+                                        kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_style).bufferedReader().use { it.readText() }
+                                        /* Записываем стили */
+                                        var kmlStl = kmlTmp.replace("____ID____", "blueStyle").replace("____COLOR____", "ffff0000")
+                                        outputStream.write(kmlStl.toByteArray())
+                                        kmlStl = kmlTmp.replace("____ID____", "greenStyle").replace("____COLOR____", "ff00ff00")
+                                        outputStream.write(kmlStl.toByteArray())
+                                        kmlStl = kmlTmp.replace("____ID____", "yellowStyle").replace("____COLOR____", "ff00ffff")
+                                        outputStream.write(kmlStl.toByteArray())
+                                        kmlStl = kmlTmp.replace("____ID____", "redStyle").replace("____COLOR____", "ff0000ff")
+                                        outputStream.write(kmlStl.toByteArray())
+                                        kmlStl = kmlTmp.replace("____ID____", "blackStyle").replace("____COLOR____", "ff000000")
+                                        outputStream.write(kmlStl.toByteArray())
 
-                                    /* Записываем заголовок файла */
-                                    outputStream.write(kmlHdr.toByteArray())
-                                    /* Записываем стили */
-                                    outputStream.write(kmlStl.toByteArray())
+                                        kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_point).bufferedReader().use { it.readText() }
 
-                                    lifecycleScope.launch {
-                                        /* Выбираем точки для теккущего трека */
-                                        val trcDet = GO.dao.getPointsForTrack(GO.currentTrack4Show)
-                                        for (detLoc in trcDet) {
-                                            if (detLoc.latitude != 0.0 && detLoc.longitude != 0.0) {
-                                                var imp =
-                                                    when {        // Цвет метки в зависимости от CPS.
-                                                        detLoc.cps < GO.propLevel1.toFloat() -> GO.impBLUE
-                                                        detLoc.cps < GO.propLevel2.toFloat() -> GO.impGREEN
-                                                        detLoc.cps < GO.propLevel3.toFloat() -> GO.impYELLOW
-                                                        detLoc.cps > GO.propLevel3.toFloat() -> GO.impRED
-                                                        else -> GO.impBLACK
+                                        lifecycleScope.launch {
+                                            /* Выбираем точки для текущего трека */
+                                            val trcDet = GO.dao.getPointsForTrack(GO.currentTrack4Show)
+                                            if (trcDet.isNotEmpty()) {
+                                                for (detLoc in trcDet) {
+                                                    if (detLoc.latitude != 0.0 && detLoc.longitude != 0.0) {
+                                                        var styleStr =
+                                                            when {    // Цвет метки в зависимости от CPS.
+                                                                detLoc.cps < GO.propCPSLevel1 -> "#blueStyle"
+                                                                detLoc.cps < GO.propCPSLevel2 -> "#greenStyle"
+                                                                detLoc.cps < GO.propCPSLevel3 -> "#yellowStyle"
+                                                                detLoc.cps > GO.propCPSLevel3 -> "#redStyle"
+                                                                else -> "#blackStyle"
+                                                            }
+                                                        /* Если CPS не определен */
+                                                        if (detLoc.cps < 0) {
+                                                            styleStr = "#blackStyle"
+                                                        }
+                                                        val kmlPnt = kmlTmp.replace("____POINT____",df.format(detLoc.cps))
+                                                            .replace("____STR1____","Time:" + sdf.format(Date(detLoc.timestamp * 1000)))
+                                                            .replace("____STR2____","CPS:" + df.format(detLoc.cps))
+                                                            .replace("____STR3____","Speed:" + df.format(detLoc.speed * 3.6f) + " km/h")
+                                                            .replace("____STR4____","Altit:" + df.format(detLoc.altitude))
+                                                            .replace("____STR5____","Accur:" + df.format(detLoc.accuracy))
+                                                            .replace("____STR6____","Magn:" + df.format(detLoc.magnitude))
+                                                            .replace("____LOC____",detLoc.longitude.toString() + "," + detLoc.latitude.toString() + "," + detLoc.altitude.toString())
+                                                            .replace("____STYLE____", styleStr)
+                                                        /* Записываем поинт */
+                                                        outputStream.write(kmlPnt.toByteArray())
                                                     }
-                                                /* Если CPS не определен */
-                                                if (detLoc.cps < 0) {
-                                                    imp = GO.impBLACK
                                                 }
-                                                val kmlPnt = kmlTmp.replace("____POINTNAME____","Point " + detLoc.id.toString())
-                                                    .replace("____STRING1____","Time:" + sdf.format(Date(detLoc.timestamp * 1000)))
-                                                    .replace("____STRING2____","CPS:" + detLoc.cps.toString())
-                                                    .replace("____STRING3____","Speed:" + detLoc.speed.toString())
-                                                    .replace("____STRING4____","Altit:" + detLoc.altitude.toString())
-                                                    .replace("____STRING5____","Accur:" + detLoc.accuracy.toString())
-                                                    .replace("____STRING6____","Magn:" + detLoc.magnitude.toString())
-                                                    .replace("____LOCATIONSTR____",detLoc.longitude.toString() + "," + detLoc.latitude.toString() + "," + detLoc.altitude.toString())
-                                                    .replace("____POINTSTYLE____", "blueStyle")
-                                                /* Записываем поинт */
-                                                outputStream.write(kmlPnt.toByteArray())
+                                                kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_footer).bufferedReader().use { it.readText() }
+                                                outputStream.write(kmlTmp.toByteArray())
+                                                outputStream.close()
+                                                Toast.makeText(context, "Save complete.", Toast.LENGTH_SHORT).show()
                                             }
                                         }
-                                        kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_footer).bufferedReader().use { it.readText() }
-                                        outputStream.write(kmlTmp.toByteArray())
-                                        outputStream.close()
-                                        Toast.makeText(context, "Save complete.", Toast.LENGTH_SHORT).show()
                                     }
+                                } catch (e: IOException) {
+                                    Toast.makeText(context, "Error save file. ${e.toString()}", Toast.LENGTH_SHORT).show()
+                                    Log.e("BluZ-BT", "Error: ", e)
                                 }
-                            } catch (e: IOException) {
-                                Toast.makeText(context, "Error save file. ${e.toString()}", Toast.LENGTH_SHORT).show()
-                                Log.e("BluZ-BT", "Error: .", e)
+                            } else {
+                                Toast.makeText(context, "Track not selected.", Toast.LENGTH_SHORT).show()
                             }
                         }
 
@@ -1698,7 +1722,7 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Добавление поинта */
-                val btnAddPoint: Button = view.findViewById(R.id.buttonAddPoint)
+                val btnAddPoint: ImageButton = view.findViewById(R.id.buttonAddPoint)
                 btnAddPoint.setOnClickListener {
                     //val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
                     //DrawableCompat.setTint(drawable, Color.RED)
@@ -1726,7 +1750,7 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Показать текущую позицию */
-                val btnMapLocate: Button = view.findViewById(R.id.buttonMapLocate)
+                val btnMapLocate: ImageButton = view.findViewById(R.id.buttonMapLocate)
                 btnMapLocate.setOnClickListener {
                     /*
                     Get GPS location
