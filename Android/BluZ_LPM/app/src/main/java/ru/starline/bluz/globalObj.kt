@@ -260,6 +260,9 @@ class globalObj {
     public var propVibroLevel3: Boolean = true      // Разрешение вибро третьего уровня
     public var propAutoStartSpectrometr: Boolean = false
     public var propCPS2UR: Float = 0.0f             // Коэффициент пересчета CPS в uRh
+    public var propCPSLevel1: Float = 0.0f
+    public var propCPSLevel2: Float = 0.0f
+    public var propCPSLevel3: Float = 0.0f
     public var propCoef1024A: Float = 0.0f          // Коэффициенты полинома преобразования канала в энергию
     public var propCoef1024B: Float = 0.0f
     public var propCoef1024C: Float = 0.0f
@@ -589,6 +592,9 @@ class globalObj {
         GO.propVibroLevel3 = GO.HWpropVibroLevel3
 
         GO.propCPS2UR = GO.HWpropCPS2UR
+        GO.propCPSLevel1 = GO.propLevel1 * GO.propCPS2UR
+        GO.propCPSLevel2 = GO.propLevel2 * GO.propCPS2UR
+        GO.propCPSLevel3 = GO.propLevel3 * GO.propCPS2UR
         GO.propHVoltage = GO.HWpropHVoltage
         GO.propComparator = GO.HWpropComparator
         GO.propAutoStartSpectrometr = GO.HWpropAutoStartSpectrometr

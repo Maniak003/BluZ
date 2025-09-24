@@ -69,6 +69,7 @@
     <string name="stopRec">Stop</string>
     <string name="textGPX">GPX</string>
     <string name="textKML">KML</string>
+    <string name="saveMAP">Save</string>
     <!-- TODO: Remove or change this placeholder text
     <string name="hello_blank_fragment">Hello blank fragment</string> -->
 </resources>

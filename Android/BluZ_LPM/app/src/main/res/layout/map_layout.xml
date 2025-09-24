@@ -19,87 +19,88 @@
             android:layout_centerHorizontal="true"
             android:text="Current track:"
             android:textColor="@color/Green" />
-    </com.yandex.mapkit.mapview.MapView>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="right"
-        android:orientation="horizontal"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="1dp">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:gravity="right"
+            android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/buttonRecord"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-5dp"
-                android:backgroundTint="@color/buttonColor"
-                android:text="@string/textRecord"
-                android:textAllCaps="false"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-            <Button
-                android:id="@+id/buttonMapLocate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-5dp"
-                android:backgroundTint="@color/buttonColor"
-                android:text="@string/textLocateMap"
-                android:textAllCaps="false"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp" />
+                <Button
+                    android:id="@+id/buttonRecord"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="-5dp"
+                    android:backgroundTint="@color/buttonColor"
+                    android:text="@string/textRecord"
+                    android:textAllCaps="false"
+                    android:textColor="@color/buttonTextColor"
+                    android:textSize="12sp" />
 
-            <Button
-                android:id="@+id/buttonAddPoint"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-5dp"
-                android:backgroundTint="@color/buttonColor"
-                android:text="@string/textAddGPS"
-                android:textAllCaps="false"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/buttonTracks"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-5dp"
-                android:backgroundTint="@color/buttonColor"
-                android:text="@string/textTrack"
-                android:textAllCaps="false"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp" />
+                    <ImageButton
+                        android:id="@+id/buttonMapLocate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="-5dp"
+                        android:layout_weight="0"
+                        android:backgroundTint="@color/buttonColor"
+                        android:src="@drawable/ic_gps_location" />
 
-            <Button
-                android:id="@+id/buttonNewTrack"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-5dp"
-                android:backgroundTint="@color/buttonColor"
-                android:text="@string/newTarck"
-                android:textAllCaps="false"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp" />
+                    <ImageButton
+                        android:id="@+id/buttonAddPoint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="-5dp"
+                        android:layout_weight="0"
+                        android:backgroundTint="@color/buttonColor"
+                        android:src="@drawable/ic_gps_points" />
+                </LinearLayout>
 
-            <Button
-                android:id="@+id/buttonSaveTrack"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-5dp"
-                android:backgroundTint="@color/buttonColor"
-                android:text="Save"
-                android:textAllCaps="false"
-                android:textColor="@color/buttonTextColor"
-                android:textSize="12sp" />
+                <Button
+                    android:id="@+id/buttonTracks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="-5dp"
+                    android:backgroundTint="@color/buttonColor"
+                    android:text="@string/textTrack"
+                    android:textAllCaps="false"
+                    android:textColor="@color/buttonTextColor"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/buttonNewTrack"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="-5dp"
+                    android:backgroundTint="@color/buttonColor"
+                    android:text="@string/newTarck"
+                    android:textAllCaps="false"
+                    android:textColor="@color/buttonTextColor"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/buttonSaveTrack"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="-5dp"
+                    android:backgroundTint="@color/buttonColor"
+                    android:text="@string/saveMAP"
+                    android:textAllCaps="false"
+                    android:textColor="@color/buttonTextColor"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
         </LinearLayout>
+    </com.yandex.mapkit.mapview.MapView>
 
-    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
