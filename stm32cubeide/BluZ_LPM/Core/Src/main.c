@@ -1252,6 +1252,7 @@ void updateMesurment(void) {
 	  dozimetrBuffer[indexDozimetrBufer++] = pulseCounterSecond;
 	  */
 	  pulseCounterSecond = 0;
+	  APP_BLE_Update_Manufacturer_Data(CPS);
 	/*
 	 * Анализ CPS для управления порогами срабатывания сигнализации
 	 */
