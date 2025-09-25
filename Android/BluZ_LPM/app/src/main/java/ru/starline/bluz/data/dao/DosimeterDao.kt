@@ -11,7 +11,7 @@ interface DosimeterDao {
     @Query("SELECT * FROM tracks WHERE is_hidden = 0 ORDER BY created_at DESC")
     suspend fun getActiveTracks(): List<Track>
 
-    @Query("SELECT * FROM tracks WHERE is_hidden = 0 ORDER BY created_at DESC")
+    @Query("SELECT * FROM tracks ORDER BY created_at DESC")
     suspend fun getAllTracks(): List<Track>
 
     @Query(value = "SELECT id FROM tracks WHERE is_active = 1 LIMIT 1")
@@ -36,8 +36,8 @@ interface DosimeterDao {
     @Query("UPDATE tracks SET is_active = 0")
     suspend fun deactivateAllTracks()
 
-    @Query(value = "UPDATE tracks SET name = :trcname WHERE id = :trackId")
-    suspend fun editTrack(trackId: Long, trcname: String)
+    @Query(value = "UPDATE tracks SET name = :trcName WHERE id = :trackId")
+    suspend fun editTrack(trackId: Long, trcName: String)
 
     @Query("UPDATE tracks SET is_active = 1 WHERE id = :trackId")
     suspend fun activateTrack(trackId: Long)
