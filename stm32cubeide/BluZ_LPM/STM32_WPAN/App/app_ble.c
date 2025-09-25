@@ -173,10 +173,10 @@ BLUZ_APP_ConnHandleNotEvt_t BLUZHandleNotification;
 static char a_GapDeviceName[] = {  'B', 'l', 'u', 'Z' }; /* Gap Device Name */
 
 /* Advertising Data */
-uint8_t a_AdvData[11] =
+uint8_t a_AdvData[14] =
 {
   5, AD_TYPE_COMPLETE_LOCAL_NAME, 'B', 'l', 'u', 'Z',  /* Complete name */
-  4, AD_TYPE_MANUFACTURER_SPECIFIC_DATA, 0x30, 0x00, 0x00 /*  */,
+  7, AD_TYPE_MANUFACTURER_SPECIFIC_DATA, 0x30, 0x00, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */,
 };
 uint64_t buffer_nvm[CFG_BLEPLAT_NVM_MAX_SIZE] = {0};
 
@@ -1609,5 +1609,21 @@ void NVMCB_Store( const uint32_t* ptr, uint32_t size )
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
+/**
+ * @brief Обновляет 4 байта пользовательских данных в Manufacturer Specific Data
+ * @param data 32-битное значение (4 байта) для вставки
+ */
+void APP_BLE_Update_Manufacturer_Data(uint32_t data)
+{
+  // Позиция начала пользовательских данных:
+  // a_AdvData[8] -> первый из 4 байт после Company ID (0x30, 0x00)
+  a_AdvData[10] = (uint8_t)(data >> 0);  // Byte 0
+  a_AdvData[11] = (uint8_t)(data >> 8);  // Byte 1
+  a_AdvData[12] = (uint8_t)(data >> 16); // Byte 2
+  a_AdvData[13] = (uint8_t)(data >> 24); // Byte 3
+
+  // Вызов процедуры обновления рекламы
+  APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_DATA_UPDATE);
+}
 
 /* USER CODE END FD_WRAP_FUNCTIONS */
