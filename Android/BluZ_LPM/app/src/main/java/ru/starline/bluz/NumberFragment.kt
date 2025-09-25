@@ -12,7 +12,10 @@ import android.os.Bundle
 import android.os.Environment
 import android.text.Editable
 import android.text.InputType
+import android.text.Spannable
+import android.text.SpannableString
 import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -1573,6 +1576,58 @@ class NumberFragment : Fragment() {
 
                 /* Название отображаемого трека */
                 GO.currentTrackName = view.findViewById(R.id.textCurrentTrack)
+                GO.currentTrackName.setOnClickListener {
+                    if (GO.curretnTrcName.isNotEmpty()) {
+                        val context = requireContext()
+                        // Создаём EditText для изменения имени
+                        val input = EditText(context)
+                        input.setText(GO.curretnTrcName)
+                        AlertDialog.Builder(context)
+                            .setTitle("Edit track")
+                            .setView(input) // добавляем поле ввода
+                            .setPositiveButton("Save") { dialog, _ ->
+                                val name = input.text.toString().trim()
+                                if (name.isEmpty()) {
+                                    Toast.makeText(context, "Name is empty.", Toast.LENGTH_SHORT).show()
+                                    return@setPositiveButton
+                                }
+
+                                // Запускаем корутину для изменения названия трека в БД
+                                lifecycleScope.launch {
+                                    try {
+                                        GO.dao.editTrack(GO.currentTrack4Show,name)
+                                        GO.curretnTrcName = name
+                                        GO.currentTrackName.text =  getString(R.string.current_track_label, name)
+                                    } catch (e: Exception) {
+                                        Log.e("TrackDialog", "Error edit track", e)
+                                    }
+                                }
+                                dialog.dismiss()
+                            }
+                            .setNegativeButton("Close") { dialog, _ ->
+                                dialog.cancel()
+                            }
+                            .setNeutralButton("Delete") { dialog, which ->
+                                if (GO.currentTrack4Show > 1) {
+                                    lifecycleScope.launch {
+                                        try {
+                                            GO.dao.deleteTrack(GO.currentTrack4Show)
+                                            //GO.currentTrack4Show = GO.dao.getFirstTrack()
+                                            //GO.curretnTrcName = GO.dao.getSelectTrack(GO.currentTrack4Show)
+                                            //GO.currentTrackName.text =  getString(R.string.current_track_label, GO.curretnTrcName)
+                                            GO.currentTrack4Show = 0
+                                            GO.curretnTrcName = ""
+                                            GO.currentTrackName.text =  getString(R.string.current_track_label, "")
+                                        } catch (e: Exception) {
+                                            Log.e("TrackDialog", "Error delete track", e)
+                                        }
+                                    }
+                                    GO.map?.mapObjects?.clear()
+                                }
+                            }
+                            .show()
+                    }
+                }
 
                 /* Создание нового трека */
                 val btnNewTrack : Button = view.findViewById(R.id.buttonNewTrack)
@@ -1594,15 +1649,17 @@ class NumberFragment : Fragment() {
                                 return@setPositiveButton
                             }
 
+                            GO.map?.mapObjects?.clear()
                             // Запускаем корутину для сохранения в БД
                             lifecycleScope.launch {
                                 try {
                                     val newTrack = Track( id = 0, name = name, createdAt = System.currentTimeMillis() / 1000, isActive = false, isHidden = false)
                                     GO.currentTrack4Show = GO.dao.insertTrack(newTrack)
-                                    GO.map?.mapObjects?.clear()
+                                    GO.curretnTrcName = name
+                                    GO.currentTrackName.text =  getString(R.string.current_track_label, name)
                                     // Сразу делаем активным
                                     //GO.dao.deactivateAllTracks()
-                                    //GO.dao.activateTrack(trackId)
+                                    //GO.dao.activateTrack(GO.currentTrack4Show)
                                     //GO.currentTrck = trackId
                                     // Здесь необходимо обновление списка.
                                     //refreshTrackList()
@@ -1618,20 +1675,32 @@ class NumberFragment : Fragment() {
                         .show()
                 }
 
-
                 /* Выбор трека для отображения */
                 val btnTrackList : Button = view.findViewById(R.id.buttonTracks)
                 btnTrackList.setOnClickListener {
                     lifecycleScope.launch {
                         val tracks = GO.dao.getAllTracks()
-                        val names = tracks.map { it.name }.toTypedArray()
+                        val sdf = SimpleDateFormat("[dd.MM.yy HH:mm:ss] ", Locale.getDefault())
+                        val names = tracks.map { sdf.format(Date(it.createdAt * 1000)) + it.name }.toTypedArray()
 
-                        /* Изменение стиля диалогового окна, для уменьшения межстрочных интервалов */
+                        /* Изменение стиля диалогового окна,
+                         * для уменьшения межстрочных интервалов
+                         * и раскраски отдельных полей
+                         */
                         val adapter = object : ArrayAdapter<String>(requireContext(), R.layout.item_track_dialog, names) {
                             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                                 val view = super.getView(position, convertView, parent)
                                 val textView = view.findViewById<TextView>(R.id.textView)
-                                textView.text = names[position]
+                                val fullText = names[position]
+                                val dateLength = 20
+                                if (fullText.length >= dateLength) {
+                                    val spannable = SpannableString(fullText)
+                                    val dateColor = ContextCompat.getColor(requireContext(), R.color.labelTextColor2)
+                                    spannable.setSpan(ForegroundColorSpan(dateColor),0,dateLength,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                    textView.text = spannable
+                                } else {
+                                    textView.text = fullText
+                                }
                                 return view
                             }
                         }

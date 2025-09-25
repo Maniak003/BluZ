@@ -17,6 +17,9 @@ interface DosimeterDao {
     @Query(value = "SELECT id FROM tracks WHERE is_active = 1 LIMIT 1")
     suspend fun getCurrentTrack(): Long?
 
+    @Query(value = "SELECT name FROM tracks WHERE id = :trackId LIMIT 1")
+    suspend fun getSelectTrack(trackId: Long): String
+
     @Query(value = "SELECT MIN(id) FROM tracks")
     suspend fun getFirstTrack(): Long
 
@@ -30,8 +33,17 @@ interface DosimeterDao {
     @Query("UPDATE tracks SET is_active = 0 WHERE id = :trackId")
     suspend fun deactivateTrack(trackId: Long)
 
+    @Query("UPDATE tracks SET is_active = 0")
+    suspend fun deactivateAllTracks()
+
+    @Query(value = "UPDATE tracks SET name = :trcname WHERE id = :trackId")
+    suspend fun editTrack(trackId: Long, trcname: String)
+
     @Query("UPDATE tracks SET is_active = 1 WHERE id = :trackId")
     suspend fun activateTrack(trackId: Long)
+
+    @Query("DELETE FROM tracks where id = :trackId")
+    suspend fun deleteTrack(trackId: Long)
 
     @Insert
     suspend fun insertPoint(detail: TrackDetail)
