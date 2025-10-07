@@ -1,7 +1,9 @@
 package ru.starline.bluz
 
 import android.Manifest
+import android.app.ActivityManager
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Canvas
@@ -31,6 +33,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.starline.bluz.data.entity.Track
 import kotlin.system.exitProcess
+import androidx.core.content.edit
 
 public val GO: globalObj = globalObj()
 
@@ -46,6 +49,20 @@ public class MainActivity : FragmentActivity() {
         if (hasPendingPermissionCheck) {
             hasPendingPermissionCheck = false
             checkAndRequestPermissions()
+        }
+        /* Проверяем запущен севис или нет */
+        val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("is_ble_service_running", false)) {
+            Log.i("BluZ-BT", "Service flag is runninng.")
+            if (!isServiceRunning(BleMonitoringService::class.java)) {
+                Log.w("BluZ-BT", "Serive not is real running.")
+                prefs.edit { putBoolean("is_ble_service_running", false) }
+            } else {
+                Log.d("BluZ-BT", "Service is real running")
+                stopService(Intent(this, BleMonitoringService::class.java))
+            }
+        } else {
+            Log.i("BluZ-BT", "Service is not runninng.")
         }
     }
 
@@ -168,9 +185,6 @@ override fun onStart() {
         drawable.setBounds(0, 0, canvas.width, canvas.height)
         drawable.draw(canvas)
         GO.impBLACK = ImageProvider.fromBitmap(bitmap)
-
-
-
         /*
         *   Тексты форматов для сохранения
         */
@@ -194,13 +208,48 @@ override fun onStart() {
         /* Завершение приложения */
         var btnExit: ImageButton = findViewById(R.id.buttonExit)
         btnExit.setOnClickListener {
-            //activity.finish()
-            //finishAffinity()
-            //System.exit(0)
-            //finish()
-            //System.out.close()
+            /* Выполняется запись трека, нужно запустить сервис */
+            if (GO.trackIsRecordeed) {
+                // Проверяем разрешения перед запуском сервиса
+                if (!hasPermissions()) {
+                    Toast.makeText(this, "Нужны разрешения для фоновой записи", Toast.LENGTH_LONG).show()
+                    return@setOnClickListener
+                }
+                val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
+                if (prefs.getBoolean("is_ble_service_running", false)) {
+                    Log.i("BluZ-BT", "Service already running.")
+                } else {
+                    Log.i("BluZ-BT", "Service need start.")
+
+                    // Подготавливаем интент для сервиса
+                    Intent(this, BleMonitoringService::class.java).also { intent ->
+                        try {
+                            startForegroundService(intent)
+                            Log.i("BluZ-BT", "BleMonitoringService run.")
+                        } catch (e: Exception) {
+                            Log.e("BluZ-BT", "Не удалось запустить сервис", e)
+                            Toast.makeText(this, "Ошибка запуска сервиса", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+                }
+            }
+            /* Отключаем таймер проверки BLE соединения */
+            GO.tmFull.stopTimer()
+            GO.BTT.stopScan()
+            GO.BTT.destroyDevice()
+
+            // Закрываем активность корректно
             finishAndRemoveTask()
-            exitProcess(-1)
+
+            /* Запись трека не выполняется - просто завершаем приложение */
+                //activity.finish()
+                //finishAffinity()
+                //System.exit(0)
+                //finish()
+                //System.out.close()
+                //finishAndRemoveTask()
+                //exitProcess(-1)
         }
 
         /* Окно со спектром */
@@ -321,6 +370,7 @@ override fun onStart() {
             GO.startBluetoothTimer()
         //}
     }
+
     private fun checkAndRequestPermissions() {
         val permissionsToRequest = mutableListOf<String>()
 
@@ -329,6 +379,12 @@ override fun onStart() {
             permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                //ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
         // Bluetooth permissions для Android 12+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
@@ -379,6 +435,35 @@ override fun onStart() {
             }.setNegativeButton("Cancel") { _, _ ->
                 finish()
             }.setCancelable(false).show()
+    }
+
+    private fun hasPermissions(): Boolean {
+        val permissionList = mutableListOf<String>()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12+
+            permissionList.add(Manifest.permission.BLUETOOTH_SCAN)
+            permissionList.add(Manifest.permission.BLUETOOTH_CONNECT) // тоже нужно на API 31+
+        }
+
+        // На всех версиях ниже API 31 и для совместимости — нужна геолокация
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION)
+            // или ACCESS_COARSE_LOCATION, если хватает точности
+        }
+
+        return permissionList.all { permission ->
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun isServiceRunning(serviceClass: Class<*>): Boolean {
+        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in activityManager.getRunningServices(Int.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
 
     // Флаг для отслеживания возврата из настроек
