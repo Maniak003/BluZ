@@ -42,7 +42,6 @@ public val GO: globalObj = globalObj()
 public var PI: Int = 0
 
 public class MainActivity : FragmentActivity() {
-
     override fun onResume() {
         super.onResume()
         // Проверяем разрешения при возврате из настроек
@@ -51,19 +50,33 @@ public class MainActivity : FragmentActivity() {
             checkAndRequestPermissions()
         }
         /* Проверяем запущен севис или нет */
-        val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
-        if (prefs.getBoolean("is_ble_service_running", false)) {
-            Log.i("BluZ-BT", "Service flag is runninng.")
-            if (!isServiceRunning(BleMonitoringService::class.java)) {
-                Log.w("BluZ-BT", "Serive not is real running.")
-                prefs.edit { putBoolean("is_ble_service_running", false) }
-            } else {
-                Log.d("BluZ-BT", "Service is real running")
-                //stopService(Intent(this, BleMonitoringService::class.java))
+        if (checkSerice()) {
+            GO.drawObjectInit = true
+            GO.drawDozObjectInit = true
+            Log.d("BluZ-BT", "Service is real running")
+            stopService(Intent(this, BleMonitoringService::class.java))
+            val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
+            GO.currentTrck = prefs.getLong("active_track_id", 0)
+            if (GO.currentTrck > 0) {
+                GO.trackIsRecordeed = true
             }
         } else {
-            Log.i("BluZ-BT", "Service is not runninng.")
+            Log.d("BluZ-BT", "Service not running")
         }
+    }
+
+    /* Проверка активности сервиса */
+    private fun checkSerice() : Boolean {
+        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("is_ble_service_running", false)) {
+            for (service in activityManager.getRunningServices(Int.MAX_VALUE)) {
+                if (BleMonitoringService::class.java.name == service.service.className) {
+                    return true
+                }
+            }
+        }
+        return  false
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -151,9 +164,8 @@ public class MainActivity : FragmentActivity() {
             Log.i("BluZ-BT", "Current track ID: ${GO.currentTrck}")
         }
         /* Янидекс карта */
-        //MapKitFactory.setApiKey("API-YANDEX-KEY")
-        MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)
-        MapKitFactory.initialize(this)
+        //MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)
+        //MapKitFactory.initialize(this)
         val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
         DrawableCompat.setTint(drawable, Color.RED)
         var bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
@@ -216,7 +228,7 @@ public class MainActivity : FragmentActivity() {
                     return@setOnClickListener
                 }
                 val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
-                if (prefs.getBoolean("is_ble_service_running", false)) {
+                if (checkSerice()) {
                     Log.i("BluZ-BT", "Service already running.")
                 } else {
                     Log.i("BluZ-BT", "Service need start.")
@@ -224,6 +236,12 @@ public class MainActivity : FragmentActivity() {
                     // Подготавливаем интент для сервиса
                     Intent(this, BleMonitoringService::class.java).also { intent ->
                         try {
+                            val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
+                            prefs.edit {
+                                putString("device_mac", GO.LEMAC)
+                                putLong("current_track_id", GO.currentTrck)
+                                putFloat("cps_2_doze", GO.propCPS2UR)
+                            }
                             startForegroundService(intent)
                             Log.i("BluZ-BT", "BleMonitoringService run.")
                         } catch (e: Exception) {
@@ -454,16 +472,6 @@ public class MainActivity : FragmentActivity() {
         return permissionList.all { permission ->
             ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
         }
-    }
-
-    private fun isServiceRunning(serviceClass: Class<*>): Boolean {
-        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        for (service in activityManager.getRunningServices(Int.MAX_VALUE)) {
-            if (serviceClass.name == service.service.className) {
-                return true
-            }
-        }
-        return false
     }
 
     // Флаг для отслеживания возврата из настроек

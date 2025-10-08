@@ -27,6 +27,10 @@ class drawDozimeter {
 
     fun Init() {
         if (GO.drawDozObjectInit) {
+            if (!this::dozView.isInitialized) {
+                Log.w("BluZ-BT", "dozView not initialized, call init() first")
+                return
+            }
             dozHSize = dozView.width
             dozVSize = dozView.height
             if ((dozHSize == 0) or (dozVSize == 0)) {
@@ -46,6 +50,14 @@ class drawDozimeter {
     *   Прорисовка данных дозиметра
     */
     fun redrawDozimeter() {
+        if (!this::dozBitmap.isInitialized) {
+            Log.w("BluZ-BT", "dozBitmap not initialized, call init() first")
+            return
+        }
+        if (!this::dozView.isInitialized) {
+            Log.w("BluZ-BT", "dozView not initialized, call init() first")
+            return
+        }
         var offsetX = 50.0f
         var maxY: Double = 0.0
         var minY: Double = 65536.0
