@@ -5,22 +5,25 @@ import java.util.TimerTask
 
 
 class intervalTimer {
-    private var timer: Timer = Timer()
-    private var mTimerTask: TimerTask = MyTimerTask()
+    private var timer: Timer? = null
+    private var mTimerTask: TimerTask? = null
     private var isRunning: Boolean = false
 
     fun startTimer() {
         if (! isRunning) {
+            timer?.cancel() // на всякий случай
+            timer = Timer()
+            mTimerTask = MyTimerTask()
             isRunning = true
-            timer.schedule(mTimerTask, 2000, 10000)
+            timer?.schedule(mTimerTask, 2000, 10000)
         }
     }
 
     fun stopTimer() {
         if(isRunning) {
             isRunning = false
-            timer.purge()
-            timer.cancel()
+            timer?.purge()
+            timer?.cancel()
         }
     }
 }

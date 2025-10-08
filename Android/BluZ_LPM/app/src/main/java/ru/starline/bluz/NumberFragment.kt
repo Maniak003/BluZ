@@ -1556,6 +1556,19 @@ class NumberFragment : Fragment() {
 
                 /* Кнопка запуска/остановки записи трека. */
                 GO.recordTrc = view.findViewById(R.id.buttonRecord)
+                /* Восстановим текущее состояние */
+                if (GO.trackIsRecordeed) {
+                    GO.recordTrc.text = getString(R.string.stopRec)
+                    GO.recordTrc.setTextColor(Color.RED)
+                    GO.locationManager?.startLocationUpdates()
+                    GO.currentTrack4Show = GO.currentTrck
+                    lifecycleScope.launch {
+                        GO.curretnTrcName = GO.dao.getSelectTrack(GO.currentTrck)
+                        GO.currentTrackName.text = GO.curretnTrcName
+                    }
+
+                }
+                /* Обработка нажати на кнопку */
                 GO.recordTrc.setOnClickListener {
                     if (GO.trackIsRecordeed) {
                         /* Здесь останавливаем запись трека */

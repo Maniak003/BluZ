@@ -62,6 +62,10 @@ class drawSpecter {
     }
 
     fun redrawSpecter(spType: Int) {
+        if (!this::specBitmap.isInitialized) {
+            Log.w("BluZ-BT", "specBitmap not initialized, call init() first")
+            return
+        }
         Log.d("BluZ-BT", "Type: $spType HSize: $HSize VSize: $VSize, Res: $ResolutionSpectr")
         //Log.d("BluZ-BT", "Draw specter.")
         var paintLin: Paint = Paint()

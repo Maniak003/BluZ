@@ -39,8 +39,8 @@ import androidx.core.content.edit
 class BleMonitoringService : Service() {
     // MAC-адрес BluZ
     companion object {
-        val TARGET_DEVICE_MAC = GO.LEMAC
-        val cps2doze = GO.propCPS2UR
+        var TARGET_DEVICE_MAC = ""
+        var cps2doze = 0f
         private const val LOCATION_PRIORITY_HIGH_ACCURACY = 100
         private const val LOCATION_PRIORITY_BALANCED = 102
         private const val LOCATION_PRIORITY_LOW_POWER = 104
@@ -74,6 +74,10 @@ class BleMonitoringService : Service() {
     override fun onCreate() {
         super.onCreate()
         Log.d("BluZ-BT", "BleMonitoringService: onCreate called")
+        val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
+        TARGET_DEVICE_MAC = prefs.getString("device_mac", "") ?: ""
+        activeTrackId = prefs.getLong("current_track_id", 0)
+        cps2doze = prefs.getFloat("cps_2_doze", 0f)
         val btManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = btManager.adapter
         scanner = bluetoothAdapter.bluetoothLeScanner
@@ -81,9 +85,13 @@ class BleMonitoringService : Service() {
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        /*  */
+        /* Проверим нужно ли завершить сервис. */
         if (intent?.action == "STOP_SERVICE") {
-            getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {putBoolean("is_ble_service_running", false)}
+            getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {
+                putBoolean("is_ble_service_running", false)
+                putString("device_mac", "")
+                putLong("current_track_id", 0)
+            }
             Log.d("BluZ-BT", "Получена команда на остановку из уведомления")
             stopSelf()
             return START_NOT_STICKY
@@ -94,10 +102,13 @@ class BleMonitoringService : Service() {
         updateNotification(0f)
         val initialNotification = updateNotification(0f)
         startForeground(1, initialNotification)
-        /* Установим флаг в shared для индикации, что сервис запущен */
-        getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {putBoolean("is_ble_service_running", true)}
-        activeTrackId = GO.currentTrck
+        //getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {putBoolean("is_ble_service_running", true)}
+        //activeTrackId = GO.currentTrck
         Log.d("BluZ-BT", "Using trackId: $activeTrackId")
+        /* Установим флаг в shared для индикации, что сервис запущен и сохраним текущий трек */
+        getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {
+            putBoolean("is_ble_service_running", true)
+        }
 
         // Запускаем фоновую задачу: проверка трека + разрешений + старт сканирования
         scope.launch {
