@@ -59,7 +59,7 @@ public class MainActivity : FragmentActivity() {
                 prefs.edit { putBoolean("is_ble_service_running", false) }
             } else {
                 Log.d("BluZ-BT", "Service is real running")
-                stopService(Intent(this, BleMonitoringService::class.java))
+                //stopService(Intent(this, BleMonitoringService::class.java))
             }
         } else {
             Log.i("BluZ-BT", "Service is not runninng.")
@@ -91,12 +91,12 @@ public class MainActivity : FragmentActivity() {
         }
     }
 
-/*
-override fun onStart() {
-    super.onStart()
-    GO.drawSPEC.init()
-    GO.drawSPEC.clearSpecter()
-}*/
+    /*
+    override fun onStart() {
+        super.onStart()
+        GO.drawSPEC.init()
+        GO.drawSPEC.clearSpecter()
+    }*/
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -243,13 +243,13 @@ override fun onStart() {
             finishAndRemoveTask()
 
             /* Запись трека не выполняется - просто завершаем приложение */
-                //activity.finish()
-                //finishAffinity()
-                //System.exit(0)
-                //finish()
-                //System.out.close()
-                //finishAndRemoveTask()
-                //exitProcess(-1)
+            //activity.finish()
+            //finishAffinity()
+            //System.exit(0)
+            //finish()
+            //System.out.close()
+            //finishAndRemoveTask()
+            //exitProcess(-1)
         }
 
         /* Окно со спектром */
@@ -367,7 +367,7 @@ override fun onStart() {
         /* Загрузка справочника изотопов */
         GO.loadIsotop()
         //if (GO.allPermissionAccept) {
-            GO.startBluetoothTimer()
+        GO.startBluetoothTimer()
         //}
     }
 
@@ -399,11 +399,11 @@ override fun onStart() {
         if (permissionsToRequest.isNotEmpty()) {
             // Проверяем, нужно ли показать объяснение
             //if (shouldShowRequestPermissionRationale(permissionsToRequest.toTypedArray())) {
-                // Показываем объяснение перед запросом
-                //showInitialPermissionExplanationDialog(permissionsToRequest.toTypedArray())
+            // Показываем объяснение перед запросом
+            //showInitialPermissionExplanationDialog(permissionsToRequest.toTypedArray())
             //} else {
-                // Просто запрашиваем разрешения
-                requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
+            // Просто запрашиваем разрешения
+            requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
             //}
         } else {
             // Все разрешения уже есть
@@ -422,19 +422,19 @@ override fun onStart() {
     // Диалог с объяснением перед первым запросом
     private fun showInitialPermissionExplanationDialog(permissions: Array<String>) {
         AlertDialog.Builder(this).setTitle("Need permission.").setMessage("For BLE need permissions.").setPositiveButton("Grant") { _, _ ->
-                requestPermissionLauncher.launch(permissions)
-            }.setNegativeButton("Cancel") { _, _ ->
-                finish()
-            }.setCancelable(false).show()
+            requestPermissionLauncher.launch(permissions)
+        }.setNegativeButton("Cancel") { _, _ ->
+            finish()
+        }.setCancelable(false).show()
     }
 
     // Диалог с объяснением после отказа
     private fun showPermissionExplanationDialog(permissions: Array<String>) {
         AlertDialog.Builder(this).setTitle("Need permission").setMessage("For BLE need permissions.").setPositiveButton("Retry") { _, _ ->
-                requestPermissionLauncher.launch(permissions)
-            }.setNegativeButton("Cancel") { _, _ ->
-                finish()
-            }.setCancelable(false).show()
+            requestPermissionLauncher.launch(permissions)
+        }.setNegativeButton("Cancel") { _, _ ->
+            finish()
+        }.setCancelable(false).show()
     }
 
     private fun hasPermissions(): Boolean {
@@ -489,5 +489,3 @@ override fun onStart() {
             .show()
     }
 }
-
-
