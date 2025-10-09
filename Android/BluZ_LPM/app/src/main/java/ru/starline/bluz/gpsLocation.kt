@@ -7,12 +7,16 @@ import android.content.res.Resources
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.xr.runtime.math.toRadians
 import com.google.android.gms.location.*
 import com.yandex.mapkit.geometry.BoundingBox
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.mapview.MapView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import ru.starline.bluz.utils.await
 import kotlin.math.ln
 import kotlin.math.sqrt
 

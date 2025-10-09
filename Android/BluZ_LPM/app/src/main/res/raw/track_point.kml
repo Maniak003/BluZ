@@ -9,5 +9,9 @@ ____STR5____
 ____STR6____
       ]]></description>
       <styleUrl>____STYLE____</styleUrl>
-      <Point><coordinates>____LOC____</coordinates></Point>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>
+      ____LOC____
+      </coordinates></LinearRing></outerBoundaryIs></Polygon>
     </Placemark>
+
+

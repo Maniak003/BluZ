@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import java.lang.Math.log
+import androidx.core.graphics.createBitmap
 
 /**
  * Created by ed on 17,февраль,2025
@@ -37,7 +38,7 @@ class drawDozimeter {
                 Log.e("BluZ-BT", "HSize: $dozHSize, VSize: $dozVSize")
             } else {
                 /* Подготавливаем bitmap для рисования */
-                dozBitmap = Bitmap.createBitmap(dozHSize, dozVSize, Bitmap.Config.ARGB_8888)
+                dozBitmap = createBitmap(dozHSize, dozVSize)
                 dozCanvas = Canvas(dozBitmap)
                 GO.drawDozObjectInit = false
             }

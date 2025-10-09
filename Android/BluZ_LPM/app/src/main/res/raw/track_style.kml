@@ -1,6 +1,7 @@
     <Style id="____ID____">
-      <IconStyle>
-      <color>____COLOR____</color>
-        <scale>1</scale>
-      </IconStyle>
+        <LineStyle><width>0</width></LineStyle>
+        <PolyStyle>
+            <color>____COLOR____</color>
+            <outline>0</outline>
+        </PolyStyle>
     </Style>

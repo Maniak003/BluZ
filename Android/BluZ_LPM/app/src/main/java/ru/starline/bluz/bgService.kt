@@ -19,22 +19,13 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Color
-import android.location.LocationRequest
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import await
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
-import com.google.android.gms.tasks.OnTokenCanceledListener
-import com.google.android.gms.tasks.Task
-import kotlinx.coroutines.NonCancellable.cancel
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import androidx.core.util.size
 import androidx.core.content.edit
+import ru.starline.bluz.utils.await
 
 class BleMonitoringService : Service() {
     // MAC-адрес BluZ
@@ -121,7 +112,8 @@ class BleMonitoringService : Service() {
                 }
                 // Запускаем сканирование BLE
                 startBleScan()
-
+                /* Таймер для перезапуска сканирования, каждые 5 минут. */
+                handler.postDelayed(restartRunnable, 300000)
             } catch (e: SecurityException) {
                 Log.e("BluZ-BT", "Security error when starting scan", e)
                 stopSelf()
@@ -130,9 +122,19 @@ class BleMonitoringService : Service() {
                 stopSelf()
             }
         }
+
         /* Запускаем сервис, так, что бы его не убила система */
         return START_STICKY
     }
+
+    @SuppressLint("MissingPermission")
+    private val restartRunnable = object : Runnable {
+        override fun run() {
+            restartBleScan()
+            handler.postDelayed(this, 300000) // каждые 5 минут
+        }
+    }
+
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun saveToTrack(result: ScanResult) {
@@ -164,7 +166,7 @@ class BleMonitoringService : Service() {
                     speed = speed,
                     cps = cps,
                     magnitude = 0.0, // Нужно добавить данные магнитометра.
-                    timestamp = System.currentTimeMillis()
+                    timestamp = System.currentTimeMillis() / 1000
                 )
 
                 // Сохраняем точку
@@ -232,6 +234,26 @@ class BleMonitoringService : Service() {
             .build()
     }
 
+    /* Перезапуск сканирования BLE */
+    @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
+    @SuppressLint("MissingPermission")
+    private fun restartBleScan() {
+        try {
+            stopBleScan()
+            Log.d("BluZ-BT", "BLE scan stopped for restart")
+        } catch (e: Exception) {
+            Log.e("BluZ-BT", "Failed to stop scan", e)
+        }
+
+        // Проверь разрешения и Bluetooth
+        if (!hasPermissions() || !bluetoothAdapter.isEnabled) {
+            Log.w("BluZ-BT", "Permissions or Bluetooth not available, skipping restart")
+            return
+        }
+        startBleScan()
+        Log.d("BluZ-BT", "BLE scan restarted")
+    }
+
     @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
     @SuppressLint("MissingPermission")
     private fun stopBleScan() {
@@ -253,7 +275,7 @@ class BleMonitoringService : Service() {
     @SuppressLint("MissingPermission")
     private fun startBleScan() {
         val mac = TARGET_DEVICE_MAC
-        Log.d("BluZ-BT", "Starting BLE scan for $mac")
+            //Log.d("BluZ-BT", "Starting BLE scan for $mac")
         if (!hasPermissions()) {
             Log.e("BluZ-BT", "Permissions missing")
             stopSelf()
@@ -273,6 +295,7 @@ class BleMonitoringService : Service() {
         val settings = ScanSettings.Builder()
             //.setScanMode(ScanSettings.SCAN_MODE_LOW_POWER) // Экономный режим, но много пропусков.
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+            .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
             .setReportDelay(0)
             .build()
 
@@ -332,10 +355,8 @@ class BleMonitoringService : Service() {
                 }
 
                 // Запрашиваем свежее местоположение с высокой точностью
-                fusedLocationClient.getCurrentLocation(
-                    LOCATION_PRIORITY_HIGH_ACCURACY,
-                    cancellationTokenSource.token
-                ).await()            }
+                fusedLocationClient.getCurrentLocation(LOCATION_PRIORITY_HIGH_ACCURACY,cancellationTokenSource.token).await()
+            }
         } catch (e: Exception) {
             Log.e("BluZ-BT", "Failed to get fresh location", e)
             null
