@@ -41,7 +41,13 @@ import kotlin.concurrent.thread
 import kotlin.math.round
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.yandex.mapkit.geometry.Point
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import ru.starline.bluz.data.entity.TrackDetail
+import ru.starline.bluz.utils.await
 import java.lang.Math.pow
 import java.lang.Math.sqrt
 import kotlin.math.pow
@@ -97,6 +103,12 @@ class BluetoothInterface() {
     public var sendBuffer = UByteArray(255)
     public var testIdx: Int = 0
     public var testIdx2: Int = 0
+
+    companion object {
+        private const val LOCATION_PRIORITY_HIGH_ACCURACY = 100
+        private const val LOCATION_PRIORITY_BALANCED = 102
+        private const val LOCATION_PRIORITY_LOW_POWER = 104
+    }
 
     /*
     *      Обработчик окончания сканирования, здесь получим результат
@@ -160,6 +172,45 @@ class BluetoothInterface() {
             Log.d("BluZ-BT", "LE scanning.")
         }
     }
+
+
+    private val fusedLocationClient by lazy {
+        LocationServices.getFusedLocationProviderClient(GO.mainContext)
+    }
+
+    @SuppressLint("MissingPermission")
+    private suspend fun getLastKnownLocation(): android.location.Location? = withContext(Dispatchers.IO) {
+        try {
+            fusedLocationClient.lastLocation.await()
+        } catch (e: Exception) {
+            Log.w("BluZ-BT", "Failed to get last location", e)
+            null
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private suspend fun getFreshLocation(): android.location.Location? = withContext(Dispatchers.IO) {
+        return@withContext try {
+            // Создаём CancellationToken для отмены запроса
+            val cancellationTokenSource = CancellationTokenSource()
+
+            // Устанавливаем таймаут в 10 секунд
+            coroutineScope {
+                launch {
+                    delay(10000)
+                    cancellationTokenSource.cancel()
+                }
+
+                // Запрашиваем свежее местоположение с высокой точностью
+                fusedLocationClient.getCurrentLocation(LOCATION_PRIORITY_HIGH_ACCURACY,cancellationTokenSource.token).await()
+            }
+        } catch (e: Exception) {
+            Log.e("BluZ-BT", "Failed to get fresh location", e)
+            null
+        }
+    }
+
+
     @SuppressLint("MissingPermission")
     fun stopScan() {
         BTS.stopScan(leScanCallback)
@@ -642,6 +693,43 @@ class BluetoothInterface() {
                                     var avgDoze : Float = kotlin.math.round(GO.cps * GO.propCPS2UR * 100.0f) / 100.0f
                                     GO.txtStat3.setText("CPS:${GO.pulsePerSec} ($doze uRh) Avg:$avgDoze uRh")
                                     //GO.txtStat3.setText(GO.mainContext.getString(R.string.cps_status, GO.pulsePerSec, doze, avgDoze))
+
+                                    /* Требуется запись трека ? */
+                                    if (GO.trackIsRecordeed && (GO.currentTrck > 0)) {
+                                        // Получаем GPS данные.
+                                        val location = getLastKnownLocation() ?: getFreshLocation()
+                                        val latitude = location?.latitude ?: 0.0
+                                        val longitude = location?.longitude ?: 0.0
+                                        val accuracy = location?.accuracy ?: 0f
+                                        val altitude = location?.altitude ?: 0.0
+                                        val speed = location?.speed ?: 0f
+
+                                        // Готовим данные для сохранения в базу.
+                                        val detail = TrackDetail(
+                                            trackId = GO.currentTrck,
+                                            latitude = latitude,
+                                            longitude = longitude,
+                                            accuracy = accuracy,
+                                            altitude = altitude,
+                                            speed = speed,
+                                            cps = GO.pulsePerSec.toFloat(),
+                                            magnitude = 0.0, // Нужно добавить данные магнитометра.
+                                            timestamp = System.currentTimeMillis() / 1000
+                                        )
+                                        GO.dao.insertPoint(detail)
+                                        val imp = when {
+                                            GO.pulsePerSec < GO.propLevel1.toUInt() -> GO.impBLUE
+                                            GO.pulsePerSec < GO.propLevel2.toUInt() -> GO.impGREEN
+                                            GO.pulsePerSec < GO.propLevel3.toUInt() -> GO.impYELLOW
+                                            GO.pulsePerSec > GO.propLevel3.toUInt() -> GO.impRED
+                                            else -> GO.impBLACK
+                                        }
+                                        GO.placemark = GO.map?.mapObjects?.addPlacemark().apply {
+                                            this?.geometry =
+                                                Point(location?.latitude!!, location.longitude)
+                                            this!!.setIcon(imp)
+                                        }
+                                    }
 
                                     /*
                                     *   Загрузка данных спектрометра дозиметра и логов из массивов.

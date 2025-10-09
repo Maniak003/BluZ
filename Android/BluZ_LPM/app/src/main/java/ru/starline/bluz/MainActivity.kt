@@ -55,11 +55,8 @@ public class MainActivity : FragmentActivity() {
             GO.drawDozObjectInit = true
             Log.d("BluZ-BT", "Service is real running")
             stopService(Intent(this, BleMonitoringService::class.java))
-            val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
-            GO.currentTrck = prefs.getLong("active_track_id", 0)
-            if (GO.currentTrck > 0) {
-                GO.trackIsRecordeed = true
-            }
+            getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {
+                putBoolean("is_ble_service_running", false)}
         } else {
             Log.d("BluZ-BT", "Service not running")
         }
@@ -158,7 +155,7 @@ public class MainActivity : FragmentActivity() {
                 GO.currentTrck = tmpTrack
             } else {
                 tmpTrack = dao.getFirstTrack()
-                dao.activateTrack(tmpTrack)
+                GO.dao.activateTrack(tmpTrack)
                 GO.currentTrck = tmpTrack
             }
             Log.i("BluZ-BT", "Current track ID: ${GO.currentTrck}")
