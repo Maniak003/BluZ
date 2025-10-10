@@ -30,6 +30,11 @@ interface DosimeterDao {
     @Query("SELECT * FROM track_details WHERE track_id = :trackId ORDER BY timestamp")
     suspend fun getPointsForTrack(trackId: Long): List<TrackDetail>
 
+    /* Получим, минимальное и максимальное значение в треке */
+    @Query("SELECT max(cps) as max, min(cps) as min FROM track_details WHERE cps > 0 and track_id = :trackId")
+    suspend fun getMaxMinForTrack(trackId: Long): MaxMinDetail?
+
+
     @Query("UPDATE tracks SET is_active = 0 WHERE id = :trackId")
     suspend fun deactivateTrack(trackId: Long)
 
@@ -51,3 +56,8 @@ interface DosimeterDao {
     @Insert
     suspend fun insertTrack(track: Track): Long
 }
+
+data class MaxMinDetail (
+    val max: Long,
+    val min: Long
+)

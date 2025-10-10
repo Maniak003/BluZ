@@ -1,17 +1,7 @@
-    <Placemark>
-      <name>____POINT____</name>
-      <description><![CDATA[
-____STR1____
+<Placemark><name>____POINT____</name><description><![CDATA[____STR1____
 ____STR2____
 ____STR3____
 ____STR4____
-____STR5____
-____STR6____
-      ]]></description>
-      <styleUrl>____STYLE____</styleUrl>
-      <Polygon><outerBoundaryIs><LinearRing><coordinates>
-      ____LOC____
-      </coordinates></LinearRing></outerBoundaryIs></Polygon>
-    </Placemark>
-
-
+____STR5____]]></description><styleUrl>____STYLE____</styleUrl><Polygon><outerBoundaryIs><LinearRing><coordinates>
+____LOC____
+</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>
