@@ -34,3 +34,4 @@ data class TrackDetail(
     @ColumnInfo(name = "magnitude") val magnitude: Double,
     @ColumnInfo(name = "timestamp", defaultValue = "(strftime('%s', 'now'))") val timestamp: Long = 0
 )
+

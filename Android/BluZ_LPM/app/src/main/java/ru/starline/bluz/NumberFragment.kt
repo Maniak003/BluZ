@@ -1590,6 +1590,8 @@ class NumberFragment : Fragment() {
                                         kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_point).bufferedReader().use { it.readText() }
 
                                         lifecycleScope.launch {
+                                            val maxMin = GO.dao.getMaxMinForTrack(GO.currentTrack4Show)
+                                            val delta = maxMin?.let { it.max.minus(it.min) }
                                             /* Выбираем точки для текущего трека */
                                             val trcDet = GO.dao.getPointsForTrack(GO.currentTrack4Show)
                                             if (trcDet.isNotEmpty()) {
@@ -1607,13 +1609,12 @@ class NumberFragment : Fragment() {
                                                         if (detLoc.cps < 0) {
                                                             styleStr = "#blackStyle"
                                                         }
-                                                        val kmlPnt = kmlTmp.replace("____POINT____",df.format(detLoc.cps))
+                                                        val kmlPnt = kmlTmp.replace("____POINT____","CPS:" + df.format(detLoc.cps) + " / " + df.format(detLoc.cps * 1.0) + "uR/h")
                                                             .replace("____STR1____","Time:" + sdf.format(Date(detLoc.timestamp * 1000)))
-                                                            .replace("____STR2____","CPS:" + df.format(detLoc.cps) + " / " + df.format(detLoc.cps * 1.0) + "uR/h")
-                                                            .replace("____STR3____","Speed:" + df.format(detLoc.speed * 3.6f) + " km/h")
-                                                            .replace("____STR4____","Altit:" + df.format(detLoc.altitude))
-                                                            .replace("____STR5____","Accur:" + df.format(detLoc.accuracy))
-                                                            .replace("____STR6____","Magn:" + df.format(detLoc.magnitude))
+                                                            .replace("____STR2____","Speed:" + df.format(detLoc.speed * 3.6f) + " km/h")
+                                                            .replace("____STR3____","Altit:" + df.format(detLoc.altitude))
+                                                            .replace("____STR4____","Accur:" + df.format(detLoc.accuracy))
+                                                            .replace("____STR5____","Magn:" + df.format(detLoc.magnitude))
                                                             //.replace("____LOC____",detLoc.longitude.toString() + "," + detLoc.latitude.toString() + "," + detLoc.altitude.toString())
                                                             .replace("____LOC____",rectPolyGen(detLoc.latitude, detLoc.longitude, detLoc.accuracy.toDouble(), detLoc.altitude))
                                                             .replace("____STYLE____", styleStr)
