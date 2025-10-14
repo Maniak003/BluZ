@@ -13,7 +13,7 @@ mv bluz_v1-Edge_Cuts.gbr Border.gbr
 mv bluz_v1-B_Silkscreen.gbr SilkcscreenBottom.gbr
 mv bluz_v1-F_Silkscreen.gbr SilkcscreenTop.gbr
 
-mv bluz_v1-PTH.drl NCData.drl
+mv bluz_v1.drl NCData.drl
 
 zip $TARGET.zip Border.gbr Bottom.gbr MaskBottom.gbr MaskTop.gbr NCData.drl Top.gbr SilkcscreenBottom.gbr SilkcscreenTop.gbr
 rm *.gbr *.drl *.gbrjob
