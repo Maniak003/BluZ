@@ -15,7 +15,7 @@ mv bluz_v1-F_Silkscreen.gbr SilkcscreenTop.gbr
 
 mv bluz_v1-PTH.drl NCData.drl
 
-zip SC-STM32L412K8.zip Border.gbr Bottom.gbr MaskBottom.gbr MaskTop.gbr NCData.drl Top.gbr SilkcscreenBottom.gbr SilkcscreenTop.gbr
+zip $TARGET.zip Border.gbr Bottom.gbr MaskBottom.gbr MaskTop.gbr NCData.drl Top.gbr SilkcscreenBottom.gbr SilkcscreenTop.gbr
 rm *.gbr *.drl *.gbrjob
 
 
