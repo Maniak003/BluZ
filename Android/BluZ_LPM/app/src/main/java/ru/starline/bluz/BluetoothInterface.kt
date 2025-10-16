@@ -718,16 +718,16 @@ class BluetoothInterface() {
                                         )
                                         GO.dao.insertPoint(detail)
                                         val imp = when {
-                                            GO.pulsePerSec < GO.propLevel1.toUInt() -> GO.impBLUE
-                                            GO.pulsePerSec < GO.propLevel2.toUInt() -> GO.impGREEN
-                                            GO.pulsePerSec < GO.propLevel3.toUInt() -> GO.impYELLOW
-                                            GO.pulsePerSec > GO.propLevel3.toUInt() -> GO.impRED
+                                            GO.pulsePerSec < GO.propLevel1.toUInt() -> GO.impArr[0]
+                                            GO.pulsePerSec < GO.propLevel2.toUInt() -> GO.impArr[15]
+                                            GO.pulsePerSec < GO.propLevel3.toUInt() -> GO.impArr[20]
+                                            GO.pulsePerSec > GO.propLevel3.toUInt() -> GO.impArr[31]
                                             else -> GO.impBLACK
                                         }
-                                        GO.placemark = GO.map?.mapObjects?.addPlacemark().apply {
+                                        val placemark = GO.map?.mapObjects?.addPlacemark().apply {
                                             this?.geometry =
                                                 Point(location?.latitude!!, location.longitude)
-                                            this!!.setIcon(imp)
+                                            this!!.setIcon(imp!!)
                                         }
                                     }
 

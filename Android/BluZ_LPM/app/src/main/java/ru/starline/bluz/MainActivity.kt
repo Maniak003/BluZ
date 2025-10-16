@@ -6,8 +6,10 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -163,37 +165,54 @@ public class MainActivity : FragmentActivity() {
         /* Янидекс карта */
         //MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)
         //MapKitFactory.initialize(this)
+        val size = 32 // размер иконки в пикселях
+        for (ind in 0..31) {
+            val bitmap = createBitmap(size, size)
+            val canvas = Canvas(bitmap)
+
+            // Создаём кисть с нужным цветом
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = GO.radClrs[ind]
+                style = Paint.Style.FILL
+            }
+
+            // Рисуем круг в центре битмапа
+            val radius = size / 2f
+            canvas.drawCircle(radius, radius, radius, paint)
+
+            GO.impArr[ind] = ImageProvider.fromBitmap(bitmap)
+        }        /*
         val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
-        DrawableCompat.setTint(drawable, Color.RED)
         var bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
         var canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
-        GO.impRED = ImageProvider.fromBitmap(bitmap)
-        DrawableCompat.setTint(drawable, Color.YELLOW)
-        bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
-        canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
-        GO.impYELLOW = ImageProvider.fromBitmap(bitmap)
-        DrawableCompat.setTint(drawable, Color.BLUE)
-        bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
-        canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
-        GO.impBLUE = ImageProvider.fromBitmap(bitmap)
-        DrawableCompat.setTint(drawable, Color.GREEN)
-        bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
-        canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
-        GO.impGREEN = ImageProvider.fromBitmap(bitmap)
+        for (ind in 0..31) {
+            DrawableCompat.setTint(drawable, GO.radClrs[ind])
+            bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+            canvas = Canvas(bitmap)
+            drawable.setBounds(0, 0, canvas.width, canvas.height)
+            drawable.draw(canvas)
+            GO.impArr[ind] = ImageProvider.fromBitmap(bitmap)
+        }
+        */
+        val bitmap = createBitmap(size, size)
+        val canvas = Canvas(bitmap)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK
+            style = Paint.Style.FILL
+        }
+
+        // Рисуем круг в центре битмапа
+        val radius = size / 2f
+        canvas.drawCircle(radius, radius, radius, paint)
+        GO.impBLACK = ImageProvider.fromBitmap(bitmap)
+        /*
         DrawableCompat.setTint(drawable, Color.BLACK)
         bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
         canvas = Canvas(bitmap)
         drawable.setBounds(0, 0, canvas.width, canvas.height)
         drawable.draw(canvas)
         GO.impBLACK = ImageProvider.fromBitmap(bitmap)
+        */
         /*
         *   Тексты форматов для сохранения
         */
@@ -203,8 +222,8 @@ public class MainActivity : FragmentActivity() {
         /*
         *   Цвета для курсора
         */
-        GO.ColorEraseCursor = getResources().getColor(R.color.eraseColorCursor, GO.mainContext.theme)
-        GO.ColorActiveCursor = getResources().getColor(R.color.activeColorCursor, GO.mainContext.theme)
+        GO.ColorEraseCursor = resources.getColor(R.color.eraseColorCursor, GO.mainContext.theme)
+        GO.ColorActiveCursor = resources.getColor(R.color.activeColorCursor, GO.mainContext.theme)
 
         /*
         *   Проверка и запрос разрешений.

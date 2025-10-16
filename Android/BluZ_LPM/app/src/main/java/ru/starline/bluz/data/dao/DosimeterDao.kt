@@ -20,6 +20,9 @@ interface DosimeterDao {
     @Query(value = "SELECT name FROM tracks WHERE id = :trackId LIMIT 1")
     suspend fun getSelectTrack(trackId: Long): String
 
+    @Query(value = "SELECT cps2urh FROM tracks WHERE id = :trackId LIMIT 1")
+    suspend fun getCPS2URH(trackId: Long): Float?
+
     @Query(value = "SELECT MIN(id) FROM tracks")
     suspend fun getFirstTrack(): Long
 
@@ -31,7 +34,7 @@ interface DosimeterDao {
     suspend fun getPointsForTrack(trackId: Long): List<TrackDetail>
 
     /* Получим, минимальное и максимальное значение в треке */
-    @Query("SELECT max(cps) as max, min(cps) as min FROM track_details WHERE cps > 0 and track_id = :trackId")
+    @Query("SELECT ifnull(max(cps),0) as max, ifnull(min(cps), 0) as min FROM track_details WHERE cps > 0 and track_id = :trackId")
     suspend fun getMaxMinForTrack(trackId: Long): MaxMinDetail?
 
 

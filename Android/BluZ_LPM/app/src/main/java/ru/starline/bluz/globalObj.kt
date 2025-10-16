@@ -40,6 +40,7 @@ import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.runtime.image.ImageProvider
 import ru.starline.bluz.data.AppDatabase
 import ru.starline.bluz.data.dao.DosimeterDao
+import ru.starline.bluz.data.entity.TrackDetail
 
 /**
  * Created by ed on 27,июнь,2024
@@ -142,13 +143,14 @@ class globalObj {
     public var mapWindow: MapWindow? = null
     public var map: Map? = null
     public var locationManager: ContinuousLocationManager? = null
-    public var placemark: PlacemarkMapObject? = null
+    //public var placemark: PlacemarkMapObject? = null
     public lateinit var lastPointLoc: Location
     public lateinit var impBLACK: ImageProvider
-    public lateinit var impRED: ImageProvider
-    public lateinit var impYELLOW: ImageProvider
-    public lateinit var impBLUE: ImageProvider
-    public lateinit var impGREEN: ImageProvider
+    //public lateinit var impRED: ImageProvider
+    //public lateinit var impYELLOW: ImageProvider
+    //public lateinit var impBLUE: ImageProvider
+    //public lateinit var impGREEN: ImageProvider
+    public val impArr = arrayOfNulls<ImageProvider?>(32)
     public var currentTrck: Long = 0L
     public lateinit var currentTrackName: TextView
     public var curretnTrcName: String = ""
@@ -164,6 +166,78 @@ class globalObj {
     public lateinit var buttonSaveTrack: Button
     val isButtonSaveTrackInitialized
         get() = ::buttonSaveTrack.isInitialized
+
+    /* Цвета в формате AARRGGBB */
+    val radClrs = arrayOf(
+        0x7F0117FF, // clr00
+        0x7F012FFF, // clr01
+        0x7F0147ff, // clr02
+        0x7F0060FF, // clr03
+        0x7F0076FE, // clr04
+        0x7F008EFE, // clr05
+        0x7F01A6FF, // clr06
+        0x7F01BEFF, // clr07
+        0x7F01D6FF, // clr08
+        0x7F00EDFF, // clr09
+        0x7F06FFF9, // clr10
+        0x7F1EFFDF, // clr11
+        0x7F38FFC8, // clr12
+        0x7F4FFEAF, // clr13
+        0x7F67FF98, // clr14
+        0x7F7EFF80, // clr15
+        0x7F97FF68, // clr16
+        0x7FAFFF4E, // clr17
+        0x7FC6FF36, // clr18
+        0x7FE0FF1E, // clr19
+        0x7FF9FF07, // clr20
+        0x7FFEED00, // clr21
+        0x7FFFD600, // clr22
+        0x7FFFBE00, // clr23
+        0x7FFFA600, // clr24
+        0x7FFF8E01, // clr25
+        0x7FFF7701, // clr26
+        0x7FFF5F01, // clr27
+        0x7FFF4700, // clr28
+        0x7FFF2F00, // clr29
+        0x7FFF1700, // clr30
+        0x7FFE0000  // clr31
+    )
+
+    /* Цвет в формате для KML AABBGGRR */
+    val radClrsKml = arrayOf(
+        "7FFF1701", // clr00
+        "7FFF2F01", // clr01
+        "7FFF4701", // clr02
+        "7FFF6000", // clr03
+        "7FFE7600", // clr04
+        "7FFE8E00", // clr05
+        "7FFFA601", // clr06
+        "7FFFBE01", // clr07
+        "7FFFD601", // clr08
+        "7FFFED00", // clr09
+        "7FF9FF06", // clr10
+        "7FDFFF1E", // clr11
+        "7FC8FF38", // clr12
+        "7FAFFE4F", // clr13
+        "7F98FF67", // clr14
+        "7F80FF7E", // clr15
+        "7F68FF97", // clr16
+        "7F4EFFAF", // clr17
+        "7F36FFC6", // clr18
+        "7F1EFFE0", // clr19
+        "7F07FFF9", // clr20
+        "7F00EDFE", // clr21
+        "7F00D6FF", // clr22
+        "7F00BEFF", // clr23
+        "7F00A6FF", // clr24
+        "7F018EFF", // clr25
+        "7F0177FF", // clr26
+        "7F015FFF", // clr27
+        "7F0047FF", // clr28
+        "7F002FFF", // clr29
+        "7F0017FF", // clr30
+        "7F0000FE"  // clr31
+    )
     /*
     *   Элементы управления закладки Setup
     */
