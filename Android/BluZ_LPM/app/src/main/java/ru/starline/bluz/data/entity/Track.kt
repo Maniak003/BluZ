@@ -14,5 +14,6 @@ data class Track(
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "created_at", defaultValue = "(strftime('%s', 'now'))") val createdAt: Long,
     @ColumnInfo(name = "is_active") val isActive: Boolean = false,
-    @ColumnInfo(name = "is_hidden") val isHidden: Boolean = false
+    @ColumnInfo(name = "is_hidden") val isHidden: Boolean = false,
+    @ColumnInfo(name = "cps2urh") val cps2urh: Float = 0.0f
 )

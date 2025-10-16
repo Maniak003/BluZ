@@ -23,4 +23,37 @@
     <color name="activeColorCursor">#81FF4A</color>
     <color name="ColorDosimeter">#81FF4A</color>
     <color name="ColorDosimeterSMA">#F8E117</color>
+
+    <color name="clr00">#7F0117ff</color>
+    <color name="clr01">#7F012fff</color>
+    <color name="clr02">#7F0147ff</color>
+    <color name="clr03">#7F0060ff</color>
+    <color name="clr04">#7F0076fe</color>
+    <color name="clr05">#7F008efe</color>
+    <color name="clr06">#7F01a6ff</color>
+    <color name="clr07">#7F01beff</color>
+    <color name="clr08">#7F01d6ff</color>
+    <color name="clr09">#7F00edff</color>
+    <color name="clr10">#7F06fff9</color>
+    <color name="clr11">#7F1effdf</color>
+    <color name="clr12">#7F38ffc8</color>
+    <color name="clr13">#7F4ffeaf</color>
+    <color name="clr14">#7F67ff98</color>
+    <color name="clr15">#7F7eff80</color>
+    <color name="clr16">#7F97ff68</color>
+    <color name="clr17">#7Fafff4e</color>
+    <color name="clr18">#7Fc6ff36</color>
+    <color name="clr19">#7Fe0ff1e</color>
+    <color name="clr20">#7Ff9ff07</color>
+    <color name="clr21">#7Ffeed00</color>
+    <color name="clr22">#7Fffd600</color>
+    <color name="clr23">#7Fffbe00</color>
+    <color name="clr24">#7Fffa600</color>
+    <color name="clr25">#7Fff8e01</color>
+    <color name="clr26">#7Fff7701</color>
+    <color name="clr27">#7Fff5f01</color>
+    <color name="clr28">#7Fff4700</color>
+    <color name="clr29">#7Fff2f00</color>
+    <color name="clr30">#7Fff1700</color>
+    <color name="clr31">#7Ffe0000</color>
 </resources>
