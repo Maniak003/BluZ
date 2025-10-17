@@ -208,7 +208,7 @@ class NumberFragment : Fragment() {
                         //val x = (mapViewPlan.width - hintView.measuredWidth) / 2
                         //val y = mapViewPlan.height - dpToPx(100)
                         //params.setMargins(x, y, 0, 0)
-                        params.setMargins(0, 0, 0, 0)
+                        params.setMargins(10, 10, 0, 0)
                         hintView.layoutParams = params
                         hintView.visibility = View.VISIBLE
                         // Скрыть хинт через 10 секунд
@@ -1852,6 +1852,14 @@ class NumberFragment : Fragment() {
                             }
                             .setNeutralButton("Delete") { dialog, which ->
                                 if (GO.currentTrack4Show > 1) {
+                                    /* Если выполняется запись, нужно остановить */
+                                    if (GO.trackIsRecordeed) {
+                                        /* Здесь останавливаем запись трека */
+                                        GO.recordTrc.text = getString(R.string.startRec)
+                                        GO.recordTrc.setTextColor(resources.getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                                        GO.trackIsRecordeed = false
+                                        GO.locationManager?.stopLocationUpdates()
+                                    }
                                     lifecycleScope.launch {
                                         try {
                                             GO.dao.deleteTrack(GO.currentTrack4Show)
@@ -1960,6 +1968,14 @@ class NumberFragment : Fragment() {
                                 GO.currentTrackName.text =  getString(R.string.current_track_label, selectedTrack.name)
                                 GO.currentTrack4Show = selectedTrack.id     // Запомним текущий отображаемый трек.
                                 redrawtMap(GO.currentTrack4Show)
+                                /* Нужно остановить запись */
+                                if (GO.trackIsRecordeed) {
+                                    /* Здесь останавливаем запись трека */
+                                    GO.recordTrc.text = getString(R.string.startRec)
+                                    GO.recordTrc.setTextColor(resources.getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                                    GO.trackIsRecordeed = false
+                                    GO.locationManager?.stopLocationUpdates()
+                                }
                             }
                             .setNegativeButton("Close", null)
                             .show()
@@ -2051,13 +2067,6 @@ class NumberFragment : Fragment() {
                             )
                             /* Расчитываем средний cps за интервал между метками*/
                             var cpsAveredge: Float = GO.cpsAVG / GO.cpsIntervalCount
-                            //val imp = when {
-                            //    cpsAveredge < GO.propLevel1.toFloat() -> GO.impBLUE
-                            //    cpsAveredge < GO.propLevel2.toFloat() -> GO.impGREEN
-                            //    cpsAveredge < GO.propLevel3.toFloat() -> GO.impYELLOW
-                            //    cpsAveredge > GO.propLevel3.toFloat() -> GO.impRED
-                            //    else -> GO.impBLACK
-                            //}
                             Log.i(
                                 "BluZ-BT","Lat: ${location.latitude}, Lng: ${location.longitude}, Accuracy: ${location.accuracy}, cps:${cpsAveredge}, CT: ${GO.currentTrck}"
                             )

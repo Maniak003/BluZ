@@ -19,6 +19,10 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
@@ -26,8 +30,16 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import androidx.core.util.size
 import androidx.core.content.edit
 import ru.starline.bluz.utils.await
+import kotlin.math.roundToLong
+import kotlin.math.sqrt
 
 class BleMonitoringService : Service() {
+    private lateinit var sensorManager: SensorManager
+    private var magnetometer: Sensor? = null
+    private val magneticBuffer = mutableListOf<Double>() // буфер для значений магнитометра
+    private val BUFFER_SIZE = 20 // усреднять по 20 измерениям магнитного поля
+    private var currentMagnitude: Double = 0.0 // текущее усреднённое значение магнитного поля
+
     // MAC-адрес BluZ
     companion object {
         var TARGET_DEVICE_MAC = ""
@@ -46,6 +58,34 @@ class BleMonitoringService : Service() {
     private val dao by lazy { database.dosimeterDao() }
 
     private var activeTrackId: Long? = null
+
+    private val sensorListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+            if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
+                // event.values[0] = X (мкТл)
+                // event.values[1] = Y (мкТл)
+                // event.values[2] = Z (мкТл)
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
+
+                // Модуль вектора магнитного поля (интенсивность)
+                val magnitude: Float = sqrt(x * x + y * y + z * z)
+                magneticBuffer.add(magnitude.toDouble())
+                // Ограничиваем размер буфера
+                if (magneticBuffer.size > BUFFER_SIZE) {
+                    magneticBuffer.removeAt(0) // удаляем самое старое
+                }
+                // Вычисляем среднее
+                currentMagnitude = magneticBuffer.average()
+                //Log.d("BluZ-BT", "Magnitude: $magnitude")
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+            // Можно игнорировать, или обрабатывать низкую точность
+        }
+    }
 
     private val scanCallback = object : ScanCallback() {
         @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
@@ -72,6 +112,14 @@ class BleMonitoringService : Service() {
         val btManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = btManager.adapter
         scanner = bluetoothAdapter.bluetoothLeScanner
+
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+
+        if (magnetometer == null) {
+            // Устройство не имеет магнитометра
+            Log.w("BluZ-BT", "Magnetometer not available.")
+        }
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
@@ -100,7 +148,10 @@ class BleMonitoringService : Service() {
         getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {
             putBoolean("is_ble_service_running", true)
         }
-
+        /* Активируем магнетометер */
+        magnetometer?.let { sensor ->
+            sensorManager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_UI)
+        }
         // Запускаем фоновую задачу: проверка трека + разрешений + старт сканирования
         scope.launch {
             try {
@@ -165,15 +216,15 @@ class BleMonitoringService : Service() {
                     altitude = altitude,
                     speed = speed,
                     cps = cps,
-                    magnitude = 0.0, // Нужно добавить данные магнитометра.
-                    timestamp = System.currentTimeMillis() / 1000
+                    magnitude = currentMagnitude, // Данные магнитометра.
+                    timestamp = System.currentTimeMillis() / 1000   // Время в секундах
                 )
 
                 // Сохраняем точку
                 dao.insertPoint(detail)
                 updateNotification(cps)
 
-                Log.d("BluZ-BT","Saved: RSSI=$rssi, CPS=$cps, Lat=$latitude, Lon=$longitude, Accur=$accuracy")
+                Log.d("BluZ-BT","Saved: RSSI=$rssi, CPS=$cps, Lat=$latitude, Lon=$longitude, Accur=$accuracy, Magnitude: $currentMagnitude")
 
             } catch (e: Exception) {
                 Log.e("BluZ-BT", "Failed to save track point", e)
@@ -197,6 +248,7 @@ class BleMonitoringService : Service() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         /* Отметим в shared? что сервис не запущен */
         getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {putBoolean("is_ble_service_running", false)}
+        sensorManager.unregisterListener(sensorListener)
         super.onDestroy()
     }
 
@@ -398,7 +450,13 @@ class BleMonitoringService : Service() {
     }
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun updateNotification(cps: Float): Notification {
-        val formattedCps = "CPS:$cps / ${cps * cps2doze}uR" // CPS в уведомлении.
+        var formattedCps: String = ""
+        /*  CPS и магнитуда в уведомлении. */
+        if (currentMagnitude > 0) {
+            formattedCps = "CPS:%.2f / %.2fuR\nMagnitude: %.2fuT".format(cps, cps * cps2doze, currentMagnitude)
+        } else {
+            formattedCps = "CPS:%.2f / %.2fuR".format(cps, cps * cps2doze)
+        }
         val stopIntent = createStopServiceIntent()
 
         val notification = NotificationCompat.Builder(this, "ble_monitor_channel")
@@ -414,7 +472,7 @@ class BleMonitoringService : Service() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setNumber(cps.toInt())
             .addAction(
-                R.drawable.ic_stop, // иконка (например, круг с чертой)
+                R.drawable.ic_stop, // иконка
                 "Остановить",
                 stopIntent
             )
