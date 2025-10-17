@@ -1743,7 +1743,7 @@ class NumberFragment : Fragment() {
                                                 kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_footer).bufferedReader().use { it.readText() }
                                                 outputStream.write(kmlTmp.toByteArray())
                                                 outputStream.close()
-                                                Toast.makeText(context, "Save complete.", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, "Save complete to: %s".format(fileKML), Toast.LENGTH_SHORT).show()
                                             }
                                         }
                                     }
