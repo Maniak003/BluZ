@@ -1733,7 +1733,6 @@ class NumberFragment : Fragment() {
                                                             .replace("____STR3____","Altit:" + df.format(detLoc.altitude))
                                                             .replace("____STR4____","Accur:" + df.format(detLoc.accuracy))
                                                             .replace("____STR5____","Magn:" + df.format(detLoc.magnitude))
-                                                            //.replace("____LOC____",detLoc.longitude.toString() + "," + detLoc.latitude.toString() + "," + detLoc.altitude.toString())
                                                             .replace("____LOC____",rectPolyGen(detLoc.latitude, detLoc.longitude, detLoc.accuracy.toDouble(), detLoc.altitude))
                                                             .replace("____STYLE____", styleStr)
                                                         /* Записываем поинт */
