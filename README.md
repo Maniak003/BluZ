@@ -10,7 +10,7 @@
         <img src="https://github.com/Maniak003/BluZ/blob/main/Documents/Screenshot_20240728-170343.jpg"BluZ" style="max-width: 100%;">
       </a>
       <a href="https://github.com/Maniak003/BluZ/wiki">
-        <img src="https://github.com/Maniak003/BluZ/blob/main/Documents/Screenshot_20251017-124345.jpg"BluZ" style="max-width: 100%;">
+        <img src="https://github.com/Maniak003/BluZ/blob/main/Documents/Screenshot_20251017-124345.jpg"BluZ Map" style="max-width: 100%;">
       </a>
       <a href="https://github.com/Maniak003/BluZ/wiki">
         <img src="https://github.com/Maniak003/BluZ/blob/main/Documents/BluZ-3D-Top.png" alt="BluZ" style="max-width: 100%;">
