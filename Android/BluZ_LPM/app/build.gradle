@@ -48,8 +48,8 @@ android {
         applicationId "ru.starline.bluz"
         minSdk 27
         targetSdk 36
-        versionCode 11
-        versionName '1.11'
+        versionCode 12
+        versionName '1.12'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "MAPKIT_API_KEY", "\"${mapkitApiKey}\""
         resourceConfigurations += ['ru', 'en']
@@ -60,7 +60,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.BluZ
             debuggable false
         }
         releaseTest {

@@ -497,7 +497,7 @@ public class MainActivity : FragmentActivity() {
     private fun showSettingsDialog() {
         AlertDialog.Builder(this)
             .setTitle("Permission disabled.")
-            .setMessage("Permission disabled permanently. Need grant necessary permissions in setup.")
+            .setMessage("Permission disabled permanently. Need grant necessary permissions.")
             .setPositiveButton("Settings") { _, _ ->
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 val uri = Uri.fromParts("package", packageName, null)
