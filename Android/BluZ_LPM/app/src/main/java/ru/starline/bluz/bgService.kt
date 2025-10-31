@@ -19,6 +19,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -32,6 +35,8 @@ import androidx.core.content.edit
 import ru.starline.bluz.utils.await
 import kotlin.math.roundToLong
 import kotlin.math.sqrt
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toBitmap
 
 class BleMonitoringService : Service() {
     private lateinit var sensorManager: SensorManager
@@ -259,8 +264,8 @@ class BleMonitoringService : Service() {
             "ble_monitor_channel",
             "Track is recorded.",
             //NotificationManager.IMPORTANCE_LOW
-            //NotificationManager.IMPORTANCE_DEFAULT
-            NotificationManager.IMPORTANCE_HIGH
+            NotificationManager.IMPORTANCE_DEFAULT
+            //NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = "Scanning for specific BLE device"
         }
@@ -453,23 +458,27 @@ class BleMonitoringService : Service() {
         var formattedCps: String = ""
         /*  CPS и магнитуда в уведомлении. */
         if (currentMagnitude > 0) {
-            formattedCps = "CPS:%.2f / %.2fuR\nMagnitude: %.2fuT".format(cps, cps * cps2doze, currentMagnitude)
+            formattedCps = "CPS:%.2f / %.2fuR/h\nMagnitude: %.2fuT".format(cps, cps * cps2doze, currentMagnitude)
         } else {
-            formattedCps = "CPS:%.2f / %.2fuR".format(cps, cps * cps2doze)
+            formattedCps = "CPS:%.2f / %.2fuR/h".format(cps, cps * cps2doze)
         }
         val stopIntent = createStopServiceIntent()
-
+        //val largeIcon = ContextCompat.getDrawable(this, R.drawable.ic_radiation_192)
+        //    ?.toBitmap(
+        //        resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width),
+        //        resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)
+        //    )
         val notification = NotificationCompat.Builder(this, "ble_monitor_channel")
+            .setSmallIcon(R.drawable.ic_radiation_24)
+            //.setLargeIcon(largeIcon)
             .setContentTitle("Track is recorded.")
             .setContentText(formattedCps)
             .setStyle(NotificationCompat.BigTextStyle().bigText(formattedCps)) // Для крупного текста
-            //.setSmallIcon(R.drawable.ic_bluetooth_notification)
-            .setSmallIcon(R.drawable.ic_radiation_24)
-            //.setSmallIcon(R.drawable.ic_cps_display)
             .setContentIntent(createPendingIntent())
             //.setOngoing(true)
             //.setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            //.setPriority(NotificationCompat.PRIORITY_HIGH)
             .setNumber(cps.toInt())
             .addAction(
                 R.drawable.ic_stop, // иконка
