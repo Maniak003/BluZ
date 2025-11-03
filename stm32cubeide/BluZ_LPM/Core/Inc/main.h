@@ -221,8 +221,6 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define A_CS_GPIO_Port GPIOA
 #define VIBRO_Pin GPIO_PIN_6
 #define VIBRO_GPIO_Port GPIOA
-#define LED_Pin GPIO_PIN_5
-#define LED_GPIO_Port GPIOA
 #define batLev_Pin GPIO_PIN_2
 #define batLev_GPIO_Port GPIOA
 #define SOUND_Pin GPIO_PIN_1
@@ -233,6 +231,8 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define NC_GPIO_Port GPIOB
 #define NCB8_Pin GPIO_PIN_8
 #define NCB8_GPIO_Port GPIOB
+#define LED_Pin GPIO_PIN_15
+#define LED_GPIO_Port GPIOA
 #define Sync_Pin GPIO_PIN_15
 #define Sync_GPIO_Port GPIOB
 #define Sync_EXTI_IRQn EXTI15_IRQn
