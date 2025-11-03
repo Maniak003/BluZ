@@ -95,5 +95,9 @@ void MX_StandbyExit_PeripheralInit(void)
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
+  //DbgIOsInit.Mode = GPIO_MODE_OUTPUT_PP;
+  //DbgIOsInit.Pin = GPIO_PIN_15;
+  //__HAL_RCC_GPIOA_CLK_ENABLE();
+  //HAL_GPIO_Init(GPIOA, &DbgIOsInit);
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }

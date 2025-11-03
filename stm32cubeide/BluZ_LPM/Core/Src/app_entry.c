@@ -332,7 +332,12 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
-  //HAL_PWREx_EnableStandbyIORetention(SOUND_GPIO_Port, SOUND_Pin);
+  /* Pin_15 GPIOA, Нужен для светодиода */
+  DbgIOsInit.Mode = GPIO_MODE_OUTPUT_PP;
+  DbgIOsInit.Pin = GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
+  HAL_PWREx_EnableStandbyIORetention(SOUND_GPIO_Port, SOUND_Pin);
 
   //HAL_PWREx_EnableLPTIM1Retention();
   //HAL_PWREx_EnableLPTIM2Retention();
