@@ -203,6 +203,13 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt) {
 	if (LEDEnable) {
 		if (SRC & LED_NOTIFY) {
 			LEDflag = true;
+			GPIO_InitTypeDef GPIO_InitStruct = {0};
+			  GPIO_InitStruct.Pin = A_SCK_Pin|A_CS_Pin|VIBRO_Pin|LED_Pin;
+			  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+			  GPIO_InitStruct.Pull = GPIO_NOPULL;
+			  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+			  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			UTIL_TIMER_Start(&(timerLed));
 		}
