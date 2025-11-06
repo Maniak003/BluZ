@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.util.Log
 import android.widget.ImageView
 import java.lang.Math.log
+import androidx.core.graphics.createBitmap
 
 /**
  * Created by ed on 30,май,2025
@@ -29,14 +30,19 @@ class drawExmple {
 
     /* Установка рабочих параметров и создание необходимых объектов */
     fun init() {
-        if (GO.exampleObjectInit) {
+        if (! this::exampleImgView.isInitialized) {
+            Log.e("BluZ-BT", "Example img view not init.")
+            return
+        }
+        //if (GO.exampleObjectInit) {
+        if (!this::exampleBitmap.isInitialized) {
             HSize = exampleImgView.width
             VSize = exampleImgView.height
             if ((HSize == 0) or (VSize == 0)) {
-                Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize")
+                Log.e("BluZ-BT", "Example img HSize: $HSize, VSize: $VSize")
             } else {
                 /* Подготавливаем bitmap для рисования */
-                exampleBitmap = Bitmap.createBitmap(HSize, VSize, Bitmap.Config.ARGB_8888)
+                exampleBitmap = createBitmap(HSize, VSize)
                 exampleCanvas = Canvas(exampleBitmap)
                 GO.exampleObjectInit = false
             }
@@ -53,8 +59,11 @@ class drawExmple {
 
     /* Прорисовка примера */
     fun exampRedraw() {
-        init()
         if ( GO.exampleObjectInit) {
+            init()
+        }
+        if (!this::exampleBitmap.isInitialized) {
+            GO.exampleObjectInit = true
             return
         }
         clearExample()

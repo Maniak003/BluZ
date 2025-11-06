@@ -67,7 +67,7 @@
     <string name="current_track_label">Current track: %s</string>
     <string name="startRec">Record</string>
     <string name="stopRec">Stop</string>
-    <string name="textGPX">GPX</string>
+    <string name="textGPX">CSV</string>
     <string name="textKML">KML</string>
     <string name="saveMAP">Save</string>
     <!-- TODO: Remove or change this placeholder text

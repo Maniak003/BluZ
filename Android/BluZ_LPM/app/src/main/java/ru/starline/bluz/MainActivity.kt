@@ -165,6 +165,7 @@ public class MainActivity : FragmentActivity() {
         /* Янидекс карта */
         //MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)
         //MapKitFactory.initialize(this)
+        /* Создание массива для разноцветных поинтов для отображения на карте */
         val size = 32 // размер иконки в пикселях
         for (ind in 0..31) {
             val bitmap = createBitmap(size, size)
@@ -179,7 +180,6 @@ public class MainActivity : FragmentActivity() {
             // Рисуем круг в центре битмапа
             val radius = size / 2f
             canvas.drawCircle(radius, radius, radius, paint)
-
             GO.impArr[ind] = ImageProvider.fromBitmap(bitmap)
         }        /*
         val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
@@ -364,13 +364,6 @@ public class MainActivity : FragmentActivity() {
             GO.viewPager.setCurrentItem(4, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(GO.btnSetup)
-            /*
-            * TODO -- Нужно разобраться с этой ерундой.
-            */
-            lifecycleScope.launch {
-                delay(100L)
-                GO.drawExamp.exampRedraw()
-            }
         }
 
         /* Окно с картой */
