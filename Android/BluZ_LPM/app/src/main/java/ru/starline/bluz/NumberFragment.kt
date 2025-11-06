@@ -3,7 +3,6 @@ package ru.starline.bluz
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
-import android.graphics.Canvas
 import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
@@ -22,6 +21,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
+import android.view.ViewTreeObserver
 import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -35,26 +35,19 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.fragment.app.Fragment
 import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.CameraPosition
-import com.yandex.runtime.image.ImageProvider
 import java.nio.ByteBuffer
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Locale
-import androidx.core.graphics.createBitmap
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
-import com.google.android.play.core.integrity.e
 import com.yandex.mapkit.Animation
-import com.yandex.mapkit.geometry.BoundingBox
 import com.yandex.mapkit.map.InputListener
-import com.yandex.mapkit.map.MapObject
 //import com.yandex.mapkit.input.InputListener
-import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.mapview.MapView
 import kotlinx.coroutines.launch
 import ru.starline.bluz.data.entity.Track
@@ -744,7 +737,6 @@ class NumberFragment : Fragment() {
                 GO.rbTrackFmt = view.findViewById(R.id.RGTrackFormat)
 
                 reloadConfigParameters()
-
                 /* Изменение отображения режима карты */
                 GO.cbNightMapMode.setOnCheckedChangeListener { buttonView, isChecked ->
                     GO.nightMapModeEnab = isChecked
@@ -1254,10 +1246,6 @@ class NumberFragment : Fragment() {
                 }
 
                 /* Radiobuttons для выбора элемента настройки цвета */
-                /*
-                * Панель для отображения цвета
-                */
-                GO.drawExamp.exampleImgView = view.findViewById(R.id.tvColor)
 
                 /* Установка цветов по умолчанию если не нашли в конфигурации */
                 if (GO.ColorDosimeter == 0) {
@@ -1640,6 +1628,19 @@ class NumberFragment : Fragment() {
                     override fun onStartTrackingTouch(seekBar: SeekBar) {}
                     override fun onStopTrackingTouch(seekBar: SeekBar) {}
                 })
+                /*
+                * Панель для отображения цвета спектра
+                * нужно прорисовать после определения layout
+                */
+                GO.drawExamp.exampleImgView = view.findViewById(R.id.tvColor)
+                GO.drawExamp.exampleImgView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        GO.drawExamp.exampleImgView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                        GO.drawExamp.init()
+                        GO.drawExamp.exampRedraw()
+                    }
+                })
+
             } else if (getInt(ARG_OBJECT) == 5) {
                 /*
                 *
@@ -1664,18 +1665,18 @@ class NumberFragment : Fragment() {
                 /* Сохранения трека */
                 GO.buttonSaveTrack = view.findViewById(R.id.buttonSaveTrack)
                 GO.buttonSaveTrack.setOnClickListener {
+                    val sdf = SimpleDateFormat("dd.MM.yy HH:mm:ss", Locale.getDefault())
+                    val df = DecimalFormat("#.##").apply{roundingMode = RoundingMode.HALF_UP}
+                    val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
+                    val bluzDir = File("$documentsDir/BluZ")
+                    /* Проверяем наличие каталока приложения в Documents */
+                    if (!bluzDir.exists()) {
+                        bluzDir.mkdirs()        // Создаем если отсутствует
+                    }
                     when (GO.saveTrackType) {
                         /* KML формат */
                         0 -> {
-                            val sdf = SimpleDateFormat("dd.MM.yy HH:mm:ss", Locale.getDefault())
-                            val df = DecimalFormat("#.##").apply{roundingMode = RoundingMode.HALF_UP}
-                            /* Создадим файл для сохранения трека */
-                            val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
-                            val bluzDir = File("$documentsDir/BluZ")
-                            /* Проверяем наличие каталока приложения в Documents */
-                            if (!bluzDir.exists()) {
-                                bluzDir.mkdirs()        // Создаем если отсутствует
-                            }
+                            /* Создадим KML файл для сохранения трека */
                             if (GO.curretnTrcName.isNotEmpty()) {
                                 /* Формируем имя файла для сохранения трека */
                                 val fileKML = File("$documentsDir/BluZ/${GO.curretnTrcName}.kml")
@@ -1755,9 +1756,60 @@ class NumberFragment : Fragment() {
                             }
                         }
 
-                        /* GPX формат */
+                        /* CSV формат */
                         1-> {
+                            /* Создадим CSV файл для сохранения трека */
+                            if (GO.curretnTrcName.isNotEmpty()) {
+                                /* Формируем имя файла для сохранения трека */
+                                val fileCSV = File("$documentsDir/BluZ/${GO.curretnTrcName}.csv")
+                                /* Если файл существует - удаляем */
+                                if (fileCSV.exists()) {
+                                    fileCSV.delete()
+                                }
+                                Log.i("BluZ-BT", "File: $fileCSV")
+                                try {
+                                    /* Пробуем создать файл */
+                                    if (fileCSV.createNewFile()) {
+                                        Log.d("BluZ-BT", "File create Ok.")
+                                        val outputStream = FileOutputStream(fileCSV)
+                                        var csvTmp = GO.mainContext.resources.openRawResource(R.raw.track_header_csv).bufferedReader().use { it.readText() }
+                                        /* Записываем заголовок файла */
+                                        outputStream.write(csvTmp.toByteArray())
 
+                                        // ___TIME___;___DOSE___;___LAT___;___LNG___;___ALT___;___SPEED___;___CPS___;___ACCUR___;___MAGN___
+                                        csvTmp = GO.mainContext.resources.openRawResource(R.raw.track_detale_csv).bufferedReader().use { it.readText() }
+
+                                        lifecycleScope.launch {
+                                            /* Выбираем точки для текущего трека */
+                                            val trcDet = GO.dao.getPointsForTrack(GO.currentTrack4Show)
+                                            if (trcDet.isNotEmpty()) {
+                                                for (detLoc in trcDet) {
+                                                    if (detLoc.latitude != 0.0 && detLoc.longitude != 0.0) {
+                                                        val csvPnt = csvTmp.replace("___TIME___",detLoc.timestamp.toString())
+                                                            .replace("___DOSE___",df.format(detLoc.cps * GO.propCPS2UR))
+                                                            .replace("___LAT___",detLoc.latitude.toString())
+                                                            .replace("___LNG___",detLoc.longitude.toString())
+                                                            .replace("___ALT___",df.format(detLoc.altitude))
+                                                            .replace("___SPEED___",df.format(detLoc.speed * 3.6f))
+                                                            .replace("___CPS___",df.format(detLoc.cps))
+                                                            .replace("___ACCUR___", df.format(detLoc.accuracy))
+                                                            .replace("___MAGN___", df.format(detLoc.magnitude))
+                                                        /* Записываем поинт */
+                                                        outputStream.write(csvPnt.toByteArray())
+                                                    }
+                                                }
+                                                outputStream.close()
+                                                Toast.makeText(context, "Save complete to: %s".format(fileCSV), Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    }
+                                } catch (e: IOException) {
+                                    Toast.makeText(context, "Error save file. ${e.toString()}", Toast.LENGTH_SHORT).show()
+                                    Log.e("BluZ-BT", "Error: ", e)
+                                }
+                            } else {
+                                Toast.makeText(context, "Track not selected.", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 }
