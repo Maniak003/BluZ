@@ -1800,6 +1800,8 @@ class NumberFragment : Fragment() {
                                                 }
                                                 outputStream.close()
                                                 Toast.makeText(context, "Save complete to: %s".format(fileCSV), Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(context, "Track %s is empty. ${GO.curretnTrcName}", Toast.LENGTH_SHORT).show()
                                             }
                                         }
                                     }
