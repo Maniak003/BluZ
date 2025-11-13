@@ -93,6 +93,7 @@ class globalObj {
     public val propFullScrn: String = "FullScreen"
     public val propNightMode: String = "NightMapMode"
     public val propSaveTrackType: String = "SaveTrackType"
+    public val propSampleTime: String = "SampleTime"
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var allPermissionAccept: Boolean = false
@@ -138,6 +139,7 @@ class globalObj {
     //private var saveStat1: String = ""
     //private var saveStat2: String = ""
     //private var saveStat3: String = ""
+    public var overloadFlag: Boolean = false            // Флаг перегрузки
 
     /* GPS */
     public var mapWindow: MapWindow? = null
@@ -272,6 +274,7 @@ class globalObj {
     lateinit var rbSpctType : RadioGroup
     lateinit var aqureEdit : EditText
     lateinit var bitsChannelEdit: EditText
+    lateinit var sampleTimeEdit: EditText
     var aqureValue: Int = 100
     var bitsChannel:Int = 20
     public lateinit var cbFullScrn: CheckBox            // Управление полноэкранным режимом
@@ -349,6 +352,7 @@ class globalObj {
     public var propComparator: UShort = 0u          // Уровень компаратора
     public var propHVoltage: UShort = 0u            // Уровень высокого напряжения
     public var windowSMA: Int = 5
+    public var sampleTime: Int = 0
 
     public lateinit var btnSaveBQ: Button
     /*
@@ -413,6 +417,7 @@ class globalObj {
                            * 45, 46 - Количество импульсов от спектрометра
                            *    47  - Погрешность измерения дозиметра
                            *  48(L) - Разрдность канала (младший байт)
+                           *  48(H) - Время выборки АЦП - три бита в старшем байте
                            * 49  - Конец заголовка
                            *
                            * 50  - Данные дозиметра
@@ -458,6 +463,7 @@ class globalObj {
     public var HWCoef4096C: Float = 0.0f
     public var HWAqureValue: UShort = 0u
     public var HWBitsChan: UByte = 0u
+    public var HWSampleTime: UByte = 0u
 
     /*
     *   Вывод статистики для дозиметра и спектрометра
@@ -678,7 +684,12 @@ class globalObj {
         } else {
             GO.bitsChannel = GO.HWBitsChan.toInt()
         }
-
+        /* Время выборки АЦП */
+        if (GO.HWSampleTime > 7u) {
+            GO.sampleTime = 0
+        } else {
+            GO.sampleTime = GO.HWSampleTime.toInt()
+        }
         /* Текущее разрешение спектрометра */
         GO.spectrResolution = GO.HWspectrResolution
     }
@@ -734,6 +745,7 @@ class globalObj {
         GO.PP.setPropBoolean(propFullScrn, GO.fullScrn)                     // Полноэкранный режим
         GO.PP.setPropBoolean(propNightMode, GO.nightMapModeEnab)            // Ночной режим для карты
         GO.PP.setPropInt(propSaveTrackType, GO.saveTrackType)               // Формат для сохранения трека
+        GO.PP.setPropInt(propSampleTime, GO.sampleTime)                     // Время выборки АЦП
     }
 
     /*
@@ -813,6 +825,10 @@ class globalObj {
         GO.bitsChannel = GO.PP.getPropInt(propBitsChan)
         if (GO.bitsChannel < 16 || GO.bitsChannel > 32) {
             GO.bitsChannel = 20
+        }
+        GO.sampleTime = GO.PP.getPropInt(propSampleTime)
+        if (GO.sampleTime < 0 || GO.sampleTime > 7) {
+            GO.sampleTime = 0
         }
         GO.fullScrn = GO.PP.getPropBoolean(propFullScrn)
         GO.nightMapModeEnab = GO.PP.getPropBoolean(propNightMode)

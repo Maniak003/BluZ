@@ -43,6 +43,7 @@ class drawLogs {
     *   10 -    останов спектрометра
     *   11 -    Очистка лога
     *   12 -    Сброс спектрометра при переключении разрешения
+    *   13 -    Перегрузка
     */
     fun updateLogs() {
         logsText.text = ""
@@ -66,6 +67,7 @@ class drawLogs {
                     10 -> eventStr = "Stop spectrometer"
                     11 -> eventStr = "Clear logs"
                     12 -> eventStr = "Change resolution"
+                    13 -> eventStr = "<font color=#FF2EE8>Overload"
                     else -> eventStr = "Unknown: ${logData[idx].act.toInt()}"
                 }
                 //Log.i("BluZ-BT", "LT: " + GO.messTm.toString())

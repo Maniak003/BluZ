@@ -186,9 +186,9 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     * 37			- Разрешение. 0 - 1024, 1 - 2048, 2 - 4096
                     * 38			- Битовые флаги управления прибором
                     * 					0 - Запуск набора спектра при включении.
-                    * 					1 -
-                    * 					2 -
-                    * 					3 -
+                    * 					1 -|
+                    * 					2 -| Время выборки АЦП - 3 бита от 0 до 7
+                    * 					3 -|
                     * 					4 -
                     * 					5 -
                     * 					6 -
@@ -207,6 +207,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						levelVibro2 = p_Notification->DataTransfered.p_Payload[20] & 0b01000000;			// Вибро для второго порога
 						levelVibro3 = p_Notification->DataTransfered.p_Payload[20] & 0b10000000;			// Вибро для третьего порога
 						autoStartSpecrometr = p_Notification->DataTransfered.p_Payload[38] & 0b00000001;	// Запуск набора спектра при включении
+						uint8_t tmpSample = (p_Notification->DataTransfered.p_Payload[38] >> 1) & 0x7;		// Время выборки АЦП (0..7)
 
 						/* Уровень порога 1 в uR/h */
 						level1 = p_Notification->DataTransfered.p_Payload[7]
@@ -302,9 +303,10 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						comparatorLevel = p_Notification->DataTransfered.p_Payload[35] | (p_Notification->DataTransfered.p_Payload[36] << 8);
 
 						/* Разрешение спектра. 0 - 1024, 1 - 2048, 2 - 4096 */
-						if (resolutionSpecter != (spectrResolution_t) p_Notification->DataTransfered.p_Payload[37]) {
+						if ((resolutionSpecter != (spectrResolution_t) p_Notification->DataTransfered.p_Payload[37]) || currentSamplingTime != tmpSample) {
 							resolutionSpecter = (spectrResolution_t) p_Notification->DataTransfered.p_Payload[37];
-							/* Если разрешение изменяется - нужно очистить спектр */
+							currentSamplingTime = tmpSample;
+							/* Если разрешение или время выборки изменяется - нужно очистить спектр */
 							for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
 								tmpSpecterBuffer[iii] = 0;
 							}
@@ -367,6 +369,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						spectrometerPulse = 0;
 						spectrometerTime = 0;
 						logUpdate(writeFlashLog);
+					/* Включение/выключение спектрометра */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 2) {		// Запуск/останов спектрометра
 						HAL_ADC_Stop_DMA(&hadc4);
 						HAL_ADC_DeInit(&hadc4);
@@ -408,14 +411,14 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							dozimetrBuffer[ii] = 0;
 						}
 						logUpdate(resDozimeterLog);
-						/* Очистка лога */
+					/* Очистка лога */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 4) {
 						for (int ii = 0; ii < LOG_BUFER_SIZE; ii++) {
 							logBuffer[ii].time = 0;
 							logBuffer[ii].type = 0;
 						}
 						logUpdate(clearLog);
-						/* Запрос на передачу спектра истории */
+					/* Запрос на передачу спектра истории */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 5) {
 						historyRequest = true;
 						interval2 = 0;
