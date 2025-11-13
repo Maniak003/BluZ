@@ -691,8 +691,6 @@ class BluetoothInterface() {
                                     /* Перевод CPS в uRh */
                                     var doze: Float =  kotlin.math.round(GO.pulsePerSec.toFloat() * GO.propCPS2UR * 100.0f) / 100.0f
                                     var avgDoze : Float = kotlin.math.round(GO.cps * GO.propCPS2UR * 100.0f) / 100.0f
-                                    GO.txtStat3.setText("CPS:${GO.pulsePerSec} ($doze uRh) Avg:$avgDoze uRh")
-                                    //GO.txtStat3.setText(GO.mainContext.getString(R.string.cps_status, GO.pulsePerSec, doze, avgDoze))
 
                                     /* Требуется запись трека ? */
                                     if (GO.trackIsRecordeed && (GO.currentTrck > 0)) {
@@ -825,6 +823,20 @@ class BluetoothInterface() {
                                     if (GO.HWBitsChan < 16u || GO.HWBitsChan > 32u) {
                                         GO.HWBitsChan = 20u
                                     }
+                                    /* Получим время выборки АЦП */
+                                    GO.HWSampleTime = GO.receiveData[97].toUByte() and 7.toUByte()
+                                    if (GO.HWSampleTime > 7.toUByte()) {
+                                        GO.HWSampleTime = 0.toUByte()
+                                    }
+                                    /* Получим флаг перегрузки SiPM */
+                                    GO.overloadFlag = (GO.receiveData[97].toUByte() and 8.toUByte()) != 0.toUByte()
+                                    if (GO.overloadFlag) {
+                                        GO.txtStat3.setText(Html.fromHtml("<font color=#FF2EE8>Overload"));
+                                    } else {
+                                        GO.txtStat3.setText("CPS:${GO.pulsePerSec} ($doze uRh) Avg:$avgDoze uRh")
+                                    }
+                                    //GO.txtStat3.setText(GO.mainContext.getString(R.string.cps_status, GO.pulsePerSec, doze, avgDoze))
+
                                     //Log.d("BluZ-BT", "L:${GO.receiveData[94]}, H:${GO.receiveData[95]}")
 
                                     /*

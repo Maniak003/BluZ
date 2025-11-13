@@ -105,6 +105,7 @@ bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активн
 bool startSpectrometr = false;
 bool vibroFlag = false, soundFlag = false;
 bool history_active = false; // Флаг набора истории.
+bool overloadFlag = false;	// Флаг перегрузки
 
 double CoefChan;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
 uint32_t limitChan;
@@ -148,6 +149,26 @@ void ledActivate(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+/*
+ *	SamplingTime selector
+ *	Определение времени выборки ADC
+ *
+ */
+uint8_t currentSamplingTime = 0;
+uint32_t samplingTm(uint8_t smplTm) {
+	switch(smplTm) {
+		case 0: return ADC_SAMPLETIME_1CYCLE_5;
+		case 1: return ADC_SAMPLETIME_3CYCLES_5;
+		case 2: return ADC_SAMPLETIME_7CYCLES_5;
+		case 3: return ADC_SAMPLETIME_12CYCLES_5;
+		case 4: return ADC_SAMPLETIME_19CYCLES_5;
+		case 5: return ADC_SAMPLETIME_39CYCLES_5;
+		case 6: return ADC_SAMPLETIME_79CYCLES_5;
+		case 7: return ADC_SAMPLETIME_814CYCLES_5;
+		default: return ADC_SAMPLETIME_1CYCLE_5;
+	}
+}
 
 /*
  *	Добавление записи в лог
@@ -305,7 +326,7 @@ int main(void)
   /* Пересчет уровней в uint32_t для ускорения обработки */
   calcPulseLevel();
   CoefChan = 65535.0 / (double) bitsOfChannal;
-  limitChan = 1 << bitsOfChannal;
+  limitChan = (1 << bitsOfChannal) - 1 ;
 
   /*
    * Настройка порога компаратора
@@ -389,7 +410,8 @@ int main(void)
    * 43, 44 - Время работы спектрометра в секундах
    * 45, 46 - Количество импульсов в спектре
    * 47		- Точность расчета для дозиметра, количество импульсов для усреднения.
-   * 48(L)	- Разрядность канала
+   * 48(L)	- Разрядность канала 0x7
+   * 48(L)	- Перегрузка 0x8 - 1 бит
    *
    * 50  - Данные дозиметра
    * 572 - Данные лога
@@ -518,7 +540,12 @@ int main(void)
 		  double tmpLog;
 		  uint32_t tmpSpectrData;
 		  for (int jjj = 0; jjj < nm_channel; jjj++) {
-			  tmpSpectrData = tmpSpecterBuffer[kkk++];
+			  /* Что будем передавать, историю или текущий спектр */
+			  if (dataType > dozimeterSpecter4096) {
+				  tmpSpectrData = historySpecterBuffer[kkk++];
+			  } else {
+				  tmpSpectrData = tmpSpecterBuffer[kkk++];
+			  }
 			#ifdef MEDIAN
 			  MA[medianIdx] = tmpSpectrData;
 			  tmpSpectrData = (MA[0] < MA[1]) ? ((MA[1] < MA[2]) ? MA[1] : ((MA[2] < MA[0]) ? MA[0] : MA[2])) : ((MA[0] < MA[2]) ? MA[0] : ((MA[2] < MA[1]) ? MA[1] : MA[2]));
@@ -646,13 +673,18 @@ int main(void)
 	  transmitBuffer[46] = (spectrometerPulse >> 16) & 0xFFFF;
 	  /* Точность дозиметра, количество импульсов для усреднения. */
 	  transmitBuffer[47] = dozimetrAquracy;
-	  /* Разрядность канала */
-	  transmitBuffer[48] = (uint16_t) bitsOfChannal & 0xFF;
+	  /* Разрядность канала и время выборки АЦП*/
+	  if (overloadFlag) {		// Флаг перегрузки
+		  transmitBuffer[48] = ((uint16_t) bitsOfChannal & 0xFF) | (((uint16_t) currentSamplingTime & 0x7) << 8)   | 0b0000100000000000;
+	  } else {
+		  transmitBuffer[48] = (((uint16_t) bitsOfChannal & 0xFF) | (((uint16_t) currentSamplingTime & 0x7) << 8)) & 0b1111011111111111;
+	  }
+
 
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
 	  transmitBuffer[idxCS] = 0;
 	  kkk = 0;
-	  uint8_t delayInterval = 0;
+	  //uint8_t delayInterval = 0;
 	  for (int iii = 0; iii < countMTU; iii++) {
 		  /* Передача возможна только при подключеном клиенте */
 		  if ( ! connectFlag) {
@@ -1258,6 +1290,17 @@ void updateMesurment(void) {
 	  }
 	  dozimetrBuffer[indexDozimetrBufer++] = pulseCounterSecond;
 	  */
+	  /* Проверка условия насыщения */
+	  if (CPS == 0) {
+		  if ((Sync_GPIO_Port->IDR & Sync_Pin) != 0x00U) {
+			  /* Сюда попадаем если SiPM в насыщении, на компараторе высокий уровень */
+			  logUpdate(overload);
+			  overloadFlag = true;
+		  }
+	  } else {
+		  overloadFlag = false;
+	  }
+
 	  pulseCounterSecond = 0;
 	  /* Данные для рекламного пакета */
 	  APP_BLE_Update_Manufacturer_Data(CPS);

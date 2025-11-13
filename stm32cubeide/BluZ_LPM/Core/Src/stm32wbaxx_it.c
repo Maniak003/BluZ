@@ -314,11 +314,11 @@ void GPDMA1_Channel0_IRQHandler(void)
 		/* Счетчик 32 разряда */
 		if (tmpSpecterBuffer[tmpLevel] < 0xFFFFFFFF) {
 			tmpSpecterBuffer[tmpLevel]++;
-			/* Изменение разрядности канала если данные не помещаются */
+			/* Автоматическое изменение разрядности канала если данные не помещаются */
 			if (tmpSpecterBuffer[tmpLevel] >= limitChan) {
 				bitsOfChannal++;
 				CoefChan = 65535.0 / (double) bitsOfChannal;
-				limitChan = 1 << bitsOfChannal;
+				limitChan = (1 << bitsOfChannal) - 1;
 			}
 		}
 

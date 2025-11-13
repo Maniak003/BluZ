@@ -406,6 +406,9 @@ class NumberFragment : Fragment() {
 
         /* Ночной режим для карты */
         GO.cbNightMapMode.isChecked = GO.nightMapModeEnab
+
+        /* Время выборки АЦП */
+        GO.sampleTimeEdit.setText(GO.sampleTime.toString())
     }
 
     override fun onCreateView(
@@ -735,6 +738,7 @@ class NumberFragment : Fragment() {
                 GO.rbGPXType = view.findViewById(R.id.rbGPX)
                 GO.rbKMLType = view.findViewById(R.id.rbKML)
                 GO.rbTrackFmt = view.findViewById(R.id.RGTrackFormat)
+                GO.sampleTimeEdit = view.findViewById(R.id.editSampleTime)
 
                 reloadConfigParameters()
                 /* Изменение отображения режима карты */
@@ -954,6 +958,11 @@ class NumberFragment : Fragment() {
                     GO.bitsChannel = GO.bitsChannelEdit.text.toString().toInt()
                     if (GO.bitsChannel < 16 || GO.bitsChannel > 32) {
                         GO.bitsChannel = 20
+                    }
+
+                    GO.sampleTime = GO.sampleTimeEdit.text.toString().toInt()
+                    if (GO.sampleTime < 0 || GO.sampleTime> 7) {
+                        GO.sampleTime = 0
                     }
 
                     Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())

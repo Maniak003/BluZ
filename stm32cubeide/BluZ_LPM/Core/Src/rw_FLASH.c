@@ -136,7 +136,7 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData = enCoefA4096.Uint32 | ((uint64_t)enCoefB4096.Uint32 << 32);
 	PL[idxPL++] = tmpData;					// 12, 13
 
-	tmpData = enCoefC4096.Uint32 | ((uint64_t)dozimetrAquracy << 32) | (((uint64_t) bitsOfChannal & 0xFF) << 48);
+	tmpData = enCoefC4096.Uint32 | ((uint64_t)dozimetrAquracy << 32) | (((uint64_t) bitsOfChannal & 0xFF) << 48) | (((uint64_t) currentSamplingTime & 0x7) << 56);
 	PL[idxPL++] = tmpData;					// 14, 15
 
 	//PL[idxPL++] = 0xDDDDDDFFCCCCCCFF;		// 16, 17
@@ -204,6 +204,13 @@ HAL_StatusTypeDef readFlash() {
 		 *	8			--	Коэффициент A пересчета канала в энергию для 1024
 		 *	9			--	Коэффициент B пересчета канала в энергию для 1024
 		 *	10			--	Коэффициент C пересчета канала в энергию для 1024
+		 *	11			--	Коэффициент A пересчета канала в энергию для 2048
+		 *	12			--	Коэффициент B пересчета канала в энергию для 2048
+		 *	13			--	Коэффициент C пересчета канала в энергию для 2048
+		 *	14			--	Коэффициент A пересчета канала в энергию для 4096
+		 *	15			--	Коэффициент B пересчета канала в энергию для 4096
+		 *	16			--	Коэффициент C пересчета канала в энергию для 4096
+		 *	17			--	Количество импульсов для усреднения (uint16_t), Разрядность канала (uint8_t), Время выборки АЦП (0x7 - три бита)
 		 *
 		 */
 
@@ -275,6 +282,11 @@ HAL_StatusTypeDef readFlash() {
 		bitsOfChannal = (tmpData >> 48) & 0xFF;
 		if ((bitsOfChannal < 16) || (bitsOfChannal > 32)) {
 			bitsOfChannal = CAPCHAN;
+		}
+		/* Время выборки для ADC */
+		currentSamplingTime = (tmpData >> 56) & 0x7;
+		if (currentSamplingTime > 7) {
+			currentSamplingTime = 0;	// ADC_SAMPLETIME_1CYCLE_5
 		}
 	return HAL_OK;
 

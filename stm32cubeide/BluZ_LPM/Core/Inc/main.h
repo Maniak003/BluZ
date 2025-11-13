@@ -126,6 +126,7 @@ extern uint64_t PL[18];
 extern uint32_t tmpLevel;
 extern uint32_t limitChan;
 extern double CoefChan;
+extern uint8_t currentSamplingTime;
 
 typedef enum logTypes {
 	nonLog,
@@ -141,7 +142,8 @@ typedef enum logTypes {
 	stopSpectrometerLog,
 	clearLog,
 	changeResolutionLog,
-	changeBitsOfChan
+	changeBitsOfChan,
+	overload
 } logTypes_t;
 
 struct LG {
