@@ -1273,39 +1273,39 @@ void updateMesurment(void) {
 	//if (! connectFlag) {
 	//	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
 	//}
-	  //NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 2);
-	  //HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-	  //HAL_GPIO_TogglePin(VIBRO_GPIO_Port, VIBRO_Pin);
-	  //NotifyAct(LED_NOTIFY, 0);
-	  intervalNow++;
-	  aquracyInterval++;
-	  currentTimeAvg = currentTime++;
-	  pulseCounterAvg = pulseCounter;
-	  CPS = pulseCounterSecond;
-	  if (dataType > onlyDozimeter) {
-		  spectrometerTime++;
-	  }
-	  /* Массив для гистограммы уровней */
-	  /*
-	  if (indexDozimetrBufer >= SIZE_DOZIMETR_BUFER) {
-		indexDozimetrBufer = 0;
-	  }
-	  dozimetrBuffer[indexDozimetrBufer++] = pulseCounterSecond;
-	  */
-	  /* Проверка условия насыщения */
-	  if (CPS == 0) {
-		  if ((Sync_GPIO_Port->IDR & Sync_Pin) != 0x00U) {
-			  /* Сюда попадаем если SiPM в насыщении, на компараторе высокий уровень */
-			  logUpdate(overload);
-			  overloadFlag = true;
-		  }
-	  } else {
-		  overloadFlag = false;
-	  }
+	//NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 2);
+	//HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+	//HAL_GPIO_TogglePin(VIBRO_GPIO_Port, VIBRO_Pin);
+	//NotifyAct(LED_NOTIFY, 0);
+	intervalNow++;
+	aquracyInterval++;
+	currentTimeAvg = currentTime++;
+	pulseCounterAvg = pulseCounter;
+	CPS = pulseCounterSecond;
+	if (dataType > onlyDozimeter) {
+		spectrometerTime++;
+	}
+	/* Массив для гистограммы уровней */
+	/*
+	if (indexDozimetrBufer >= SIZE_DOZIMETR_BUFER) {
+		ndexDozimetrBufer = 0;
+	}
+	dozimetrBuffer[indexDozimetrBufer++] = pulseCounterSecond;
+	*/
+	/* Проверка условия насыщения */
+	if ((CPS == 0) && ((Sync_GPIO_Port->IDR & Sync_Pin) != 0x00U)) {
+		/* Сюда попадаем если SiPM в насыщении, на компараторе высокий уровень */
+		logUpdate(overload);
+		overloadFlag = true;
+		/* Данные для рекламного пакета - переполнение */
+		APP_BLE_Update_Manufacturer_Data(0xFFFFFFFF);
+	} else {
+		overloadFlag = false;
+		/* Данные для рекламного пакета - нормальный CPS*/
+		APP_BLE_Update_Manufacturer_Data(CPS);
+	}
 
-	  pulseCounterSecond = 0;
-	  /* Данные для рекламного пакета */
-	  APP_BLE_Update_Manufacturer_Data(CPS);
+	pulseCounterSecond = 0;
 	/*
 	 * Анализ CPS для управления порогами срабатывания сигнализации
 	 */
