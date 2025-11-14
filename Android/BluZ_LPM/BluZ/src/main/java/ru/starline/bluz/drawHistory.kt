@@ -164,8 +164,6 @@ class drawHistory {
     fun clearHistory() {
         //Log.d("BluZ-BT", "Clear specter.")
         if ((HSize > 0) and (VSize > 0)) {
-            //specBitmap = Bitmap.createBitmap(HSize, VSize, Bitmap.Config.ARGB_8888)
-            //specCanvas = Canvas(specBitmap)
             histCanvas.drawColor(Color.argb(255, 0, 0, 0))
             imgView.setImageBitmap(histBitmap)
         } else {

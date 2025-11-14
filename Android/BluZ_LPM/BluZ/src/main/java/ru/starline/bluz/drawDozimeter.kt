@@ -27,11 +27,11 @@ class drawDozimeter {
     public var dozxSize: Double = 4.0
 
     fun Init() {
-        if (GO.drawDozObjectInit) {
-            if (!this::dozView.isInitialized) {
-                Log.w("BluZ-BT", "dozView not initialized, call init() first")
-                return
-            }
+        if (!this::dozView.isInitialized) {
+            Log.w("BluZ-BT", "dozView not initialized, call init() first")
+            return
+        }
+        if (GO.drawDozObjectInit or !this::dozBitmap.isInitialized) {
             dozHSize = dozView.width
             dozVSize = dozView.height
             if ((dozHSize == 0) or (dozVSize == 0)) {
@@ -146,8 +146,6 @@ class drawDozimeter {
     fun clearDozimeter() {
         //Log.d("BluZ-BT", "Clear dozimeter.")
         if ((dozHSize > 0) and (dozVSize > 0)) {
-            //specBitmap = Bitmap.createBitmap(HSize, VSize, Bitmap.Config.ARGB_8888)
-            //specCanvas = Canvas(specBitmap)
             dozCanvas.drawColor(Color.argb(255, 0, 0, 0))
             dozView.setImageBitmap(dozBitmap)
         } else {
