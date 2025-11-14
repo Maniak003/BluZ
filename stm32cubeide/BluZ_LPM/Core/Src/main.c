@@ -155,7 +155,7 @@ void ledActivate(void);
  *	Определение времени выборки ADC
  *
  */
-uint8_t currentSamplingTime = 0;
+uint8_t currentSamplingTime = 1;
 uint32_t samplingTm(uint8_t smplTm) {
 	switch(smplTm) {
 		case 0: return ADC_SAMPLETIME_1CYCLE_5;
@@ -674,6 +674,7 @@ int main(void)
 	  /* Точность дозиметра, количество импульсов для усреднения. */
 	  transmitBuffer[47] = dozimetrAquracy;
 	  /* Разрядность канала и время выборки АЦП*/
+	  //currentSamplingTime = 3;
 	  if (overloadFlag) {		// Флаг перегрузки
 		  transmitBuffer[48] = ((uint16_t) bitsOfChannal & 0xFF) | (((uint16_t) currentSamplingTime & 0x7) << 8)   | 0b0000100000000000;
 	  } else {
@@ -921,7 +922,8 @@ void MX_ADC4_Init(void)
 	  //hadc4.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_LOW;
 	  //hadc4.Init.Overrun = ADC_OVR_DATA_PRESERVED;
 	  hadc4.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
-	  hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_1CYCLE_5;			// для LaBr3:Ce
+	  hadc4.Init.SamplingTimeCommon1 = samplingTm(currentSamplingTime);
+	  //hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_1CYCLE_5;		// для LaBr3:Ce
 	  //hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_3CYCLES_5;		// для Sensl FC/FJ60035 + NaI:Tl
 	  //hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_7CYCLES_5;
 	  //hadc4.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_12CYCLES_5;

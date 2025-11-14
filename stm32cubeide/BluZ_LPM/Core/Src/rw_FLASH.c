@@ -286,7 +286,7 @@ HAL_StatusTypeDef readFlash() {
 		/* Время выборки для ADC */
 		currentSamplingTime = (tmpData >> 56) & 0x7;
 		if (currentSamplingTime > 7) {
-			currentSamplingTime = 0;	// ADC_SAMPLETIME_1CYCLE_5
+			currentSamplingTime = 1;	// ADC_SAMPLETIME_3CYCLE_5
 		}
 	return HAL_OK;
 

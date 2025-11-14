@@ -1035,9 +1035,9 @@ class NumberFragment : Fragment() {
                     * 37            - Разрешение спектра 0 - 1024, 1 - 2048, 2 - 4096
                     * 38            - Битовые флаги управления прибором
                     *                   0 - Автоматический запуск набора спектра (1 - будет так же как в DoZer)
-                    *                   1 -
-                    *                   2 -
-                    *                   3 -
+                    *                   1 - |
+                    *                   2 - | Врямя выборки
+                    *                   3 - |
                     *                   4 -
                     *                   5 -
                     *                   6 -
@@ -1251,6 +1251,8 @@ class NumberFragment : Fragment() {
                     } else {
                         GO.BTT.sendBuffer[38] = 0u
                     }
+                    val tmpSampleTime = ((GO.sampleTimeEdit.text.toString().toUInt() and 7u) shl 1).toUByte()
+                    GO.BTT.sendBuffer[38] = GO.BTT.sendBuffer[38] or tmpSampleTime
                     GO.BTT.sendCommand(0u)
                 }
 

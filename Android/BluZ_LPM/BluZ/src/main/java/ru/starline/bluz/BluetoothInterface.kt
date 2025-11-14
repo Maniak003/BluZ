@@ -826,7 +826,7 @@ class BluetoothInterface() {
                                     /* Получим время выборки АЦП */
                                     GO.HWSampleTime = GO.receiveData[97].toUByte() and 7.toUByte()
                                     if (GO.HWSampleTime > 7.toUByte()) {
-                                        GO.HWSampleTime = 0.toUByte()
+                                        GO.HWSampleTime = 1.toUByte()
                                     }
                                     /* Получим флаг перегрузки SiPM */
                                     GO.overloadFlag = (GO.receiveData[97].toUByte() and 8.toUByte()) != 0.toUByte()
@@ -835,6 +835,7 @@ class BluetoothInterface() {
                                     } else {
                                         GO.txtStat3.setText("CPS:${GO.pulsePerSec} ($doze uRh) Avg:$avgDoze uRh")
                                     }
+                                    Log.d("BluZ-BT", "sampleTime: ${GO.receiveData[97].toUByte() and 7.toUByte()}, overloadFlag: ${GO.overloadFlag}")
                                     //GO.txtStat3.setText(GO.mainContext.getString(R.string.cps_status, GO.pulsePerSec, doze, avgDoze))
 
                                     //Log.d("BluZ-BT", "L:${GO.receiveData[94]}, H:${GO.receiveData[95]}")
