@@ -167,8 +167,6 @@ class drawExmple {
     fun clearExample() {
         //Log.d("BluZ-BT", "Clear specter.")
         if ((HSize > 0) and (VSize > 0)) {
-            //specBitmap = Bitmap.createBitmap(HSize, VSize, Bitmap.Config.ARGB_8888)
-            //specCanvas = Canvas(specBitmap)
             exampleCanvas.drawColor(Color.argb(255, 0, 0, 0))
             exampleImgView.setImageBitmap(exampleBitmap)
         } else {

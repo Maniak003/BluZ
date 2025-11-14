@@ -42,7 +42,11 @@ class drawSpecter {
 
     /* Установка рабочих параметров и создание необходимых объектов */
     fun init() {
-        if (GO.drawObjectInit) {
+        if (! this::imgView.isInitialized) {
+            Log.e("BluZ-BT", "imgView not init.")
+            return
+        }
+        if (GO.drawObjectInit or !this::specBitmap.isInitialized) {
             HSize = imgView.width
             VSize = imgView.height
             if ((HSize == 0) or (VSize == 0)) {
@@ -198,8 +202,6 @@ class drawSpecter {
     fun clearSpecter() {
         //Log.d("BluZ-BT", "Clear specter.")
         if ((HSize > 0) and (VSize > 0)) {
-            //specBitmap = Bitmap.createBitmap(HSize, VSize, Bitmap.Config.ARGB_8888)
-            //specCanvas = Canvas(specBitmap)
             specCanvas.drawColor(Color.argb(255, 0, 0, 0))
             imgView.setImageBitmap(specBitmap)
         } else {
@@ -213,8 +215,6 @@ class drawSpecter {
             spectrData[ttt] = 0.0
         }
         if ((HSize > 0) and (VSize > 0)) {
-            //specBitmap = Bitmap.createBitmap(HSize, VSize, Bitmap.Config.ARGB_8888)
-            //specCanvas = Canvas(specBitmap)
             specCanvas.drawColor(Color.argb(255, 0, 0, 0))
             imgView.setImageBitmap(specBitmap)
         } else {
