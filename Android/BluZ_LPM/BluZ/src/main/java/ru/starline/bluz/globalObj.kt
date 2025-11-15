@@ -166,6 +166,7 @@ class globalObj {
     public lateinit var rbKMLType: RadioButton
     public lateinit var rbGPXType: RadioButton
     public lateinit var buttonSaveTrack: Button
+    public var Current_RSSI: Int = -400
     val isButtonSaveTrackInitialized
         get() = ::buttonSaveTrack.isInitialized
 
@@ -492,12 +493,16 @@ class globalObj {
         /*
         *   Вывод первой строки статистики
         */
+        var str_rssi = ""
+        if (GO.Current_RSSI > -400) {
+            str_rssi = String.format(" %sdBm ", GO.Current_RSSI.toString())
+        }
         if (GO.battLevel < 3.0f) {  // Уровень батареи низкий
-            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C   <font color=#C80000> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
+            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C ${str_rssi}<font color=#C80000> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
         } else if (GO.battLevel < 3.5f) { // Уровнь батареи ниже 50%
-            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C   <font color=#ffff00> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
+            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C ${str_rssi}<font color=#ffff00> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
         } else {
-            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C   <font color=#00ff00> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
+            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C ${str_rssi}<font color=#00ff00> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
         }
 
         /*
