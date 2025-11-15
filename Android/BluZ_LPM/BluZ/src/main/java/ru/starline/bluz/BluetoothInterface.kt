@@ -1,5 +1,6 @@
 package ru.starline.bluz
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
@@ -27,6 +28,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.Nullable
+import androidx.annotation.RequiresPermission
 import androidx.core.text.HtmlCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -50,6 +52,10 @@ import ru.starline.bluz.data.entity.TrackDetail
 import ru.starline.bluz.utils.await
 import java.lang.Math.pow
 import java.lang.Math.sqrt
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import kotlin.math.exp
+import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
@@ -477,10 +483,20 @@ class BluetoothInterface() {
             }
         }
 
+        override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                GO.Current_RSSI = rssi
+                Log.d("BluZ-BT", "RSSI : ${GO.Current_RSSI}")
+            } else {
+                GO.Current_RSSI = -400
+                Log.d("BluZ-BT", "RSSI read error.")
+            }
+        }
 
         /*
         *      Прием данных
         */
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         @Deprecated("Deprecated in Java")
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
             //delegate!!.onCharacteristicChanged(gatt, characteristic)
@@ -559,20 +575,20 @@ class BluetoothInterface() {
                             }
                         }
                         //GO.PCounter = (data[10].toUByte() + data[11].toUByte() * 256u + data[12].toUByte() * 65536u + data[13].toUByte() * 16777216u).toUInt()
-                        GO.PCounter = java.nio.ByteBuffer.wrap(data, 10, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).int.toUInt()
+                        GO.PCounter = ByteBuffer.wrap(data, 10, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                         //GO.pulsePerSec  = (data[14].toUByte() + data[15].toUByte() * 256u + data[16].toUByte() * 65536u + data[17].toUByte() * 16777216u).toUInt()
-                        GO.pulsePerSec = java.nio.ByteBuffer.wrap(data, 14, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).int.toUInt()
+                        GO.pulsePerSec = ByteBuffer.wrap(data, 14, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                         GO.cpsAVG += GO.pulsePerSec.toFloat()
                         GO.cpsIntervalCount++
                         GO.messTm =  (data[18].toUByte() + data[19].toUByte() * 256u + data[20].toUByte() * 65536u + data[21].toUByte() * 16777216u).toUInt()
                         //var tmpInt = (data[22].toUByte() + data[23].toUByte() * 256u + data[24].toUByte() * 65536u + data[25].toUByte() * 16777216u).toUInt()
-                        var tmpInt = java.nio.ByteBuffer.wrap(data, 22, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).int.toUInt()
+                        var tmpInt = ByteBuffer.wrap(data, 22, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                         GO.cps = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()) * 100) / 100
                         //tmpInt = (data[26].toUByte() + data[27].toUByte() * 256u + data[28].toUByte() * 65536u + data[29].toUByte() * 16777216u).toUInt()
-                        tmpInt = java.nio.ByteBuffer.wrap(data, 26, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).int.toUInt()
+                        tmpInt = ByteBuffer.wrap(data, 26, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                         GO.tempMC = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()))
                         //tmpInt = (data[30].toUByte() + data[31].toUByte() * 256u + data[32].toUByte() * 65536u + data[33].toUByte() * 16777216u).toUInt()
-                        tmpInt = java.nio.ByteBuffer.wrap(data, 30, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).int.toUInt()
+                        tmpInt = ByteBuffer.wrap(data, 30, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                         GO.battLevel = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()) * 100) / 100
                         var pulseCounter = GO.PCounter
                         Log.d("BluZ-BT", "Start detect. Size: $numberMTU, Type: $dataType, Pulse: $pulseCounter, Temp:" + GO.tempMC.toString() + ", Volt:" + GO.battLevel .toString())
@@ -689,8 +705,8 @@ class BluetoothInterface() {
                                     GO.showStatistics()
 
                                     /* Перевод CPS в uRh */
-                                    var doze: Float =  kotlin.math.round(GO.pulsePerSec.toFloat() * GO.propCPS2UR * 100.0f) / 100.0f
-                                    var avgDoze : Float = kotlin.math.round(GO.cps * GO.propCPS2UR * 100.0f) / 100.0f
+                                    var doze: Float =  round(GO.pulsePerSec.toFloat() * GO.propCPS2UR * 100.0f) / 100.0f
+                                    var avgDoze : Float = round(GO.cps * GO.propCPS2UR * 100.0f) / 100.0f
 
                                     /* Требуется запись трека ? */
                                     if (GO.trackIsRecordeed && (GO.currentTrck > 0)) {
@@ -787,7 +803,8 @@ class BluetoothInterface() {
                                     GO.HWpropLevel3 = (GO.receiveData[58].toUInt()  + (GO.receiveData[59].toUInt() shl 8)).toInt()
 
                                     //GO.HWpropCPS2UR = java.lang.Float.intBitsToFloat((GO.receiveData[46] + (GO.receiveData[47] * 256u)  + (GO.receiveData[48] * 65536u) + (GO.receiveData[49] * 16777216u)).toInt())
-                                    GO.HWpropCPS2UR = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 46, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWpropCPS2UR = ByteBuffer.wrap(GO.receiveData.asByteArray(), 46, 4).order(
+                                        ByteOrder.LITTLE_ENDIAN).float
 
                                     //GO.HWpropHVoltage = (GO.receiveData[50] + (GO.receiveData[51] * 256u)).toUShort()
                                     //GO.HWpropComparator = (GO.receiveData[52] + (GO.receiveData[53] * 256u)).toUShort()
@@ -798,23 +815,32 @@ class BluetoothInterface() {
                                     //GO.HWCoef1024A = java.lang.Float.intBitsToFloat((GO.receiveData[34] + (GO.receiveData[35] * 256u)  + (GO.receiveData[36] * 65536u) + (GO.receiveData[37] * 16777216u)).toInt())
                                     //GO.HWCoef1024B = java.lang.Float.intBitsToFloat((GO.receiveData[38] + (GO.receiveData[39] * 256u)  + (GO.receiveData[40] * 65536u) + (GO.receiveData[41] * 16777216u)).toInt())
                                     //GO.HWCoef1024C = java.lang.Float.intBitsToFloat((GO.receiveData[42] + (GO.receiveData[43] * 256u)  + (GO.receiveData[44] * 65536u) + (GO.receiveData[45] * 16777216u)).toInt())
-                                    GO.HWCoef1024A = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 34, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
-                                    GO.HWCoef1024B = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 38, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
-                                    GO.HWCoef1024C = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 42, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef1024A = ByteBuffer.wrap(GO.receiveData.asByteArray(), 34, 4).order(
+                                        ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef1024B = ByteBuffer.wrap(GO.receiveData.asByteArray(), 38, 4).order(
+                                        ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef1024C = ByteBuffer.wrap(GO.receiveData.asByteArray(), 42, 4).order(
+                                        ByteOrder.LITTLE_ENDIAN).float
                                     /* Коэффициенты полинома для 2048 */
                                     //GO.HWCoef2048A = java.lang.Float.intBitsToFloat((GO.receiveData[62] + (GO.receiveData[63] * 256u)  + (GO.receiveData[64] * 65536u) + (GO.receiveData[65] * 16777216u)).toInt())
                                     //GO.HWCoef2048B = java.lang.Float.intBitsToFloat((GO.receiveData[66] + (GO.receiveData[67] * 256u)  + (GO.receiveData[68] * 65536u) + (GO.receiveData[69] * 16777216u)).toInt())
                                     //GO.HWCoef2048C = java.lang.Float.intBitsToFloat((GO.receiveData[70] + (GO.receiveData[71] * 256u)  + (GO.receiveData[72] * 65536u) + (GO.receiveData[73] * 16777216u)).toInt())
-                                    GO.HWCoef2048A = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 62, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
-                                    GO.HWCoef2048B = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 66, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
-                                    GO.HWCoef2048C = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 70, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef2048A = ByteBuffer.wrap(GO.receiveData.asByteArray(), 62, 4).order(
+                                        ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef2048B = ByteBuffer.wrap(GO.receiveData.asByteArray(), 66, 4).order(
+                                        ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef2048C = ByteBuffer.wrap(GO.receiveData.asByteArray(), 70, 4).order(
+                                        ByteOrder.LITTLE_ENDIAN).float
                                     /* Коэффициенты полинома для 4096 */
                                     //GO.HWCoef4096A = java.lang.Float.intBitsToFloat((GO.receiveData[74] + (GO.receiveData[75] * 256u)  + (GO.receiveData[76] * 65536u) + (GO.receiveData[77] * 16777216u)).toInt())
                                     //GO.HWCoef4096B = java.lang.Float.intBitsToFloat((GO.receiveData[78] + (GO.receiveData[79] * 256u)  + (GO.receiveData[80] * 65536u) + (GO.receiveData[81] * 16777216u)).toInt())
                                     //GO.HWCoef4096C = java.lang.Float.intBitsToFloat((GO.receiveData[82] + (GO.receiveData[83] * 256u)  + (GO.receiveData[84] * 65536u) + (GO.receiveData[85] * 16777216u)).toInt())
-                                    GO.HWCoef4096A = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 74, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
-                                    GO.HWCoef4096B = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 78, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
-                                    GO.HWCoef4096C = java.nio.ByteBuffer.wrap(GO.receiveData.asByteArray(), 82, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef4096A = ByteBuffer.wrap(GO.receiveData.asByteArray(), 74, 4).order(
+                                        ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef4096B = ByteBuffer.wrap(GO.receiveData.asByteArray(), 78, 4).order(
+                                        ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef4096C = ByteBuffer.wrap(GO.receiveData.asByteArray(), 82, 4).order(
+                                        ByteOrder.LITTLE_ENDIAN).float
                                     /* Количество импульсов до усреднения для дозиметра */
                                     //GO.HWAqureValue = (GO.receiveData[94] + (GO.receiveData[95] * 256u)).toUShort()
                                     GO.HWAqureValue = ((GO.receiveData[95].toUInt() shl 8) or GO.receiveData[94].toUInt()).toUShort()
@@ -847,14 +873,14 @@ class BluetoothInterface() {
                                         iii = 1424                  // Смещение в байтах от начала буфера.
                                         jjj = 0
                                         //val koefChan = GO.HWBitsChan.toDouble() / 65535.0
-                                        val mult = GO.HWBitsChan.toDouble() / 65535.0 * kotlin.math.ln(2.0)
+                                        val mult = GO.HWBitsChan.toDouble() / 65535.0 * ln(2.0)
                                         while (jjj < GO.drawHISTORY.ResolutionHistory) {
                                             //d0 = GO.receiveData[iii++]      // Выбираем младший байт
                                             //d1 = GO.receiveData[iii++]      // Выбираем старший байт
                                             //val value = (d0 + (d1.toUInt() shl 8)).toDouble()
                                             /* Логарифмическое сжатие - декомпрессия */
                                             //GO.drawHISTORY.historyData[jjj++] = kotlin.math.round(2.0.pow((d0 + (d1.toUInt() shl 8)).toDouble() * koefChan)) - 1.0
-                                            GO.drawHISTORY.historyData[jjj++] = kotlin.math.round(kotlin.math.exp((GO.receiveData[iii++]  + (GO.receiveData[iii++] .toUInt() shl 8)).toDouble() * mult) - 1.0)
+                                            GO.drawHISTORY.historyData[jjj++] = round(exp((GO.receiveData[iii++]  + (GO.receiveData[iii++] .toUInt() shl 8)).toDouble() * mult) - 1.0)
                                         }
                                         //Log.d("BluZ-BT", "SpectrSUMM:$sm_test, MAX:$max_test ($idx_test)")
                                         GO.drawHISTORY.init()
@@ -891,13 +917,13 @@ class BluetoothInterface() {
                                                     //var tmp_test = 0.0
                                                     //var idx_test = 0
                                                     //val koefChan = GO.HWBitsChan.toDouble() / 65535.0
-                                                    val mult = GO.HWBitsChan.toDouble() / 65535.0 * kotlin.math.ln(2.0)
+                                                    val mult = GO.HWBitsChan.toDouble() / 65535.0 * ln(2.0)
                                                     while (jjj < GO.drawSPECTER.ResolutionSpectr) {
                                                         //d0 = GO.receiveData[iii++]      // Выбираем младший байт
                                                         //d1 = GO.receiveData[iii++]      // Выбираем старший байт
                                                         /* Логарифмическое сжатие - декомпрессия */
                                                         //GO.drawSPECTER.spectrData[jjj++] = round(2.0.pow((d0 + d1 * 256u).toDouble() * koefChan)) - 1
-                                                        GO.drawSPECTER.spectrData[jjj++] = kotlin.math.round(kotlin.math.exp((GO.receiveData[iii++] + (GO.receiveData[iii++].toUInt() shl 8)).toDouble() * mult) - 1.0)
+                                                        GO.drawSPECTER.spectrData[jjj++] = round(exp((GO.receiveData[iii++] + (GO.receiveData[iii++].toUInt() shl 8)).toDouble() * mult) - 1.0)
                                                     }
                                                     //Log.d("BluZ-BT", "SpectrSUMM:$sm_test, MAX:$max_test ($idx_test)")
                                                     GO.drawSPECTER.init()
@@ -921,6 +947,7 @@ class BluetoothInterface() {
                                     }
                                 }
                             }
+                            gatt.readRemoteRssi()
                         } else {
                             Log.e("BluZ-BT", "CS - incorrect. Found: $tmpCS calculate: $checkSumm")
                             //Log.e("BluZ-BT", "data[242]: " + data[242].toUByte() + " data[243]: " + data[243].toUByte())
