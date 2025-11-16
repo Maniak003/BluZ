@@ -1,6 +1,6 @@
 [versions]
 agp = "8.12.3"
-kotlin = "2.2.20"
+kotlin = "2.2.21"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -10,7 +10,7 @@ kotlinxMetadataJvm = "0.9.0"
 mapsMobile = "4.19.0"
 mapsMobileVersion = "4.19.0-lite"
 material = "1.13.0"
-activity = "1.8.0"
+activity = "1.11.0"
 constraintlayout = "2.1.4"
 viewpager2 = "1.1.0"
 playServicesMaps = "19.2.0"
@@ -39,6 +39,8 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 androidx-runtime = { group = "androidx.xr.runtime", name = "runtime", version.ref = "runtime" }
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
+#firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version.ref = "firebaseCrashlytics" }
+#firebase-crashlytics-ndk = { module = "com.google.firebase:firebase-crashlytics-ndk", version.ref = "firebaseCrashlytics" }
 androidx-compiler = { group = "androidx.databinding", name = "compiler", version.ref = "compiler" }
 
 [plugins]

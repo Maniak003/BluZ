@@ -143,8 +143,8 @@ class BleMonitoringService : Service() {
 
         // Создаём уведомление сразу (фоновые сервисы должны быстро показать foreground-статус)
         createNotificationChannel()
-        updateNotification(0f)
-        val initialNotification = updateNotification(0f)
+        updateNotification(0f, 0)
+        val initialNotification = updateNotification(0f, 0)
         startForeground(1, initialNotification)
         //getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {putBoolean("is_ble_service_running", true)}
         //activeTrackId = GO.currentTrck
@@ -227,7 +227,7 @@ class BleMonitoringService : Service() {
 
                 // Сохраняем точку
                 dao.insertPoint(detail)
-                updateNotification(cps)
+                updateNotification(cps, rssi)
 
                 Log.d("BluZ-BT","Saved: RSSI=$rssi, CPS=$cps, Lat=$latitude, Lon=$longitude, Accur=$accuracy, Magnitude: $currentMagnitude")
 
@@ -454,11 +454,11 @@ class BleMonitoringService : Service() {
                 ((b3.toUInt() and 0xFFu) shl 24)
     }
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-    private fun updateNotification(cps: Float): Notification {
+    private fun updateNotification(cps: Float, rssi: Int): Notification {
         var formattedCps: String = ""
         /*  CPS и магнитуда в уведомлении. */
         if (currentMagnitude > 0) {
-            formattedCps = "CPS:%.2f / %.2fuR/h\nMagnitude: %.2fuT".format(cps, cps * cps2doze, currentMagnitude)
+            formattedCps = "CPS:%.2f / %.2fuR/h\nMagnitude: %.2fuT\nRSSI: %ddBm".format(cps, cps * cps2doze, currentMagnitude, rssi)
         } else {
             formattedCps = "CPS:%.2f / %.2fuR/h".format(cps, cps * cps2doze)
         }
