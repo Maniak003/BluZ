@@ -1,5 +1,6 @@
 package ru.starline.bluz
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
@@ -34,6 +35,7 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.yandex.mapkit.MapKitFactory
@@ -65,6 +67,12 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 import androidx.core.view.isVisible
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 
 const val ARG_OBJECT = "oblect"
 
@@ -295,6 +303,39 @@ class NumberFragment : Fragment() {
                 setupMapClickListener()
             }
         }
+    }
+
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+    private fun getLocationModern() {
+        val fusedClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        fusedClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null && location.time > System.currentTimeMillis() - 5 * 60 * 1000) {
+                // Есть актуальная кэшированная локация (не старше 5 минут)
+                GO.lastPointLoc = location
+            } else {
+                // Запрашиваем новую
+                requestFreshLocationModern(fusedClient)
+            }
+        }
+    }
+
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+    private fun requestFreshLocationModern(client: FusedLocationProviderClient) {
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 0)
+            .setMinUpdateIntervalMillis(0)
+            .setMaxUpdateDelayMillis(0)
+            .setMaxUpdates(1)
+            .build()
+
+        val callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                GO.lastPointLoc = result.lastLocation!!
+                client.removeLocationUpdates(this)
+            }
+        }
+
+        client.requestLocationUpdates(request, callback, null)
     }
 
     /*
@@ -1657,9 +1698,7 @@ class NumberFragment : Fragment() {
                 *
                 * Работа с картой и треками
                 *
-                *
                 */
-
                 // Создаём хинт программно
 
                 hintView = TextView(requireContext()).apply {
@@ -1671,14 +1710,18 @@ class NumberFragment : Fragment() {
                 }
                 mapViewPlan = view.findViewById<MapView>(R.id.mapview)
                 mapViewPlan = view.findViewById<MapView>(R.id.mapview)
-                mapViewPlan.addView(hintView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)                //(mapViewPlan.parent as ViewGroup).addView(hintView)
-
+                mapViewPlan.addView(
+                    hintView,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )                //(mapViewPlan.parent as ViewGroup).addView(hintView)
                 /* Сохранения трека */
                 GO.buttonSaveTrack = view.findViewById(R.id.buttonSaveTrack)
                 GO.buttonSaveTrack.setOnClickListener {
                     val sdf = SimpleDateFormat("dd.MM.yy HH:mm:ss", Locale.getDefault())
-                    val df = DecimalFormat("#.##").apply{roundingMode = RoundingMode.HALF_UP}
-                    val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
+                    val df = DecimalFormat("#.##").apply { roundingMode = RoundingMode.HALF_UP }
+                    val documentsDir =
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
                     val bluzDir = File("$documentsDir/BluZ")
                     /* Проверяем наличие каталока приложения в Documents */
                     if (!bluzDir.exists()) {
@@ -1701,24 +1744,35 @@ class NumberFragment : Fragment() {
                                     if (fileKML.createNewFile()) {
                                         Log.d("BluZ-BT", "File create Ok.")
                                         val outputStream = FileOutputStream(fileKML)
-                                        var kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_header).bufferedReader().use { it.readText() }
-                                        val kmlHdr = kmlTmp.replace("____NAME____", GO.curretnTrcName).replace("____DECRIPTION____", "BluZ KML")
+                                        var kmlTmp =
+                                            GO.mainContext.resources.openRawResource(R.raw.track_header)
+                                                .bufferedReader().use { it.readText() }
+                                        val kmlHdr =
+                                            kmlTmp.replace("____NAME____", GO.curretnTrcName)
+                                                .replace("____DECRIPTION____", "BluZ KML")
                                         /* Записываем заголовок файла */
                                         outputStream.write(kmlHdr.toByteArray())
 
-                                        kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_style).bufferedReader().use { it.readText() }
+                                        kmlTmp =
+                                            GO.mainContext.resources.openRawResource(R.raw.track_style)
+                                                .bufferedReader().use { it.readText() }
                                         /* Записываем стили */
                                         var kmlStl: String = ""
                                         for (iclr in 0..31) {
-                                            kmlStl = kmlTmp.replace("____ID____", "Stl$iclr").replace("____COLOR____", GO.radClrsKml[iclr])
+                                            kmlStl = kmlTmp.replace("____ID____", "Stl$iclr")
+                                                .replace("____COLOR____", GO.radClrsKml[iclr])
                                             outputStream.write(kmlStl.toByteArray())
                                         }
-                                        kmlStl = kmlTmp.replace("____ID____", "blackStyle").replace("____COLOR____", "7f000000")
+                                        kmlStl = kmlTmp.replace("____ID____", "blackStyle")
+                                            .replace("____COLOR____", "7f000000")
                                         outputStream.write(kmlStl.toByteArray())
-                                        kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_point).bufferedReader().use { it.readText() }
+                                        kmlTmp =
+                                            GO.mainContext.resources.openRawResource(R.raw.track_point)
+                                                .bufferedReader().use { it.readText() }
 
                                         lifecycleScope.launch {
-                                            val maxMin = GO.dao.getMaxMinForTrack(GO.currentTrack4Show)
+                                            val maxMin =
+                                                GO.dao.getMaxMinForTrack(GO.currentTrack4Show)
                                             val mn = maxMin!!.min
                                             val mx = maxMin.max
                                             val dlt = mx - mn
@@ -1728,47 +1782,88 @@ class NumberFragment : Fragment() {
                                             }
                                             Log.d("BluZ-BT", "Max: $mx, Min: $mn, Koef: $kfc")
                                             /* Выбираем точки для текущего трека */
-                                            val trcDet = GO.dao.getPointsForTrack(GO.currentTrack4Show)
+                                            val trcDet =
+                                                GO.dao.getPointsForTrack(GO.currentTrack4Show)
                                             if (trcDet.isNotEmpty()) {
                                                 for (detLoc in trcDet) {
                                                     if (detLoc.latitude != 0.0 && detLoc.longitude != 0.0) {
                                                         var styleStr: String
                                                         /* Если CPS не определен */
                                                         if (detLoc.cps >= 0) {
-                                                            styleStr = "#Stl" + (kfc * (detLoc.cps - mn)).toInt()
+                                                            styleStr =
+                                                                "#Stl" + (kfc * (detLoc.cps - mn)).toInt()
                                                         } else {
                                                             styleStr = "#blackStyle"
                                                         }
-                                                        val kmlPnt = kmlTmp.replace("____POINT____","CPS:" + df.format(detLoc.cps) + " / " + df.format(detLoc.cps * GO.propCPS2UR) + "uR/h")
-                                                            .replace("____STR1____","Time:" + sdf.format(Date(detLoc.timestamp * 1000)))
-                                                            .replace("____STR2____","Speed:" + df.format(detLoc.speed * 3.6f) + " km/h")
-                                                            .replace("____STR3____","Altit:" + df.format(detLoc.altitude))
-                                                            .replace("____STR4____","Accur:" + df.format(detLoc.accuracy))
-                                                            .replace("____STR5____","Magn:" + df.format(detLoc.magnitude))
-                                                            .replace("____LOC____",rectPolyGen(detLoc.latitude, detLoc.longitude, detLoc.accuracy.toDouble(), detLoc.altitude))
+                                                        val kmlPnt = kmlTmp.replace(
+                                                            "____POINT____",
+                                                            "CPS:" + df.format(detLoc.cps) + " / " + df.format(
+                                                                detLoc.cps * GO.propCPS2UR
+                                                            ) + "uR/h"
+                                                        )
+                                                            .replace(
+                                                                "____STR1____",
+                                                                "Time:" + sdf.format(Date(detLoc.timestamp * 1000))
+                                                            )
+                                                            .replace(
+                                                                "____STR2____",
+                                                                "Speed:" + df.format(detLoc.speed * 3.6f) + " km/h"
+                                                            )
+                                                            .replace(
+                                                                "____STR3____",
+                                                                "Altit:" + df.format(detLoc.altitude)
+                                                            )
+                                                            .replace(
+                                                                "____STR4____",
+                                                                "Accur:" + df.format(detLoc.accuracy)
+                                                            )
+                                                            .replace(
+                                                                "____STR5____",
+                                                                "Magn:" + df.format(detLoc.magnitude)
+                                                            )
+                                                            .replace(
+                                                                "____LOC____",
+                                                                rectPolyGen(
+                                                                    detLoc.latitude,
+                                                                    detLoc.longitude,
+                                                                    detLoc.accuracy.toDouble(),
+                                                                    detLoc.altitude
+                                                                )
+                                                            )
                                                             .replace("____STYLE____", styleStr)
                                                         /* Записываем поинт */
                                                         outputStream.write(kmlPnt.toByteArray())
                                                     }
                                                 }
-                                                kmlTmp = GO.mainContext.resources.openRawResource(R.raw.track_footer).bufferedReader().use { it.readText() }
+                                                kmlTmp =
+                                                    GO.mainContext.resources.openRawResource(R.raw.track_footer)
+                                                        .bufferedReader().use { it.readText() }
                                                 outputStream.write(kmlTmp.toByteArray())
                                                 outputStream.close()
-                                                Toast.makeText(context, "Save complete to: %s".format(fileKML), Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(
+                                                    context,
+                                                    "Save complete to: %s".format(fileKML),
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             }
                                         }
                                     }
                                 } catch (e: IOException) {
-                                    Toast.makeText(context, "Error save file. ${e.toString()}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Error save file. ${e.toString()}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                     Log.e("BluZ-BT", "Error: ", e)
                                 }
                             } else {
-                                Toast.makeText(context, "Track not selected.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Track not selected.", Toast.LENGTH_SHORT)
+                                    .show()
                             }
                         }
 
                         /* CSV формат */
-                        1-> {
+                        1 -> {
                             /* Создадим CSV файл для сохранения трека */
                             if (GO.curretnTrcName.isNotEmpty()) {
                                 /* Формируем имя файла для сохранения трека */
@@ -1783,45 +1878,90 @@ class NumberFragment : Fragment() {
                                     if (fileCSV.createNewFile()) {
                                         Log.d("BluZ-BT", "File create Ok.")
                                         val outputStream = FileOutputStream(fileCSV)
-                                        var csvTmp = GO.mainContext.resources.openRawResource(R.raw.track_header_csv).bufferedReader().use { it.readText() }
+                                        var csvTmp =
+                                            GO.mainContext.resources.openRawResource(R.raw.track_header_csv)
+                                                .bufferedReader().use { it.readText() }
                                         /* Записываем заголовок файла */
                                         outputStream.write(csvTmp.toByteArray())
 
                                         // ___TIME___;___DOSE___;___LAT___;___LNG___;___ALT___;___SPEED___;___CPS___;___ACCUR___;___MAGN___
-                                        csvTmp = GO.mainContext.resources.openRawResource(R.raw.track_detale_csv).bufferedReader().use { it.readText() }
+                                        csvTmp =
+                                            GO.mainContext.resources.openRawResource(R.raw.track_detale_csv)
+                                                .bufferedReader().use { it.readText() }
 
                                         lifecycleScope.launch {
                                             /* Выбираем точки для текущего трека */
-                                            val trcDet = GO.dao.getPointsForTrack(GO.currentTrack4Show)
+                                            val trcDet =
+                                                GO.dao.getPointsForTrack(GO.currentTrack4Show)
                                             if (trcDet.isNotEmpty()) {
                                                 for (detLoc in trcDet) {
                                                     if (detLoc.latitude != 0.0 && detLoc.longitude != 0.0) {
-                                                        val csvPnt = csvTmp.replace("___TIME___",detLoc.timestamp.toString())
-                                                            .replace("___DOSE___",df.format(detLoc.cps * GO.propCPS2UR))
-                                                            .replace("___LAT___",detLoc.latitude.toString())
-                                                            .replace("___LNG___",detLoc.longitude.toString())
-                                                            .replace("___ALT___",df.format(detLoc.altitude))
-                                                            .replace("___SPEED___",df.format(detLoc.speed * 3.6f))
-                                                            .replace("___CPS___",df.format(detLoc.cps))
-                                                            .replace("___ACCUR___", df.format(detLoc.accuracy))
-                                                            .replace("___MAGN___", df.format(detLoc.magnitude))
+                                                        val csvPnt = csvTmp.replace(
+                                                            "___TIME___",
+                                                            detLoc.timestamp.toString()
+                                                        )
+                                                            .replace(
+                                                                "___DOSE___",
+                                                                df.format(detLoc.cps * GO.propCPS2UR)
+                                                            )
+                                                            .replace(
+                                                                "___LAT___",
+                                                                detLoc.latitude.toString()
+                                                            )
+                                                            .replace(
+                                                                "___LNG___",
+                                                                detLoc.longitude.toString()
+                                                            )
+                                                            .replace(
+                                                                "___ALT___",
+                                                                df.format(detLoc.altitude)
+                                                            )
+                                                            .replace(
+                                                                "___SPEED___",
+                                                                df.format(detLoc.speed * 3.6f)
+                                                            )
+                                                            .replace(
+                                                                "___CPS___",
+                                                                df.format(detLoc.cps)
+                                                            )
+                                                            .replace(
+                                                                "___ACCUR___",
+                                                                df.format(detLoc.accuracy)
+                                                            )
+                                                            .replace(
+                                                                "___MAGN___",
+                                                                df.format(detLoc.magnitude)
+                                                            )
                                                         /* Записываем поинт */
                                                         outputStream.write(csvPnt.toByteArray())
                                                     }
                                                 }
                                                 outputStream.close()
-                                                Toast.makeText(context, "Save complete to: %s".format(fileCSV), Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(
+                                                    context,
+                                                    "Save complete to: %s".format(fileCSV),
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             } else {
-                                                Toast.makeText(context, "Track %s is empty. ${GO.curretnTrcName}", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(
+                                                    context,
+                                                    "Track %s is empty. ${GO.curretnTrcName}",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             }
                                         }
                                     }
                                 } catch (e: IOException) {
-                                    Toast.makeText(context, "Error save file. ${e.toString()}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Error save file. ${e.toString()}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                     Log.e("BluZ-BT", "Error: ", e)
                                 }
                             } else {
-                                Toast.makeText(context, "Track not selected.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Track not selected.", Toast.LENGTH_SHORT)
+                                    .show()
                             }
                         }
                     }
@@ -1831,7 +1971,6 @@ class NumberFragment : Fragment() {
                     0 -> GO.buttonSaveTrack.text = resources.getString(R.string.textKML)
                     1 -> GO.buttonSaveTrack.text = resources.getString(R.string.textGPX)
                 }
-
                 /* Кнопка запуска/остановки записи трека. */
                 GO.recordTrc = view.findViewById(R.id.buttonRecord)
                 /* Восстановим текущее состояние */
@@ -1852,18 +1991,27 @@ class NumberFragment : Fragment() {
                         }
                         GO.curretnTrcName = GO.dao.getSelectTrack(GO.currentTrck)
                         cps2urh = GO.dao.getCPS2URH(GO.currentTrck)
-                        GO.currentTrackName.text = getString(R.string.current_track_label, GO.curretnTrcName)
-                        Log.d("BluZ-BT", "Track_id: ${GO.currentTrck}, Track_name: ${GO.curretnTrcName}")
+                        GO.currentTrackName.text =
+                            getString(R.string.current_track_label, GO.curretnTrcName)
+                        Log.d(
+                            "BluZ-BT",
+                            "Track_id: ${GO.currentTrck}, Track_name: ${GO.curretnTrcName}"
+                        )
                         redrawtMap(GO.currentTrck)
                     }
 
                 }
-                /* Обработка нажатия на кнопку */
+                /* Обработка нажатия на кнопку записи трека*/
                 GO.recordTrc.setOnClickListener {
                     if (GO.trackIsRecordeed) {
                         /* Здесь останавливаем запись трека */
                         GO.recordTrc.text = getString(R.string.startRec)
-                        GO.recordTrc.setTextColor(resources.getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                        GO.recordTrc.setTextColor(
+                            resources.getColor(
+                                R.color.buttonTextColor,
+                                GO.mainContext.theme
+                            )
+                        )
                         GO.trackIsRecordeed = false
                         GO.locationManager?.stopLocationUpdates()
                     } else {
@@ -1895,16 +2043,18 @@ class NumberFragment : Fragment() {
                             .setPositiveButton("Save") { dialog, _ ->
                                 val name = input.text.toString().trim()
                                 if (name.isEmpty()) {
-                                    Toast.makeText(context, "Name is empty.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Name is empty.", Toast.LENGTH_SHORT)
+                                        .show()
                                     return@setPositiveButton
                                 }
 
                                 // Запускаем корутину для изменения названия трека в БД
                                 lifecycleScope.launch {
                                     try {
-                                        GO.dao.editTrack(GO.currentTrack4Show,name)
+                                        GO.dao.editTrack(GO.currentTrack4Show, name)
                                         GO.curretnTrcName = name
-                                        GO.currentTrackName.text =  getString(R.string.current_track_label, name)
+                                        GO.currentTrackName.text =
+                                            getString(R.string.current_track_label, name)
                                     } catch (e: Exception) {
                                         Log.e("TrackDialog", "Error edit track", e)
                                     }
@@ -1920,7 +2070,12 @@ class NumberFragment : Fragment() {
                                     if (GO.trackIsRecordeed) {
                                         /* Здесь останавливаем запись трека */
                                         GO.recordTrc.text = getString(R.string.startRec)
-                                        GO.recordTrc.setTextColor(resources.getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                                        GO.recordTrc.setTextColor(
+                                            resources.getColor(
+                                                R.color.buttonTextColor,
+                                                GO.mainContext.theme
+                                            )
+                                        )
                                         GO.trackIsRecordeed = false
                                         GO.locationManager?.stopLocationUpdates()
                                     }
@@ -1932,7 +2087,8 @@ class NumberFragment : Fragment() {
                                             //GO.currentTrackName.text =  getString(R.string.current_track_label, GO.curretnTrcName)
                                             GO.currentTrack4Show = 0
                                             GO.curretnTrcName = ""
-                                            GO.currentTrackName.text =  getString(R.string.current_track_label, "")
+                                            GO.currentTrackName.text =
+                                                getString(R.string.current_track_label, "")
                                         } catch (e: Exception) {
                                             Log.e("TrackDialog", "Error delete track", e)
                                         }
@@ -1943,9 +2099,8 @@ class NumberFragment : Fragment() {
                             .show()
                     }
                 }
-
                 /* Создание нового трека */
-                val btnNewTrack : Button = view.findViewById(R.id.buttonNewTrack)
+                val btnNewTrack: Button = view.findViewById(R.id.buttonNewTrack)
                 btnNewTrack.setOnClickListener {
                     val context = requireContext()
 
@@ -1968,10 +2123,18 @@ class NumberFragment : Fragment() {
                             // Запускаем корутину для сохранения в БД
                             lifecycleScope.launch {
                                 try {
-                                    val newTrack = Track( id = 0, name = name, createdAt = System.currentTimeMillis() / 1000, isActive = false, isHidden = false, GO.propCPS2UR)
+                                    val newTrack = Track(
+                                        id = 0,
+                                        name = name,
+                                        createdAt = System.currentTimeMillis() / 1000,
+                                        isActive = false,
+                                        isHidden = false,
+                                        GO.propCPS2UR
+                                    )
                                     GO.currentTrack4Show = GO.dao.insertTrack(newTrack)
                                     GO.curretnTrcName = name
-                                    GO.currentTrackName.text =  getString(R.string.current_track_label, name)
+                                    GO.currentTrackName.text =
+                                        getString(R.string.current_track_label, name)
                                     /* Сразу делаем активным если не выполняется запись */
                                     if (!GO.trackIsRecordeed) {
                                         GO.dao.deactivateAllTracks()
@@ -1991,29 +2154,45 @@ class NumberFragment : Fragment() {
                         }
                         .show()
                 }
-
                 /* Выбор трека для отображения */
-                val btnTrackList : Button = view.findViewById(R.id.buttonTracks)
+                val btnTrackList: Button = view.findViewById(R.id.buttonTracks)
                 btnTrackList.setOnClickListener {
                     lifecycleScope.launch {
                         val tracks = GO.dao.getAllTracks()
                         val sdf = SimpleDateFormat("[dd.MM.yy HH:mm:ss] ", Locale.getDefault())
-                        val names = tracks.map { sdf.format(Date(it.createdAt * 1000)) + it.name }.toTypedArray()
+                        val names = tracks.map { sdf.format(Date(it.createdAt * 1000)) + it.name }
+                            .toTypedArray()
 
                         /* Изменение стиля диалогового окна,
                          * для уменьшения межстрочных интервалов
                          * и раскраски отдельных полей
                          */
-                        val adapter = object : ArrayAdapter<String>(requireContext(), R.layout.item_track_dialog, names) {
-                            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                        val adapter = object : ArrayAdapter<String>(
+                            requireContext(),
+                            R.layout.item_track_dialog,
+                            names
+                        ) {
+                            override fun getView(
+                                position: Int,
+                                convertView: View?,
+                                parent: ViewGroup
+                            ): View {
                                 val view = super.getView(position, convertView, parent)
                                 val textView = view.findViewById<TextView>(R.id.textView)
                                 val fullText = names[position]
                                 val dateLength = 20
                                 if (fullText.length >= dateLength) {
                                     val spannable = SpannableString(fullText)
-                                    val dateColor = ContextCompat.getColor(requireContext(), R.color.labelTextColor2)
-                                    spannable.setSpan(ForegroundColorSpan(dateColor),0,dateLength,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                    val dateColor = ContextCompat.getColor(
+                                        requireContext(),
+                                        R.color.labelTextColor2
+                                    )
+                                    spannable.setSpan(
+                                        ForegroundColorSpan(dateColor),
+                                        0,
+                                        dateLength,
+                                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                                    )
                                     textView.text = spannable
                                 } else {
                                     textView.text = fullText
@@ -2029,14 +2208,21 @@ class NumberFragment : Fragment() {
                                 GO.map?.mapObjects?.clear()                 // Очистим карту от старых объектов.
                                 val selectedTrack = tracks[which]
                                 GO.curretnTrcName = selectedTrack.name
-                                GO.currentTrackName.text =  getString(R.string.current_track_label, selectedTrack.name)
-                                GO.currentTrack4Show = selectedTrack.id     // Запомним текущий отображаемый трек.
+                                GO.currentTrackName.text =
+                                    getString(R.string.current_track_label, selectedTrack.name)
+                                GO.currentTrack4Show =
+                                    selectedTrack.id     // Запомним текущий отображаемый трек.
                                 redrawtMap(GO.currentTrack4Show)
                                 /* Нужно остановить запись */
                                 if (GO.trackIsRecordeed) {
                                     /* Здесь останавливаем запись трека */
                                     GO.recordTrc.text = getString(R.string.startRec)
-                                    GO.recordTrc.setTextColor(resources.getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                                    GO.recordTrc.setTextColor(
+                                        resources.getColor(
+                                            R.color.buttonTextColor,
+                                            GO.mainContext.theme
+                                        )
+                                    )
                                     GO.trackIsRecordeed = false
                                     GO.locationManager?.stopLocationUpdates()
                                 }
@@ -2087,26 +2273,33 @@ class NumberFragment : Fragment() {
                         //if (loc != null) {
                         //    GO.Latitude = loc.latitude
                         //    GO.Longitude = loc.longitude
-                            //locationStr = " Lat: ${loc.latitude} Lng: ${loc.longitude} Alt: ${loc.altitude} Speed: ${loc.speed}"
+                        //locationStr = " Lat: ${loc.latitude} Lng: ${loc.longitude} Alt: ${loc.altitude} Speed: ${loc.speed}"
                         //} else {
                         //    Toast.makeText(context, "GPS error.", Toast.LENGTH_SHORT).show()
                         //}
 
                         if (GO.lastPointLoc.latitude != 0.0 && GO.lastPointLoc.longitude != 0.0) {
-                            GO.map?.move(CameraPosition(Point(GO.lastPointLoc.latitude, GO.lastPointLoc.longitude),/* zoom = */ 15.0f,/* azimuth = */ 0.0f,/* tilt = */ 0.0f))
+                            GO.map?.move(
+                                CameraPosition(
+                                    Point(
+                                        GO.lastPointLoc.latitude,
+                                        GO.lastPointLoc.longitude
+                                    ),/* zoom = */ 15.0f,/* azimuth = */ 0.0f,/* tilt = */ 0.0f
+                                )
+                            )
                         }
                         // Остановить запрос
                         //locationCallback?.let { fusedLocationClient.removeLocationUpdates(it) }
                         //locationCallback = null
                     } catch (e: Exception) {
-                        Toast.makeText(context, "GPS write error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "GPS write error: ${e.message}", Toast.LENGTH_SHORT)
+                            .show()
                     }
                 }
-
                 /* Яндекс API */
                 GO.createRainbowColors()        // Создание градиента для меток.
                 val lm = GO.mainContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                GO.lastPointLoc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)!!
+                /* Инициализируем карту */
                 GO.mapView = view.findViewById(R.id.mapview)
                 GO.mapWindow = GO.mapView.mapWindow
                 GO.map = GO.mapWindow?.map
@@ -2115,60 +2308,42 @@ class NumberFragment : Fragment() {
                 //GO.map?.isRotateGesturesEnabled = false         // Отключим поворот карты
                 GO.map?.set2DMode(true)
                 GO.map?.isNightModeEnabled = GO.nightMapModeEnab
-                // Создаём менеджер
-                GO.locationManager = ContinuousLocationManager(this) { location ->
-                    // Этот блок вызывается при каждом обновлении
-                    if (isAdded) {
-                        activity?.runOnUiThread {
-                            // Событие обновления координат, далее проверяем - насколько изменилась дистанция.
-                            val results = FloatArray(1)
-                            Location.distanceBetween(
-                                location.latitude,
-                                location.longitude,
-                                GO.lastPointLoc.latitude,
-                                GO.lastPointLoc.longitude,
-                                results
-                            )
-                            /* Расчитываем средний cps за интервал между метками*/
-                            var cpsAveredge: Float = GO.cpsAVG / GO.cpsIntervalCount
-                            Log.i(
-                                "BluZ-BT","Lat: ${location.latitude}, Lng: ${location.longitude}, Accuracy: ${location.accuracy}, cps:${cpsAveredge}, CT: ${GO.currentTrck}"
-                            )
-                            /*
-                            if (GO.currentTrck > 0) {
-                                /* Если CPS не определено - заменим значение на -1,
-                                для точной идентификации не определенного значения */
-                                if (cpsAveredge.isNaN() or (cpsAveredge == 0.0f)) {
-                                    cpsAveredge = -1.0f
-                                }
-                                val trcDet = TrackDetail(
-                                    0,
-                                    GO.currentTrck,
+                // Проверяем, включен ли провайдер
+                if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    // Показать диалог с предложением включить GPS
+                    Log.d("BluZ-BT", "Provider is disabled.")
+                    return
+                } else {
+                    Log.d("BluZ-BT", "Provider is enabled.")
+                }
+                val lstLoc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                if (lstLoc != null) {
+                    GO.lastPointLoc = lstLoc
+                    // Создаём менеджер
+                    GO.locationManager = ContinuousLocationManager(this) { location ->
+                        // Этот блок вызывается при каждом обновлении
+                        if (isAdded) {
+                            activity?.runOnUiThread {
+                                // Событие обновления координат, далее проверяем - насколько изменилась дистанция.
+                                val results = FloatArray(1)
+                                Location.distanceBetween(
                                     location.latitude,
                                     location.longitude,
-                                    location.accuracy,
-                                    cpsAveredge,
-                                    location.altitude,
-                                    location.speed,
-                                    0.0,
-                                    System.currentTimeMillis() / 1000)
-                                lifecycleScope.launch {
-                                    GO.dao.insertPoint(trcDet)
-                                }
+                                    GO.lastPointLoc.latitude,
+                                    GO.lastPointLoc.longitude,
+                                    results
+                                )
+                                /* Расчитываем средний cps за интервал между метками*/
+                                val cpsAveredge: Float = GO.cpsAVG / GO.cpsIntervalCount
+                                Log.i(
+                                    "BluZ-BT",
+                                    "Lat: ${location.latitude}, Lng: ${location.longitude}, Accuracy: ${location.accuracy}, cps:${cpsAveredge}, CT: ${GO.currentTrck}"
+                                )
                             }
-                            GO.cpsAVG = 0.0f
-                            GO.cpsIntervalCount = 0
-                            if (results[0] > 10.0f) { // Если изменение более 10 метров - добавляем маркер.
-                                GO.lastPointLoc = location      // Последняя сохраненная координата.
-                                GO.placemark = GO.map?.mapObjects?.addPlacemark().apply {
-                                    this?.geometry = Point(location.latitude, location.longitude)
-                                    this!!.setIcon(imp)
-                                }
-                            } else {
-                                //GO.placemark!!.setIcon(imp)
-                            }*/
                         }
                     }
+                } else {
+                    getLocationModern()
                 }
             }
         }
