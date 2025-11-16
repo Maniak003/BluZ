@@ -37,6 +37,10 @@ android {
         resources {
             excludes += ['res/**/*.arb']
         }
+        jniLibs {
+            useLegacyPackaging false
+        }
+        exclude "dump_syms/**"
     }
     namespace 'ru.starline.bluz'
     compileSdk 36

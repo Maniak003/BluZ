@@ -2325,14 +2325,14 @@ class NumberFragment : Fragment() {
                         if (isAdded) {
                             activity?.runOnUiThread {
                                 // Событие обновления координат, далее проверяем - насколько изменилась дистанция.
-                                val results = FloatArray(1)
-                                Location.distanceBetween(
-                                    location.latitude,
-                                    location.longitude,
-                                    GO.lastPointLoc.latitude,
-                                    GO.lastPointLoc.longitude,
-                                    results
-                                )
+                                //val results = FloatArray(1)
+                                //Location.distanceBetween(
+                                //    location.latitude,
+                                //    location.longitude,
+                                //    GO.lastPointLoc.latitude,
+                                //    GO.lastPointLoc.longitude,
+                                //    results
+                                //)
                                 /* Расчитываем средний cps за интервал между метками*/
                                 val cpsAveredge: Float = GO.cpsAVG / GO.cpsIntervalCount
                                 Log.i(
