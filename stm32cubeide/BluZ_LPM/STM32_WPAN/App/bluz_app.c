@@ -492,7 +492,11 @@ void BLUZ_APP_EvtRx(BLUZ_APP_ConnHandleNotEvt_t *p_Notification)
       	//cp.Conn_Latency = 0;        // No latency
       	//cp.Supervision_Timeout = 400; // 4 seconds
       	//hci_le_set_phy(p_Notification->ConnectionHandle, 0, HCI_TX_PHYS_LE_1M_PREF, HCI_RX_PHYS_LE_1M_PREF, 0);
-      	hci_le_set_phy(p_Notification->ConnectionHandle, 0, HCI_TX_PHYS_LE_2M_PREF, HCI_RX_PHYS_LE_2M_PREF, 0);
+      	//hci_le_set_phy(p_Notification->ConnectionHandle, 0, HCI_TX_PHYS_LE_2M_PREF, HCI_RX_PHYS_LE_2M_PREF, 0);
+      	//aci_l2cap_connection_parameter_update_req(p_Notification->ConnectionHandle,
+      	//    40, 40,   // 50 ms
+      	//    0,        // latency
+      	//    500);     // timeout
       	//aci_hci_send_cmd(&cp, HCI_LE_CONNECTION_UPDATE, sizeof(cp));
 
       	//SystemClock_Config();
