@@ -181,7 +181,7 @@ extern union dataA Temperature, Voltage;
 extern union dataA AvgCPS;
 extern uint16_t MTUSizeValue, dozimetrAquracy;
 
-void sendData( uint8_t *dataSpectrBufer );
+uint8_t sendData( uint8_t *dataSpectrBufer );
 void logUpdate(uint8_t act);
 void APP_BLE_Update_Manufacturer_Data(uint32_t data);
 /* USER CODE END ET */
