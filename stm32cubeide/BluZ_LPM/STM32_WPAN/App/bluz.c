@@ -285,7 +285,6 @@ static SVCCTL_EvtAckStatus_t BLUZ_EventHandler(void *p_Event)
           UNUSED(p_tx_pool_available_event);
 
           /* USER CODE BEGIN ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
-
           /* USER CODE END ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
           break;/* ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE*/
         }

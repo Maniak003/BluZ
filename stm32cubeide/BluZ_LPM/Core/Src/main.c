@@ -705,14 +705,18 @@ int main(void)
 			  tmpBTBuffer[242] = (uint8_t) (tmpCS & 0xFF);
 			  tmpBTBuffer[243] = (uint8_t) ((tmpCS >> 8) & 0xFF);
 		  }
-		  sendData(tmpBTBuffer);
-		  MX_APPE_Process();
+
+		  while (!sendData(tmpBTBuffer)) {
+			  MX_APPE_Process();
+		  }
+		  //sendData(tmpBTBuffer);
+		  //MX_APPE_Process();
 		  /*
 		   * TODO -- требуется задержка в передаче, иначе не все пакеты принимаются
 		   */
 		  //if (delayInterval++ > DELAY_INTERVAL) {
 			//  delayInterval = 0;
-			  HAL_Delay(SEND_DELAY);
+			 // HAL_Delay(SEND_DELAY);
 		  //}
 			#ifdef DEBUG_USER
 			bzero((char *) uartBuffer, sizeof(uartBuffer));

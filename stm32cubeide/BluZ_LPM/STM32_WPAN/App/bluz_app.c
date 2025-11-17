@@ -597,8 +597,27 @@ __USED void BLUZ_Tx_SendNotification(void) /* Property Notification */
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 void BleStackCB_Process(void);
+
+uint8_t sendData(uint8_t *data)
+{
+    if (!connectFlag) return 0;
+
+    BZ_Context.TxData.p_Payload = data;
+    BZ_Context.TxData.Length    = MTUSizeValue;
+
+    tBleStatus ret;
+    do {
+        ret = BLUZ_UpdateValue(BLUZ_RX, &BZ_Context.TxData);
+        if (ret == BLE_STATUS_BUSY) {          // HCI-команда не ушла
+            MX_APPE_Process();                 // прокручиваем стек
+        }
+    } while (ret == BLE_STATUS_BUSY);
+
+    return (ret == BLE_STATUS_SUCCESS) ? 1 : 0;
+}
+/*
 void sendData( uint8_t *dataSpectrBufer ) {
-	if (connectFlag) {
+	if (connectFlag && tx_pool_ready) {
 	  tBleStatus status = BLE_STATUS_INVALID_PARAMS;
 		//for (int iii = 0; iii < MTUSizeValue; iii++) {
 		//	Notification_Data_Buffer[iii] = dataSpectrBufer[iii];
@@ -625,4 +644,6 @@ void sendData( uint8_t *dataSpectrBufer ) {
 	}
   return;
 }
+
+*/
 /* USER CODE END FD_LOCAL_FUNCTIONS */
