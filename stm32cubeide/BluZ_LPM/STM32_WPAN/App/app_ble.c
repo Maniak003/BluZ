@@ -443,7 +443,17 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           BLUZHandleNotification.ConnectionHandle = p_enhanced_conn_complete->Connection_Handle;
           BLUZ_APP_EvtRx(&BLUZHandleNotification);
           /* USER CODE BEGIN HCI_EVT_LE_ENHANCED_CONN_COMPLETE */
+          /*
+           * Установка параметров интерфейса
+           *  2 M PHY
+           */
+          hci_le_set_phy(p_enhanced_conn_complete->Connection_Handle, 0, HCI_TX_PHYS_LE_2M_PREF, HCI_RX_PHYS_LE_2M_PREF, 0);
 
+          /* 50 ms, 0 latency, 500 ms timeout */
+          aci_l2cap_connection_parameter_update_req(p_enhanced_conn_complete->Connection_Handle,
+              40, 40,   // 50 ms
+              0,        // latency
+              500);     // timeout
           /* USER CODE END HCI_EVT_LE_ENHANCED_CONN_COMPLETE */
           break; /* HCI_LE_ENHANCED_CONNECTION_COMPLETE_SUBEVT_CODE */
         }
@@ -485,7 +495,15 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           BLUZHandleNotification.ConnectionHandle = p_conn_complete->Connection_Handle;
           BLUZ_APP_EvtRx(&BLUZHandleNotification);
           /* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
+          /* 2 M PHY */
+          hci_le_set_phy(p_conn_complete->Connection_Handle, 0, HCI_TX_PHYS_LE_2M_PREF, HCI_RX_PHYS_LE_2M_PREF, 0);
 
+          /* 50 ms, 0 latency, 500 ms timeout */
+          aci_l2cap_connection_parameter_update_req(
+              p_conn_complete->Connection_Handle,
+              40, 40,   // 50 ms
+              0,        // latency
+              500);     // timeout
           /* USER CODE END HCI_EVT_LE_CONN_COMPLETE */
           break; /* HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE */
         }
