@@ -309,6 +309,7 @@ class BluetoothInterface() {
                     } else {
                         Log.i("BluZ-BT", "Hi priority set Ok.")
                     }
+                    gatt.readRemoteRssi()
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     /* Прибор отключен, меняем цвет индикатора */
