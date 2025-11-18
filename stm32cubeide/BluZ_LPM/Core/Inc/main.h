@@ -115,7 +115,7 @@ extern bool SoundEnable, VibroEnable, LEDEnable, LEDflag;
 extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
 extern bool flagTemperatureMess, autoStartSpecrometr;
-extern bool history_active, historyRequest;
+extern bool history_active, historyRequest, findDevice;
 extern uint16_t HVoltage, comparatorLevel;
 extern LPTIM_HandleTypeDef hlptim2;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;

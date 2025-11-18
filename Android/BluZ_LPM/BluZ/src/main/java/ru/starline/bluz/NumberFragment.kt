@@ -641,6 +641,10 @@ class NumberFragment : Fragment() {
                     *                   0 - Настройки
                     *                   1 - Очистка спектра в приборе
                     *                   2 - Включение/Выключение спектрометра
+                    *                   3 - Сброс дозиметра
+                    *                   4 - Сброс логов
+                    *                   5 - Запрос истории
+                    *                   6 - Поиск прибора - включение звука и вибро
                     *
                     * 242, 243      - Контрольная сумма
                     */
@@ -1692,6 +1696,12 @@ class NumberFragment : Fragment() {
                         GO.drawExamp.exampRedraw()
                     }
                 })
+
+                /* Кнопка для включения звука и вибро - поиск прибора */
+                val buttonFnd = view.findViewById<Button>(R.id.buttonFind)
+                buttonFnd.setOnClickListener {
+                    GO.BTT.sendCommand(6u)
+                }
 
             } else if (getInt(ARG_OBJECT) == 5) {
                 /*

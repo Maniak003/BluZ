@@ -422,6 +422,10 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 					} else if (p_Notification->DataTransfered.p_Payload[3] == 5) {
 						historyRequest = true;
 						interval2 = 0;
+					/* Включение звука и вибро, для поиска прибора */
+					} else if (p_Notification->DataTransfered.p_Payload[3] == 6) {
+						findDevice = true;
+						NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 5);
 					}
 				} else {
 				}

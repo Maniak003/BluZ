@@ -967,6 +967,19 @@
                 android:textColor="@color/buttonTextColor"
                 android:textSize="12sp" />
 
+            <Button
+                android:id="@+id/buttonFind"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
+                android:layout_weight="0"
+                android:backgroundTint="@color/buttonColor"
+                android:insetLeft="10dp"
+                android:text="@string/textFind"
+                android:textAllCaps="false"
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
+
         </LinearLayout>
 
     </LinearLayout>
