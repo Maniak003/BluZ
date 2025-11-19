@@ -1286,6 +1286,9 @@ void updateMesurment(void) {
 		  pulseCounterSecond = 0;
 		  currentTime = 0;
 		  firstInital = false;
+		  for (int ii = 0; ii < SIZE_DOZIMETR_BUFER; ii++) {
+			  dozimetrBuffer[ii] = 0;
+		  }
 	}
 		//if (! connectFlag) {
 		//	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
