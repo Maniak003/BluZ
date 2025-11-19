@@ -1499,8 +1499,9 @@ void vibroActivateOff(void) {
 	VIBRO_GPIO_Port->BRR = (uint32_t) VIBRO_Pin;		// Отключение вибро.
 }
 
-/* Обработка прерываний по приходу импульсов */
+/* Обработка прерываний по приходу импульсов  */
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
+	if (!firstInital) {
 	  pulseCounter++;					// Общее количество импульсов с начала измерения
 	  pulseCounterSecond++;				// Количество импульсов за последнюю секунду
 		/* Оповещение об импульсе */
@@ -1519,6 +1520,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
 			  edgeCounter = 0;
 		  }
 	  }
+	}
 }
 
 /* USER CODE END 4 */
