@@ -1285,11 +1285,15 @@ void updateMesurment(void) {
 		  pulseCounter = 0;
 		  pulseCounterSecond = 0;
 		  currentTime = 0;
-		  firstInital = false;
+		  spectrometerTime = 0;
 		  for (int ii = 0; ii < SIZE_DOZIMETR_BUFER; ii++) {
 			  dozimetrBuffer[ii] = 0;
 		  }
-	}
+		  for (int ii = 0; ii < CHANNELS_4096; ii++) {
+			  tmpSpecterBuffer[ii] = 0;
+		  }
+		  firstInital = false;
+	} else {
 		//if (! connectFlag) {
 		//	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
 		//}
@@ -1305,6 +1309,7 @@ void updateMesurment(void) {
 		if (dataType > onlyDozimeter) {
 			spectrometerTime++;
 		}
+		pulseCounterSecond = 0;
 		/* Массив для гистограммы уровней */
 		/*
 		if (indexDozimetrBufer >= SIZE_DOZIMETR_BUFER) {
@@ -1317,77 +1322,77 @@ void updateMesurment(void) {
 			/* Сюда попадаем если SiPM в насыщении, на компараторе высокий уровень */
 			logUpdate(overload);
 			overloadFlag = true;
+			history_active = false;		// Не сможем писать спектр с перегруженным кристаллом.
 			/* Данные для рекламного пакета - переполнение */
 			APP_BLE_Update_Manufacturer_Data(0xFFFFFFFF);
 		} else {
 			overloadFlag = false;
 			/* Данные для рекламного пакета - нормальный CPS*/
 			APP_BLE_Update_Manufacturer_Data(CPS);
-		}
 
-		pulseCounterSecond = 0;
-		/*
-		 * Анализ CPS для управления порогами срабатывания сигнализации
-		 */
-		tmp_level = 0;
-		uint8_t tmpNotify = 0;
-		if ((level1 > 0) && (CPS > level1_cps)) {
-			tmp_level = 1;
-			if (levelSound1 || levelVibro1) {
-				if (levelSound1) {					// Звук на перврм уровне разрешен
+			/*
+			 * Анализ CPS для управления порогами срабатывания сигнализации
+			 */
+			tmp_level = 0;
+			uint8_t tmpNotify = 0;
+			if ((level1 > 0) && (CPS > level1_cps)) {
+				tmp_level = 1;
+				if (levelSound1 || levelVibro1) {
+					if (levelSound1) {					// Звук на первом уровне разрешен
+						tmpNotify = SOUND_NOTIFY;
+					}
+
+					if (levelVibro1) {					// Вибро на первом уровне разрешено
+						tmpNotify |= VIBRO_NOTIFY;
+					}
+				}
+			}
+			if ((level2 > 0) && (CPS > level2_cps)) {
+				tmp_level = 2;
+				tmpNotify = 0;
+				if (levelSound2) {					// Звук на втором уровне разрешен
 					tmpNotify = SOUND_NOTIFY;
 				}
 
-				if (levelVibro1) {					// Вибро на первом уровне разрешено
+				if (levelVibro2) {					// Вибро на втором уровне разрешено
 					tmpNotify |= VIBRO_NOTIFY;
 				}
 			}
-		}
-		if ((level2 > 0) && (CPS > level2_cps)) {
-			tmp_level = 2;
-			tmpNotify = 0;
-			if (levelSound2) {					// Звук на втором уровне разрешен
-				tmpNotify = SOUND_NOTIFY;
-			}
+			if ((level3 > 0) && (CPS > level3_cps)) {
+				tmp_level = 3;
+				tmpNotify = 0;
+				if (levelSound3) {					// Звук на третьем уровне разрешен
+					tmpNotify = SOUND_NOTIFY;
+				}
 
-			if (levelVibro2) {					// Вибро на втором уровне разрешено
-				tmpNotify |= VIBRO_NOTIFY;
+				if (levelVibro3) {					// Вибро на третьем уровне разрешено
+					tmpNotify |= VIBRO_NOTIFY;
+				}
 			}
-		}
-		if ((level3 > 0) && (CPS > level3_cps)) {
-			tmp_level = 3;
-			tmpNotify = 0;
-			if (levelSound3) {					// Звук на третьем уровне разрешен
-				tmpNotify = SOUND_NOTIFY;
-			}
-
-			if (levelVibro3) {					// Вибро на третьем уровне разрешено
-				tmpNotify |= VIBRO_NOTIFY;
-			}
-		}
-		/* Тревога если превышение. */
-		if (tmp_level > 0) {
-			history_active = true;
-			if (tmpNotify > 0) {
-				NotifyAct(tmpNotify, tmp_level);
-			}
-		} else {
-			history_active = false;
-		}
-
-		if (currentLevel != tmp_level) {
-			currentLevel = tmp_level;
-			/*
-			 *	act
-			 *	2 - превышение уровня 1
-			 *	3 - превышение уровня 2
-			 *	4 - превышение уровня 3
-			 *	5 - нормальный уровень
-			 */
-			if (tmp_level == 0) {
-				logUpdate(level0Log);					// Нормальный уровень
+			/* Тревога если превышение. */
+			if (tmp_level > 0) {
+				history_active = true;
+				if (tmpNotify > 0) {
+					NotifyAct(tmpNotify, tmp_level);
+				}
 			} else {
-				logUpdate((logTypes_t) tmp_level + 1);		// Превышение уровня
+				history_active = false;
+			}
+
+			if (currentLevel != tmp_level) {
+				currentLevel = tmp_level;
+				/*
+				 *	act
+				 *	2 - превышение уровня 1
+				 *	3 - превышение уровня 2
+				 *	4 - превышение уровня 3
+				 *	5 - нормальный уровень
+				 */
+				if (tmp_level == 0) {
+					logUpdate(level0Log);					// Нормальный уровень
+				} else {
+					logUpdate((logTypes_t) tmp_level + 1);		// Превышение уровня
+				}
 			}
 		}
 		/* Измерение напряжения батареи и температуры МК */
@@ -1395,6 +1400,7 @@ void updateMesurment(void) {
 			interval4 = intervalNow + INTERVAL4;
 			TVMeasure();
 		}
+	}
 }
 
 uint32_t ADC_Switch_Channel(uint32_t channel) {
@@ -1501,7 +1507,7 @@ void vibroActivateOff(void) {
 
 /* Обработка прерываний по приходу импульсов  */
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
-	if (!firstInital) {
+	if (!firstInital) {					// Игнорируем прерывания до окончания инициализации.
 	  pulseCounter++;					// Общее количество импульсов с начала измерения
 	  pulseCounterSecond++;				// Количество импульсов за последнюю секунду
 		/* Оповещение об импульсе */

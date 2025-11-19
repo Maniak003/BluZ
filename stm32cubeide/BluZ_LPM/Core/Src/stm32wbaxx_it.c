@@ -295,8 +295,6 @@ void GPDMA1_Channel0_IRQHandler(void)
 		/* 1024 */
 		case resolution1024:
 			tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 2) & 0x3FF;
-			/* Тест */
-			//tmpSpecterBuffer[500]++;
 			break;
 		/* 2048 */
 		case resolution2048:
