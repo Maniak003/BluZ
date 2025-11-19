@@ -296,6 +296,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   //NotifyAct(SOUND_NOTIFY, 2);
   //HAL_Delay(1000);
+  logUpdate(powerOnLog);	// Добавляем запись в логе о начале работы.
   HAL_ADCEx_Calibration_Start(&hadc4);
   /* USER CODE END 2 */
 
@@ -358,7 +359,7 @@ int main(void)
   pulseCounter = 0;
   pulseCounterSecond = 0;
   currentTime = 0;
-  logUpdate(powerOnLog);	// Добавляем запись в логе о начале работы.
+  CPS = 0;
 
   /*
    * Значения заголовка и формат данных для передачи
@@ -1264,6 +1265,8 @@ void MX_GPIO_Init(void)
   HAL_NVIC_EnableIRQ(EXTI15_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
+  setLevelOnPort(CHANNEL_A, 0x3FF);
+  setLevelOnPort(CHANNEL_B, 0x3FF);
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
