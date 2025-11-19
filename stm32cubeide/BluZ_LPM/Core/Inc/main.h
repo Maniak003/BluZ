@@ -128,6 +128,16 @@ extern uint32_t limitChan;
 extern double CoefChan;
 extern uint8_t currentSamplingTime;
 
+typedef enum commandTx {
+	cmd_setup,
+	cmd_clear_specter,
+	cmd_startup_spectrometer,
+	cmd_clear_dosimeter,
+	cmd_clear_logs,
+	cmd_history_request,
+	cmd_find_device
+} commantTx_t;
+
 typedef enum logTypes {
 	nonLog,
 	powerOnLog,

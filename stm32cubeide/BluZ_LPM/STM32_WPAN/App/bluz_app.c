@@ -197,7 +197,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     *
                     * 242, 243      - Контрольная сумма
                     */
-					if (p_Notification->DataTransfered.p_Payload[3] == 0) {									// 0 - Настройки
+					if (p_Notification->DataTransfered.p_Payload[3] == cmd_setup) {							// 0 - Настройки
 						LEDEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000001;				// LED
 						SoundEnable = p_Notification->DataTransfered.p_Payload[20] & 0b00000010;			// Sound
 						levelSound1 = p_Notification->DataTransfered.p_Payload[20] & 0b00000100;			// Звук для первого порога
@@ -362,7 +362,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						logUpdate(writeFlashLog);
 
 					/* Очистка буфера спектра */
-					} else if (p_Notification->DataTransfered.p_Payload[3] == 1) {		// Очистка буфера спектрометра
+					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_clear_specter) {			// Очистка буфера спектрометра
 						for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
 							tmpSpecterBuffer[iii] = 0;
 						}
@@ -370,11 +370,11 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						spectrometerTime = 0;
 						logUpdate(writeFlashLog);
 					/* Включение/выключение спектрометра */
-					} else if (p_Notification->DataTransfered.p_Payload[3] == 2) {		// Запуск/останов спектрометра
+					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_startup_spectrometer) {	// Запуск/останов спектрометра
 						HAL_ADC_Stop_DMA(&hadc4);
 						HAL_ADC_DeInit(&hadc4);
 						//HAL_DMA_DeInit(&handle_GPDMA1_Channel0);
-						if (dataType == onlyDozimeter) {											// Переключение в режим спектрометра
+						if (dataType == onlyDozimeter) {													// Переключение в режим спектрометра
 							switch (resolutionSpecter) {
 							case resolution1024:
 								dataType = dozimeterSpecter1024;
@@ -403,7 +403,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							logUpdate(stopSpectrometerLog);
 						}
 					/* Сброс дозиметра */
-					} else if (p_Notification->DataTransfered.p_Payload[3] == 3) {
+					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_clear_dosimeter) {
 						pulseCounter = 0;
 						currentTime = 0;
 						//memset(dozimetrBuffer, 0, SIZE_DOZIMETR_BUFER * 2);
@@ -412,19 +412,18 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						}
 						logUpdate(resDozimeterLog);
 					/* Очистка лога */
-					} else if (p_Notification->DataTransfered.p_Payload[3] == 4) {
+					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_clear_logs) {
 						for (int ii = 0; ii < LOG_BUFER_SIZE; ii++) {
 							logBuffer[ii].time = 0;
 							logBuffer[ii].type = 0;
 						}
 						logUpdate(clearLog);
 					/* Запрос на передачу спектра истории */
-					} else if (p_Notification->DataTransfered.p_Payload[3] == 5) {
+					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_history_request) {
 						historyRequest = true;
 						interval2 = 0;
 					/* Включение звука и вибро, для поиска прибора */
-					} else if (p_Notification->DataTransfered.p_Payload[3] == 6) {
-						//findDevice = true;
+					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_find_device) {
 						NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 5);
 					}
 				} else {
