@@ -1265,6 +1265,7 @@ void MX_GPIO_Init(void)
   HAL_NVIC_EnableIRQ(EXTI15_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
+  /* Начальная устанока уровней для компаратора и высокого */
   setLevelOnPort(CHANNEL_A, 0x3FF);
   setLevelOnPort(CHANNEL_B, 0x3FF);
 /* USER CODE END MX_GPIO_Init_2 */
