@@ -51,6 +51,7 @@ class drawDozimeter {
     *   Прорисовка данных дозиметра
     */
     fun redrawDozimeter() {
+        //Log.d("BluZ-BT", "Dosimeter redraw.")
         if (!this::dozBitmap.isInitialized) {
             Log.w("BluZ-BT", "dozBitmap not initialized, call init() first")
             return

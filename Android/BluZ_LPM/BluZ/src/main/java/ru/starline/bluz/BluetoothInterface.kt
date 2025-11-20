@@ -487,7 +487,7 @@ class BluetoothInterface() {
         override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 GO.Current_RSSI = rssi
-                Log.d("BluZ-BT", "RSSI : ${GO.Current_RSSI}")
+                //Log.d("BluZ-BT", "RSSI : ${GO.Current_RSSI}")
             } else {
                 GO.Current_RSSI = -400
                 Log.d("BluZ-BT", "RSSI read error.")
@@ -862,7 +862,7 @@ class BluetoothInterface() {
                                     } else {
                                         GO.txtStat3.setText("CPS:${GO.pulsePerSec} ($doze uRh) Avg:$avgDoze uRh")
                                     }
-                                    Log.d("BluZ-BT", "sampleTime: ${GO.receiveData[97].toUByte() and 7.toUByte()}, overloadFlag: ${GO.overloadFlag}")
+                                    //Log.d("BluZ-BT", "sampleTime: ${GO.receiveData[97].toUByte() and 7.toUByte()}, overloadFlag: ${GO.overloadFlag}")
                                     //GO.txtStat3.setText(GO.mainContext.getString(R.string.cps_status, GO.pulsePerSec, doze, avgDoze))
 
                                     //Log.d("BluZ-BT", "L:${GO.receiveData[94]}, H:${GO.receiveData[95]}")

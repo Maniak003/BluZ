@@ -717,6 +717,13 @@ class NumberFragment : Fragment() {
                     GO.initDOZ = true
                     GO.drawDOZIMETER.Init()
                 }
+                GO.drawDOZIMETER.dozView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        GO.drawDOZIMETER.dozView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                        GO.drawDOZIMETER.Init()
+                        GO.drawDOZIMETER.redrawDozimeter()
+                    }
+                })
 
                 /* Сброс дозиметра */
                 val btnClearDose: Button = view.findViewById(R.id.buttonClearDoze)
