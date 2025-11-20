@@ -1282,17 +1282,21 @@ void updateMesurmentCb(void *arg) {
  */
 void updateMesurment(void) {
 	if (firstInital) {
-		  pulseCounter = 0;
-		  pulseCounterSecond = 0;
-		  currentTime = 0;
-		  spectrometerTime = 0;
-		  for (int ii = 0; ii < SIZE_DOZIMETR_BUFER; ii++) {
-			  dozimetrBuffer[ii] = 0;
-		  }
-		  for (int ii = 0; ii < CHANNELS_4096; ii++) {
-			  tmpSpecterBuffer[ii] = 0;
-		  }
-		  firstInital = false;
+		pulseCounter = 0;
+		pulseCounterSecond = 0;
+		currentTime = 0;
+		spectrometerTime = 0;
+		/* Очистка буфера дозиметра */
+		for (int ii = 0; ii < SIZE_DOZIMETR_BUFER; ii++) {
+			dozimetrBuffer[ii] = 0;
+		}
+
+		/* Очистка буфера спектрометра */
+		for (int ii = 0; ii < MAX_RESOLUTION; ii++) {
+			tmpSpecterBuffer[ii] = 0;
+		}
+		firstInital = false;
+		NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 1);
 	} else {
 		//if (! connectFlag) {
 		//	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
