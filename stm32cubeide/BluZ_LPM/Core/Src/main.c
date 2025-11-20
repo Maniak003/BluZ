@@ -126,7 +126,8 @@ uint16_t HVoltage = 256, comparatorLevel = 256;						// Уровни настр�
 
 uint8_t notifyFlags = 0;											// 1 - Звук, 2 - Вибро, 4 - Led
 
-UTIL_TIMER_Object_t timerMeasureInterval, timerVibro, timerVibroOff, timerLed;
+UTIL_TIMER_Object_t timerMeasureInterval, timerVibro, timerVibroOff, timerLed, timerTick;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -144,6 +145,8 @@ void vibroActivateOff(void);
 void updateVibroOffCb(void *arg);
 void updateLedCb (void *arg);
 void ledActivate(void);
+void updateTickCb(void *arg);
+void tickSoundDeactivate(void);
 
 /* USER CODE END PFP */
 
@@ -231,8 +234,8 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt) {
 			 // GPIO_InitStruct.Pull = GPIO_NOPULL;
 			 // GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 			 // HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+			LED_GPIO_Port->BSRR = (uint32_t) LED_Pin;
+			//HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			UTIL_TIMER_Start(&(timerLed));
 		}
 	}
@@ -423,7 +426,6 @@ int main(void)
   UTIL_TIMER_Create(&(timerMeasureInterval), MEASURE_INTERVAL, UTIL_TIMER_PERIODIC, &updateMesurmentCb, 0);
   UTIL_TIMER_Start(&(timerMeasureInterval));
 
-
   /* Таймер для LED */
   UTIL_SEQ_RegTask(1<<CFG_TASK_LED_REQ_ID, UTIL_SEQ_RFU, ledActivate);
   UTIL_TIMER_Create(&(timerLed), LED_PERIOD, UTIL_TIMER_ONESHOT, &updateLedCb, 0);
@@ -438,6 +440,11 @@ int main(void)
 
   UTIL_SEQ_RegTask(1<<CFG_TASK_VIBROOFF_REQ_ID, UTIL_SEQ_RFU, vibroActivateOff);
   UTIL_TIMER_Create(&(timerVibroOff), VIBRO_TIME, UTIL_TIMER_ONESHOT, &updateVibroOffCb, 0);
+
+  /* Таймер для tick sound */
+  UTIL_SEQ_RegTask(1<<CFG_TASK_TICK_REQ_ID, UTIL_SEQ_RFU, tickSoundDeactivate);
+  UTIL_TIMER_Create(&(timerTick), TICK_PERIOD, UTIL_TIMER_ONESHOT, &updateTickCb, 0);
+
 
   /* Включим Sound */
   //findDevice = true;
@@ -1476,6 +1483,10 @@ void updateVibroOffCb(void *arg) {
 	UTIL_SEQ_SetTask(1<<CFG_TASK_VIBROOFF_REQ_ID, CFG_SEQ_PRIO_2);
 }
 
+void updateTickCb (void *arg) {
+	UTIL_SEQ_SetTask(1<<CFG_TASK_TICK_REQ_ID, CFG_SEQ_PRIO_2);
+}
+
 /* Таймер для задания интервала для вибро и звука*/
 void vibroActivate(void) {
 	if (vibroFlag) {
@@ -1502,10 +1513,49 @@ void ledActivate(void) {
 	LED_GPIO_Port->BRR = (uint32_t) LED_Pin;
 }
 
+/* Таймер для формирование щелчка */
+void tickSoundDeactivate(void) {
+	SOUND_GPIO_Port->BRR = (uint32_t) SOUND_Pin;
+    //GPIO_InitTypeDef gpio = {0};
+    //gpio.Pin      = SOUND_Pin;
+    //gpio.Mode     = GPIO_MODE_AF_PP;
+    //gpio.Pull     = GPIO_NOPULL;
+    //gpio.Speed    = GPIO_SPEED_FREQ_LOW;
+    //gpio.Alternate = SOUND_AF_NUM;
+    //HAL_GPIO_Init(SOUND_GPIO_Port, &gpio);
+
+    uint32_t tmp;
+
+    /* MODER: PA1 = 10b (AF) */
+    tmp = SOUND_GPIO_Port->MODER;
+    tmp &= ~GPIO_MODER_MODE1_Msk;          // clear MODE1[1:0]
+    tmp |=  (2U << GPIO_MODER_MODE1_Pos);  // AF mode
+    SOUND_GPIO_Port->MODER = tmp;
+
+    /* OTYPER: push-pull (0) */
+    SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
+
+    /* OSPEEDR: low speed (достаточно 00b) */
+    SOUND_GPIO_Port->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED1_Msk;
+
+    /* PUPDR: no pull (00b) */
+    SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
+
+    /* AFR[0]: AF13 для PA1 (биты 4...7) */
+    tmp = SOUND_GPIO_Port->AFR[0];
+    tmp &= ~(0xF << GPIO_AFRL_AFSEL1_Pos);
+    tmp |=  (13U << GPIO_AFRL_AFSEL1_Pos);
+    SOUND_GPIO_Port->AFR[0] = tmp;
+
+    /* разрешить выход LPTIM2_CH2 (CC2E) */
+    LPTIM2->CR |= (1U << 16);   // бит CC2E
+}
+
+
 /* Таймер для отключения вибро */
 void vibroActivateOff(void) {
 	HAL_LPTIM_PWM_Stop(&hlptim2, LPTIM_CHANNEL_2);		// Отключение звука.
-	//HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
 	VIBRO_GPIO_Port->BRR = (uint32_t) VIBRO_Pin;		// Отключение вибро.
 }
 
@@ -1517,6 +1567,38 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
 		/* Оповещение об импульсе */
 	  if (LEDEnable) {
 		  NotifyAct(LED_NOTIFY, 0);
+	  }
+	  if(SoundEnable) {
+		  /* Переконфигурируем пин в обычный выход */
+		  //GPIO_InitTypeDef gpioAlt = {0};
+		  //gpioAlt.Pin   = SOUND_Pin;
+		  //gpioAlt.Mode  = GPIO_MODE_OUTPUT_PP;
+		  //gpioAlt.Pull  = GPIO_NOPULL;
+		  //gpioAlt.Speed = GPIO_SPEED_FREQ_HIGH;
+		  //HAL_GPIO_Init(SOUND_GPIO_Port, &gpioAlt);
+
+		  uint32_t tmp;
+
+		  /* MODER: PA1 = 01b (output) */
+		  tmp  = SOUND_GPIO_Port->MODER;
+		  tmp &= ~GPIO_MODER_MODE1_Msk;          // clear bits 2:3
+		  tmp |=  (1U << GPIO_MODER_MODE1_Pos);  // 01 = output
+		  SOUND_GPIO_Port->MODER = tmp;
+
+		  /* OTYPER: push-pull (0) */
+		  SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
+
+		  /* OSPEEDR: high speed (11b) */
+		  tmp  = SOUND_GPIO_Port->OSPEEDR;
+		  tmp &= ~GPIO_OSPEEDR_OSPEED1_Msk;
+		  tmp |=  (3U << GPIO_OSPEEDR_OSPEED1_Pos);
+		  SOUND_GPIO_Port->OSPEEDR = tmp;
+
+		  /* PUPDR: no pull (00b) */
+		  SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
+
+		  SOUND_GPIO_Port->BSRR = (uint32_t) SOUND_Pin;
+		  UTIL_TIMER_Start(&(timerTick));
 	  }
 	  /* Расчет с учетом точности */
 	  if (edgeCounter++ >= dozimetrAquracy) {
