@@ -441,7 +441,7 @@ int main(void)
 
   /* Включим Sound */
   //findDevice = true;
-  NotifyAct(SOUND_NOTIFY /*| VIBRO_NOTIFY*/, 1);
+  //NotifyAct(SOUND_NOTIFY /*| VIBRO_NOTIFY*/, 1);
 
   TVMeasure();
 
