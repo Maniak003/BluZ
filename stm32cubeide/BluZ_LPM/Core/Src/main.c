@@ -1607,7 +1607,6 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
 				indexDozimetrBufer = 0;
 			  }
 			  dozimetrBuffer[indexDozimetrBufer++] = edgeCounter / aquracyInterval;
-			  //dozimetrBuffer[indexDozimetrBufer++] = 1;
 			  aquracyInterval = 0;
 			  edgeCounter = 0;
 		  }
