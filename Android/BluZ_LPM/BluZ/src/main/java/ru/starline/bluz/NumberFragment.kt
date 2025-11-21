@@ -450,6 +450,8 @@ class NumberFragment : Fragment() {
 
         /* Время выборки АЦП */
         GO.sampleTimeEdit.setText(GO.sampleTime.toString())
+
+        GO.cbApplicationLog.isChecked = GO.enableLogs
     }
 
     override fun onCreateView(
@@ -736,6 +738,8 @@ class NumberFragment : Fragment() {
                 *   Обекты закладки логов
                 */
             } else if (getInt(ARG_OBJECT) == 3) {   // Логи
+
+
                 /* Очистка логов */
                 val btnCleaarLog: Button = view.findViewById(R.id.buttonClearLog)
                 btnCleaarLog.setOnClickListener {
@@ -744,10 +748,22 @@ class NumberFragment : Fragment() {
                 }
                 GO.drawLOG.logView = view.findViewById(R.id.logScrolView)
                 GO.drawLOG.logsText = view.findViewById(R.id.logsText)
+                GO.drawLOG.appLogView = view.findViewById(R.id.appScrolView)
+                GO.drawLOG.appLogText = view.findViewById(R.id.appLogText)
                 if (! GO.drawLOG.logsDrawIsInit) {
                     GO.drawLOG.updateLogs()
+                    GO.drawLOG.updateAppLogs()
                     GO.drawLOG.logsDrawIsInit = true
                 }
+
+                GO.drawLOG.appLogView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        GO.drawLOG.appLogView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                        GO.drawLOG.updateAppLogs()
+                        GO.drawLOG.updateLogs()
+                    }
+                })
+
 
                 /*
                 *   Обекты закладки настроек
@@ -791,8 +807,14 @@ class NumberFragment : Fragment() {
                 GO.rbKMLType = view.findViewById(R.id.rbKML)
                 GO.rbTrackFmt = view.findViewById(R.id.RGTrackFormat)
                 GO.sampleTimeEdit = view.findViewById(R.id.editSampleTime)
+                GO.cbApplicationLog = view.findViewById(R.id.CBAppLog)
 
                 reloadConfigParameters()
+                /* Управление логированием приложения */
+                GO.cbApplicationLog.setOnCheckedChangeListener { buttonView, isChecked ->
+                    GO.enableLogs = isChecked
+                }
+
                 /* Изменение отображения режима карты */
                 GO.cbNightMapMode.setOnCheckedChangeListener { buttonView, isChecked ->
                     GO.nightMapModeEnab = isChecked

@@ -19,7 +19,7 @@
 
 
     <application
-        android:name =".YandexMapActivity"
+        android:name =".App"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -28,10 +28,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.BluZ.Fullscreen"
-        tools:targetApi="31">
+        tools:targetApi="36">
         <activity
             android:name=".MainActivity"
             android:screenOrientation="landscape"
+            android:configChanges="orientation|screenSize|screenLayout|uiMode"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

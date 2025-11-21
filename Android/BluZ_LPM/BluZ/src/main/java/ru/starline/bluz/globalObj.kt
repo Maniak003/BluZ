@@ -94,6 +94,7 @@ class globalObj {
     public val propNightMode: String = "NightMapMode"
     public val propSaveTrackType: String = "SaveTrackType"
     public val propSampleTime: String = "SampleTime"
+    public val propLogEnabled: String = "applicationLog"
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var allPermissionAccept: Boolean = false
@@ -104,6 +105,8 @@ class globalObj {
     public lateinit var drawDOZIMETER: drawDozimeter
     public lateinit var drawCURSOR: drawCursor
     public lateinit var drawLOG: drawLogs
+    public var appLogBuffer: String = ""
+    public var enableLogs: Boolean = true
     public lateinit var drawExamp: drawExmple
     public var drawObjectInit: Boolean = true
     public var drawObjectInitHistory: Boolean = true
@@ -276,6 +279,7 @@ class globalObj {
     lateinit var aqureEdit : EditText
     lateinit var bitsChannelEdit: EditText
     lateinit var sampleTimeEdit: EditText
+    lateinit var cbApplicationLog: CheckBox
     var aqureValue: Int = 100
     var bitsChannel:Int = 20
     public lateinit var cbFullScrn: CheckBox            // Управление полноэкранным режимом
@@ -751,6 +755,7 @@ class globalObj {
         GO.PP.setPropBoolean(propNightMode, GO.nightMapModeEnab)            // Ночной режим для карты
         GO.PP.setPropInt(propSaveTrackType, GO.saveTrackType)               // Формат для сохранения трека
         GO.PP.setPropInt(propSampleTime, GO.sampleTime)                     // Время выборки АЦП
+        GO.PP.setPropBoolean(propLogEnabled, GO.enableLogs)                 // Включает запись логов приложения
     }
 
     /*
@@ -838,6 +843,7 @@ class globalObj {
         GO.fullScrn = GO.PP.getPropBoolean(propFullScrn)
         GO.nightMapModeEnab = GO.PP.getPropBoolean(propNightMode)
         GO.saveTrackType = GO.PP.getPropInt(propSaveTrackType)
+        GO.enableLogs = GO.PP.getPropBoolean(propLogEnabled)
     }
 
     /* Запуск таймера для автоматического подключения */

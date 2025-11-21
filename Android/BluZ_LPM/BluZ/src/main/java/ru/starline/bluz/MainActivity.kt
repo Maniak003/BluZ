@@ -144,6 +144,7 @@ public class MainActivity : FragmentActivity() {
         GO.txtStat2 = findViewById(R.id.textStatistic2)
         GO.txtStat3 = findViewById(R.id.textStatistic3)
         GO.txtIsotopInfo = findViewById(R.id.textIsotopInfo)
+        GO.drawLOG.appendAppLogs("Start app pid=${android.os.Process.myPid()} uid=${android.os.Process.myUid()}", 1)
         lifecycleScope.launch {
             val dao = GO.dao
             /* Создание первого трека */
