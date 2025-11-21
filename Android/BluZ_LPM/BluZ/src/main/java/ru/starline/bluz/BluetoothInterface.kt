@@ -124,7 +124,7 @@ class BluetoothInterface() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
             if (result.getDevice() == null || TextUtils.isEmpty(result.getDevice().getName())) {
-
+                //GO.drawLOG.appendAppLogs("BLE device not init.", 0)
             } else {
                 Log.d("BluZ-BT", result.device.name + " " + result.device.address)
                 Log.d("BluZ-BT", result.scanRecord.toString())
@@ -159,9 +159,10 @@ class BluetoothInterface() {
         }
         //BTS.startScan(leScanCallback)
         if (!BTA.isEnabled()) {
-            MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
-                withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
-                    Toast.makeText(GO.mainContext, "BlueTooth disable ?\nProgram terminate.", Toast.LENGTH_LONG ).show()
+            GO.drawLOG.appendAppLogs("BLE disable.", 0)
+            MainScope().launch {                                // Конструкция необходима для модификации чужого контекста
+                withContext(Dispatchers.Main) {        // Иначе перестает переключаться ViewPage2
+                    Toast.makeText(GO.mainContext, "BlueTooth disable ?", Toast.LENGTH_LONG ).show()
                     GO.adapter.fragment.let {
                         GO.scanButton.setTextColor(GO.mainContext.getResources().getColor(R.color.buttonTextColor, GO.mainContext.theme))
                         GO.scanButton.setText(GO.mainContext.getString(R.string.textScan))
@@ -176,6 +177,7 @@ class BluetoothInterface() {
         } else {
             BTS.startScan(filterList, scanSetting, leScanCallback)
             Log.d("BluZ-BT", "LE scanning.")
+            GO.drawLOG.appendAppLogs("LE scanning.", 3)
         }
     }
 
@@ -190,6 +192,7 @@ class BluetoothInterface() {
             fusedLocationClient.lastLocation.await()
         } catch (e: Exception) {
             Log.w("BluZ-BT", "Failed to get last location", e)
+            GO.drawLOG.appendAppLogs("Last location failed.", 0)
             null
         }
     }
@@ -212,6 +215,7 @@ class BluetoothInterface() {
             }
         } catch (e: Exception) {
             Log.e("BluZ-BT", "Failed to get fresh location", e)
+            GO.drawLOG.appendAppLogs("Fresh location failed.", 0)
             null
         }
     }
@@ -220,6 +224,7 @@ class BluetoothInterface() {
     @SuppressLint("MissingPermission")
     fun stopScan() {
         BTS.stopScan(leScanCallback)
+        GO.drawLOG.appendAppLogs("Stop scan.", 1)
     }
 
     /*
@@ -236,6 +241,7 @@ class BluetoothInterface() {
             }
             writeBuffer = ArrayList() // Буфер для передачи.
             Log.d("BluZ-BT", "Accept connect...")
+            GO.drawLOG.appendAppLogs("Accept connect.", 1)
             if (!BTA.isEnabled) {
                 MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                     withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
@@ -246,15 +252,18 @@ class BluetoothInterface() {
             }
             device = BTA.getRemoteDevice(GO.LEMAC) // Подключаемся по MAC адресу.
             Log.d("BluZ-BT", "Status: " + BTA.getState());
+            GO.drawLOG.appendAppLogs("MAC:${GO.LEMAC}, Status: ${BTA.getState()}", 1)
             if (device == null) {
-                var tmpmac = GO.LEMAC
-                Log.i("BluZ-BT", "Error: Device: $tmpmac not connected.")
+                Log.i("BluZ-BT", "Error: Device: ${GO.LEMAC} not connected.")
+                GO.drawLOG.appendAppLogs("Device not connect.", 0)
                 return
             } else {
                 Log.i("BluZ-BT", "Try gatt connect.");
+                GO.drawLOG.appendAppLogs("Try gatt connect.", 1)
                 gatt = device!!.connectGatt(GO.mainContext,false, gattCallback, BluetoothDevice.TRANSPORT_LE)
                 if (gatt == null) {
                     Log.i("BluZ-BT", "Error: Gatt create failed.");
+                    GO.drawLOG.appendAppLogs("Gatt create failed.", 0)
                     //finish()
                 }
             }
@@ -293,21 +302,26 @@ class BluetoothInterface() {
                         }
                     }
                     Log.i("BluZ-BT", "Gatt connect success.")
+                    GO.drawLOG.appendAppLogs("Gatt connect success.", 3)
                     if (!gatt.discoverServices()) {
                         Log.e("BluZ-BT", "Error: Discover service failed.")
+                        GO.drawLOG.appendAppLogs("Discover service failed.", 0)
                         //finish()
                     }
                     if (!gatt.requestMtu(MAX_MTU)) {  // Изменяем MTU
                         Log.e("BluZ-BT", "MTU set failed.")
+                        GO.drawLOG.appendAppLogs("MTU set failed.", 0)
                         //finish()
                     } else {
                         GO.initBT = true
                     }
                     /* Ускоряем обмен данными */
                     if( !gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)) {
-                        Log.e("BluZ-BT", "Hi priority set failed.")
+                        Log.e("BluZ-BT", "High priority set failed.")
+                        GO.drawLOG.appendAppLogs("High priority set failed.", 0)
                     } else {
                         Log.i("BluZ-BT", "Hi priority set Ok.")
+                        GO.drawLOG.appendAppLogs("Hi priority set Ok.", 3)
                     }
                     gatt.readRemoteRssi()
                 }
@@ -326,6 +340,7 @@ class BluetoothInterface() {
                     writePending = false
                     GO.configDataReady = false
                     Log.i("BluZ-BT", "Disconnect.")
+                    GO.drawLOG.appendAppLogs("Disconnect.", 1)
                 }
             }
         }
@@ -334,6 +349,7 @@ class BluetoothInterface() {
         @SuppressLint("MissingPermission")
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             Log.d("BluZ-BT", "servicesDiscovered, status $status")
+            GO.drawLOG.appendAppLogs("servicesDiscovered, status $status", 1)
             //var sync = true
             writePending = false
             Log.d("BluZ-BT", "Set gatt Characteristics.")
@@ -341,9 +357,13 @@ class BluetoothInterface() {
                 if (gattService.uuid == BLUETOOTH_BLUZ_SERVICE) {
                     wrCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_W)
                     rdCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_R)
+                    GO.drawLOG.appendAppLogs("gatt Characteristics Ok.", 3)
                 }
             }
-            if (!gatt.requestMtu(MAX_MTU)) Log.d("BluZ-BT", "Error set MTU.")
+            if (!gatt.requestMtu(MAX_MTU)) {
+                Log.d("BluZ-BT", "Error set MTU.")
+                GO.drawLOG.appendAppLogs("Error set MTU.", 0)
+            }
         }
 
         override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor, status: Int) {
@@ -351,8 +371,10 @@ class BluetoothInterface() {
                 Log.i("BluZ-BT", "writing read characteristic descriptor finished, status=$status")
                 if (status != BluetoothGatt.GATT_SUCCESS) {
                     Log.e("BluZ-BT", "Error: Write characteristic failed.")
+                    GO.drawLOG.appendAppLogs("Write characteristic failed.", 0)
                 } else {
                     Log.i("BluZ-BT", "Connect success.")
+                    GO.drawLOG.appendAppLogs("Write characteristic Ok.", 3)
                     connected = true
                 }
             }
@@ -361,12 +383,14 @@ class BluetoothInterface() {
         override fun onCharacteristicWrite( gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int ) {
             if ( !connected || wrCharacteristic == null) return
             if (status != BluetoothGatt.GATT_SUCCESS) {
-                Log.i("BluZ-BT", "write finished, status=$status");
+                Log.i("BluZ-BT", "write finished, status=$status")
+                GO.drawLOG.appendAppLogs("write finished, status=$status", 3)
                 return
             }
             //delegate!!.onCharacteristicWrite(gatt, characteristic, status)
             if (characteristic === wrCharacteristic) { // NOPMD - test object identity
-                Log.d("BluZ-BT", "write finished, status=$status");
+                Log.d("BluZ-BT", "write finished, status=$status")
+                GO.drawLOG.appendAppLogs("write charact, status=$status", 1)
                 writeNext()
             }
         }
@@ -426,31 +450,37 @@ class BluetoothInterface() {
         @SuppressLint("MissingPermission")
         override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
             Log.d("BluZ-BT", "mtu size $mtu, status $status")
+            GO.drawLOG.appendAppLogs("mtu size $mtu, status $status", 3)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 val payloadSize: Int = mtu - 3
                 Log.d("BluZ-BT", "payload size $payloadSize")
+                GO.drawLOG.appendAppLogs("payload size $payloadSize", 3)
             }
 
             if (wrCharacteristic == null) {
                 Log.e("BluZ-BT", "Error: characteristic not writable - 1")
+                GO.drawLOG.appendAppLogs("characteristic not writable - 1", 0)
                 return
             } else {
                 val writeProperties = wrCharacteristic!!.properties
                 if ((writeProperties and (BluetoothGattCharacteristic.PROPERTY_WRITE +
                             BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) == 0) {
                     Log.e("BluZ-BT", "Error: characteristic not writable - 2")
+                    GO.drawLOG.appendAppLogs("characteristic not writable - 2", 0)
                     return
                 }
             }
 
             if (!gatt.setCharacteristicNotification(rdCharacteristic, true)) {
                 Log.e("BluZ-BT", "Error: no notification for read characteristic")
+                GO.drawLOG.appendAppLogs("No notification for read characteristic", 0)
                 return
             }
 
             val readDescriptor = rdCharacteristic!!.getDescriptor(BLUETOOTH_LE_CCCD)
             if (readDescriptor == null) {
                 Log.e("BluZ-BT", "Error: no BLUETOOTH_LE_CCCD descriptor for read characteristic")
+                GO.drawLOG.appendAppLogs("No BLUETOOTH_LE_CCCD descriptor for read characteristic", 0)
                 return
             }
 
@@ -459,12 +489,15 @@ class BluetoothInterface() {
 
             if ((readProperties and BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) {
                 Log.d("BluZ-BT", "enable read indication")
+                GO.drawLOG.appendAppLogs("Enable read indication", 3)
                 descriptorValue = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
             } else if ((readProperties and BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
                 Log.d("BluZ-BT", "enable read notification")
+                GO.drawLOG.appendAppLogs("Enable read notification", 3)
                 descriptorValue = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
             } else {
                 Log.e("BluZ-BT", "Error: no indication/notification for read characteristic ($readProperties)")
+                GO.drawLOG.appendAppLogs("No ind/not for read charact ($readProperties)", 0)
                 return
             }
 
@@ -474,12 +507,14 @@ class BluetoothInterface() {
                 val result = gatt.writeDescriptor(readDescriptor, descriptorValue)
                 if (result != 0) {
                     Log.e("BluZ-BT", "Error: failed to write descriptor")
+                    GO.drawLOG.appendAppLogs("Failed to write descriptor - 1", 4)
                 }
             } else {
                 // Совместимость для старых версий
                 readDescriptor.value = descriptorValue
                 if (!gatt.writeDescriptor(readDescriptor)) {
                     Log.e("BluZ-BT", "Error: failed to write descriptor")
+                    GO.drawLOG.appendAppLogs("Failed to write descriptor - 2", 0)
                 }
             }
         }
@@ -491,6 +526,7 @@ class BluetoothInterface() {
             } else {
                 GO.Current_RSSI = -400
                 Log.d("BluZ-BT", "RSSI read error.")
+                GO.drawLOG.appendAppLogs("RSSI read error.", 0)
             }
         }
 
@@ -593,7 +629,7 @@ class BluetoothInterface() {
                         GO.battLevel = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()) * 100) / 100
                         var pulseCounter = GO.PCounter
                         Log.d("BluZ-BT", "Start detect. Size: $numberMTU, Type: $dataType, Pulse: $pulseCounter, Temp:" + GO.tempMC.toString() + ", Volt:" + GO.battLevel .toString())
-
+                        GO.drawLOG.appendAppLogs("Start receive. size: $numberMTU, Type: $dataType", 1)
                         /*
                            * Значения заголовка и формат данных для передачи
                            *
@@ -688,6 +724,7 @@ class BluetoothInterface() {
                         if (tmpCS == checkSumm /*|| true*/) {
                             GO.configDataReady = true
                             Log.d("BluZ-BT", "CS - correct: $checkSumm")
+                            GO.drawLOG.appendAppLogs("CS - correct: $checkSumm", 3)
                             /* Накопление массива закончено можно вызывать обновление экрана */
                             MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                                 withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
@@ -951,6 +988,7 @@ class BluetoothInterface() {
                             gatt.readRemoteRssi()
                         } else {
                             Log.e("BluZ-BT", "CS - incorrect. Found: $tmpCS calculate: $checkSumm")
+                            GO.drawLOG.appendAppLogs("CS - incorrect. Found: $tmpCS calculate: $checkSumm", 0)
                             //Log.e("BluZ-BT", "data[242]: " + data[242].toUByte() + " data[243]: " + data[243].toUByte())
                         }
                     }
