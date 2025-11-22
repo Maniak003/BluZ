@@ -73,7 +73,18 @@
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textClearLog"
                 android:textAllCaps="false"
-                android:textColor="@color/buttonTextColor" />
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/buttonClearAppLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/buttonColor"
+                android:text="AppClr"
+                android:textAllCaps="false"
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

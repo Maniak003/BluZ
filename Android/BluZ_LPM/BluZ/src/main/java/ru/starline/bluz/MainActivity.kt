@@ -56,11 +56,13 @@ public class MainActivity : FragmentActivity() {
             GO.drawObjectInit = true
             GO.drawDozObjectInit = true
             Log.d("BluZ-BT", "Service is real running")
+            GO.drawLOG.appendAppLogs("Service running.", 4)
             stopService(Intent(this, BleMonitoringService::class.java))
             getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {
                 putBoolean("is_ble_service_running", false)}
         } else {
             Log.d("BluZ-BT", "Service not running")
+            GO.drawLOG.appendAppLogs("Service not running.", 4)
         }
     }
 
@@ -88,6 +90,7 @@ public class MainActivity : FragmentActivity() {
 
         if (allGranted) {
             Log.d("BluZ-BT", "All permission granted!")
+            GO.drawLOG.appendAppLogs("Permission granted.", 3)
             GO.allPermissionAccept = true
             GO.startBluetoothTimer()
             // initApplication()
@@ -114,6 +117,9 @@ public class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        if (savedInstanceState != null) {
+            GO.drawLOG.appendAppLogs("Second create !", 0)
+        }
         GO.mainContext = applicationContext
         /* Использование всего экрана, место занятое челкой, тоже используется. */
         //enableEdgeToEdge()
@@ -263,14 +269,14 @@ public class MainActivity : FragmentActivity() {
                             Log.i("BluZ-BT", "BleMonitoringService run.")
                         } catch (e: Exception) {
                             Log.e("BluZ-BT", "Не удалось запустить сервис", e)
-                            Toast.makeText(this, "Ошибка запуска сервиса", Toast.LENGTH_SHORT)
-                                .show()
+                            Toast.makeText(this, "Ошибка запуска сервиса", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
             }
             /* Отключаем таймер проверки BLE соединения */
             GO.tmFull.stopTimer()
+            GO.oneShotBLETimer = false
             GO.BTT.stopScan()
             GO.BTT.destroyDevice()
 
@@ -436,6 +442,7 @@ public class MainActivity : FragmentActivity() {
         } else {
             // Все разрешения уже есть
             GO.allPermissionAccept = true
+            GO.drawLOG.appendAppLogs("All permission granted.", 3)
             //GO.startBluetoothTimer()
         }
     }
