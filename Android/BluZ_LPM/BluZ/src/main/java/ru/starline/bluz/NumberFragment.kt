@@ -451,7 +451,7 @@ class NumberFragment : Fragment() {
         /* Время выборки АЦП */
         GO.sampleTimeEdit.setText(GO.sampleTime.toString())
 
-        GO.cbApplicationLog.isChecked = GO.enableLogs
+        GO.textAppLogLevel.setText(GO.appLogLevel.toString())
     }
 
     override fun onCreateView(
@@ -740,6 +740,49 @@ class NumberFragment : Fragment() {
             } else if (getInt(ARG_OBJECT) == 3) {   // Логи
 
 
+                /* Сохранение логов приложения в файл */
+                val btnSaveAppLogs : Button = view.findViewById(R.id.buttonSaveAppLog)
+                btnSaveAppLogs.setOnClickListener {
+                    val simpleDateFormat = SimpleDateFormat("yyyyMMdd'_'HHmmss", Locale.getDefault())
+                    val fileName = "AppLog" + simpleDateFormat.format(Date().time)
+                    var errFlag = false
+                    try {
+                        val SDPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
+                        val direct = File("$SDPath/BluZ")
+                        if (!direct.exists()) {         // Нужно проверить наличие каталога.
+                            if (direct.mkdir()) {
+                                Log.d("BluZ-BT", "SD Path: $SDPath/BluZ")
+                                GO.drawLOG.appendAppLogs("Create ok dir: ${direct.toString()}", 3)
+                            } else {
+                                Log.d("BluZ-BT", "Create dir error.")
+                                Toast.makeText(context, "Directory create error.", Toast.LENGTH_LONG).show()
+                                GO.drawLOG.appendAppLogs("Create error dir: ${direct.toString()}", 0)
+                                errFlag = true
+                            }
+                        }
+                        if (! errFlag) {
+                            val myFile = File("$SDPath/BluZ/$fileName.html")
+                            if (myFile.createNewFile()) {
+                                Log.d("BluZ-BT", "File create Ok.")
+                                GO.drawLOG.appendAppLogs("Create ok file: ${myFile.toString()}", 3)
+                                val outputStream = FileOutputStream(myFile)
+                                outputStream.write(GO.appLogBuffer.toByteArray())
+                                outputStream.close()
+                                Toast.makeText(context, "Log ${myFile} save complete.", Toast.LENGTH_LONG).show()
+                            } else {
+                                Toast.makeText(context, "File create error.", Toast.LENGTH_LONG).show()
+                                Log.d("BluZ-BT", "Create file error.")
+                            }
+                        }
+
+
+
+                    } catch (e: Exception) {
+                        Log.e("BluZ-BT", "Error: ${e.message}")
+                        GO.drawLOG.appendAppLogs("Save: ${e.message}", 0)
+                    }
+                }
+
                 /* Очистка логов приложения */
                 val buttonClearAppLog : Button = view.findViewById(R.id.buttonClearAppLog)
                 buttonClearAppLog.setOnClickListener {
@@ -815,13 +858,9 @@ class NumberFragment : Fragment() {
                 GO.rbKMLType = view.findViewById(R.id.rbKML)
                 GO.rbTrackFmt = view.findViewById(R.id.RGTrackFormat)
                 GO.sampleTimeEdit = view.findViewById(R.id.editSampleTime)
-                GO.cbApplicationLog = view.findViewById(R.id.CBAppLog)
+                GO.textAppLogLevel = view.findViewById(R.id.editTextApplucationLog)
 
                 reloadConfigParameters()
-                /* Управление логированием приложения */
-                GO.cbApplicationLog.setOnCheckedChangeListener { buttonView, isChecked ->
-                    GO.enableLogs = isChecked
-                }
 
                 /* Изменение отображения режима карты */
                 GO.cbNightMapMode.setOnCheckedChangeListener { buttonView, isChecked ->
@@ -969,6 +1008,9 @@ class NumberFragment : Fragment() {
                 val btnSaveSetup: Button = view.findViewById(R.id.buttonSaveSetup)
 
                 btnSaveSetup.setOnClickListener {
+                    /* Уровень ногирования */
+                    GO.appLogLevel = GO.textAppLogLevel.text.toString().toInt()
+
                     /* Тип файла для сохранения спектра */
                     if (GO.rbSpctTypeBq.isChecked) {
                         GO.saveSpecterType = 0

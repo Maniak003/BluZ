@@ -70,6 +70,7 @@
                 android:id="@+id/buttonClearLog"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textClearLog"
                 android:textAllCaps="false"
@@ -80,8 +81,20 @@
                 android:id="@+id/buttonClearAppLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="AppClr"
+                android:textAllCaps="false"
+                android:textColor="@color/buttonTextColor"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/buttonSaveAppLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
+                android:backgroundTint="@color/buttonColor"
+                android:text="Save"
                 android:textAllCaps="false"
                 android:textColor="@color/buttonTextColor"
                 android:textSize="12sp" />

@@ -355,21 +355,19 @@ class BluetoothInterface() {
             Log.d("BluZ-BT", "servicesDiscovered, status $status")
             GO.drawLOG.appendAppLogs("servicesDiscovered, status $status", 1)
             Log.d("BluZ-BT", "==== GATT table ====")
-            GO.drawLOG.appendAppLogs("=== GATT table ===", 5)
-            for (svc in gatt.services) {
-                Log.d("BluZ-BT", "service ${svc.uuid}")
-                GO.drawLOG.appendAppLogs("${svc.uuid}", 5)
-                for (ch in svc.characteristics) {
-                    Log.d("BluZ-BT", "  char ${ch.uuid}  props=${ch.properties}")
-                    GO.drawLOG.appendAppLogs("-${ch.uuid}", 5)
-                    GO.drawLOG.appendAppLogs("-prop=${ch.properties}", 5)
-                }
-            }
+            GO.drawLOG.appendAppLogs("=== GATT table ===", 4)
             //var sync = true
             writePending = false
             var charFlag = false
             Log.d("BluZ-BT", "Set gatt Characteristics.")
             for (gattService in gatt.services) {
+                Log.d("BluZ-BT", "service ${gattService.uuid}")
+                GO.drawLOG.appendAppLogs("${gattService.uuid}", 4)
+                for (ch in gattService.characteristics) {
+                    Log.d("BluZ-BT", "  char ${ch.uuid}  props=${ch.properties}")
+                    GO.drawLOG.appendAppLogs("-${ch.uuid}", 4)
+                    GO.drawLOG.appendAppLogs("-prop=${ch.properties}", 4)
+                }
                 if (gattService.uuid == BLUETOOTH_BLUZ_SERVICE) {
                     wrCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_W)
                     rdCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_R)
@@ -562,10 +560,10 @@ class BluetoothInterface() {
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         @Deprecated("Deprecated in Java")
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
-            GO.drawLOG.appendAppLogs("SonCharacteristicChanged", 1)
+            GO.drawLOG.appendAppLogs("onCharacteristicChanged", 5)
             //delegate!!.onCharacteristicChanged(gatt, characteristic)
             if (characteristic == rdCharacteristic) { // NOPMD - test object identity
-                GO.drawLOG.appendAppLogs("SonCharacteristicChanged", 1)
+                //GO.drawLOG.appendAppLogs("rdCharacteristic", 1)
                 //val data = readCharacteristic!!.value
                 val data = rdCharacteristic!!.value
                 /*
@@ -657,7 +655,7 @@ class BluetoothInterface() {
                         GO.battLevel = round(java.lang.Float.intBitsToFloat(tmpInt.toInt()) * 100) / 100
                         var pulseCounter = GO.PCounter
                         Log.d("BluZ-BT", "Start detect. Size: $numberMTU, Type: $dataType, Pulse: $pulseCounter, Temp:" + GO.tempMC.toString() + ", Volt:" + GO.battLevel .toString())
-                        GO.drawLOG.appendAppLogs("Start receive. size: $numberMTU, Type: $dataType", 1)
+                        GO.drawLOG.appendAppLogs("Start receive. size: $numberMTU, Type: $dataType", 3)
                         /*
                            * Значения заголовка и формат данных для передачи
                            *

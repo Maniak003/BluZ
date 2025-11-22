@@ -43,11 +43,11 @@ class drawLogs {
     * 2 - Предупреждение
     * 3 - Успешно
     * 4 - Отладка
-    * 5 - Авария
+    * 5 - Отдадка 2
     *
     */
     fun appendAppLogs(evtText: String, lev: Int) {
-        if (GO.enableLogs) {
+        if (GO.appLogLevel >= lev) {
             val colorEvt: String = when (lev) {
                 0 -> " <font color=#FF0000>"
                 1 -> " <font color=#0000FF>"
