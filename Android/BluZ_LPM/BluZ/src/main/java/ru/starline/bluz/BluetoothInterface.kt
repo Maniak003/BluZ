@@ -302,7 +302,7 @@ class BluetoothInterface() {
                         }
                     }
                     Log.i("BluZ-BT", "Gatt connect success.")
-                    GO.drawLOG.appendAppLogs("Gatt connect success.", 3)
+                    GO.drawLOG.appendAppLogs("Gatt success.pid=${android.os.Process.myPid()} uid=${android.os.Process.myUid()}", 3)
                     if (!gatt.discoverServices()) {
                         Log.e("BluZ-BT", "Error: Discover service failed.")
                         GO.drawLOG.appendAppLogs("Discover service failed.", 0)
@@ -350,15 +350,31 @@ class BluetoothInterface() {
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             Log.d("BluZ-BT", "servicesDiscovered, status $status")
             GO.drawLOG.appendAppLogs("servicesDiscovered, status $status", 1)
+            Log.d("BluZ-BT", "==== GATT table ====")
+            GO.drawLOG.appendAppLogs("=== GATT table ===", 5)
+            for (svc in gatt.services) {
+                Log.d("BluZ-BT", "service ${svc.uuid}")
+                GO.drawLOG.appendAppLogs("${svc.uuid}", 5)
+                for (ch in svc.characteristics) {
+                    Log.d("BluZ-BT", "  char ${ch.uuid}  props=${ch.properties}")
+                    GO.drawLOG.appendAppLogs("-${ch.uuid}", 5)
+                    GO.drawLOG.appendAppLogs("-prop=${ch.properties}", 5)
+                }
+            }
             //var sync = true
             writePending = false
+            var charFlag = false
             Log.d("BluZ-BT", "Set gatt Characteristics.")
             for (gattService in gatt.services) {
                 if (gattService.uuid == BLUETOOTH_BLUZ_SERVICE) {
                     wrCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_W)
                     rdCharacteristic = gattService.getCharacteristic(BLUETOOTH_BLUZ_CHAR_R)
                     GO.drawLOG.appendAppLogs("gatt Characteristics Ok.", 3)
+                    charFlag = true
                 }
+            }
+            if (! charFlag) {
+                GO.drawLOG.appendAppLogs("Characteristics not found.", 0)
             }
             if (!gatt.requestMtu(MAX_MTU)) {
                 Log.d("BluZ-BT", "Error set MTU.")
@@ -1000,6 +1016,7 @@ class BluetoothInterface() {
 
     @SuppressLint("MissingPermission")
     fun destroyDevice() {
+        GO.drawLOG.appendAppLogs("BLE destroy.", 4)
         connected = false
         MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
             withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
@@ -1007,9 +1024,11 @@ class BluetoothInterface() {
             }
         }
         if (gatt == null) {
+            GO.drawLOG.appendAppLogs("Gatt is null.", 4)
             //Toast.makeText(getBaseContext(), "BlueTooth disabled ?.", Toast.LENGTH_LONG).show();
             //finish()
         } else {
+            GO.drawLOG.appendAppLogs("gatt close.", 4)
             gatt!!.disconnect()
             gatt!!.close()
             device = null

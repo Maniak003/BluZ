@@ -740,6 +740,14 @@ class NumberFragment : Fragment() {
             } else if (getInt(ARG_OBJECT) == 3) {   // Логи
 
 
+                /* Очистка логов приложения */
+                val buttonClearAppLog : Button = view.findViewById(R.id.buttonClearAppLog)
+                buttonClearAppLog.setOnClickListener {
+                    GO.appLogBuffer = ""
+                    GO.drawLOG.updateAppLogs()
+                }
+
+
                 /* Очистка логов */
                 val btnCleaarLog: Button = view.findViewById(R.id.buttonClearLog)
                 btnCleaarLog.setOnClickListener {
@@ -1047,6 +1055,7 @@ class NumberFragment : Fragment() {
                     if (GO.LEMAC.length == 17 &&  GO.LEMAC[0] != 'X') { // MAC адрес настроен, продолжаем работу.
                         GO.tmFull.startTimer();
                     } else {
+                        GO.oneShotBLETimer = false
                         GO.tmFull.stopTimer()
                     }
                 }

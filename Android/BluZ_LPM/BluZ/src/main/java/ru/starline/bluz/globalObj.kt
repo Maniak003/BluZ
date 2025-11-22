@@ -143,6 +143,7 @@ class globalObj {
     //private var saveStat2: String = ""
     //private var saveStat3: String = ""
     public var overloadFlag: Boolean = false            // Флаг перегрузки
+    public var oneShotBLETimer: Boolean = false
 
     /* GPS */
     public var mapWindow: MapWindow? = null
@@ -848,6 +849,11 @@ class globalObj {
 
     /* Запуск таймера для автоматического подключения */
     fun startBluetoothTimer() {
+        if (GO.oneShotBLETimer) {
+            return
+        }
+        GO.drawLOG.appendAppLogs("Start BLE timer.", 4)
+        GO.oneShotBLETimer = true
         GO.needTerminate = false
         Log.d("BluZ-BT", "mac addr: " + GO.LEMAC + " Resolution: " + GO.spectrResolution.toString())
 
