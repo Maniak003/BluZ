@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
@@ -44,6 +45,34 @@ public val GO: globalObj = globalObj()
 public var PI: Int = 0
 
 public class MainActivity : FragmentActivity() {
+
+    /* Отслеживание нажатия на кнопки громкости */
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        return when (keyCode) {
+            KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                true // Сообщение для системы, что бы отключить индикатор громкости
+            }
+            else -> super.onKeyDown(keyCode, event)
+        }
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        return when (keyCode) {
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                // Обработка события "+"
+                Toast.makeText(this, "Кнопка +", Toast.LENGTH_SHORT).show()
+                true
+            }
+            KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                // Обработка события "-"
+                Toast.makeText(this, "Кнопка -", Toast.LENGTH_SHORT).show()
+                true
+            }
+            else -> super.onKeyUp(keyCode, event)
+        }
+    }
+
+    /* Восстановление приложения */
     override fun onResume() {
         super.onResume()
         // Проверяем разрешения при возврате из настроек
