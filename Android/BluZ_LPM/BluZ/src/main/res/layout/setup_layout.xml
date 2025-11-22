@@ -434,14 +434,24 @@
                     android:layout_weight="0"
                     android:orientation="horizontal">
 
-                    <CheckBox
-                        android:id="@+id/CBAppLog"
+                    <TextView
+                        android:id="@+id/textView26"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="App log"
-                        android:textColor="@color/editTextColor"
-                        android:textSize="12sp" />
+                        android:text="AppLog"
+                        android:textAllCaps="false"
+                        android:textColor="@color/labelTextColor" />
+
+                    <EditText
+                        android:id="@+id/editTextApplucationLog"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="10"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
+                        android:textColor="@color/editTextColor" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -581,6 +591,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="2"
                                 android:ems="10"
+                                android:imeOptions="actionDone"
                                 android:inputType="numberDecimal|numberSigned"
                                 android:textColor="@color/editTextColor"
                                 android:textSize="14sp" />
@@ -599,6 +610,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="2"
                                 android:ems="10"
+                                android:imeOptions="actionDone"
                                 android:inputType="number"
                                 android:textColor="@color/editTextColor"
                                 android:textSize="14sp" />
@@ -634,6 +646,7 @@
                                 android:layout_height="match_parent"
                                 android:layout_weight="2"
                                 android:ems="10"
+                                android:imeOptions="actionDone"
                                 android:inputType="numberDecimal|numberSigned"
                                 android:textColor="@color/editTextColor"
                                 android:textSize="14sp" />
@@ -652,6 +665,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="2"
                                 android:ems="10"
+                                android:imeOptions="actionDone"
                                 android:inputType="number"
                                 android:textColor="@color/editTextColor"
                                 android:textSize="14sp" />
@@ -687,6 +701,7 @@
                                 android:layout_height="match_parent"
                                 android:layout_weight="2"
                                 android:ems="10"
+                                android:imeOptions="actionDone"
                                 android:inputType="numberDecimal|numberSigned"
                                 android:textColor="@color/editTextColor"
                                 android:textSize="14sp" />
@@ -705,6 +720,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="2"
                                 android:ems="10"
+                                android:imeOptions="actionDone"
                                 android:inputType="number"
                                 android:textColor="@color/editTextColor"
                                 android:textSize="14sp" />
@@ -822,6 +838,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:ems="10"
+                        android:imeOptions="actionDone"
                         android:inputType="numberDecimal"
                         android:textColor="@color/editTextColor"
                         android:textSize="14sp" />
@@ -841,6 +858,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
                         android:ems="10"
+                        android:imeOptions="actionDone"
                         android:inputType="number"
                         android:textColor="@color/editTextColor"
                         android:textSize="14sp" />
@@ -860,6 +878,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
                         android:ems="10"
+                        android:imeOptions="actionDone"
                         android:inputType="number"
                         android:textColor="@color/editTextColor"
                         android:textSize="14sp" />
@@ -885,6 +904,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
                         android:ems="10"
+                        android:imeOptions="actionDone"
                         android:inputType="number"
                         android:textColor="@color/editTextColor"
                         android:textSize="14sp" />
@@ -903,6 +923,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
                         android:ems="10"
+                        android:imeOptions="actionDone"
                         android:inputType="number"
                         android:textColor="@color/editTextColor"
                         android:textSize="14sp" />

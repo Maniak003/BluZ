@@ -71,7 +71,7 @@ class SaveBqMon {
         var dataStr: String
         val calendar = Calendar.getInstance()
         val now = calendar.time
-        var simpleDateFormat = SimpleDateFormat("yyyyMMdd'_'HHmmss", Locale.getDefault())
+        val simpleDateFormat = SimpleDateFormat("yyyyMMdd'_'HHmmss", Locale.getDefault())
         val fileName = simpleDateFormat.format(now)
         Toast.makeText(context, "Saved " + GO.saveSpecterType2, Toast.LENGTH_SHORT).show()
         // Check mount devices
