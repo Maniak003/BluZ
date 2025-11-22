@@ -292,6 +292,7 @@ class BluetoothInterface() {
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     /* Прибор подключен, меняем цвет индикатора. */
+                    /*
                     MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
                         withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
                             GO.indicatorBT.setBackgroundColor(GO.mainContext.getColor(R.color.Yellow))
@@ -300,13 +301,15 @@ class BluetoothInterface() {
                                 //GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.Red))
                             //}
                         }
-                    }
+                    }*/
                     Log.i("BluZ-BT", "Gatt connect success.")
                     GO.drawLOG.appendAppLogs("Gatt success.pid=${android.os.Process.myPid()} uid=${android.os.Process.myUid()}", 3)
                     if (!gatt.discoverServices()) {
                         Log.e("BluZ-BT", "Error: Discover service failed.")
                         GO.drawLOG.appendAppLogs("Discover service failed.", 0)
                         //finish()
+                    } else {
+                        GO.drawLOG.appendAppLogs("Discover service Ok.", 3)
                     }
                     if (!gatt.requestMtu(MAX_MTU)) {  // Изменяем MTU
                         Log.e("BluZ-BT", "MTU set failed.")
@@ -314,6 +317,7 @@ class BluetoothInterface() {
                         //finish()
                     } else {
                         GO.initBT = true
+                        GO.drawLOG.appendAppLogs("MTU set Ok.", 3)
                     }
                     /* Ускоряем обмен данными */
                     if( !gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)) {
@@ -391,6 +395,12 @@ class BluetoothInterface() {
                 } else {
                     Log.i("BluZ-BT", "Connect success.")
                     GO.drawLOG.appendAppLogs("Write characteristic Ok.", 3)
+                    /* Прибор подключен, меняем цвет индикатора. */
+                    MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
+                        withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                            GO.indicatorBT.setBackgroundColor(GO.mainContext.getColor(R.color.Yellow))
+                        }
+                    }
                     connected = true
                 }
             }
@@ -552,8 +562,10 @@ class BluetoothInterface() {
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         @Deprecated("Deprecated in Java")
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+            GO.drawLOG.appendAppLogs("SonCharacteristicChanged", 1)
             //delegate!!.onCharacteristicChanged(gatt, characteristic)
             if (characteristic == rdCharacteristic) { // NOPMD - test object identity
+                GO.drawLOG.appendAppLogs("SonCharacteristicChanged", 1)
                 //val data = readCharacteristic!!.value
                 val data = rdCharacteristic!!.value
                 /*
