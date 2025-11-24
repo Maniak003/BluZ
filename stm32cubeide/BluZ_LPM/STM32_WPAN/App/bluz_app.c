@@ -305,14 +305,16 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						/* Разрешение спектра. 0 - 1024, 1 - 2048, 2 - 4096 */
 						if ((resolutionSpecter != (spectrResolution_t) p_Notification->DataTransfered.p_Payload[37]) || currentSamplingTime != tmpSample) {
 							resolutionSpecter = (spectrResolution_t) p_Notification->DataTransfered.p_Payload[37];
-							currentSamplingTime = tmpSample;
-							/* Если разрешение или время выборки изменяется - нужно очистить спектр */
-							for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
-								tmpSpecterBuffer[iii] = 0;
+							/* Время выборки изменяется - нужно очистить спектр */
+							if (currentSamplingTime != tmpSample) {
+								for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
+									tmpSpecterBuffer[iii] = 0;
+								}
+								logUpdate(resSpectrometerLog);
 							}
+							currentSamplingTime = tmpSample;
 							spectrometerPulse = 0;
 							spectrometerTime = 0;
-							logUpdate(resSpectrometerLog);
 							/* Если включен спектрометр, нужно установить тип передачи */
 							if (dataType > onlyDozimeter) {
 								switch (resolutionSpecter) {

@@ -48,7 +48,6 @@ void CB_SMA (SNVMA_Callback_Status_t os) {
 			SNVMA_Write (APP_BLE_NvmBuffer, CB_SMA);
 		}
 	}
-
 }
 
 
