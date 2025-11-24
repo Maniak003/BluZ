@@ -70,8 +70,8 @@ extern "C" {
 #define HEADER_OFFSET 50									/* Начало данных дозиметра (uint16_t)*/
 #define SIZE_DOZIMETR_BUFER 512								/* Размер буфера для статистики дозиметра (uint16_t) */
 #define LOG_BUFER_SIZE 50									/* Количество записей в логе */
-#define LOG_OFFSET HEADER_OFFSET + SIZE_DOZIMETR_BUFER		/* Начало данных лога */
-#define SPECTER_OFFSET LOG_OFFSET + LOG_BUFER_SIZE * 3		/* Начало спектра в буфере в uint16_t */
+#define LOG_OFFSET (HEADER_OFFSET + SIZE_DOZIMETR_BUFER)	/* Начало данных лога */
+#define SPECTER_OFFSET (LOG_OFFSET + LOG_BUFER_SIZE * 3)	/* Начало спектра в буфере в uint16_t */
 #define NUMBER_MTU_DOZR 6									/* Количество MTU для передачи накоплений дозиметра */
 #define NUMBER_MTU_1024 16									/* Количество MTU для передачи спектра разрешением 1024 */
 #define NUMBER_MTU_2048 23									/* Количество MTU для передачи спектра разрешением 2048 */

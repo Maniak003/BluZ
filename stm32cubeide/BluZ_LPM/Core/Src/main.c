@@ -498,9 +498,10 @@ int main(void)
 
 	  uint16_t idxCS = 0 ;
 	  int kkk = 0;
+	  int chanCnt = 4;
 	  uint16_t nm_channel = 0;
 	  switch (dataType) {
-  	  case onlyDozimeter:										/* Передача данных дозиметра и лога */
+  	  case onlyDozimeter:							/* Передача данных дозиметра и лога */
   		  countMTU = NUMBER_MTU_DOZR;
   		  idxCS =  NUMBER_MTU_DOZR * 244 / 2 - 1;
   		  nm_channel = 0;
@@ -509,31 +510,37 @@ int main(void)
   		  countMTU = NUMBER_MTU_1024;				/* Передача данных дозиметра, лога и спектра 1024 */
   		  idxCS = NUMBER_MTU_1024 * 244 / 2 - 1;
   		  nm_channel = CHANNELS_1024;
+  		  chanCnt = 4;
   		  break;
   	  case dozimeterSpecter2048:
   		  countMTU = NUMBER_MTU_2048;				/* Передача данных дозиметра, лога и спектра 2048 */
   		  idxCS = NUMBER_MTU_2048 * 244 / 2 - 1;
   		  nm_channel = CHANNELS_2048;
+  		  chanCnt = 2;
   		  break;
   	  case dozimeterSpecter4096:
   		  countMTU = NUMBER_MTU_4096;				/* Передача данных дозиметра, лога и спектра 4096 */
   		  idxCS = NUMBER_MTU_4096 * 244 / 2 - 1;
   		  nm_channel = CHANNELS_4096;
+  		  chanCnt = 1;
   		  break;
   	  case dozimeterHistory1024:
   		  countMTU = NUMBER_MTU_1024;				/* Передача данных дозиметра, лога и спектра 1024 */
   		  idxCS = NUMBER_MTU_1024 * 244 / 2 - 1;
   		  nm_channel = CHANNELS_1024;
+  		  chanCnt = 4;
   		  break;
   	  case dozimeterHistory2048:
   		  countMTU = NUMBER_MTU_2048;				/* Передача данных дозиметра, лога и спектра 2048 */
   		  idxCS = NUMBER_MTU_2048 * 244 / 2 - 1;
   		  nm_channel = CHANNELS_2048;
+  		  chanCnt = 2;
   		  break;
   	  case dozimeterHistory4096:
   		  countMTU = NUMBER_MTU_4096;				/* Передача данных дозиметра, лога и спектра 4096 */
   		  idxCS = NUMBER_MTU_4096 * 244 / 2 - 1;
   		  nm_channel = CHANNELS_4096;
+  		  chanCnt = 1;
   		  break;
 	  }
 	  if (dataType > onlyDozimeter) {							/* Нужно передавать спектр ? */
@@ -550,13 +557,21 @@ int main(void)
 		#endif
 		  double tmpLog;
 		  uint32_t tmpSpectrData;
+		  bool limFlag = false;
+		  const uint32_t * __restrict src = (dataType > dozimeterSpecter4096) ? historySpecterBuffer : tmpSpecterBuffer;
+		  uint16_t *dest = &transmitBuffer[SPECTER_OFFSET];
 		  for (int jjj = 0; jjj < nm_channel; jjj++) {
 			  /* Что будем передавать, историю или текущий спектр */
-			  if (dataType > dozimeterSpecter4096) {
-				  tmpSpectrData = historySpecterBuffer[kkk++];
-			  } else {
-				  tmpSpectrData = tmpSpecterBuffer[kkk++];
+			  tmpSpectrData = 0;
+			  for (int chIdx = 0; chIdx < chanCnt; chIdx++) {
+				  tmpSpectrData += src[kkk++];
+				  //if (dataType > dozimeterSpecter4096) {
+					//  tmpSpectrData += historySpecterBuffer[kkk++];
+				  //} else {
+					//  tmpSpectrData += tmpSpecterBuffer[kkk++];
+				  //}
 			  }
+			  limFlag |= (tmpSpectrData >= limitChan);
 			#ifdef MEDIAN
 			  MA[medianIdx] = tmpSpectrData;
 			  tmpSpectrData = (MA[0] < MA[1]) ? ((MA[1] < MA[2]) ? MA[1] : ((MA[2] < MA[0]) ? MA[0] : MA[2])) : ((MA[0] < MA[2]) ? MA[0] : ((MA[2] < MA[1]) ? MA[1] : MA[2]));
@@ -566,11 +581,17 @@ int main(void)
 			#endif
 			  /* Логарифмическое сжатие */
 			  tmpLog = log2(tmpSpectrData + 1) * (double) CoefChan;
-			  transmitBuffer[jjj + SPECTER_OFFSET] = (uint16_t) tmpLog;
+			  dest[jjj] = (uint16_t) tmpLog;
+		  }
+		  /* Если данные не помещаются - увеличим разрадность */
+		  if (limFlag) {
+			  bitsOfChannal++;
+			  CoefChan = 65535.0 / (double) bitsOfChannal;
+			  limitChan = (1 << bitsOfChannal) - 1;
 		  }
 	  }
 	  dataType = tmpDataType;	// Востановление исходного типа данных после передачи истории
-		  /* Подготавливаем данные дозиметра */
+		/* Подготавливаем данные дозиметра */
 	  uint16_t ddd = indexDozimetrBufer;
 	  for (uint16_t jjj = HEADER_OFFSET; jjj < HEADER_OFFSET + SIZE_DOZIMETR_BUFER; jjj++) {
 		  transmitBuffer[jjj] = dozimetrBuffer[ddd++];
@@ -695,45 +716,37 @@ int main(void)
 
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
 	  transmitBuffer[idxCS] = 0;
-	  kkk = 0;
-	  //uint8_t delayInterval = 0;
-	  for (int iii = 0; iii < countMTU; iii++) {
+	  uint16_t *src  = transmitBuffer;
+	  //kkk = 0;
+	  for (int iii = 0; iii < countMTU; ++iii) {
 		  /* Передача возможна только при подключеном клиенте */
 		  if ( ! connectFlag) {
 			  break;
 		  }
 		  for (int jjj = 0; jjj < MTUSizeValue; jjj++) {
-			  uint16_t dataSpectr = transmitBuffer[kkk++];
-			  uint8_t tmpByte;
-			  tmpByte  = (uint8_t) (dataSpectr & 0xFF);
-			  tmpBTBuffer[jjj++] = tmpByte;
-			  tmpCS = tmpCS + tmpByte;
-			  tmpByte = (uint8_t) ((dataSpectr >> 8) & 0xFF);
-			  tmpBTBuffer[jjj] = tmpByte;
-			  tmpCS = tmpCS + tmpByte;
+			  uint16_t dataSpectr = *src++;
+			  uint8_t lo = dataSpectr;
+			  uint8_t hi = dataSpectr >> 8;
+			  tmpBTBuffer[jjj++] = lo;
+			  tmpBTBuffer[jjj] = hi;
+			  tmpCS += lo + hi;
+			  //uint8_t tmpByte;
+			  //tmpByte  = (uint8_t) (dataSpectr & 0xFF);
+			  //tmpBTBuffer[jjj++] = tmpByte;
+			  //tmpCS = tmpCS + tmpByte;
+			  //tmpByte = (uint8_t) ((dataSpectr >> 8) & 0xFF);
+			  //tmpBTBuffer[jjj] = tmpByte;
+			  //tmpCS = tmpCS + tmpByte;
 		  }
-		  if (kkk >= idxCS) {
-			  tmpBTBuffer[242] = (uint8_t) (tmpCS & 0xFF);
-			  tmpBTBuffer[243] = (uint8_t) ((tmpCS >> 8) & 0xFF);
+		  //if (kkk >= idxCS) {
+		  if (iii == countMTU - 1) {
+			  tmpBTBuffer[242] = tmpCS & 0xFF;
+			  tmpBTBuffer[243] = tmpCS >> 8;
 		  }
 
 		  while (!sendData(tmpBTBuffer)) {
 			  MX_APPE_Process();
 		  }
-		  //sendData(tmpBTBuffer);
-		  //MX_APPE_Process();
-		  /*
-		   * TODO -- требуется задержка в передаче, иначе не все пакеты принимаются
-		   */
-		  //if (delayInterval++ > DELAY_INTERVAL) {
-			//  delayInterval = 0;
-			 // HAL_Delay(SEND_DELAY);
-		  //}
-			#ifdef DEBUG_USER
-			bzero((char *) uartBuffer, sizeof(uartBuffer));
-			sprintf(uartBuffer, "MTU: %d\n\r", iii);
-			HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
-			#endif
 	  }
 		#ifdef DEBUG_USER
 		bzero((char *) uartBuffer, sizeof(uartBuffer));
