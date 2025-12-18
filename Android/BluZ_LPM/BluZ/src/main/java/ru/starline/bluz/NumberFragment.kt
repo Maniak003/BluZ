@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
-import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
@@ -97,6 +96,8 @@ class NumberFragment : Fragment() {
     private var hideHintRunnable: Runnable? = null
     private lateinit var mapViewPlan: MapView
     private var cps2urh: Float? = 0f
+    private lateinit var paddingTextLeft: EditText
+    private lateinit var paddingTextRight: EditText
 /*
     override fun onResume() {
         super.onResume()
@@ -451,7 +452,15 @@ class NumberFragment : Fragment() {
         /* Время выборки АЦП */
         GO.sampleTimeEdit.setText(GO.sampleTime.toString())
 
+        /* Уровень логирования */
         GO.textAppLogLevel.setText(GO.appLogLevel.toString())
+
+        /* Отступ слевого края */
+        paddingTextLeft.setText(GO.paddingLeft.toString())
+
+        /* Отступ справого края */
+        paddingTextRight.setText(GO.paddingRight.toString())
+
     }
 
     override fun onCreateView(
@@ -860,6 +869,9 @@ class NumberFragment : Fragment() {
                 GO.sampleTimeEdit = view.findViewById(R.id.editSampleTime)
                 GO.textAppLogLevel = view.findViewById(R.id.editTextApplucationLog)
 
+                paddingTextLeft  = view.findViewById(R.id.editTextPaddingLeft)
+                paddingTextRight = view.findViewById(R.id.editTextPaddingRight)
+
                 reloadConfigParameters()
 
                 /* Изменение отображения режима карты */
@@ -1008,6 +1020,20 @@ class NumberFragment : Fragment() {
                 val btnSaveSetup: Button = view.findViewById(R.id.buttonSaveSetup)
 
                 btnSaveSetup.setOnClickListener {
+                    val pdTmpL = paddingTextLeft.text.toString().toIntOrNull() ?: 0
+                    val pdTmpR = paddingTextRight.text.toString().toIntOrNull() ?: 0
+                    val activity = requireActivity()
+                    val mainLayout = activity.findViewById<View>(R.id.main)
+                    if ((pdTmpL != GO.paddingLeft) or (pdTmpR != GO.paddingRight)) {
+                        /* Отступ от левого края */
+                        GO.paddingLeft = pdTmpL
+
+                        /* Отступ от правого края */
+                        GO.paddingRight = pdTmpR
+                        mainLayout.setPadding(GO.paddingLeft, mainLayout.paddingTop, GO.paddingRight, mainLayout.paddingBottom)
+                    }
+
+
                     /* Уровень ногирования */
                     GO.appLogLevel = GO.textAppLogLevel.text.toString().toInt()
 
