@@ -427,6 +427,9 @@ public class MainActivity : FragmentActivity() {
         if (GO.fullScrn) {
             enableEdgeToEdge()
         }
+        //val activity = requireActivity()
+        val mainLayout = findViewById<View>(R.id.main)
+        mainLayout.setPadding(GO.paddingLeft, mainLayout.paddingTop, GO.paddingRight, mainLayout.paddingBottom)
         /* Загрузка справочника изотопов */
         GO.loadIsotop()
         //if (GO.allPermissionAccept) {

@@ -95,6 +95,8 @@ class globalObj {
     public val propSaveTrackType: String = "SaveTrackType"
     public val propSampleTime: String = "SampleTime"
     public val propLogLevel: String = "applicationLogLevel"
+    public val propPaddingLeft: String = "PaddingLeft"
+    public val propPaddingRight: String = "PaddingRight"
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var allPermissionAccept: Boolean = false
@@ -107,6 +109,8 @@ class globalObj {
     public lateinit var drawLOG: drawLogs
     public var appLogBuffer: String = ""
     public var appLogLevel: Int = 0
+    public var paddingLeft: Int = 0
+    public var paddingRight: Int = 0
     public lateinit var drawExamp: drawExmple
     public var drawObjectInit: Boolean = true
     public var drawObjectInitHistory: Boolean = true
@@ -757,6 +761,8 @@ class globalObj {
         GO.PP.setPropInt(propSaveTrackType, GO.saveTrackType)               // Формат для сохранения трека
         GO.PP.setPropInt(propSampleTime, GO.sampleTime)                     // Время выборки АЦП
         GO.PP.setPropInt(propLogLevel, GO.appLogLevel)                      // Включает запись логов приложения
+        GO.PP.setPropInt(propPaddingLeft, GO.paddingLeft)                   // Отступ слева
+        GO.PP.setPropInt(propPaddingRight, GO.paddingRight)                 // Отступ справа
     }
 
     /*
@@ -845,6 +851,8 @@ class globalObj {
         GO.nightMapModeEnab = GO.PP.getPropBoolean(propNightMode)
         GO.saveTrackType = GO.PP.getPropInt(propSaveTrackType)
         GO.appLogLevel = GO.PP.getPropInt(propLogLevel)
+        GO.paddingLeft = GO.PP.getPropInt(propPaddingLeft)
+        GO.paddingRight = GO.PP.getPropInt(propPaddingRight)
     }
 
     /* Запуск таймера для автоматического подключения */

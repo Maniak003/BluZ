@@ -302,6 +302,7 @@
                         android:layout_marginBottom="-5dp"
                         android:layout_weight="0"
                         android:ems="10"
+                        android:imeOptions="actionDone"
                         android:inputType="number"
                         android:text="5"
                         android:textAlignment="center"
@@ -323,6 +324,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
                         android:ems="10"
+                        android:imeOptions="actionDone"
                         android:inputType="number"
                         android:text="10"
                         android:textAlignment="center"
@@ -438,7 +440,7 @@
                         android:id="@+id/textView26"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_weight="0"
                         android:text="AppLog"
                         android:textAllCaps="false"
                         android:textColor="@color/labelTextColor" />
@@ -451,7 +453,49 @@
                         android:ems="10"
                         android:imeOptions="actionDone"
                         android:inputType="number"
-                        android:textColor="@color/editTextColor" />
+                        android:text="0"
+                        android:textColor="@color/editTextColor"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textView27"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0"
+                        android:text="PadL"
+                        android:textColor="@color/labelTextColor" />
+
+                    <EditText
+                        android:id="@+id/editTextPaddingLeft"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="10"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
+                        android:text="0"
+                        android:textColor="@color/editTextColor"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textView28"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0"
+                        android:text="PadR"
+                        android:textColor="@color/labelTextColor" />
+
+                    <EditText
+                        android:id="@+id/editTextPaddingRight"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="10"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
+                        android:text="0"
+                        android:textColor="@color/editTextColor"
+                        android:textSize="14sp" />
                 </LinearLayout>
 
             </LinearLayout>
