@@ -275,7 +275,7 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
  */
 #define ADC_VREF 2.8f									// Напряжение питания.
 //#define ADC_VREF_COEF 4.2f / 4080.0f
-static const float ADC_VREF_COEF = 4.2f / 3970.0f;		// Коэффициент завист от делителя напряжения. Нужно подбирать на полностью заряженном аккумуляторе.
+static const float ADC_VREF_COEF = 4.2f / 4055.68f;		// Коэффициент завист от делителя напряжения. Нужно подбирать на полностью заряженном аккумуляторе.
 
 /* USER CODE END Private defines */
 
