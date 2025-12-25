@@ -1839,7 +1839,7 @@ class NumberFragment : Fragment() {
                     val documentsDir =
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
                     val bluzDir = File("$documentsDir/BluZ")
-                    /* Проверяем наличие каталока приложения в Documents */
+                    /* Проверяем наличие каталога приложения в Documents */
                     if (!bluzDir.exists()) {
                         bluzDir.mkdirs()        // Создаем если отсутствует
                     }
