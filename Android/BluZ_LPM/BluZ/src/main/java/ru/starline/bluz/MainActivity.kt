@@ -14,9 +14,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.InputType
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -37,6 +39,8 @@ import kotlinx.coroutines.launch
 import ru.starline.bluz.data.entity.Track
 import kotlin.system.exitProcess
 import androidx.core.content.edit
+import android.view.ViewGroup.LayoutParams
+import androidx.core.content.ContentProviderCompat.requireContext
 
 public val GO: globalObj = globalObj()
 
@@ -176,6 +180,48 @@ public class MainActivity : FragmentActivity() {
         GO.viewPager.adapter = GO.adapter
         GO.bColor = buttonColor()
         GO.txtStat1 = findViewById(R.id.textStatistic1)
+        /* Событие нажатия на текст для калибровки аккумулятора */
+        GO.txtStat1.setOnClickListener {
+            if (GO.BTT.connected) {
+                Toast.makeText(this, "Click on static text1", Toast.LENGTH_SHORT).show()
+                val volvageAk = EditText(this)
+                volvageAk.setText(GO.battLevel.toString())
+                AlertDialog.Builder(this)
+                    .setTitle("Real voltage")
+                    .setView(volvageAk) // добавляем поле ввода
+                    .setPositiveButton("Send to BluZ") { dialog, _ ->
+                    val pdTmpL = volvageAk.text.toString().toFloatOrNull() ?: 0.0f
+                    if (pdTmpL < 3.0f || pdTmpL > 4.2f) {
+                        Toast.makeText(it.context, "Incorrect voltage: ${pdTmpL}v", Toast.LENGTH_SHORT).show()
+                    } else {
+                        /*
+                        * Формат буфера для передачи
+                        *
+                        * 0,1,2         - Маркер <S>
+                        * 3             - Режим
+                        *                   0 - Настройки
+                        *                   1 - Очистка спектра в приборе
+                        *                   2 - Включение/Выключение спектрометра
+                        *                   3 - Сброс дозиметра
+                        *                   4 - Сброс логов
+                        *                   5 - Запрос истории
+                        *                   6 - Поиск прибора - включение звука и вибро
+                        *                   7 - Передача реального напряжения аккумулятора.
+                        *  4, 5, 6, 7       - Float значение
+                        *
+                        * 242, 243      - Контрольная сумма
+                        */
+                        /* Передача данных в прибор */
+                        GO.BTT.sendCommand(7u)
+
+                    }
+                }
+                .setNegativeButton("Close") { dialog, _ ->
+                    dialog.cancel()
+                }
+                .show()
+            }
+        }
         GO.txtStat2 = findViewById(R.id.textStatistic2)
         GO.txtStat3 = findViewById(R.id.textStatistic3)
         GO.txtIsotopInfo = findViewById(R.id.textIsotopInfo)
