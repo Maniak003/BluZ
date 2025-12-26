@@ -1,0 +1,4 @@
+../STM32_WPAN/Target/ll_sys_if.c:73:6:ll_sys_bg_process_init	1
+../STM32_WPAN/Target/ll_sys_if.c:84:6:ll_sys_schedule_bg_process	1
+../STM32_WPAN/Target/ll_sys_if.c:94:6:ll_sys_schedule_bg_process_isr	1
+../STM32_WPAN/Target/ll_sys_if.c:104:6:ll_sys_config_params	3

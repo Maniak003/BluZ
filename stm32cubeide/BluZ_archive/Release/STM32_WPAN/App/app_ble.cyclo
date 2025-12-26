@@ -1,0 +1,12 @@
+../STM32_WPAN/App/app_ble.c:1268:13:Ble_UserEvtRx	4
+../STM32_WPAN/App/app_ble.c:1369:13:BleStack_Process_BG	2
+../STM32_WPAN/App/app_ble.c:1394:13:BLE_ResumeFlowProcessCallback	1
+../STM32_WPAN/App/app_ble.c:1404:13:BLE_NvmCallback	2
+../STM32_WPAN/App/app_ble.c:225:6:APP_BLE_Init	21
+../STM32_WPAN/App/app_ble.c:322:28:SVCCTL_App_Notification	19
+../STM32_WPAN/App/app_ble.c:723:22:APP_BLE_Get_Server_Connection_Status	1
+../STM32_WPAN/App/app_ble.c:728:6:APP_BLE_Procedure_Gap_General	11
+../STM32_WPAN/App/app_ble.c:822:6:APP_BLE_Procedure_Gap_Peripheral	12
+../STM32_WPAN/App/app_ble.c:1424:12:BLECB_Indication	5
+../STM32_WPAN/App/app_ble.c:1464:6:NVMCB_Store	1
+../STM32_WPAN/App/app_ble.c:1476:41:APP_BLE_ComputeCRC8	5
