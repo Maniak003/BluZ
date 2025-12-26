@@ -1,0 +1,17 @@
+../Core/Src/stm32wbaxx_it.c:84:6:NMI_Handler	0	static
+../Core/Src/stm32wbaxx_it.c:99:6:HardFault_Handler	0	static
+../Core/Src/stm32wbaxx_it.c:114:6:MemManage_Handler	0	static
+../Core/Src/stm32wbaxx_it.c:129:6:BusFault_Handler	0	static
+../Core/Src/stm32wbaxx_it.c:144:6:UsageFault_Handler	0	static
+../Core/Src/stm32wbaxx_it.c:159:6:SVC_Handler	0	static
+../Core/Src/stm32wbaxx_it.c:172:6:DebugMon_Handler	0	static
+../Core/Src/stm32wbaxx_it.c:185:6:PendSV_Handler	0	static
+../Core/Src/stm32wbaxx_it.c:198:6:SysTick_Handler	0	static
+../Core/Src/stm32wbaxx_it.c:219:6:RTC_IRQHandler	8	static
+../Core/Src/stm32wbaxx_it.c:260:6:EXTI15_IRQHandler	8	static
+../Core/Src/stm32wbaxx_it.c:279:6:GPDMA1_Channel0_IRQHandler	8	static
+../Core/Src/stm32wbaxx_it.c:326:6:LPTIM1_IRQHandler	0	static
+../Core/Src/stm32wbaxx_it.c:339:6:TIM17_IRQHandler	8	static
+../Core/Src/stm32wbaxx_it.c:357:6:ADC4_IRQHandler	0	static
+../Core/Src/stm32wbaxx_it.c:370:6:RADIO_IRQHandler	8	static,ignoring_inline_asm
+../Core/Src/stm32wbaxx_it.c:392:6:HASH_IRQHandler	16	static,ignoring_inline_asm

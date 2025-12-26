@@ -1,0 +1,10 @@
+../Core/Src/main.c:135:6:NotifyAct	16	static
+../Core/Src/main.c:156:6:calcPulseLevel	0	static
+../Core/Src/main.c:499:6:SystemClock_Config	104	static,ignoring_inline_asm
+../Core/Src/main.c:563:6:PeriphCommonClock_Config	80	static,ignoring_inline_asm
+../Core/Src/main.c:898:6:MX_RTC_Init	40	static,ignoring_inline_asm
+../Core/Src/main.c:167:5:main	136	static,ignoring_inline_asm
+../Core/Src/main.c:1125:6:HAL_LPTIM_CompareMatchCallback	8	static
+../Core/Src/main.c:1145:6:HAL_LPTIM_AutoReloadMatchCallback	8	static
+../Core/Src/main.c:1163:6:HAL_LPTIM_UpdateEventCallback	8	static
+../Core/Src/main.c:1176:6:Error_Handler	0	static,ignoring_inline_asm
