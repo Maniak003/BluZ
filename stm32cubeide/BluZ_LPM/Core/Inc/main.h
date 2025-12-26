@@ -85,6 +85,7 @@ extern "C" {
 #define DEFAULTAQR		100									/* Точность дозиметра по умолчанию */
 #define SEND_DELAY		30									/* Задержка в ms между передачами MTU */
 #define DELAY_INTERVAL 10									/* Количество передач до задержке */
+#define LOW_BATT	2.9f									/* Критический уровень напряжения батареи */
 
 typedef enum spectrResolution {
 	resolution1024,
@@ -122,7 +123,7 @@ extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER];
 extern int indexDozimetrBufer;
 extern ADC_HandleTypeDef hadc4;
-extern uint64_t PL[18];
+extern uint64_t PL[19];
 extern uint32_t tmpLevel;
 extern uint32_t limitChan;
 extern double CoefChan;
@@ -135,25 +136,28 @@ typedef enum commandTx {
 	cmd_clear_dosimeter,
 	cmd_clear_logs,
 	cmd_history_request,
-	cmd_find_device
+	cmd_find_device,
+	cmd_calibrate_batt
 } commantTx_t;
 
 typedef enum logTypes {
-	nonLog,
-	powerOnLog,
-	level1Log,
-	level2Log,
-	level3Log,
-	level0Log,
-	resDozimeterLog,
-	resSpectrometerLog,
-	writeFlashLog,
-	startSpectrometerLog,
-	stopSpectrometerLog,
-	clearLog,
-	changeResolutionLog,
-	changeBitsOfChan,
-	overload
+	nonLog,						// 0
+	powerOnLog,					// 1
+	level1Log,					// 2
+	level2Log,					// 3
+	level3Log,					// 4
+	level0Log,					// 5
+	resDozimeterLog,			// 6
+	resSpectrometerLog,			// 7
+	writeFlashLog,				// 8
+	startSpectrometerLog,		// 9
+	stopSpectrometerLog,		// 10
+	clearLog,					// 11
+	changeResolutionLog,		// 12
+	changeBitsOfChan,			// 13
+	overload,					// 14
+	calibrateBatt,				// 15
+	lowBatt						// 16
 } logTypes_t;
 
 struct LG {
@@ -189,6 +193,7 @@ extern union dataC enCoefA2048, enCoefB2048, enCoefC2048;
 extern union dataC enCoefA4096, enCoefB4096, enCoefC4096;
 extern union dataA Temperature, Voltage;
 extern union dataA AvgCPS;
+extern union dataB battKoeff;
 extern uint16_t MTUSizeValue, dozimetrAquracy;
 
 uint8_t sendData( uint8_t *dataSpectrBufer );
@@ -254,6 +259,7 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define INTERVAL2 5
 #define INTERVAL3 1
 #define INTERVAL4 120
+#define INTERVAL5 60									// Интервал звукового оповещения о низком заряде аккумулятора
 
 #define SOUND_TIME_NOTIFY 4096
 #define SOUND_NOTIFY 	1

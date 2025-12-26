@@ -41,6 +41,7 @@ import kotlin.system.exitProcess
 import androidx.core.content.edit
 import android.view.ViewGroup.LayoutParams
 import androidx.core.content.ContentProviderCompat.requireContext
+import java.nio.ByteBuffer
 
 public val GO: globalObj = globalObj()
 
@@ -147,6 +148,7 @@ public class MainActivity : FragmentActivity() {
     }*/
 
 
+    @OptIn(ExperimentalUnsignedTypes::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -207,13 +209,19 @@ public class MainActivity : FragmentActivity() {
                         *                   5 - Запрос истории
                         *                   6 - Поиск прибора - включение звука и вибро
                         *                   7 - Передача реального напряжения аккумулятора.
-                        *  4, 5, 6, 7       - Float значение
+                        *  4, 5, 6, 7       - Float значение реального напряжения.
                         *
                         * 242, 243      - Контрольная сумма
                         */
                         /* Передача данных в прибор */
+                        val convVal = ByteBuffer.allocate(4).putFloat(pdTmpL).array();
+                        GO.BTT.sendBuffer[4] = convVal[0].toUByte()
+                        GO.BTT.sendBuffer[5] = convVal[1].toUByte()
+                        GO.BTT.sendBuffer[6] = convVal[2].toUByte()
+                        GO.BTT.sendBuffer[7] = convVal[3].toUByte()
                         GO.BTT.sendCommand(7u)
-
+                        GO.battLevel = pdTmpL
+                        GO.showStatistics()
                     }
                 }
                 .setNegativeButton("Close") { dialog, _ ->

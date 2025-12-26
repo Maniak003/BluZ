@@ -138,6 +138,9 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData = enCoefC4096.Uint32 | ((uint64_t)dozimetrAquracy << 32) | (((uint64_t) bitsOfChannal & 0xFF) << 48) | (((uint64_t) currentSamplingTime & 0x7) << 56);
 	PL[idxPL++] = tmpData;					// 14, 15
 
+	tmpData = battKoeff.Uint32;
+	PL[idxPL++] = tmpData;
+
 	//PL[idxPL++] = 0xDDDDDDFFCCCCCCFF;		// 16, 17
 	//PL[idxPL++] = MAGIC_KEY;		// 20, 21
 	retryCount = 0;	// Количество повторов записи
@@ -210,6 +213,7 @@ HAL_StatusTypeDef readFlash() {
 		 *	15			--	Коэффициент B пересчета канала в энергию для 4096
 		 *	16			--	Коэффициент C пересчета канала в энергию для 4096
 		 *	17			--	Количество импульсов для усреднения (uint16_t), Разрядность канала (uint8_t), Время выборки АЦП (0x7 - три бита)
+		 *	18			--  Коэффициент пересчета напряжения для аккумулятора (uint32_t)
 		 *
 		 */
 
@@ -287,6 +291,14 @@ HAL_StatusTypeDef readFlash() {
 		if (currentSamplingTime > 7) {
 			currentSamplingTime = 1;	// ADC_SAMPLETIME_3CYCLE_5
 		}
+		/* Коэффициент пересчета для аккумулятора */
+		tmpData = PL[idxPL++];
+		battKoeff.Uint32 = tmpData & 0xFFFFFFFF;
+		if (isnan(battKoeff.Float) || isinf(battKoeff.Float) || battKoeff.Float < 0.00095f || battKoeff.Float > 0.00115f) {
+			battKoeff.Float = ADC_VREF_COEF;
+		}
+
+
 	return HAL_OK;
 
 }
