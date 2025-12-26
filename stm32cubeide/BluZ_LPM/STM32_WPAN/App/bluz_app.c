@@ -427,6 +427,28 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 					/* Включение звука и вибро, для поиска прибора */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_find_device) {
 						NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 5);
+					/* Калибровка напряжения аккумулятора */
+					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_calibrate_batt) {
+						if (currVoltage == 0) {
+							battKoeff.Float = ADC_VREF_COEF;
+						} else {
+							battKoeff.Uint32 = (p_Notification->DataTransfered.p_Payload[4] << 24)
+											 | (p_Notification->DataTransfered.p_Payload[5] << 16)
+											 | (p_Notification->DataTransfered.p_Payload[6] << 8)
+											 | (p_Notification->DataTransfered.p_Payload[7]);
+							if (isnan(battKoeff.Float) || isinf(battKoeff.Float)) {
+								battKoeff.Float = ADC_VREF_COEF;
+							} else {
+								float tmpVl = battKoeff.Float / (float) currVoltage;
+								if (tmpVl < 0.00095f || tmpVl > 0.00115f) {
+									battKoeff.Float = ADC_VREF_COEF;
+								} else {
+									battKoeff.Float = tmpVl;
+									writeFlash();
+									logUpdate(calibrateBatt);
+								}
+							}
+						}
 					}
 				} else {
 				}

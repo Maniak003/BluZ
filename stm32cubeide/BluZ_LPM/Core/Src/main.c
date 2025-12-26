@@ -77,7 +77,7 @@ int logIndex = 0;	/* Текущий указатель на буфер лога 
 char uartBuffer[400] = {0,};
 struct LG logBuffer[LOG_BUFER_SIZE];
 /* Буфер для работы с flash */
-uint64_t PL[18] = {0,};
+uint64_t PL[19] = {0,};
 spectrResolution_t resolutionSpecter = resolution1024;
 uint8_t repetionCount = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
 uint8_t bitsOfChannal;	// Разрядность канала
@@ -121,7 +121,10 @@ union dataC enCoefA2048, enCoefB2048, enCoefC2048;					// Коэффициент
 union dataC enCoefA4096, enCoefB4096, enCoefC4096;					// Коэффициенты полинома для преобразования канала в энергию для 4096
 union dataA Temperature, Voltage;									// Температура и напряжение батареи
 union dataA AvgCPS;													// Средний CPS за время с последнего старта.
+union dataB battKoeff;
 
+uint8_t	low_batt_count = 0;											// Счетчик низкого уровня батареии
+uint32_t batt_time_counter = 0;										// ИНтервал звукового оповещения о низком заряде аккумулятора
 uint16_t HVoltage = 256, comparatorLevel = 256;						// Уровни настройки высокого напряжения и компаратора
 
 uint8_t notifyFlags = 0;											// 1 - Звук, 2 - Вибро, 4 - Led
@@ -645,7 +648,7 @@ int main(void)
 	  */
 	  Temperature.Float = TK1 * (float) currTemperature + TK2;
 	  //Temperature.Float = (float) currTemperature;
-	  Voltage.Float = currVoltage * ADC_VREF_COEF;
+	  Voltage.Float = currVoltage * battKoeff.Float;
 	  //Voltage.Float = 4.2;
 
 	  /* Сохранение температуры в буфер для передачи */
@@ -1423,6 +1426,21 @@ void updateMesurment(void) {
 		if (interval4 <= intervalNow) {
 			interval4 = intervalNow + INTERVAL4;
 			TVMeasure();
+			if ((float) currVoltage * battKoeff.Float > LOW_BATT) {
+				low_batt_count = 0;
+			} else {
+				low_batt_count++;
+				if (low_batt_count == 2) {
+					logUpdate(lowBatt);
+				}
+
+			}
+		}
+		if (low_batt_count > 1) {
+			if (batt_time_counter <= intervalNow) {
+				batt_time_counter = intervalNow + INTERVAL5;
+				NotifyAct(SOUND_NOTIFY, 1);
+			}
 		}
 	}
 }
@@ -1450,7 +1468,7 @@ void TVMeasure(void) {
 		HAL_ADC_DeInit(&hadc4);											// Для снижения потребления
 	} else {
 		/* Измерение температуры и напряжения в режиме спектрометра */
-		sendDataTypes_t tmp_data_type = dataType;								// Сохраним текущий режим.
+		sendDataTypes_t tmp_data_type = dataType;						// Сохраним текущий режим.
 		HAL_ADC_Stop_DMA(&hadc4);										// Отключим набор спектра
 		HAL_ADC_DeInit(&hadc4);
 		dataType = onlyDozimeter;

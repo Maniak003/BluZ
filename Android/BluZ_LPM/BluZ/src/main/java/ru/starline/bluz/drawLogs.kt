@@ -91,7 +91,9 @@ class drawLogs {
     *   10 -    останов спектрометра
     *   11 -    Очистка лога
     *   12 -    Сброс спектрометра при переключении разрешения
-    *   13 -    Перегрузка
+    *   13 -    Изменение количества бит в канале
+    *   14 -    Перегрузка
+    *   15 -    Калибровка аккумулятора
     */
     fun updateLogs() {
         logsText.text = ""
@@ -115,7 +117,10 @@ class drawLogs {
                     10 -> eventStr = "Stop spectrometer"
                     11 -> eventStr = "Clear logs"
                     12 -> eventStr = "Change resolution"
-                    13 -> eventStr = "<font color=#FF2EE8>Overload"
+                    13 -> eventStr = "Change bits of chan"
+                    14 -> eventStr = "<font color=#FF2EE8>Overload"
+                    15 -> eventStr = "Calibrate Batt"
+                    16 -> eventStr = "<font color=#FF2EE8>Low battery"
                     else -> eventStr = "Unknown: ${logData[idx].act.toInt()}"
                 }
                 //Log.i("BluZ-BT", "LT: " + GO.messTm.toString())

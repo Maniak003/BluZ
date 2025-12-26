@@ -502,10 +502,13 @@ class globalObj {
         /*
         *   Вывод первой строки статистики
         */
+        /* Уровень сигнала */
         var str_rssi = ""
         if (GO.Current_RSSI > -400) {
             str_rssi = String.format(" %sdBm ", GO.Current_RSSI.toString())
         }
+
+        /* Напряжение батареи */
         if (GO.battLevel < 3.0f) {  // Уровень батареи низкий
             GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C ${str_rssi}<font color=#C80000> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
         } else if (GO.battLevel < 3.5f) { // Уровнь батареи ниже 50%
