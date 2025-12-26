@@ -1,2 +1,0 @@
-../System/Interfaces/hw_otp.c:26:5:HW_OTP_Read	8	static
-../System/Interfaces/hw_otp.c:53:5:HW_OTP_Write	32	static
