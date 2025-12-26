@@ -1,7 +1,0 @@
-../System/Modules/crc_ctrl.c:254:19:CrcConfigure	4
-../System/Modules/crc_ctrl.c:301:29:CRCCTRL_MutexTake	1
-../System/Modules/crc_ctrl.c:306:29:CRCCTRL_MutexRelease	1
-../System/Modules/crc_ctrl.c:71:29:CRCCTRL_Init	2
-../System/Modules/crc_ctrl.c:93:29:CRCCTRL_RegisterHandle	4
-../System/Modules/crc_ctrl.c:129:29:CRCCTRL_Calculate	10
-../System/Modules/crc_ctrl.c:187:29:CRCCTRL_Accumulate	10

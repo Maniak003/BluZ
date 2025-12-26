@@ -1,3 +1,0 @@
-../System/Modules/Flash/flash_driver.c:49:6:FD_SetStatus	8	static,ignoring_inline_asm
-../System/Modules/Flash/flash_driver.c:80:21:FD_WriteData	8	static
-../System/Modules/Flash/flash_driver.c:106:21:FD_EraseSectors	24	static

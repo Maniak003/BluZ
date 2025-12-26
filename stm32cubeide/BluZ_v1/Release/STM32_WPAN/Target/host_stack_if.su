@@ -1,2 +1,0 @@
-../STM32_WPAN/Target/host_stack_if.c:57:6:BleStackCB_Process	0	static
-../STM32_WPAN/Target/host_stack_if.c:38:6:HostStack_Process	0	static

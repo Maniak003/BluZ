@@ -1,3 +1,0 @@
-../System/Modules/baes/baes_cmac.c:48:13:BAES_CmacKeyRoll	1
-../System/Modules/baes/baes_cmac.c:87:6:BAES_CmacSetKey	1
-../System/Modules/baes/baes_cmac.c:123:6:BAES_CmacCompute	10
