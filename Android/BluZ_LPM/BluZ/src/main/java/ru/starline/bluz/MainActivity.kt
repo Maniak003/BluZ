@@ -10,6 +10,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -17,6 +18,7 @@ import android.provider.Settings
 import android.text.InputType
 import android.util.Log
 import android.view.KeyEvent
+import android.view.OrientationEventListener
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
@@ -50,6 +52,8 @@ public val GO: globalObj = globalObj()
 public var PI: Int = 0
 
 public class MainActivity : FragmentActivity() {
+    private lateinit var orientationListener: OrientationEventListener
+    private var isReversed = false
 
     /* Отслеживание нажатия на кнопки громкости */
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -77,6 +81,13 @@ public class MainActivity : FragmentActivity() {
         }
     }
 
+    /* Переход в паузу*/
+    override fun onPause() {
+        super.onPause()
+        orientationListener.disable() // ←←← Освобождаем ресурсы
+    }
+
+
     /* Восстановление приложения */
     override fun onResume() {
         super.onResume()
@@ -98,6 +109,8 @@ public class MainActivity : FragmentActivity() {
             Log.d("BluZ-BT", "Service not running")
             GO.drawLOG.appendAppLogs("Service not running.", 4)
         }
+        /* Переключение ориентации экрана */
+        //orientationListener.enable()
     }
 
     /* Проверка активности сервиса */
@@ -156,6 +169,7 @@ public class MainActivity : FragmentActivity() {
             GO.drawLOG.appendAppLogs("Second create !", 0)
         }
         GO.mainContext = applicationContext
+        val mainLayout = findViewById<View>(R.id.main)
         /* Использование всего экрана, место занятое челкой, тоже используется. */
         //enableEdgeToEdge()
         //enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(Color. TRANSPARENT, Color. TRANSPARENT), navigationBarStyle = SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim))
@@ -182,6 +196,28 @@ public class MainActivity : FragmentActivity() {
         GO.viewPager.adapter = GO.adapter
         GO.bColor = buttonColor()
         GO.txtStat1 = findViewById(R.id.textStatistic1)
+
+        /* Обработка сенсора ориентации */
+        orientationListener = object : OrientationEventListener(this, SensorManager.SENSOR_DELAY_UI) {
+            override fun onOrientationChanged(orientation: Int) {
+                if (orientation == OrientationEventListener.ORIENTATION_UNKNOWN) return
+
+                // Определяем, в каком ландшафтном положении устройство
+                val shouldReverse = when {
+                    orientation in 45..134 -> true   // обычный landscape (левый торец внизу)
+                    orientation in 225..314 -> false   // landscape reversed (правый торец внизу)
+                    else -> return // игнорируем портрет и промежуточные углы
+                }
+
+                if (shouldReverse != isReversed) {
+                    isReversed = shouldReverse
+                    mainLayout.rotation = if (shouldReverse) 180f else 0f
+                    Log.i("BluZ-BT", "Landscape reversed: $shouldReverse")
+                }
+            }
+        }
+
+
         /* Событие нажатия на текст для калибровки аккумулятора */
         GO.txtStat1.setOnClickListener {
             if (GO.BTT.connected) {
@@ -482,7 +518,6 @@ public class MainActivity : FragmentActivity() {
             enableEdgeToEdge()
         }
         //val activity = requireActivity()
-        val mainLayout = findViewById<View>(R.id.main)
         mainLayout.setPadding(GO.paddingLeft, mainLayout.paddingTop, GO.paddingRight, mainLayout.paddingBottom)
         /* Загрузка справочника изотопов */
         GO.loadIsotop()
