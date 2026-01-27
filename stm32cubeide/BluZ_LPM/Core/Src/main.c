@@ -1523,9 +1523,9 @@ void vibroActivate(void) {
 		HAL_LPTIM_PWM_Start(&hlptim2, LPTIM_CHANNEL_2);		// Включение звука.
 	}
 	if (vibroFlag || soundFlag) {
-		UTIL_TIMER_Start(&(timerVibroOff));					// Таймер для отключения (vibroActivateOff()) звука/вибро.
+		UTIL_TIMER_Start(&timerVibroOff);					// Таймер для отключения (vibroActivateOff()) звука/вибро.
 		if (--repetionCount > 0) {
-			UTIL_TIMER_Start(&(timerVibro));				// Повторный вызов (vibroActivate()) для включения звука/вибро.
+			UTIL_TIMER_Start(&timerVibro);				// Повторный вызов (vibroActivate()) для включения звука/вибро.
 		} else {
 			vibroFlag = false;
 			soundFlag = false;
@@ -1542,14 +1542,15 @@ void ledActivate(void) {
 /* Таймер для формирование щелчка */
 void tickSoundDeactivate(void) {
 	SOUND_GPIO_Port->BRR = (uint32_t) SOUND_Pin;
-    uint32_t tmp;
+    //uint32_t tmp;
 
     /* MODER: PA1 = 10b (AF) */
-    tmp = SOUND_GPIO_Port->MODER;
-    tmp &= ~GPIO_MODER_MODE1_Msk;          // clear MODE1[1:0]
-    tmp |=  (2U << GPIO_MODER_MODE1_Pos);  // AF mode
-    SOUND_GPIO_Port->MODER = tmp;
+    //tmp = SOUND_GPIO_Port->MODER;
+    //tmp &= ~GPIO_MODER_MODE1_Msk;          // clear MODE1[1:0]
+    //tmp |=  (2U << GPIO_MODER_MODE1_Pos);  // AF mode
+    //SOUND_GPIO_Port->MODER = tmp;
 
+    SOUND_GPIO_Port->MODER = (SOUND_GPIO_Port->MODER & ~GPIO_MODER_MODE1_Msk) | (2U << GPIO_MODER_MODE1_Pos);
     /* OTYPER: push-pull (0) */
     SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
 
@@ -1560,11 +1561,12 @@ void tickSoundDeactivate(void) {
     SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
 
     /* AFR[0]: AF13 для PA1 (биты 4...7) */
-    tmp = SOUND_GPIO_Port->AFR[0];
-    tmp &= ~(0xF << GPIO_AFRL_AFSEL1_Pos);
-    tmp |=  (13U << GPIO_AFRL_AFSEL1_Pos);
-    SOUND_GPIO_Port->AFR[0] = tmp;
+    //tmp = SOUND_GPIO_Port->AFR[0];
+    //tmp &= ~(0xF << GPIO_AFRL_AFSEL1_Pos);
+    //tmp |=  (13U << GPIO_AFRL_AFSEL1_Pos);
+    //SOUND_GPIO_Port->AFR[0] = tmp;
 
+    SOUND_GPIO_Port->AFR[0] = (SOUND_GPIO_Port->AFR[0] & ~(0xF << GPIO_AFRL_AFSEL1_Pos)) | (13U << GPIO_AFRL_AFSEL1_Pos);
     /* разрешить выход LPTIM2_CH2 (CC2E) */
     LPTIM2->CR |= (1U << 16);   // бит CC2E
 }
@@ -1584,7 +1586,11 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
 	  pulseCounterSecond++;				// Количество импульсов за последнюю секунду
 		/* Оповещение об импульсе */
 	  if (LEDEnable) {
-		  NotifyAct(LED_NOTIFY, 0);
+		  if (LED_GPIO_Port->IDR & LED_Pin) {	// Исправление переполнения очереди задач.
+			  LED_GPIO_Port->BRR = (uint32_t) LED_Pin;
+		  } else {
+			  NotifyAct(LED_NOTIFY, 0);
+		  }
 	  } else { // Принудительно отключит светодиод если выключена нотификация.
 		  LED_GPIO_Port->BRR = (uint32_t) LED_Pin;
 	  }
@@ -1595,29 +1601,31 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
 
 		  //HAL_LPTIM_OnePulse_Start(&hlptim2, LPTIM_CHANNEL_2);
 		  /* Переконфигурируем пин в обычный выход */
-		  uint32_t tmp;
+		  //uint32_t tmp;
 
 		  /* MODER: PA1 = 01b (output) */
-		  tmp  = SOUND_GPIO_Port->MODER;
-		  tmp &= ~GPIO_MODER_MODE1_Msk;          // clear bits 2:3
-		  tmp |=  (1U << GPIO_MODER_MODE1_Pos);  // 01 = output
-		  SOUND_GPIO_Port->MODER = tmp;
+		  //tmp  = SOUND_GPIO_Port->MODER;
+		  //tmp &= ~GPIO_MODER_MODE1_Msk;          // clear bits 2:3
+		  //tmp |=  (1U << GPIO_MODER_MODE1_Pos);  // 01 = output
+		  //SOUND_GPIO_Port->MODER = tmp;
 
+		  SOUND_GPIO_Port->MODER = (SOUND_GPIO_Port->MODER & ~GPIO_MODER_MODE1_Msk) | (1U << GPIO_MODER_MODE1_Pos);
 		  /* OTYPER: push-pull (0) */
 		  SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
 
 		  /* OSPEEDR: high speed (11b) */
-		  tmp  = SOUND_GPIO_Port->OSPEEDR;
-		  tmp &= ~GPIO_OSPEEDR_OSPEED1_Msk;
-		  tmp |=  (3U << GPIO_OSPEEDR_OSPEED1_Pos);
-		  SOUND_GPIO_Port->OSPEEDR = tmp;
+		  //tmp  = SOUND_GPIO_Port->OSPEEDR;
+		  //tmp &= ~GPIO_OSPEEDR_OSPEED1_Msk;
+		  //tmp |=  (3U << GPIO_OSPEEDR_OSPEED1_Pos);
+		  //SOUND_GPIO_Port->OSPEEDR = tmp;
 
+		  SOUND_GPIO_Port->OSPEEDR = (SOUND_GPIO_Port->OSPEEDR & ~GPIO_OSPEEDR_OSPEED1_Msk) | (3U << GPIO_OSPEEDR_OSPEED1_Pos);
 		  /* PUPDR: no pull (00b) */
 		  SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
 
 		  SOUND_GPIO_Port->BSRR = (uint32_t) SOUND_Pin;
-		  UTIL_TIMER_Stop(&(timerTick));
-		  UTIL_TIMER_Start(&(timerTick));
+		  UTIL_TIMER_Stop(&timerTick);
+		  UTIL_TIMER_Start(&timerTick);
 	  }
 	  /* Расчет с учетом точности */
 	  if (edgeCounter++ >= dozimetrAquracy) {
