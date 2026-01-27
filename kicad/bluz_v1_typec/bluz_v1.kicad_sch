@@ -16603,7 +16603,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "Buzzer"
+		(property "Value" "MLT-5020"
 			(at 141.478 113.8991 0)
 			(effects
 				(font
@@ -16827,7 +16827,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "VibroMotor"
+		(property "Value" "Z3OC1T8219731"
 			(at 166.37 116.8401 0)
 			(effects
 				(font
