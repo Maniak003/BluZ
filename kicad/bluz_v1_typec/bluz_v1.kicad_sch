@@ -14914,7 +14914,7 @@
 				)
 			)
 		)
-		(property "Value" "BAS16"
+		(property "Value" "BAS16J"
 			(at 171.45 36.195 0)
 			(effects
 				(font
