@@ -29,6 +29,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ProgressBar
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.SeekBar
@@ -73,6 +74,9 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 const val ARG_OBJECT = "oblect"
 
@@ -516,6 +520,7 @@ class NumberFragment : Fragment() {
                 val CBSMA: CheckBox = view.findViewById(R.id.cbSMA)
                 val CBMEDIAN: CheckBox = view.findViewById(R.id.cbMED)
                 val CBMLEM: CheckBox = view.findViewById(R.id.cbMLEM)
+                val pbMLEM: ProgressBar = view.findViewById(R.id.pbMLEM)
 
                 /*
                 *   Калибровка
@@ -530,6 +535,7 @@ class NumberFragment : Fragment() {
                         GO.txtStat1.visibility = View.INVISIBLE
                         GO.txtStat2.visibility = View.INVISIBLE
                         GO.txtStat3.visibility = View.INVISIBLE
+                        GO.txtCompMED.visibility = View.INVISIBLE
                         GO.viewPager.setCurrentItem(4, false)
                         GO.bColor.resetToDefault()
                         GO.bColor.setToActive(GO.btnSetup)
@@ -602,20 +608,47 @@ class NumberFragment : Fragment() {
                     if (isChecked) {
                         Log.i("BluZ-BT", "Start MLEM")
                         if (GO.propButtonInit) {
-                            val unfolder = MLEM(GO.drawSPECTER.ResolutionSpectr)
+                            //CBMLEM.isVisible = false
                             //val unfolder = FastMLEM(GO.drawSPECTER.ResolutionSpectr)
-                            GO.drawSPECTER.mlemBuffer = unfolder.unfoldSpectrum(GO.drawSPECTER.spectrData, iterations = 25)
-                            GO.drawSPECTER.flagMLEM = true /* Массив подготовлен и может прорисовываться */
-                            /* Расчитаем МЭД */
-                            val spTime = GO.spectrometerTime.toDouble()
-                            GO.compMED = unfolder.calculateExposureRate(
-                                GO.drawSPECTER.mlemBuffer,
-                                spTime
-                            ).toFloat()
+                            /* Выполнять будем в фоне */
+                            CoroutineScope(Dispatchers.Default).launch {
+                                withContext(Dispatchers.Main.immediate) {
+                                    CBMLEM.isVisible = false
+                                    pbMLEM.max = 25
+                                    pbMLEM.progress = 0
+                                    pbMLEM.isVisible = true
+                                }
+                                val unfolder = MLEM(GO.drawSPECTER.ResolutionSpectr)
+                                GO.drawSPECTER.mlemBuffer = unfolder.unfoldSpectrum(
+                                    GO.drawSPECTER.spectrData,
+                                    iterations = 26
+                                ) { progress ->
+                                    withContext(Dispatchers.Main) {
+                                        pbMLEM.progress = progress
+                                    }
+                                }
+                                GO.drawSPECTER.flagMLEM = true /* Массив подготовлен и может прорисовываться */
+                                /* Расчитаем МЭД */
+                                val spTime = GO.spectrometerTime.toDouble()
+                                GO.compMED = unfolder.calculateExposureRate(
+                                    GO.drawSPECTER.mlemBuffer,
+                                    spTime
+                                ).toFloat()
+                                /* В основном контексте */
+                                withContext(Dispatchers.Main) {
+                                    if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
+                                        GO.drawSPECTER.clearSpecter()
+                                        GO.drawSPECTER.redrawSpecter(GO.specterType)
+                                    }
+                                    pbMLEM.isVisible = false
+                                    CBMLEM.isVisible = true
+                                }
+                            }
                         }
                         Log.i("BluZ-BT", "Finish MLEM")
                     } else {
                         GO.drawSPECTER.flagMLEM = false /* Отключим прорисовку */
+                        GO.txtCompMED.visibility = View.INVISIBLE
                     }
                     if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                         GO.drawSPECTER.clearSpecter()

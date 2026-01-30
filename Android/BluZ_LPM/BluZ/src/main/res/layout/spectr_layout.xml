@@ -166,6 +166,17 @@
                     android:text="MLEM"
                     android:textColor="@color/labelTextColor2" />
             </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/pbMLEM"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:progressBackgroundTint="@color/buttonColor"
+                android:progressTint="@color/buttonTextColor"
+                android:max="25"
+                android:progress="0"
+                android:visibility="invisible" />
         </LinearLayout>
 
     </LinearLayout>

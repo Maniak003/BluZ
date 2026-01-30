@@ -420,6 +420,7 @@ public class MainActivity : FragmentActivity() {
             GO.txtStat2.visibility = View.VISIBLE
             GO.txtStat3.visibility = View.VISIBLE
             GO.txtIsotopInfo.visibility = View.VISIBLE
+            GO.txtCompMED.visibility = View.VISIBLE
             GO.viewPager.setCurrentItem(0, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnSpecter)
@@ -435,6 +436,7 @@ public class MainActivity : FragmentActivity() {
             GO.txtStat2.visibility = View.VISIBLE
             GO.txtStat3.visibility = View.VISIBLE
             GO.txtIsotopInfo.visibility = View.VISIBLE
+            GO.txtCompMED.visibility = View.INVISIBLE
             GO.viewPager.setCurrentItem(1, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnHistory)
@@ -450,6 +452,7 @@ public class MainActivity : FragmentActivity() {
             GO.txtStat2.visibility = View.VISIBLE
             GO.txtStat3.visibility = View.VISIBLE
             GO.txtIsotopInfo.visibility = View.INVISIBLE
+            GO.txtCompMED.visibility = View.INVISIBLE
             GO.viewPager.setCurrentItem(2, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnDozimeter)
@@ -472,6 +475,7 @@ public class MainActivity : FragmentActivity() {
             GO.txtStat2.visibility = View.INVISIBLE
             GO.txtStat3.visibility = View.INVISIBLE
             GO.txtIsotopInfo.visibility = View.INVISIBLE
+            GO.txtCompMED.visibility = View.INVISIBLE
             GO.viewPager.setCurrentItem(3, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(btnLog)
@@ -488,6 +492,7 @@ public class MainActivity : FragmentActivity() {
             GO.txtStat2.visibility = View.INVISIBLE
             GO.txtStat3.visibility = View.INVISIBLE
             GO.txtIsotopInfo.visibility = View.INVISIBLE
+            GO.txtCompMED.visibility = View.INVISIBLE
             GO.viewPager.setCurrentItem(4, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(GO.btnSetup)
@@ -501,6 +506,7 @@ public class MainActivity : FragmentActivity() {
             GO.txtStat2.visibility = View.INVISIBLE
             GO.txtStat3.visibility = View.INVISIBLE
             GO.txtIsotopInfo.visibility = View.INVISIBLE
+            GO.txtCompMED.visibility = View.INVISIBLE
             GO.viewPager.setCurrentItem(5, false)
             GO.bColor.resetToDefault()
             GO.bColor.setToActive(GO.btnMap)
