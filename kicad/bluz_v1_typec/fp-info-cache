@@ -1,4 +1,4 @@
-26173275493957653
+26189191796459412
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -104181,6 +104181,13 @@ CSPG-6_L1.6-W1.0-P0.50-TL_MLPF-WB-04D3
 6
 6
 easyeda2kicad
+LCD-SMD_N069-9616TSWPG02-H14
+
+
+0
+14
+14
+easyeda2kicad
 LED-ARRAY-SMD_0603-4P-L1.6-W1.5-BR-RD
 
 
@@ -104188,12 +104195,61 @@ LED-ARRAY-SMD_0603-4P-L1.6-W1.5-BR-RD
 4
 4
 easyeda2kicad
+OLED-SMD_14P-P0.62_X091-2832TSWFG02-H14
+
+
+0
+14
+14
+easyeda2kicad
+OLED-SMD_X049-6432TSWPG02-H14
+
+
+0
+14
+14
+easyeda2kicad
+OLED-SMD_X096-2864KLBAG01-H30
+
+
+0
+30
+30
+easyeda2kicad
+OLED-SMD_X096-2864KSWPG01-H30
+
+
+0
+30
+30
+easyeda2kicad
+OLED_0.96-30P-P0.70-12864
+
+
+0
+32
+30
+easyeda2kicad
+OSC-SMD_3P-L3.2-W1.3-P0.95-L
+
+
+0
+3
+3
+easyeda2kicad
 SC-70-5_L2.1-W1.3-P0.65-LS2.2-BR
 
 
 0
 5
 5
+easyeda2kicad
+SMD_LD-SM-430-1
+
+
+0
+3
+3
 easyeda2kicad
 SOIC-8_L4.9-W3.9-P1.27-LS6.0-BL
 
@@ -104236,6 +104292,13 @@ UFQFN-48_L7.0-W7.0-P0.50-TL-EP5.6
 0
 49
 49
+easyeda2kicad
+VIBRATING-MOTOR-SMD_3P-C9900001680
+
+
+0
+3
+3
 easyeda2kicad
 XFMR-SMD_ATB322515-0110-T000
 
