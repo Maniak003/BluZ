@@ -31,13 +31,13 @@ class MLEM(private val nChannels: Int) {
     }
 
     /* MLEM деконволюция */
-    fun unfoldSpectrum(measured: DoubleArray, iterations: Int = 25): DoubleArray {
+    suspend fun unfoldSpectrum(measured: DoubleArray, iterations: Int = 25, onProgress: suspend (Int) -> Unit = {}): DoubleArray {
         require(measured.size == nChannels) { "Размер спектра != $nChannels" }
 
         // Вычитание фона
         val background = snipBackground(measured)
         val cleaned = DoubleArray(nChannels) { maxOf(0.0, measured[it] - background[it]) }
-
+        onProgress(1)
         // Инициализация
         var S = DoubleArray(nChannels) { 1.0 }
         for (iter in 0 until iterations) {
@@ -61,6 +61,7 @@ class MLEM(private val nChannels: Int) {
 
             // Обновление
             S = DoubleArray(nChannels) { S[it] * correction[it] }
+            onProgress(iter + 2)
         }
         return S
     }
