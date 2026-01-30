@@ -196,6 +196,7 @@ public class MainActivity : FragmentActivity() {
         GO.viewPager.adapter = GO.adapter
         GO.bColor = buttonColor()
         GO.txtStat1 = findViewById(R.id.textStatistic1)
+        GO.txtCompMED = findViewById(R.id.textCOMPMED)
 
         /* Обработка сенсора ориентации */
         orientationListener = object : OrientationEventListener(this, SensorManager.SENSOR_DELAY_UI) {

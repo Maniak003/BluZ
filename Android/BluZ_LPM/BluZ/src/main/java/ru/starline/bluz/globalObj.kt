@@ -139,6 +139,7 @@ class globalObj {
     public lateinit var txtStat1: TextView
     public lateinit var txtStat2: TextView
     public lateinit var txtStat3: TextView
+    public lateinit var txtCompMED: TextView
     public lateinit var txtIsotopInfo: TextView         // Текст для вывода данных об изотопе
     public var configDataReady: Boolean = false         // Флаг готовности параметров из прибора
     public var propButtonInit: Boolean = false          // Флаг активности изменения состояния переключателей
@@ -328,6 +329,7 @@ class globalObj {
     public var spectrometerTime:UInt = 0u           // Время работы спектрометра
     public var spectrometerPulse: UInt = 0u         // Количество импульсов от спектрометра
     public var battLevel: Float = 0.0f              // Уровень батареии
+    public var compMED: Float = 0.0f                // Компенсированный МЭД
     public var tempMC: Float = 0.0f                 // Температура МК
     public var pulsePerSec: UInt = 0u               // CPS за короткий интервал.
     public var rejectChann: Int = 10                // Количество каналов от начала, не отображаемых на гистограмме
@@ -535,6 +537,11 @@ class globalObj {
             pulseS = GO.PCounter.toInt()
         }
         GO.txtStat2.setText(String.format("Total:%d(%.2f%%) Avg:%.2f", pulseS, aquracy3S, cpsS))
+        if (GO.compMED > 0) {
+            GO.txtCompMED.setText(String.format("EDR: %.2fuR/h", GO.compMED))
+        } else {
+            GO.txtCompMED.text = ""
+        }
     }
 
     /*

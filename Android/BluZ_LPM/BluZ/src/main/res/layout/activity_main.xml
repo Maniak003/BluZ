@@ -96,6 +96,15 @@
                         android:textColor="@color/labelTextColor2"
                         android:textSize="12sp" />
 
+                    <TextView
+                        android:id="@+id/textCOMPMED"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0"
+                        android:gravity="center_horizontal"
+                        android:textColor="@color/buttonColor"
+                        android:textSize="12sp" />
+
                 </LinearLayout>
 
                 <Button
