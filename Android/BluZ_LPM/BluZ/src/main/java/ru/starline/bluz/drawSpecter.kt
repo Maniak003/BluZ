@@ -29,13 +29,17 @@ class drawSpecter {
     private lateinit var specBitmap: Bitmap
     private lateinit var specCanvas: Canvas
     public lateinit var imgView : ImageView
+    public var mlemBuffer = DoubleArray(4096)
     public var spectrData: DoubleArray = DoubleArray(4096)
     public var tmpSpecterData: DoubleArray = DoubleArray(4096)
     public var flagSMA: Boolean = false
     public var flagMEDIAN: Boolean = false
+    public var flagMLEM: Boolean = false
     public var ResolutionSpectr: Int = 1024;
     public var koefLog: Double = 1.0
     public var koefLin: Double = 1.0
+    public var koefLinMLEM: Double = 1.0
+    public var koefLogMLEM: Double = 1.0
     public var xSize: Double = 1.0
     private var MF: DoubleArray = DoubleArray(3)
     private var indexMF: Int = 0
@@ -74,6 +78,8 @@ class drawSpecter {
         //Log.d("BluZ-BT", "Draw specter.")
         var paintLin: Paint = Paint()
         var paintLog: Paint = Paint()
+        var paintFoneLin = Paint()
+        var paintFoneLog = Paint()
 
         /*
          *  Подготовка массива для отрисовки данных
@@ -115,21 +121,40 @@ class drawSpecter {
         xSize = HSize.toDouble() / ResolutionSpectr
         paintLin.strokeWidth = xSize.toFloat()
         paintLog.strokeWidth = xSize.toFloat()
+        paintFoneLin.strokeWidth = xSize.toFloat() * 2
+        paintFoneLog.strokeWidth = xSize.toFloat() * 2
 
         if (GO.specterGraphType == 0) {         // Линейный стиль графика
             paintLin.color = GO.ColorLin        // Цвет для отображения линейного спектра
             paintLog.color = GO.ColorLog        // Цвет для отображения логарифмического спектра
+            paintFoneLin.color = GO.ColorFone
+            paintFoneLog.color = GO.ColorFoneLg
         } else {                                // Стиль гистограмма
             paintLin.color = GO.ColorLinGisto   // Цвет для отображения линейного спектра
             paintLog.color = GO.ColorLogGisto   // Цвет для отображения логарифмического спектра
+            paintFoneLin.color = GO.ColorFoneGisto
+            paintFoneLog.color = GO.ColorFoneLgGisto
         }
         var oldYlin: Double = VSize.toDouble()
         var oldYlog: Double = VSize.toDouble()
+        var oldMLEMLin: Double = VSize.toDouble()
+        var oldMLEMLog: Double = VSize.toDouble()
         var oldX: Double = 0.0
         var maxYlin: Double = 0.0
         var maxYlog: Double = 0.0
-        var tmpLog: Double
+        //var tmpLog: Double
+        var maxMLEMLin: Double = 0.0
+        var maxMLENLog: Double = 0.0
 
+        /* Поиск максимального значения массива MLEM */
+        if (flagMLEM) { // Массив готов и можно прорисовывать
+            for(idxm in GO.rejectChann until ResolutionSpectr) {
+                if (maxMLEMLin < mlemBuffer[idxm]) {
+                    maxMLEMLin = mlemBuffer[idxm]
+                }
+            }
+            maxMLENLog = ln(maxMLEMLin)
+        }
         /* Поиск максимального значения для масштабирования */
         for (idx in GO.rejectChann .. ResolutionSpectr - 1) {
             if (maxYlin < tmpSpecterData[idx]) {
@@ -144,9 +169,14 @@ class drawSpecter {
         //Log.d("BluZ-BT", "MAX: : $maxYlin")
         koefLin = VSize / maxYlin
         koefLog = VSize / maxYlog
+        koefLinMLEM = VSize / maxMLEMLin
+        koefLogMLEM = VSize / maxMLENLog
+        var YLinMLEM: Float = 0f
+        var YLogMLEM: Float = 0f
         var Ylin: Float
         var Ylog: Float
         for (idx in 0 until ResolutionSpectr) {
+            /* Подготовка данных спектра */
             Ylin = (VSize - tmpSpecterData[idx] * koefLin).toFloat()
             if (tmpSpecterData[idx] != 0.0) {
                 Ylog = (VSize - ln(tmpSpecterData[idx]) * koefLog).toFloat()
@@ -185,8 +215,40 @@ class drawSpecter {
                 /* Логарифмический график */
                 specCanvas.drawLine((idx * xSize).toFloat(), Ylog, (idx * xSize).toFloat(),VSize.toFloat(), paintLog )
             }
+
+            /* Прорисовка MLEM необходима */
+            if (flagMLEM) {
+                YLinMLEM = (VSize - mlemBuffer[idx] * koefLinMLEM).toFloat()
+                if (mlemBuffer[idx] != 0.0) {
+                    YLogMLEM = (VSize - ln(mlemBuffer[idx]) * koefLogMLEM).toFloat()
+                } else {
+                    YLogMLEM = VSize.toFloat()
+                }
+                if ( ! (oldMLEMLin == VSize.toDouble() && mlemBuffer[idx] == 0.0)) {
+                    /* Линейный график */
+                    specCanvas.drawLine(
+                        (oldX * xSize).toFloat(),       // Начальный X
+                        oldMLEMLin.toFloat(),           // Начальный Y
+                        (idx * xSize).toFloat(),        // Конечный X
+                        YLinMLEM,                       // Конечный Y
+                        paintFoneLin
+                    )
+                }
+                /* Прорисовка логарифмического графика */
+                if ( ! (oldMLEMLog == VSize.toDouble() /*&& spectrData[idx] == 0.0*/ && YLogMLEM == VSize.toFloat())) {
+                    specCanvas.drawLine(
+                        (oldX * xSize).toFloat(),       // Начальный X
+                        oldMLEMLog.toFloat(),           // Начальный Y
+                        (idx * xSize).toFloat(),        // Конечный X
+                        YLogMLEM,                       // Конечный Y
+                        paintFoneLog
+                    )
+                }
+            }
             oldYlin = Ylin.toDouble()
             oldYlog = Ylog.toDouble()
+            oldMLEMLin = YLinMLEM.toDouble()
+            oldMLEMLog = YLogMLEM.toDouble()
             oldX = idx.toDouble()
         }
         /* Тестовая диния */

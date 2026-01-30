@@ -1,5 +1,6 @@
 package ru.starline.bluz
 
+import FastMLEM
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -503,7 +504,7 @@ class NumberFragment : Fragment() {
                 GO.drawSPECTER.imgView.setOnTouchListener { _, event ->
                     val x: Float = event.x
                     val y: Float = event.y
-                    if ((event.getAction() == MotionEvent.ACTION_DOWN)|| (event.getAction() == MotionEvent.ACTION_MOVE)) {
+                    if ((event.action == MotionEvent.ACTION_DOWN)|| (event.action == MotionEvent.ACTION_MOVE)) {
                         if ((GO.drawCURSOR.oldX != x) /*|| (GO.drawCURSOR.oldY != y)*/)  {
                             GO.drawCURSOR.showCorsor(x, y)
                             //Log.i("BluZ-BT", "X: $x, Y: $y")
@@ -514,6 +515,7 @@ class NumberFragment : Fragment() {
 
                 val CBSMA: CheckBox = view.findViewById(R.id.cbSMA)
                 val CBMEDIAN: CheckBox = view.findViewById(R.id.cbMED)
+                val CBMLEM: CheckBox = view.findViewById(R.id.cbMLEM)
 
                 /*
                 *   Калибровка
@@ -592,7 +594,34 @@ class NumberFragment : Fragment() {
                 GO.propButtonInit = false
                 CBSMA.isChecked = GO.drawSPECTER.flagSMA
                 CBMEDIAN.isChecked = GO.drawSPECTER.flagMEDIAN
+                CBMLEM.isChecked = GO.drawSPECTER.flagMLEM
                 GO.propButtonInit = true
+
+                /* Обработка MLEM */
+                CBMLEM.setOnCheckedChangeListener {_, isChecked ->
+                    if (isChecked) {
+                        Log.i("BluZ-BT", "Start MLEM")
+                        if (GO.propButtonInit) {
+                            val unfolder = MLEM(GO.drawSPECTER.ResolutionSpectr)
+                            //val unfolder = FastMLEM(GO.drawSPECTER.ResolutionSpectr)
+                            GO.drawSPECTER.mlemBuffer = unfolder.unfoldSpectrum(GO.drawSPECTER.spectrData, iterations = 25)
+                            GO.drawSPECTER.flagMLEM = true /* Массив подготовлен и может прорисовываться */
+                            /* Расчитаем МЭД */
+                            val spTime = GO.spectrometerTime.toDouble()
+                            GO.compMED = unfolder.calculateExposureRate(
+                                GO.drawSPECTER.mlemBuffer,
+                                spTime
+                            ).toFloat()
+                        }
+                        Log.i("BluZ-BT", "Finish MLEM")
+                    } else {
+                        GO.drawSPECTER.flagMLEM = false /* Отключим прорисовку */
+                    }
+                    if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
+                        GO.drawSPECTER.clearSpecter()
+                        GO.drawSPECTER.redrawSpecter(GO.specterType)
+                    }
+                }
 
                 /* Управление SMA фильтром */
                 CBSMA.setOnCheckedChangeListener {_, isChecked ->
