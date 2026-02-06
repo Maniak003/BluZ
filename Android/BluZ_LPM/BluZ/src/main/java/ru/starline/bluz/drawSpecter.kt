@@ -149,7 +149,11 @@ class drawSpecter {
 
         /* Поиск максимального значения массива MLEM */
         if (flagMLEM) { // Массив готов и можно прорисовывать
-            for(idxm in 20 until ResolutionSpectr) {
+            /* Очистим младшие каналы, там всегда шум. */
+            for (idxm in 0 until 20) {
+                mlemBuffer[idxm] = 0.0
+            }
+            for(idxm in GO.rejectChann until ResolutionSpectr) {
                 if (maxMLEMLin < mlemBuffer[idxm]) {
                     maxMLEMLin = mlemBuffer[idxm]
                 }
