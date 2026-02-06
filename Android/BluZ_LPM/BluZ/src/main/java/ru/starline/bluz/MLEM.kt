@@ -3,7 +3,7 @@ import kotlin.math.*
 
 class MLEM(private val nChannels: Int) {
     private val E_MIN = 0.02 // МэВ
-    private val E_MAX = 4.0  // МэВ
+    private val E_MAX = 2.8  // МэВ
     private val deltaE = (E_MAX - E_MIN) / nChannels
     private val energyCenters = DoubleArray(nChannels) {
         E_MIN + (it + 0.5) * deltaE
@@ -12,7 +12,7 @@ class MLEM(private val nChannels: Int) {
     // Предвычисленная матрица отклика R[j][i] — j: измеренный канал, i: истинная энергия
     private val responseMatrix: Array<DoubleArray> = generateResponseMatrix()
 
-    // === SNIP: адаптивное вычитание фона ===
+    // SNIP: адаптивное вычитание фона
     private fun snipBackground(spectrum: DoubleArray, iterations: Int = 25, wFactor: Double = 2.0): DoubleArray {
         val n = spectrum.size
         val s = DoubleArray(n) { ln(ln(spectrum[it] + 1.0) + 1.0) }
@@ -30,8 +30,20 @@ class MLEM(private val nChannels: Int) {
         return DoubleArray(n) { exp(exp(b[it]) - 1.0) - 1.0 }.map { maxOf(0.0, it) }.toDoubleArray()
     }
 
+    private fun medianFilter(spectrum: DoubleArray, windowSize: Int): DoubleArray {
+        require(windowSize % 2 == 1) { "Window size must be odd" }
+        val radius = windowSize / 2
+        return DoubleArray(spectrum.size) { i ->
+            val window = DoubleArray(windowSize) { j ->
+                spectrum[(i + j - radius).coerceIn(0, spectrum.size - 1)]
+            }
+            window.sortedArray()[windowSize / 2]
+        }
+    }
+
+
     /* MLEM деконволюция */
-    suspend fun unfoldSpectrum(measured: DoubleArray, iterations: Int = 25, onProgress: suspend (Int) -> Unit = {}): DoubleArray {
+    suspend fun ufldSpectrum(measured: DoubleArray, iterations: Int = 25, onProgress: suspend (Int) -> Unit = {}): DoubleArray {
         require(measured.size == nChannels) { "Размер спектра != $nChannels" }
 
         // Вычитание фона
@@ -65,6 +77,78 @@ class MLEM(private val nChannels: Int) {
         }
         return S
     }
+
+    /* TV-MAP-MLEM + median + snip */
+    suspend fun ufldSpectrumTV(
+        measured: DoubleArray,
+        iterations: Int = 15,
+        beta: Double = 0.05,
+        medianWindowSize: Int = 7,   // размер окна медианного фильтра
+        onProgress: suspend (Int) -> Unit = {}
+    ): DoubleArray {
+        require(measured.size == nChannels) { "Размер спектра != $nChannels" }
+
+        // Медианная фильтрация для подавления импульсного шума
+        val denoisedMeasured = medianFilter(measured, medianWindowSize)
+
+        // Оценка и вычитание фона (SNIP на очищенном спектре)
+        val background = snipBackground(denoisedMeasured, iterations = 20, wFactor = 2.0)
+        val cleaned = DoubleArray(nChannels) {
+            maxOf(0.0, denoisedMeasured[it] - background[it])
+        }
+        onProgress(1)
+
+        // Инициализация
+        var S = DoubleArray(nChannels) { 1.0 }
+
+        for (iter in 0 until iterations) {
+            // Проекция данных
+            val RS = DoubleArray(nChannels) { j ->
+                var sum = 0.0
+                for (i in 0 until nChannels) {
+                    sum += responseMatrix[j][i] * S[i]
+                }
+                sum
+            }
+
+            // Коррекция от данных
+            val dataCorrection = DoubleArray(nChannels) { i ->
+                var sum = 0.0
+                for (j in 0 until nChannels) {
+                    val ratio = if (RS[j] > 1e-10) cleaned[j] / RS[j] else 0.0
+                    sum += responseMatrix[j][i] * ratio
+                }
+                sum
+            }
+
+            // TV-градиент
+            val tvGradient = DoubleArray(nChannels)
+            for (i in 1 until nChannels - 1) {
+                val gradLeft = if (S[i] != S[i-1]) sign(S[i] - S[i-1]) else 0.0
+                val gradRight = if (S[i+1] != S[i]) sign(S[i+1] - S[i]) else 0.0
+                tvGradient[i] = beta * (gradLeft - gradRight)
+            }
+            if (nChannels > 1) {
+                tvGradient[0] = beta * (if (S[1] != S[0]) sign(S[1] - S[0]) else 0.0)
+                tvGradient[nChannels - 1] = beta * (if (S[nChannels - 1] != S[nChannels - 2]) -sign(S[nChannels - 1] - S[nChannels - 2]) else 0.0)
+            }
+
+            // Обновление с TV-штрафом
+            S = DoubleArray(nChannels) { i ->
+                val denom = 1.0 + tvGradient[i]
+                if (denom > 1e-10) {
+                    S[i] * dataCorrection[i] / denom
+                } else {
+                    S[i] * dataCorrection[i]
+                }
+            }.map { maxOf(1e-10, it) }.toDoubleArray()
+
+            onProgress(iter + 2)
+        }
+        return S
+    }
+
+
 
     /* Плавная эффективность */
     private fun smoothPeakFraction(E: Double): Double {
