@@ -12,6 +12,105 @@ class MLEM(private val nChannels: Int) {
     // Предвычисленная матрица отклика R[j][i] — j: измеренный канал, i: истинная энергия
     private val responseMatrix: Array<DoubleArray> = generateResponseMatrix()
 
+    /* ALS  */
+// === ALS (Asymmetric Least Squares) для оценки фона ===
+
+    private fun alsBackground(
+        spectrum: DoubleArray,
+        lambda: Double = 1e6,
+        p: Double = 0.005,
+        maxIter: Int = 10
+    ): DoubleArray {
+        require(spectrum.size == nChannels) { "Неверный размер спектра" }
+
+        var z = spectrum.clone()
+
+        repeat(maxIter) {
+            // Вычисляем веса
+            val weights = DoubleArray(nChannels) { i ->
+                if (spectrum[i] >= z[i]) p else (1.0 - p)
+            }
+
+            // Правая часть: W * y
+            val b = DoubleArray(nChannels) { weights[it] * spectrum[it] }
+
+            // Решаем систему (W + λDᵀD)z = W*y
+            z = solveALSConjugateGradient(weights, b, lambda)
+        }
+
+        return z.map { maxOf(0.0, it) }.toDoubleArray()
+    }
+
+    private fun solveALSConjugateGradient(
+        weights: DoubleArray,
+        b: DoubleArray,
+        lambda: Double,
+        cgMaxIter: Int = 50,
+        cgTol: Double = 1e-6
+    ): DoubleArray {
+        val x = DoubleArray(nChannels) { 0.0 }
+        var r = b - applyALSMatVec(weights, x, lambda)
+        var pVec = r.clone()
+        var rsOld = dot(r, r)
+
+        for (i in 0 until cgMaxIter) {
+            val Ap = applyALSMatVec(weights, pVec, lambda)
+            val alpha = rsOld / dot(pVec, Ap)
+            for (i in x.indices) {
+                x[i] += pVec[i] * alpha
+            }
+            r -= Ap * alpha
+            val rsNew = dot(r, r)
+            if (sqrt(rsNew) < cgTol) break
+            pVec = r + pVec * (rsNew / rsOld)
+            rsOld = rsNew
+        }
+        return x
+    }
+
+    private fun applyALSMatVec(
+        weights: DoubleArray,
+        x: DoubleArray,
+        lambda: Double
+    ): DoubleArray {
+        val result = DoubleArray(nChannels)
+        // W * x
+        for (i in 0 until nChannels) {
+            result[i] = weights[i] * x[i]
+        }
+        // + λ * DᵀD * x (2-я производная)
+        for (i in 2 until nChannels - 2) {
+            result[i] += lambda * (
+                    x[i - 2] - 4 * x[i - 1] + 6 * x[i] - 4 * x[i + 1] + x[i + 2]
+                    )
+        }
+        // Граничные условия
+        if (nChannels > 4) {
+            result[0] += lambda * (6 * x[0] - 4 * x[1] + x[2])
+            result[1] += lambda * (-4 * x[0] + 6 * x[1] - 4 * x[2] + x[3])
+            result[nChannels - 2] += lambda * (x[nChannels - 4] - 4 * x[nChannels - 3] + 6 * x[nChannels - 2] - 4 * x[nChannels - 1])
+            result[nChannels - 1] += lambda * (x[nChannels - 3] - 4 * x[nChannels - 2] + 6 * x[nChannels - 1])
+        }
+        return result
+    }
+
+    // === Вспомогательные операторы ===
+    private operator fun DoubleArray.minus(other: DoubleArray): DoubleArray {
+        return DoubleArray(size) { this[it] - other[it] }
+    }
+
+    private operator fun DoubleArray.plus(other: DoubleArray): DoubleArray {
+        return DoubleArray(size) { this[it] + other[it] }
+    }
+
+    private operator fun DoubleArray.times(scalar: Double): DoubleArray {
+        return DoubleArray(size) { this[it] * scalar }
+    }
+
+    private fun dot(a: DoubleArray, b: DoubleArray): Double {
+        return a.indices.sumOf { a[it] * b[it] }
+    }
+
     // SNIP: адаптивное вычитание фона
     private fun snipBackground(spectrum: DoubleArray, iterations: Int = 25, wFactor: Double = 2.0): DoubleArray {
         val n = spectrum.size
@@ -45,10 +144,13 @@ class MLEM(private val nChannels: Int) {
     /* MLEM деконволюция */
     suspend fun ufldSpectrum(measured: DoubleArray, iterations: Int = 25, onProgress: suspend (Int) -> Unit = {}): DoubleArray {
         require(measured.size == nChannels) { "Размер спектра != $nChannels" }
-
+        val denoisedMeasured = medianFilter(measured, 21)
         // Вычитание фона
         val background = snipBackground(measured)
-        val cleaned = DoubleArray(nChannels) { maxOf(0.0, measured[it] - background[it]) }
+
+        //val background = alsBackground(denoisedMeasured, lambda = 1e6, p = 0.005)
+
+        val cleaned = DoubleArray(nChannels) { maxOf(0.0, denoisedMeasured[it] - background[it]) }
         onProgress(1)
         // Инициализация
         var S = DoubleArray(nChannels) { 1.0 }
