@@ -140,6 +140,7 @@ class drawSpecter {
         var oldMLEMLin: Double = VSize.toDouble()
         var oldMLEMLog: Double = VSize.toDouble()
         var oldX: Double = 0.0
+        var oldXMLEM: Double = 0.0
         var maxYlin: Double = 0.0
         var maxYlog: Double = 0.0
         //var tmpLog: Double
@@ -148,7 +149,7 @@ class drawSpecter {
 
         /* Поиск максимального значения массива MLEM */
         if (flagMLEM) { // Массив готов и можно прорисовывать
-            for(idxm in GO.rejectChann until ResolutionSpectr) {
+            for(idxm in 20 until ResolutionSpectr) {
                 if (maxMLEMLin < mlemBuffer[idxm]) {
                     maxMLEMLin = mlemBuffer[idxm]
                 }
@@ -160,10 +161,6 @@ class drawSpecter {
             if (maxYlin < tmpSpecterData[idx]) {
                 maxYlin = tmpSpecterData[idx]
             }
-            //tmpLog = ln(tmpSpecterData[idx])
-            //if (maxYlog < tmpLog) {
-            //    maxYlog = tmpLog
-            //}
         }
         maxYlog = ln(maxYlin);
         //Log.d("BluZ-BT", "MAX: : $maxYlin")
@@ -186,11 +183,7 @@ class drawSpecter {
             if (GO.specterGraphType == 0) {         // Стиль графика - линия
                 /* Прорисовка линейного графика */
 
-                if ( ! (oldYlin == VSize.toDouble() && tmpSpecterData[idx] == 0.0)) {
-
-                    /* For testing */
-                    //Log.d("BluZ-BT", "X : $idx, sSize: $xSize")
-
+                if ( ! (oldYlin == VSize.toDouble() || tmpSpecterData[idx] == 0.0)) {
                     specCanvas.drawLine(
                         (oldX * xSize).toFloat(),   // Начальный X
                         oldYlin.toFloat(),          // Начальный Y
@@ -200,7 +193,7 @@ class drawSpecter {
                     )
                 }
                 /* Прорисовка логарифмического графика */
-                if ( ! (oldYlog == VSize.toDouble() /*&& spectrData[idx] == 0.0*/ && Ylog == VSize.toFloat())) {
+                if ( ! (oldYlog == VSize.toDouble() /*&& spectrData[idx] == 0.0*/ || Ylog == VSize.toFloat())) {
                     specCanvas.drawLine(
                         (oldX * xSize).toFloat(),   // Начальный X
                         oldYlog.toFloat(),          // Начальный Y
@@ -224,10 +217,10 @@ class drawSpecter {
                 } else {
                     YLogMLEM = VSize.toFloat()
                 }
-                if ( ! (oldMLEMLin == VSize.toDouble() && mlemBuffer[idx] == 0.0)) {
+                if ( ! (oldMLEMLin == VSize.toDouble() || mlemBuffer[idx] == 0.0)) {
                     /* Линейный график */
                     specCanvas.drawLine(
-                        (oldX * xSize).toFloat(),       // Начальный X
+                        (oldXMLEM * xSize).toFloat(),   // Начальный X
                         oldMLEMLin.toFloat(),           // Начальный Y
                         (idx * xSize).toFloat(),        // Конечный X
                         YLinMLEM,                       // Конечный Y
@@ -235,9 +228,9 @@ class drawSpecter {
                     )
                 }
                 /* Прорисовка логарифмического графика */
-                if ( ! (oldMLEMLog == VSize.toDouble() /*&& spectrData[idx] == 0.0*/ && YLogMLEM == VSize.toFloat())) {
+                if ( ! (oldMLEMLog == VSize.toDouble() /*&& spectrData[idx] == 0.0*/ || YLogMLEM == VSize.toFloat())) {
                     specCanvas.drawLine(
-                        (oldX * xSize).toFloat(),       // Начальный X
+                        (oldXMLEM * xSize).toFloat(),   // Начальный X
                         oldMLEMLog.toFloat(),           // Начальный Y
                         (idx * xSize).toFloat(),        // Конечный X
                         YLogMLEM,                       // Конечный Y
@@ -245,11 +238,16 @@ class drawSpecter {
                     )
                 }
             }
-            oldYlin = Ylin.toDouble()
-            oldYlog = Ylog.toDouble()
-            oldMLEMLin = YLinMLEM.toDouble()
-            oldMLEMLog = YLogMLEM.toDouble()
-            oldX = idx.toDouble()
+            if ((Ylin.toDouble() < VSize) && (GO.specterGraphType == 0)) {
+                oldYlin = Ylin.toDouble()
+                oldYlog = Ylog.toDouble()
+                oldX = idx.toDouble()
+            }
+            if (YLinMLEM.toDouble() < VSize) {
+                oldMLEMLin = YLinMLEM.toDouble()
+                oldMLEMLog = YLogMLEM.toDouble()
+                oldXMLEM = idx.toDouble()
+            }
         }
         /* Тестовая диния */
         //specCanvas.drawLine(0.0f, VSize.toFloat(), HSize.toFloat(),VSize.toFloat(), paintLin )
