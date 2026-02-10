@@ -13,83 +13,70 @@ class MLEM(private val nChannels: Int) {
     private val responseMatrix: Array<DoubleArray> = generateResponseMatrix()
 
     /* ALS  */
-// === ALS (Asymmetric Least Squares) для оценки фона ===
-
     private fun alsBackground(
         spectrum: DoubleArray,
         lambda: Double = 1e6,
-        p: Double = 0.005,
-        maxIter: Int = 10
+        p: Double = 0.005
     ): DoubleArray {
-        require(spectrum.size == nChannels) { "Неверный размер спектра" }
+        // Проверка на нулевой спектр
+        if (spectrum.sum() < 1e-10) {
+            return DoubleArray(nChannels) { 0.0 }
+        }
 
         var z = spectrum.clone()
-
-        repeat(maxIter) {
-            // Вычисляем веса
+        repeat(10) {
             val weights = DoubleArray(nChannels) { i ->
                 if (spectrum[i] >= z[i]) p else (1.0 - p)
             }
-
-            // Правая часть: W * y
             val b = DoubleArray(nChannels) { weights[it] * spectrum[it] }
+            z = solveALS(weights, b, lambda)
 
-            // Решаем систему (W + λDᵀD)z = W*y
-            z = solveALSConjugateGradient(weights, b, lambda)
+            // Защита от NaN/Inf
+            for (i in z.indices) {
+                if (z[i].isInfinite() || z[i].isNaN()) {
+                    z[i] = 0.0
+                }
+            }
         }
-
         return z.map { maxOf(0.0, it) }.toDoubleArray()
     }
 
-    private fun solveALSConjugateGradient(
-        weights: DoubleArray,
-        b: DoubleArray,
-        lambda: Double,
-        cgMaxIter: Int = 50,
-        cgTol: Double = 1e-6
-    ): DoubleArray {
+    private fun solveALS(weights: DoubleArray, b: DoubleArray, lambda: Double): DoubleArray {
         val x = DoubleArray(nChannels) { 0.0 }
-        var r = b - applyALSMatVec(weights, x, lambda)
+        var r = DoubleArray(nChannels) { b[it] - applyALSMatVec(weights, x, lambda)[it] }
         var pVec = r.clone()
         var rsOld = dot(r, r)
 
-        for (i in 0 until cgMaxIter) {
+        for (iter in 0 until 30){
             val Ap = applyALSMatVec(weights, pVec, lambda)
             val alpha = rsOld / dot(pVec, Ap)
+
+            // Явное обновление (без операторов!)
             for (i in x.indices) {
-                x[i] += pVec[i] * alpha
+                x[i] += alpha * pVec[i]
+                r[i] -= alpha * Ap[i]
             }
-            r -= Ap * alpha
+
             val rsNew = dot(r, r)
-            if (sqrt(rsNew) < cgTol) break
-            pVec = r + pVec * (rsNew / rsOld)
+            if (rsNew < 1e-12) break
+
+            val beta = rsNew / rsOld
+            for (i in pVec.indices) {
+                pVec[i] = r[i] + beta * pVec[i]
+            }
             rsOld = rsNew
         }
         return x
     }
 
-    private fun applyALSMatVec(
-        weights: DoubleArray,
-        x: DoubleArray,
-        lambda: Double
-    ): DoubleArray {
+    private fun applyALSMatVec(weights: DoubleArray, x: DoubleArray, lambda: Double): DoubleArray {
         val result = DoubleArray(nChannels)
-        // W * x
-        for (i in 0 until nChannels) {
+        for (i in result.indices) {
             result[i] = weights[i] * x[i]
         }
-        // + λ * DᵀD * x (2-я производная)
+        // 2-я производная
         for (i in 2 until nChannels - 2) {
-            result[i] += lambda * (
-                    x[i - 2] - 4 * x[i - 1] + 6 * x[i] - 4 * x[i + 1] + x[i + 2]
-                    )
-        }
-        // Граничные условия
-        if (nChannels > 4) {
-            result[0] += lambda * (6 * x[0] - 4 * x[1] + x[2])
-            result[1] += lambda * (-4 * x[0] + 6 * x[1] - 4 * x[2] + x[3])
-            result[nChannels - 2] += lambda * (x[nChannels - 4] - 4 * x[nChannels - 3] + 6 * x[nChannels - 2] - 4 * x[nChannels - 1])
-            result[nChannels - 1] += lambda * (x[nChannels - 3] - 4 * x[nChannels - 2] + 6 * x[nChannels - 1])
+            result[i] += lambda * (x[i-2] - 4*x[i-1] + 6*x[i] - 4*x[i+1] + x[i+2])
         }
         return result
     }
@@ -129,8 +116,9 @@ class MLEM(private val nChannels: Int) {
         return DoubleArray(n) { exp(exp(b[it]) - 1.0) - 1.0 }.map { maxOf(0.0, it) }.toDoubleArray()
     }
 
+    // Медианный фильтр
     private fun medianFilter(spectrum: DoubleArray, windowSize: Int): DoubleArray {
-        require(windowSize % 2 == 1) { "Window size must be odd" }
+        require(windowSize % 2 == 1)
         val radius = windowSize / 2
         return DoubleArray(spectrum.size) { i ->
             val window = DoubleArray(windowSize) { j ->
@@ -142,260 +130,148 @@ class MLEM(private val nChannels: Int) {
 
 
     /* MLEM деконволюция */
-    suspend fun ufldSpectrum(measured: DoubleArray, iterations: Int = 25, onProgress: suspend (Int) -> Unit = {}): DoubleArray {
-        require(measured.size == nChannels) { "Размер спектра != $nChannels" }
-        val denoisedMeasured = medianFilter(measured, 21)
-        // Вычитание фона
-        val background = snipBackground(measured)
+    suspend fun ufldSpectrum(
+        measured: DoubleArray, // всегда 4096
+        iterations: Int = 20,
+        onProgress: suspend (Int) -> Unit = {}
+    ): DoubleArray {
+        require(measured.size >= nChannels) {
+            "Размер спектра (${measured.size}) < nChannels ($nChannels)"
+        }
 
-        //val background = alsBackground(denoisedMeasured, lambda = 1e6, p = 0.005)
+        // Работаем только с первыми nChannels
+        val workingSpectrum = DoubleArray(nChannels) { i ->
+            measured[i]
+        }
 
-        val cleaned = DoubleArray(nChannels) { maxOf(0.0, denoisedMeasured[it] - background[it]) }
+        // 1. Подавление импульсного шума
+        val denoised = medianFilter(workingSpectrum, 5)
+
+        // 2. Оценка фона через ALS
+        val background = alsBackground(denoised, lambda = 1e6, p = 0.005)
+
+        // 3. Чистый спектр
+        val cleaned = DoubleArray(nChannels) {
+            maxOf(0.0, denoised[it] - background[it])
+        }
+
+        // 4. Деконволюция
+        var S = DoubleArray(nChannels) { i ->
+            var sum = 0.0
+            for (j in 0 until nChannels) {
+                if (workingSpectrum[j] > 0) {
+                    sum += responseMatrix[j][i] * workingSpectrum[j]
+                }
+            }
+            maxOf(1.0, sum) // Минимальное значение 1.0
+        }
         onProgress(1)
-        // Инициализация
-        var S = DoubleArray(nChannels) { 1.0 }
-        for (iter in 0 until iterations) {
+
+        repeat(iterations) {
             // R * S
             val RS = DoubleArray(nChannels) { j ->
-                var sum = 0.0
-                for (i in 0 until nChannels) {
-                    sum += responseMatrix[j][i] * S[i]
-                }
-                sum
+                (0 until nChannels).sumOf { i -> responseMatrix[j][i] * S[i] }
             }
-            // Коррекция: R^T * (M / (R*S))
+            // Коррекция
             val correction = DoubleArray(nChannels) { i ->
-                var sum = 0.0
-                for (j in 0 until nChannels) {
+                (0 until nChannels).sumOf { j ->
                     val ratio = if (RS[j] > 1e-10) cleaned[j] / RS[j] else 0.0
-                    sum += responseMatrix[j][i] * ratio
+                    responseMatrix[j][i] * ratio
                 }
-                sum
+            }
+            S = DoubleArray(nChannels) { S[it] * correction[it] }
+            onProgress(it + 2)
+        }
+
+        // Возвращаем результат в исходном размере (4096)
+        return DoubleArray(measured.size) { i ->
+            if (i < nChannels) S[i] else 0.0
+        }
+    }
+    /* TV-MAP-MLEM деконволюция */
+    suspend fun ufldSpectrumTV(
+        measured: DoubleArray, // всегда 4096
+        iterations: Int = 15,
+        beta: Double = 0.01,
+        windowSize: Int = 15,
+        onProgress: suspend (Int) -> Unit = {}
+    ): DoubleArray {
+        // Обрабатываем ТОЛЬКО первые nChannels
+        require(measured.size >= nChannels) {
+            "Размер спектра (${measured.size}) < nChannels ($nChannels)"
+        }
+
+        // Создаём рабочий массив нужного размера
+        val workingSpectrum = DoubleArray(nChannels) { i ->
+            measured[i] // Берём только первые nChannels
+        }
+
+        // 1. Подавление импульсного шума
+        val denoised = medianFilter(workingSpectrum, windowSize)
+
+        // 2. Оценка фона через ALS
+        val background = alsBackground(denoised, lambda = 1e6, p = 0.005)
+
+        // 3. Чистый спектр
+        val cleaned = DoubleArray(nChannels) {
+            maxOf(0.0, denoised[it] - background[it])
+        }
+
+        // Инициализация через обратную проекцию
+        var S = DoubleArray(nChannels) { i ->
+            var sum = 0.0
+            for (j in 0 until nChannels) {
+                if (workingSpectrum[j] > 0) {
+                    sum += responseMatrix[j][i] * workingSpectrum[j]
+                }
+            }
+            maxOf(1.0, sum) // Гарантируем минимальное значение
+        }
+        onProgress(1)
+
+        // 5. Предвычисление R^T * 1
+        val RtOnes = DoubleArray(nChannels) { i ->
+            (0 until nChannels).sumOf { j -> responseMatrix[j][i] }
+        }
+
+        // 6. TV-MAP-MLEM итерации
+        for (iter in 0 until iterations) {
+            // Проекция
+            val RS = DoubleArray(nChannels) { j ->
+                (0 until nChannels).sumOf { i -> responseMatrix[j][i] * S[i] }
             }
 
-            // Обновление
-            S = DoubleArray(nChannels) { S[it] * correction[it] }
+            // Отношение
+            val ratio = DoubleArray(nChannels) { j ->
+                if (RS[j] > 1e-10) cleaned[j] / RS[j] else 0.0
+            }
+
+            // Backprojection
+            val backprojection = DoubleArray(nChannels) { i ->
+                (0 until nChannels).sumOf { j -> responseMatrix[j][i] * ratio[j] }
+            }
+
+            // TV-градиент
+            val tvGrad = computeTVGradient(S)
+
+            // Обновление с TV-регуляризацией
+            S = DoubleArray(nChannels) { i ->
+                val denominator = RtOnes[i] + beta * maxOf(0.0, tvGrad[i])
+                if (denominator > 1e-10) {
+                    S[i] * backprojection[i] / denominator
+                } else {
+                    S[i] * backprojection[i]
+                }
+            }.map { maxOf(1e-12, it) }.toDoubleArray()
+
             onProgress(iter + 2)
         }
-        return S
+
+        // Возвращаем результат в исходном размере (4096)
+        return DoubleArray(measured.size) { i ->
+            if (i < nChannels) S[i] else 0.0
+        }
     }
-
-    /* TV-MAP-MLEM деконволюция */
-    suspend fun ufldSpectrumTV(
-        measured: DoubleArray,
-        iterations: Int = 30,
-        beta: Double = 0.1,
-        medianWindowSize: Int = 5,
-        onProgress: suspend (Int) -> Unit = {}
-    ): DoubleArray {
-        require(measured.size == nChannels) { "Размер спектра != $nChannels" }
-
-        // 1. Предобработка с минимальной фильтрацией
-        // Используем небольшое окно, чтобы сохранить детали
-        val denoised = medianFilter(measured, medianWindowSize)
-
-        // 2. Оценка фона на слегка сглаженных данных
-        // SNIP с умеренными параметрами
-        val background = snipBackground(denoised, iterations = 15, wFactor = 1.5)
-
-        // 3. Очищенный спектр (фон вычитается, но без отрицательных значений)
-        val cleaned = DoubleArray(nChannels) { i ->
-            maxOf(0.0, denoised[i] - background[i])
-        }
-
-        // 4. Инициализация через улучшенный backprojection
-        var S = initializeSpectrumBackprojection(cleaned)
-
-        onProgress(1)
-
-        // 5. Предвычисление R^T * 1 (суммы по столбцам матрицы отклика)
-        // Это экономит время на каждой итерации
-        val RtOnes = DoubleArray(nChannels) { i ->
-            var sum = 0.0
-            for (j in 0 until nChannels) {
-                sum += responseMatrix[j][i]
-            }
-            sum
-        }
-
-        // 6. Итеративный TV-MAP-MLEM алгоритм
-        for (iter in 0 until iterations) {
-            // 6.1. Проекция: R * S (моделируем измерение)
-            val RS = DoubleArray(nChannels) { j ->
-                var sum = 0.0
-                for (i in 0 until nChannels) {
-                    sum += responseMatrix[j][i] * S[i]
-                }
-                sum
-            }
-
-            // 6.2. Вычисление отношения измеренного к модельным данным
-            // Защита от деления на ноль и отрицательных значений
-            val ratio = DoubleArray(nChannels) { j ->
-                val rsj = RS[j]
-                if (rsj > 1e-12 && cleaned[j] > 0) {
-                    cleaned[j] / rsj
-                } else {
-                    0.0
-                }
-            }
-
-            // 6.3. Backprojection: R^T * (M / (R*S))
-            val backprojection = DoubleArray(nChannels) { i ->
-                var sum = 0.0
-                for (j in 0 until nChannels) {
-                    sum += responseMatrix[j][i] * ratio[j]
-                }
-                sum
-            }
-
-            // 6.4. Вычисление TV-градиента (Total Variation)
-            val tvGrad = computeTVGradient(S)
-
-            // 6.5. Обновление спектра с TV-регуляризацией
-            S = DoubleArray(nChannels) { i ->
-                // Базовый множитель MLEM
-                val mlemFactor = backprojection[i]
-
-                // TV регуляризация добавляется в знаменатель
-                // β - сила регуляризации (0 = чистая MLEM)
-                val tvTerm = beta * tvGrad[i]
-                val denominator = RtOnes[i] + tvTerm
-
-                // Обновление с защитой от отрицательных знаменателей
-                if (denominator > 1e-12) {
-                    S[i] * mlemFactor / denominator
-                } else {
-                    // Если знаменатель отрицательный или нулевой,
-                    // используем обычное MLEM обновление без TV
-                    S[i] * mlemFactor / max(RtOnes[i], 1e-12)
-                }
-            }
-
-            // 6.6. Небольшое сглаживание каждые 5 итераций для стабильности
-            if (iter % 5 == 0 && iter > 0) {
-                S = mildSmoothing(S)
-            }
-
-            // 6.7. Гарантируем неотрицательность
-            S = S.map { maxOf(1e-12, it) }.toDoubleArray()
-
-            // 6.8. Прогресс (1-100%)
-            val progress = ((iter + 1) * 100 / iterations).coerceIn(1, 100)
-            onProgress(progress + 2)
-        }
-
-        return S
-    }
-
-    /* TV-MAP-MLEM деконволюция */
-    /*
-    suspend fun ufldSpectrumTV(
-        measured: DoubleArray,
-        iterations: Int = 30,
-        beta: Double = 0.1,
-        medianWindowSize: Int = 5,
-        onProgress: suspend (Int) -> Unit = {}
-    ): DoubleArray {
-        require(measured.size == nChannels) { "Размер спектра != $nChannels" }
-
-        // 1. Предобработка с минимальной фильтрацией
-        // Используем небольшое окно, чтобы сохранить детали
-        val denoised = medianFilter(measured, medianWindowSize)
-
-        // 2. Оценка фона на слегка сглаженных данных
-        // SNIP с умеренными параметрами
-        val background = snipBackground(denoised, iterations = 15, wFactor = 1.5)
-
-        // 3. Очищенный спектр (фон вычитается, но без отрицательных значений)
-        val cleaned = DoubleArray(nChannels) { i ->
-            maxOf(0.0, denoised[i] - background[i])
-        }
-
-        // 4. Инициализация через улучшенный backprojection
-        var S = initializeSpectrumBackprojection(cleaned)
-
-        onProgress(1)
-
-        // 5. Предвычисление R^T * 1 (суммы по столбцам матрицы отклика)
-        // Это экономит время на каждой итерации
-        val RtOnes = DoubleArray(nChannels) { i ->
-            var sum = 0.0
-            for (j in 0 until nChannels) {
-                sum += responseMatrix[j][i]
-            }
-            sum
-        }
-
-        // 6. Итеративный TV-MAP-MLEM алгоритм
-        for (iter in 0 until iterations) {
-            // 6.1. Проекция: R * S (моделируем измерение)
-            val RS = DoubleArray(nChannels) { j ->
-                var sum = 0.0
-                for (i in 0 until nChannels) {
-                    sum += responseMatrix[j][i] * S[i]
-                }
-                sum
-            }
-
-            // 6.2. Вычисление отношения измеренного к модельным данным
-            // Защита от деления на ноль и отрицательных значений
-            val ratio = DoubleArray(nChannels) { j ->
-                val rsj = RS[j]
-                if (rsj > 1e-12 && cleaned[j] > 0) {
-                    cleaned[j] / rsj
-                } else {
-                    0.0
-                }
-            }
-
-            // 6.3. Backprojection: R^T * (M / (R*S))
-            val backprojection = DoubleArray(nChannels) { i ->
-                var sum = 0.0
-                for (j in 0 until nChannels) {
-                    sum += responseMatrix[j][i] * ratio[j]
-                }
-                sum
-            }
-
-            // 6.4. Вычисление TV-градиента (Total Variation)
-            val tvGrad = computeTVGradient(S)
-
-            // 6.5. Обновление спектра с TV-регуляризацией
-            S = DoubleArray(nChannels) { i ->
-                // Базовый множитель MLEM
-                val mlemFactor = backprojection[i]
-
-                // TV регуляризация добавляется в знаменатель
-                // β - сила регуляризации (0 = чистая MLEM)
-                val tvTerm = beta * tvGrad[i]
-                val denominator = RtOnes[i] + tvTerm
-
-                // Обновление с защитой от отрицательных знаменателей
-                if (denominator > 1e-12) {
-                    S[i] * mlemFactor / denominator
-                } else {
-                    // Если знаменатель отрицательный или нулевой,
-                    // используем обычное MLEM обновление без TV
-                    S[i] * mlemFactor / max(RtOnes[i], 1e-12)
-                }
-            }
-
-            // 6.6. Небольшое сглаживание каждые 5 итераций для стабильности
-            if (iter % 5 == 0 && iter > 0) {
-                S = mildSmoothing(S)
-            }
-
-            // 6.7. Гарантируем неотрицательность
-            S = S.map { maxOf(1e-12, it) }.toDoubleArray()
-
-            // 6.8. Прогресс (1-100%)
-            val progress = ((iter + 1) * 100 / iterations).coerceIn(1, 100)
-            onProgress(progress)
-        }
-
-        return S
-    }*/
 
 
 
@@ -488,73 +364,6 @@ class MLEM(private val nChannels: Int) {
         return smoothed.map { maxOf(1e-8, it) }.toDoubleArray()
     }
 
-    /* TV-MAP-MLEM + median + snip */
-    /*
-    suspend fun ufldSpectrumTV(
-        measured: DoubleArray,
-        iterations: Int = 15,
-        beta: Double = 0.05,
-        medianWindowSize: Int = 7,
-        onProgress: suspend (Int) -> Unit = {}
-    ): DoubleArray {
-        require(measured.size == nChannels)
-
-        // 1. Предобработка
-        val denoised = medianFilter(measured, medianWindowSize)
-        val background = snipBackground(denoised, iterations = 20)
-        val cleaned = DoubleArray(nChannels) {
-            maxOf(0.0, denoised[it] - background[it])
-        }
-
-        // 2. Инициализация (лучше использовать uniform или backprojection)
-        var S = initializeSpectrum(cleaned)
-
-        // 3. Предвычисление R^T * 1 (суммы по столбцам)
-        val RtOnes = DoubleArray(nChannels) { i ->
-            (0 until nChannels).sumOf { j -> responseMatrix[j][i] }
-        }
-
-        for (iter in 0 until iterations) {
-            // 3.1. Проекция R*S
-            val RS = DoubleArray(nChannels) { j ->
-                (0 until nChannels).sumOf { i -> responseMatrix[j][i] * S[i] }
-            }
-
-            // 3.2. Вычисление отношения M/(R*S)
-            val ratio = DoubleArray(nChannels) { j ->
-                if (RS[j] > 1e-10) cleaned[j] / RS[j] else 0.0
-            }
-
-            // 3.3. Backprojection R^T * ratio
-            val backprojection = DoubleArray(nChannels) { i ->
-                (0 until nChannels).sumOf { j -> responseMatrix[j][i] * ratio[j] }
-            }
-
-            // 3.4. TV-градиент
-            val tvGrad = computeTVGradient(S)
-
-            // 3.5. Обновление MAP-MLEM с TV-регуляризацией
-            S = DoubleArray(nChannels) { i ->
-                val denominator = RtOnes[i] + beta * tvGrad[i]
-                if (denominator > 1e-10) {
-                    S[i] * backprojection[i] / denominator
-                } else {
-                    S[i] * backprojection[i]
-                }
-            }.map { maxOf(1e-10, it) }.toDoubleArray()
-
-            // 3.6. Нормализация (опционально)
-            //val sum = S.sum()
-            //if (sum > 0) {
-            //    S = S.map { it / sum }.toDoubleArray()
-            //}
-
-            onProgress(iter + 1)
-        }
-        return S
-    }*/
-
-
     /* Плавная эффективность */
     private fun smoothPeakFraction(E: Double): Double {
         val E_knots = doubleArrayOf(0.02, 0.05, 0.15, 0.5, 1.5, 3.0)
@@ -584,35 +393,6 @@ class MLEM(private val nChannels: Int) {
         }
         return R
     }
-/*
-    private fun detectorResponse(E_true: Double): DoubleArray {
-        if (E_true <= 0.01) return DoubleArray(nChannels) { 0.0 }
-
-        val peakFrac = smoothPeakFraction(E_true)
-        val sigma = 0.07 * sqrt(0.662 / E_true) * E_true / 2.355
-        val peak = DoubleArray(nChannels) { j ->
-            val diff = energyCenters[j] - E_true
-            exp(-0.5 * (diff / maxOf(sigma, 1e-6)).pow(2))
-        }
-
-        val E_compton_max = E_true / (1.0 + 0.255 / E_true)
-        val compton = DoubleArray(nChannels) { j ->
-            val E_det = energyCenters[j]
-            if (E_det > 0 && E_det < E_compton_max && E_det < E_true) {
-                1.0 - (E_compton_max - E_det) / (E_compton_max + 1e-6)
-            } else 0.0
-        }
-
-        val backscatter = DoubleArray(nChannels) { j ->
-            val diff = energyCenters[j] - 0.22
-            exp(-0.5 * (diff / 0.02).pow(2))
-        }
-
-        return DoubleArray(nChannels) { j ->
-            peakFrac * peak[j] + (1.0 - peakFrac) * (0.9 * compton[j] + 0.1 * backscatter[j])
-        }
-    }
-*/
 
     private fun detectorResponse(E_true: Double): DoubleArray {
         require(E_true > 0) { "Энергия должна быть положительной" }
@@ -641,7 +421,11 @@ class MLEM(private val nChannels: Int) {
                 if (E_det <= E_compton_max) {
                     // Klein-Nishina приближение (упрощенное)
                     val x = E_det / E_true
-                    (1 + x*x) / (E_true * (1 - x))
+                    if (abs(1 - x) < 1e-6) {
+                        0.0 // или малое значение
+                    } else {
+                        (1 + x*x) / (E_true * (1 - x))
+                    }
                 } else 0.0
             } else 0.0
 
@@ -662,12 +446,12 @@ class MLEM(private val nChannels: Int) {
         unfoldedSpectrum: DoubleArray, // спектр после MLEM (фотоны за всё время)
         acquisitionTimeSeconds: Double  // время набора спектра в секундах
     ): Double { // возвращает МЭД в мкЗв/ч
-        require(unfoldedSpectrum.size == nChannels) { "Неверный размер спектра" }
+        require(unfoldedSpectrum.size >= nChannels) { "Неверный размер спектра" }
 
         // Параметры энергетической сетки
-        val E_MIN = 0.02 // МэВ
-        val E_MAX = 4.0  // МэВ
-        val deltaE = (E_MAX - E_MIN) / nChannels
+        val E_MIN = this.E_MIN
+        val E_MAX = this.E_MAX
+        val deltaE = this.deltaE
 
         // Табличные данные (μ_en/ρ)_air из NIST XCOM
         val energyPoints = doubleArrayOf(
@@ -694,17 +478,13 @@ class MLEM(private val nChannels: Int) {
         }
 
         var integral = 0.0
-        for (i in 0 until nChannels) {
+        for (i in 0 until nChannels) { // ← Только до nChannels!
             val photonsTotal = unfoldedSpectrum[i]
             if (photonsTotal <= 0) continue
 
-            val energy = E_MIN + (i + 0.5) * deltaE // центр канала, МэВ
+            val energy = E_MIN + (i + 0.5) * deltaE
             val muEnRho = interpolateMuEnRho(energy)
-
-            // Поток фотонов в секунду
             val photonFlux = photonsTotal / acquisitionTimeSeconds
-
-            // Вклад в интеграл: Φ(E) * E * (μ_en/ρ)
             integral += photonFlux * energy * muEnRho
         }
 

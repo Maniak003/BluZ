@@ -640,7 +640,7 @@ class NumberFragment : Fragment() {
                                             GO.drawSPECTER.spectrData,
                                             iterations = Iterations,
                                             beta = 0.05,
-                                            medianWindowSize = GO.windowSMA
+                                            windowSize = GO.windowSMA
                                         ) { progress ->
                                             withContext(Dispatchers.Main) {
                                                 pbMLEM.progress = progress
