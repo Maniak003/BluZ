@@ -180,31 +180,47 @@ class MLEM(private val nChannels: Int) {
         return S
     }
 
-    /* TV-MAP-MLEM + median + snip */
+    /* TV-MAP-MLEM деконволюция */
     suspend fun ufldSpectrumTV(
         measured: DoubleArray,
-        iterations: Int = 15,
-        beta: Double = 0.05,
-        medianWindowSize: Int = 7,   // размер окна медианного фильтра
+        iterations: Int = 30,
+        beta: Double = 0.1,
+        medianWindowSize: Int = 5,
         onProgress: suspend (Int) -> Unit = {}
     ): DoubleArray {
         require(measured.size == nChannels) { "Размер спектра != $nChannels" }
 
-        // Медианная фильтрация для подавления импульсного шума
-        val denoisedMeasured = medianFilter(measured, medianWindowSize)
+        // 1. Предобработка с минимальной фильтрацией
+        // Используем небольшое окно, чтобы сохранить детали
+        val denoised = medianFilter(measured, medianWindowSize)
 
-        // Оценка и вычитание фона (SNIP на очищенном спектре)
-        val background = snipBackground(denoisedMeasured, iterations = 20, wFactor = 2.0)
-        val cleaned = DoubleArray(nChannels) {
-            maxOf(0.0, denoisedMeasured[it] - background[it])
+        // 2. Оценка фона на слегка сглаженных данных
+        // SNIP с умеренными параметрами
+        val background = snipBackground(denoised, iterations = 15, wFactor = 1.5)
+
+        // 3. Очищенный спектр (фон вычитается, но без отрицательных значений)
+        val cleaned = DoubleArray(nChannels) { i ->
+            maxOf(0.0, denoised[i] - background[i])
         }
+
+        // 4. Инициализация через улучшенный backprojection
+        var S = initializeSpectrumBackprojection(cleaned)
+
         onProgress(1)
 
-        // Инициализация
-        var S = DoubleArray(nChannels) { 1.0 }
+        // 5. Предвычисление R^T * 1 (суммы по столбцам матрицы отклика)
+        // Это экономит время на каждой итерации
+        val RtOnes = DoubleArray(nChannels) { i ->
+            var sum = 0.0
+            for (j in 0 until nChannels) {
+                sum += responseMatrix[j][i]
+            }
+            sum
+        }
 
+        // 6. Итеративный TV-MAP-MLEM алгоритм
         for (iter in 0 until iterations) {
-            // Проекция данных
+            // 6.1. Проекция: R * S (моделируем измерение)
             val RS = DoubleArray(nChannels) { j ->
                 var sum = 0.0
                 for (i in 0 until nChannels) {
@@ -213,43 +229,330 @@ class MLEM(private val nChannels: Int) {
                 sum
             }
 
-            // Коррекция от данных
-            val dataCorrection = DoubleArray(nChannels) { i ->
+            // 6.2. Вычисление отношения измеренного к модельным данным
+            // Защита от деления на ноль и отрицательных значений
+            val ratio = DoubleArray(nChannels) { j ->
+                val rsj = RS[j]
+                if (rsj > 1e-12 && cleaned[j] > 0) {
+                    cleaned[j] / rsj
+                } else {
+                    0.0
+                }
+            }
+
+            // 6.3. Backprojection: R^T * (M / (R*S))
+            val backprojection = DoubleArray(nChannels) { i ->
                 var sum = 0.0
                 for (j in 0 until nChannels) {
-                    val ratio = if (RS[j] > 1e-10) cleaned[j] / RS[j] else 0.0
-                    sum += responseMatrix[j][i] * ratio
+                    sum += responseMatrix[j][i] * ratio[j]
                 }
                 sum
             }
 
-            // TV-градиент
-            val tvGradient = DoubleArray(nChannels)
-            for (i in 1 until nChannels - 1) {
-                val gradLeft = if (S[i] != S[i-1]) sign(S[i] - S[i-1]) else 0.0
-                val gradRight = if (S[i+1] != S[i]) sign(S[i+1] - S[i]) else 0.0
-                tvGradient[i] = beta * (gradLeft - gradRight)
-            }
-            if (nChannels > 1) {
-                tvGradient[0] = beta * (if (S[1] != S[0]) sign(S[1] - S[0]) else 0.0)
-                tvGradient[nChannels - 1] = beta * (if (S[nChannels - 1] != S[nChannels - 2]) -sign(S[nChannels - 1] - S[nChannels - 2]) else 0.0)
-            }
+            // 6.4. Вычисление TV-градиента (Total Variation)
+            val tvGrad = computeTVGradient(S)
 
-            // Обновление с TV-штрафом
+            // 6.5. Обновление спектра с TV-регуляризацией
             S = DoubleArray(nChannels) { i ->
-                val denom = 1.0 + tvGradient[i]
-                if (denom > 1e-10) {
-                    S[i] * dataCorrection[i] / denom
-                } else {
-                    S[i] * dataCorrection[i]
-                }
-            }.map { maxOf(1e-10, it) }.toDoubleArray()
+                // Базовый множитель MLEM
+                val mlemFactor = backprojection[i]
 
-            onProgress(iter + 2)
+                // TV регуляризация добавляется в знаменатель
+                // β - сила регуляризации (0 = чистая MLEM)
+                val tvTerm = beta * tvGrad[i]
+                val denominator = RtOnes[i] + tvTerm
+
+                // Обновление с защитой от отрицательных знаменателей
+                if (denominator > 1e-12) {
+                    S[i] * mlemFactor / denominator
+                } else {
+                    // Если знаменатель отрицательный или нулевой,
+                    // используем обычное MLEM обновление без TV
+                    S[i] * mlemFactor / max(RtOnes[i], 1e-12)
+                }
+            }
+
+            // 6.6. Небольшое сглаживание каждые 5 итераций для стабильности
+            if (iter % 5 == 0 && iter > 0) {
+                S = mildSmoothing(S)
+            }
+
+            // 6.7. Гарантируем неотрицательность
+            S = S.map { maxOf(1e-12, it) }.toDoubleArray()
+
+            // 6.8. Прогресс (1-100%)
+            val progress = ((iter + 1) * 100 / iterations).coerceIn(1, 100)
+            onProgress(progress + 2)
         }
+
         return S
     }
 
+    /* TV-MAP-MLEM деконволюция */
+    /*
+    suspend fun ufldSpectrumTV(
+        measured: DoubleArray,
+        iterations: Int = 30,
+        beta: Double = 0.1,
+        medianWindowSize: Int = 5,
+        onProgress: suspend (Int) -> Unit = {}
+    ): DoubleArray {
+        require(measured.size == nChannels) { "Размер спектра != $nChannels" }
+
+        // 1. Предобработка с минимальной фильтрацией
+        // Используем небольшое окно, чтобы сохранить детали
+        val denoised = medianFilter(measured, medianWindowSize)
+
+        // 2. Оценка фона на слегка сглаженных данных
+        // SNIP с умеренными параметрами
+        val background = snipBackground(denoised, iterations = 15, wFactor = 1.5)
+
+        // 3. Очищенный спектр (фон вычитается, но без отрицательных значений)
+        val cleaned = DoubleArray(nChannels) { i ->
+            maxOf(0.0, denoised[i] - background[i])
+        }
+
+        // 4. Инициализация через улучшенный backprojection
+        var S = initializeSpectrumBackprojection(cleaned)
+
+        onProgress(1)
+
+        // 5. Предвычисление R^T * 1 (суммы по столбцам матрицы отклика)
+        // Это экономит время на каждой итерации
+        val RtOnes = DoubleArray(nChannels) { i ->
+            var sum = 0.0
+            for (j in 0 until nChannels) {
+                sum += responseMatrix[j][i]
+            }
+            sum
+        }
+
+        // 6. Итеративный TV-MAP-MLEM алгоритм
+        for (iter in 0 until iterations) {
+            // 6.1. Проекция: R * S (моделируем измерение)
+            val RS = DoubleArray(nChannels) { j ->
+                var sum = 0.0
+                for (i in 0 until nChannels) {
+                    sum += responseMatrix[j][i] * S[i]
+                }
+                sum
+            }
+
+            // 6.2. Вычисление отношения измеренного к модельным данным
+            // Защита от деления на ноль и отрицательных значений
+            val ratio = DoubleArray(nChannels) { j ->
+                val rsj = RS[j]
+                if (rsj > 1e-12 && cleaned[j] > 0) {
+                    cleaned[j] / rsj
+                } else {
+                    0.0
+                }
+            }
+
+            // 6.3. Backprojection: R^T * (M / (R*S))
+            val backprojection = DoubleArray(nChannels) { i ->
+                var sum = 0.0
+                for (j in 0 until nChannels) {
+                    sum += responseMatrix[j][i] * ratio[j]
+                }
+                sum
+            }
+
+            // 6.4. Вычисление TV-градиента (Total Variation)
+            val tvGrad = computeTVGradient(S)
+
+            // 6.5. Обновление спектра с TV-регуляризацией
+            S = DoubleArray(nChannels) { i ->
+                // Базовый множитель MLEM
+                val mlemFactor = backprojection[i]
+
+                // TV регуляризация добавляется в знаменатель
+                // β - сила регуляризации (0 = чистая MLEM)
+                val tvTerm = beta * tvGrad[i]
+                val denominator = RtOnes[i] + tvTerm
+
+                // Обновление с защитой от отрицательных знаменателей
+                if (denominator > 1e-12) {
+                    S[i] * mlemFactor / denominator
+                } else {
+                    // Если знаменатель отрицательный или нулевой,
+                    // используем обычное MLEM обновление без TV
+                    S[i] * mlemFactor / max(RtOnes[i], 1e-12)
+                }
+            }
+
+            // 6.6. Небольшое сглаживание каждые 5 итераций для стабильности
+            if (iter % 5 == 0 && iter > 0) {
+                S = mildSmoothing(S)
+            }
+
+            // 6.7. Гарантируем неотрицательность
+            S = S.map { maxOf(1e-12, it) }.toDoubleArray()
+
+            // 6.8. Прогресс (1-100%)
+            val progress = ((iter + 1) * 100 / iterations).coerceIn(1, 100)
+            onProgress(progress)
+        }
+
+        return S
+    }*/
+
+
+
+    /* Улучшенная инициализация через backprojection */
+    private fun initializeSpectrumBackprojection(cleaned: DoubleArray): DoubleArray {
+        val n = cleaned.size
+
+        // Если спектр почти пустой, равномерное распределение
+        val totalCounts = cleaned.sum()
+        if (totalCounts <= 1e-10) {
+            return DoubleArray(n) { 1.0 / n }
+        }
+
+        // Backprojection инициализация
+        val init = DoubleArray(n) { i ->
+            var sum = 0.0
+            for (j in 0 until n) {
+                // Учитываем только значимые измерения
+                if (cleaned[j] > 0 && responseMatrix[j][i] > 0) {
+                    sum += responseMatrix[j][i] * cleaned[j]
+                }
+            }
+            maxOf(1e-12, sum)
+        }
+
+        // Нормировка начального приближения
+        val initSum = init.sum()
+        return if (initSum > 0) {
+            init.map { it / initSum }.toDoubleArray()
+        } else {
+            DoubleArray(n) { 1.0 / n }
+        }
+    }
+
+    /* Легкое сглаживание для стабильности */
+    private fun mildSmoothing(spectrum: DoubleArray): DoubleArray {
+        val n = spectrum.size
+        val smoothed = spectrum.copyOf()
+
+        if (n < 3) return spectrum
+
+        // Простое скользящее среднее с весами [0.25, 0.5, 0.25]
+        for (i in 1 until n - 1) {
+            smoothed[i] = 0.25 * spectrum[i-1] + 0.5 * spectrum[i] + 0.25 * spectrum[i+1]
+        }
+
+        return smoothed.map { maxOf(1e-12, it) }.toDoubleArray()
+    }
+
+    /* TV-градиент */
+    private fun computeTVGradient(S: DoubleArray, epsilon: Double = 1e-6): DoubleArray {
+        val grad = DoubleArray(S.size)
+
+        for (i in 1 until S.size - 1) {
+            val diffPrev = S[i] - S[i-1]
+            val diffNext = S[i+1] - S[i]
+
+            val term1 = diffPrev / sqrt(diffPrev * diffPrev + epsilon)
+            val term2 = diffNext / sqrt(diffNext * diffNext + epsilon)
+
+            grad[i] = term1 - term2
+        }
+
+        // Граничные условия
+        if (S.size > 1) {
+            val diffFirst = S[1] - S[0]
+            grad[0] = -diffFirst / sqrt(diffFirst * diffFirst + epsilon)
+
+            val diffLast = S[S.size-1] - S[S.size-2]
+            grad[S.size-1] = diffLast / sqrt(diffLast * diffLast + epsilon)
+        }
+
+        return grad
+    }
+
+    // Улучшенная инициализация с учетом особенностей гамма-спектрометрии
+    fun initializeSpectrum(cleaned: DoubleArray): DoubleArray {
+        val n = cleaned.size
+
+        // 1. Нормируем измеренный спектр
+        val total = cleaned.sum()
+        if (total <= 0) return DoubleArray(n) { 1.0 / n }
+
+        val normalized = cleaned.map { it / total }.toDoubleArray()
+
+        // 2. Применяем легкое сглаживание (медианный фильтр 3 точки)
+        val smoothed = medianFilter(normalized, 3)
+
+        // 3. Гарантируем минимальное значение
+        return smoothed.map { maxOf(1e-8, it) }.toDoubleArray()
+    }
+
+    /* TV-MAP-MLEM + median + snip */
+    /*
+    suspend fun ufldSpectrumTV(
+        measured: DoubleArray,
+        iterations: Int = 15,
+        beta: Double = 0.05,
+        medianWindowSize: Int = 7,
+        onProgress: suspend (Int) -> Unit = {}
+    ): DoubleArray {
+        require(measured.size == nChannels)
+
+        // 1. Предобработка
+        val denoised = medianFilter(measured, medianWindowSize)
+        val background = snipBackground(denoised, iterations = 20)
+        val cleaned = DoubleArray(nChannels) {
+            maxOf(0.0, denoised[it] - background[it])
+        }
+
+        // 2. Инициализация (лучше использовать uniform или backprojection)
+        var S = initializeSpectrum(cleaned)
+
+        // 3. Предвычисление R^T * 1 (суммы по столбцам)
+        val RtOnes = DoubleArray(nChannels) { i ->
+            (0 until nChannels).sumOf { j -> responseMatrix[j][i] }
+        }
+
+        for (iter in 0 until iterations) {
+            // 3.1. Проекция R*S
+            val RS = DoubleArray(nChannels) { j ->
+                (0 until nChannels).sumOf { i -> responseMatrix[j][i] * S[i] }
+            }
+
+            // 3.2. Вычисление отношения M/(R*S)
+            val ratio = DoubleArray(nChannels) { j ->
+                if (RS[j] > 1e-10) cleaned[j] / RS[j] else 0.0
+            }
+
+            // 3.3. Backprojection R^T * ratio
+            val backprojection = DoubleArray(nChannels) { i ->
+                (0 until nChannels).sumOf { j -> responseMatrix[j][i] * ratio[j] }
+            }
+
+            // 3.4. TV-градиент
+            val tvGrad = computeTVGradient(S)
+
+            // 3.5. Обновление MAP-MLEM с TV-регуляризацией
+            S = DoubleArray(nChannels) { i ->
+                val denominator = RtOnes[i] + beta * tvGrad[i]
+                if (denominator > 1e-10) {
+                    S[i] * backprojection[i] / denominator
+                } else {
+                    S[i] * backprojection[i]
+                }
+            }.map { maxOf(1e-10, it) }.toDoubleArray()
+
+            // 3.6. Нормализация (опционально)
+            //val sum = S.sum()
+            //if (sum > 0) {
+            //    S = S.map { it / sum }.toDoubleArray()
+            //}
+
+            onProgress(iter + 1)
+        }
+        return S
+    }*/
 
 
     /* Плавная эффективность */
@@ -281,7 +584,7 @@ class MLEM(private val nChannels: Int) {
         }
         return R
     }
-
+/*
     private fun detectorResponse(E_true: Double): DoubleArray {
         if (E_true <= 0.01) return DoubleArray(nChannels) { 0.0 }
 
@@ -308,6 +611,51 @@ class MLEM(private val nChannels: Int) {
         return DoubleArray(nChannels) { j ->
             peakFrac * peak[j] + (1.0 - peakFrac) * (0.9 * compton[j] + 0.1 * backscatter[j])
         }
+    }
+*/
+
+    private fun detectorResponse(E_true: Double): DoubleArray {
+        require(E_true > 0) { "Энергия должна быть положительной" }
+
+        val response = DoubleArray(nChannels)
+
+        // 1. Фотопик (Гаусс)
+        val fwhm = 0.07 * sqrt(0.662 / E_true) * E_true
+        val sigma = fwhm / 2.355
+        val peakFraction = smoothPeakFraction(E_true)
+
+        for (j in 0 until nChannels) {
+            val E_det = energyCenters[j]
+            val diff = E_det - E_true
+
+            // Гауссов пик
+            val gaussian = if (sigma > 1e-6) {
+                exp(-0.5 * (diff / sigma).pow(2)) / (sigma * sqrt((2 * PI).toDouble()))
+            } else {
+                if (abs(diff) < deltaE/2) 1.0 / deltaE else 0.0
+            }
+
+            // Комптоновское распределение (упрощенное)
+            val compton = if (E_det > 0 && E_det < E_true) {
+                val E_compton_max = E_true / (1.0 + 0.511 / (2 * E_true))
+                if (E_det <= E_compton_max) {
+                    // Klein-Nishina приближение (упрощенное)
+                    val x = E_det / E_true
+                    (1 + x*x) / (E_true * (1 - x))
+                } else 0.0
+            } else 0.0
+
+            // Backscatter пик (~200 кэВ)
+            val backscatter = exp(-0.5 * ((E_det - 0.2) / 0.03).pow(2))
+
+            response[j] = peakFraction * gaussian +
+                    (1 - peakFraction) * (0.85 * compton + 0.15 * backscatter)
+        }
+
+        // Нормировка на единицу
+        val sum = response.sum()
+        return if (sum > 0) response.map { it / sum }.toDoubleArray()
+        else DoubleArray(nChannels) { 0.0 }
     }
 
     fun calculateExposureRate(

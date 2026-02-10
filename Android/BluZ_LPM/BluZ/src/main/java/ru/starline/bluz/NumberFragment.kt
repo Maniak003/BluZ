@@ -606,67 +606,76 @@ class NumberFragment : Fragment() {
                 /* Обработка MLEM */
                 CBMLEM.setOnCheckedChangeListener {_, isChecked ->
                     if (isChecked) {
-                        Log.i("BluZ-BT", "Start MLEM")
-                        if (GO.propButtonInit) {
-                            val Iterations: Int = 15
-                            val typeMLEM = 1
-                            //CBMLEM.isVisible = false
-                            //val unfolder = FastMLEM(GO.drawSPECTER.ResolutionSpectr)
-                            /* Выполнять будем в фоне */
-                            CoroutineScope(Dispatchers.Default).launch {
-                                withContext(Dispatchers.Main.immediate) {
-                                    CBMLEM.isVisible = false
-                                    pbMLEM.max = Iterations + 1
-                                    pbMLEM.progress = 0
-                                    pbMLEM.isVisible = true
-                                }
+                        if (GO.spectrometerPulse > 0u) {
+                            Log.i("BluZ-BT", "Start MLEM")
+                            if (GO.propButtonInit) {
+                                val Iterations: Int = 15
+                                val typeMLEM = 1
+                                //CBMLEM.isVisible = false
+                                //val unfolder = FastMLEM(GO.drawSPECTER.ResolutionSpectr)
+                                /* Выполнять будем в фоне */
+                                CoroutineScope(Dispatchers.Default).launch {
+                                    withContext(Dispatchers.Main.immediate) {
+                                        CBMLEM.isVisible = false
+                                        pbMLEM.max = Iterations + 1
+                                        pbMLEM.progress = 0
+                                        pbMLEM.isVisible = true
+                                    }
 
-                                val unfolder = MLEM(GO.drawSPECTER.ResolutionSpectr)
+                                    val unfolder = MLEM(GO.drawSPECTER.ResolutionSpectr)
 
-                                // Класический MLEM
-                                if (typeMLEM == 0) {
-                                    GO.drawSPECTER.mlemBuffer = unfolder.ufldSpectrum(
-                                        GO.drawSPECTER.spectrData,
-                                        iterations = Iterations
-                                    ) { progress ->
-                                        withContext(Dispatchers.Main) {
-                                            pbMLEM.progress = progress
+                                    // Класический MLEM
+                                    if (typeMLEM == 0) {
+                                        GO.drawSPECTER.mlemBuffer = unfolder.ufldSpectrum(
+                                            GO.drawSPECTER.spectrData,
+                                            iterations = Iterations
+                                        ) { progress ->
+                                            withContext(Dispatchers.Main) {
+                                                pbMLEM.progress = progress
+                                            }
+                                        }
+                                    } else {
+                                        // TV-MAP-MLEM
+                                        GO.drawSPECTER.mlemBuffer = unfolder.ufldSpectrumTV(
+                                            GO.drawSPECTER.spectrData,
+                                            iterations = Iterations,
+                                            beta = 0.05,
+                                            medianWindowSize = GO.windowSMA
+                                        ) { progress ->
+                                            withContext(Dispatchers.Main) {
+                                                pbMLEM.progress = progress
+                                            }
                                         }
                                     }
-                                } else {
-                                    // TV-MAP-MLEM
-                                    GO.drawSPECTER.mlemBuffer = unfolder.ufldSpectrumTV(
-                                        GO.drawSPECTER.spectrData,
-                                        iterations = Iterations,
-                                        beta = 0.05,
-                                        medianWindowSize = GO.windowSMA
-                                    ) { progress ->
-                                        withContext(Dispatchers.Main) {
-                                            pbMLEM.progress = progress
+                                    /* Массив подготовлен и может прорисовываться */
+                                    GO.drawSPECTER.flagMLEM = true
+                                    /* Расчитаем МЭД */
+                                    GO.compMED = unfolder.calculateExposureRate(
+                                        GO.drawSPECTER.mlemBuffer,
+                                        GO.spectrometerTime.toDouble()
+                                    ).toFloat()
+                                    /* В основном контексте вызовем прорисовку графиков */
+                                    withContext(Dispatchers.Main) {
+                                        if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
+                                            GO.drawSPECTER.clearSpecter()
+                                            GO.drawSPECTER.redrawSpecter(GO.specterType)
                                         }
+                                        GO.showStatistics()
+                                        /* Покажем прогресс индикатор и спрячем check box */
+                                        pbMLEM.isVisible = false
+                                        CBMLEM.isVisible = true
                                     }
-                                }
-                                GO.drawSPECTER.flagMLEM = true /* Массив подготовлен и может прорисовываться */
-                                /* Расчитаем МЭД */
-                                val spTime = GO.spectrometerTime.toDouble()
-                                GO.compMED = unfolder.calculateExposureRate(
-                                    GO.drawSPECTER.mlemBuffer,
-                                    spTime
-                                ).toFloat()
-                                /* В основном контексте */
-                                withContext(Dispatchers.Main) {
-                                    if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
-                                        GO.drawSPECTER.clearSpecter()
-                                        GO.drawSPECTER.redrawSpecter(GO.specterType)
-                                    }
-                                    pbMLEM.isVisible = false
-                                    CBMLEM.isVisible = true
                                 }
                             }
+                            Log.i("BluZ-BT", "Finish MLEM")
+                        } else {
+                            /* Не запустили расчет, убираем галочку */
+                            CBMLEM.isChecked = false
+                            GO.txtCompMED.visibility = View.INVISIBLE
                         }
-                        Log.i("BluZ-BT", "Finish MLEM")
                     } else {
-                        GO.drawSPECTER.flagMLEM = false /* Отключим прорисовку */
+                        /* Отключим прорисовку графика mlem */
+                        GO.drawSPECTER.flagMLEM = false
                         GO.txtCompMED.visibility = View.INVISIBLE
                     }
                     if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
