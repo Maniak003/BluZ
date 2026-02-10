@@ -187,7 +187,7 @@ class drawSpecter {
             if (GO.specterGraphType == 0) {         // Стиль графика - линия
                 /* Прорисовка линейного графика */
 
-                if ( ! (oldYlin == VSize.toDouble() || tmpSpecterData[idx] == 0.0)) {
+                if ( ! (oldYlin == VSize.toDouble() && tmpSpecterData[idx] == 0.0)) {
                     specCanvas.drawLine(
                         (oldX * xSize).toFloat(),   // Начальный X
                         oldYlin.toFloat(),          // Начальный Y
@@ -197,7 +197,7 @@ class drawSpecter {
                     )
                 }
                 /* Прорисовка логарифмического графика */
-                if ( ! (oldYlog == VSize.toDouble() /*&& spectrData[idx] == 0.0*/ || Ylog == VSize.toFloat())) {
+                if ( ! (oldYlog == VSize.toDouble() /*&& spectrData[idx] == 0.0*/ && Ylog == VSize.toFloat())) {
                     specCanvas.drawLine(
                         (oldX * xSize).toFloat(),   // Начальный X
                         oldYlog.toFloat(),          // Начальный Y
@@ -242,11 +242,11 @@ class drawSpecter {
                     )
                 }
             }
-            if ((Ylin.toDouble() < VSize) && (GO.specterGraphType == 0)) {
+            //if ((Ylin.toDouble() < VSize) && (GO.specterGraphType == 0)) {
                 oldYlin = Ylin.toDouble()
                 oldYlog = Ylog.toDouble()
                 oldX = idx.toDouble()
-            }
+            //}
             if (YLinMLEM.toDouble() < VSize) {
                 oldMLEMLin = YLinMLEM.toDouble()
                 oldMLEMLog = YLogMLEM.toDouble()

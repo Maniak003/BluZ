@@ -310,11 +310,11 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 								for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
 									tmpSpecterBuffer[iii] = 0;
 								}
+								spectrometerPulse = 0;
+								spectrometerTime = 0;
 								logUpdate(resSpectrometerLog);
 							}
 							currentSamplingTime = tmpSample;
-							spectrometerPulse = 0;
-							spectrometerTime = 0;
 							/* Если включен спектрометр, нужно установить тип передачи */
 							if (dataType > onlyDozimeter) {
 								switch (resolutionSpecter) {
@@ -621,6 +621,53 @@ void BleStackCB_Process(void);
 
 uint8_t sendData(uint8_t *data)
 {
+    if (!connectFlag) return 0;  // Быстрая проверка
+
+    BZ_Context.TxData.p_Payload = data;
+    BZ_Context.TxData.Length    = MTUSizeValue;
+
+    tBleStatus ret;
+    uint32_t start = HAL_GetTick();
+    const uint32_t BUSY_TIMEOUT_MS = 500;  // Максимум 500 мс на ожидание освобождения очереди
+
+    do {
+        // Проверка соединения
+        if (!connectFlag) return 0;
+
+        ret = BLUZ_UpdateValue(BLUZ_RX, &BZ_Context.TxData);
+
+        if (ret == BLE_STATUS_BUSY) {
+            // При занятости обновляем очередь
+            MX_APPE_Process();
+
+            // Защита от вечного ожидания в состоянии BUSY
+            if ((HAL_GetTick() - start) > BUSY_TIMEOUT_MS) {
+                #ifdef DEBUG_USER
+                sprintf(uartBuffer, "BLE BUSY timeout\n\r");
+                HAL_UART_Transmit(&huart2, (uint8_t*)uartBuffer, strlen(uartBuffer), 100);
+                #endif
+                return 0;
+            }
+            // Небольшая пауза для снижения нагрузки на CPU
+            //HAL_Delay(1);
+        }
+        // При успехе или любой другой ошибке — выходим из цикла
+    } while (ret == BLE_STATUS_BUSY);
+
+    if (ret != BLE_STATUS_SUCCESS) {
+        #ifdef DEBUG_USER
+        sprintf(uartBuffer, "BLE send failed: 0x%02X\n\r", ret);
+        HAL_UART_Transmit(&huart2, (uint8_t*)uartBuffer, strlen(uartBuffer), 100);
+        #endif
+        return 0;
+    }
+    return 1;
+}
+
+/*
+
+uint8_t sendData(uint8_t *data)
+{
     if (!connectFlag) return 0;
 
     BZ_Context.TxData.p_Payload = data;
@@ -630,12 +677,14 @@ uint8_t sendData(uint8_t *data)
     do {
         ret = BLUZ_UpdateValue(BLUZ_RX, &BZ_Context.TxData);
         if (ret == BLE_STATUS_BUSY) {          // HCI-команда не ушла
-            MX_APPE_Process();                 // прокручиваем стек
+            MX_APPE_Process();                 // Обрабатываем очередь
         }
     } while (ret == BLE_STATUS_BUSY);
 
     return (ret == BLE_STATUS_SUCCESS) ? 1 : 0;
 }
+
+*/
 /*
 void sendData( uint8_t *dataSpectrBufer ) {
 	if (connectFlag && tx_pool_ready) {
