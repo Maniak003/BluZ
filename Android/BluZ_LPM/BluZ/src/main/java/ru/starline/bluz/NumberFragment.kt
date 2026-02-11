@@ -622,7 +622,7 @@ class NumberFragment : Fragment() {
                                         pbMLEM.isVisible = true
                                     }
 
-                                    val unfolder = MLEM(GO.drawSPECTER.ResolutionSpectr, E_MIN = 0.02, E_MAX = 2.8)
+                                    val unfolder = MLEM(GO.drawSPECTER.ResolutionSpectr, E_MIN = 0.02, E_MAX = 2.5)
 
                                     // Класический MLEM
                                     if (typeMLEM == 0) {
@@ -639,7 +639,7 @@ class NumberFragment : Fragment() {
                                         GO.drawSPECTER.mlemBuffer = unfolder.ufldSpectrumTV(
                                             GO.drawSPECTER.spectrData,
                                             iterations = Iterations,
-                                            beta = 0.05,
+                                            beta = 0.001,
                                             windowSize = GO.windowSMA
                                         ) { progress ->
                                             withContext(Dispatchers.Main) {
@@ -650,10 +650,14 @@ class NumberFragment : Fragment() {
                                     /* Массив подготовлен и может прорисовываться */
                                     GO.drawSPECTER.flagMLEM = true
                                     /* Расчитаем МЭД */
-                                    GO.compMED = unfolder.calculateExposureRate(
-                                        GO.drawSPECTER.mlemBuffer,
-                                        GO.spectrometerTime.toDouble()
-                                    ).toFloat()
+                                    GO.compMED = unfolder.calculateExposureRate_RperH(
+                                    //GO.drawSPECTER.mlemBuffer,
+                                        GO.drawSPECTER.spectrData,
+                                        GO.spectrometerTime.toDouble()).toFloat()
+                                    //GO.compMED = unfolder.calculateExposureRate(
+                                    //    GO.drawSPECTER.spectrData,
+                                    //    GO.spectrometerTime.toDouble()
+                                    //).toFloat()
                                     /* В основном контексте вызовем прорисовку графиков */
                                     withContext(Dispatchers.Main) {
                                         if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
@@ -661,9 +665,10 @@ class NumberFragment : Fragment() {
                                             GO.drawSPECTER.redrawSpecter(GO.specterType)
                                         }
                                         GO.showStatistics()
-                                        /* Покажем прогресс индикатор и спрячем check box */
+                                        /* Спрячем прогресс индикатор и покажем check box */
                                         pbMLEM.isVisible = false
                                         CBMLEM.isVisible = true
+                                        GO.txtCompMED.visibility = View.VISIBLE
                                     }
                                 }
                             }
@@ -676,6 +681,7 @@ class NumberFragment : Fragment() {
                     } else {
                         /* Отключим прорисовку графика mlem */
                         GO.drawSPECTER.flagMLEM = false
+                        /* Спрячем текст статистики */
                         GO.txtCompMED.visibility = View.INVISIBLE
                     }
                     if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {

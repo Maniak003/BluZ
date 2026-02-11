@@ -1,14 +1,28 @@
 package ru.starline.bluz
+import android.util.Log
 import kotlin.math.*
 
 class MLEM(private val nChannels: Int, private val E_MIN: Double = 0.02, private val E_MAX: Double = 2.8) {
     //private val E_MIN = 0.02 // МэВ
     //private val E_MAX = 2.8  // МэВ
     private val deltaE = (E_MAX - E_MIN) / nChannels
-    private val energyCenters = DoubleArray(nChannels) {
-        E_MIN + (it + 0.5) * deltaE
-    }
+    //private val energyCenters = DoubleArray(nChannels) {
+    //    E_MIN + (it + 0.5) * deltaE
+    //}
+    private val energyCenters = DoubleArray(nChannels) { i ->
+        // Калибровка: канал 800 → 1.461 МэВ
+        val E_k40 = 1.461 // МэВ
+        val channel_k40 = 86.0
 
+        // Вариант 1: через ноль
+        val a = E_k40 / channel_k40
+        a * (i + 0.5)
+
+        // Вариант 2: с учётом порога 20 кэВ
+        // val E0 = 0.02
+        // val a = (E_k40 - E0) / channel_k40
+        // E0 + a * (i + 0.5)
+    }
     // Предвычисленная матрица отклика R[j][i] — j: измеренный канал, i: истинная энергия
     private val responseMatrix: Array<DoubleArray> = generateResponseMatrix()
 
@@ -196,7 +210,9 @@ class MLEM(private val nChannels: Int, private val E_MIN: Double = 0.02, private
         windowSize: Int = 15,
         onProgress: suspend (Int) -> Unit = {}
     ): DoubleArray {
-        // Обрабатываем ТОЛЬКО первые nChannels
+        val inputSum = measured.take(nChannels).sum()
+        Log.d("BluZ-BT-DEBUG","Входной спектр (первые $nChannels каналов): сумма = $inputSum")
+        Log.d("BluZ-BT-DEBUG","Максимум входного спектра: ${measured.take(nChannels).maxOrNull()}")        // Обрабатываем ТОЛЬКО первые nChannels
         require(measured.size >= nChannels) {
             "Размер спектра (${measured.size}) < nChannels ($nChannels)"
         }
@@ -210,12 +226,13 @@ class MLEM(private val nChannels: Int, private val E_MIN: Double = 0.02, private
         val denoised = medianFilter(workingSpectrum, windowSize)
 
         // 2. Оценка фона через ALS
-        val background = alsBackground(denoised, lambda = 1e6, p = 0.005)
+        //val background = alsBackground(denoised, lambda = 1e4, p = 0.5)
+        val background = snipBackground(denoised, iterations = 20, wFactor = 1.8)
 
         // 3. Чистый спектр
-        val cleaned = DoubleArray(nChannels) {
-            maxOf(0.0, denoised[it] - background[it])
-        }
+        val cleaned = DoubleArray(nChannels) { maxOf(0.0, denoised[it] - background[it]) }
+
+        //val cleaned = denoised.clone()
 
         // Инициализация через обратную проекцию
         var S = DoubleArray(nChannels) { i ->
@@ -227,12 +244,12 @@ class MLEM(private val nChannels: Int, private val E_MIN: Double = 0.02, private
             }
             maxOf(1.0, sum) // Гарантируем минимальное значение
         }
-        onProgress(1)
 
         // 5. Предвычисление R^T * 1
         val RtOnes = DoubleArray(nChannels) { i ->
             (0 until nChannels).sumOf { j -> responseMatrix[j][i] }
         }
+        onProgress(1)
 
         // 6. TV-MAP-MLEM итерации
         for (iter in 0 until iterations) {
@@ -266,7 +283,11 @@ class MLEM(private val nChannels: Int, private val E_MIN: Double = 0.02, private
 
             onProgress(iter + 2)
         }
-
+        val outputSum = S.sum()
+        Log.d("BluZ-BT-DEBUG","Восстановленный спектр: сумма = $outputSum")
+        Log.d("BluZ-BT-DEBUG","Максимум восстановленного спектра: ${S.maxOrNull()}")
+        val k40ColSum = responseMatrix.indices.sumOf { j -> responseMatrix[j][800] }
+        Log.d("BluZ-BT-DEBUG","Сумма столбца K40 после нормировки: $k40ColSum")
         // Возвращаем результат в исходном размере (4096)
         return DoubleArray(measured.size) { i ->
             if (i < nChannels) S[i] else 0.0
@@ -366,19 +387,22 @@ class MLEM(private val nChannels: Int, private val E_MIN: Double = 0.02, private
 
     /* Плавная эффективность */
     private fun smoothPeakFraction(E: Double): Double {
-        val E_knots = doubleArrayOf(0.02, 0.05, 0.15, 0.5, 1.5, 3.0)
-        val eff_knots = doubleArrayOf(0.95, 0.80, 0.60, 0.35, 0.15, 0.08)
+        // Точки (Энергия в МэВ, Эффективность в долях)
+        val energyPoints = doubleArrayOf(0.03, 0.05, 0.10, 0.15, 0.30, 0.662, 1.461, 2.614)
+        val efficiencyPoints = doubleArrayOf(0.35, 0.25, 0.15, 0.10, 0.06, 0.04, 0.018, 0.010)
 
-        if (E <= E_knots.first()) return eff_knots.first()
-        if (E >= E_knots.last()) return eff_knots.last()
+        // Экстраполяция за пределы диапазона
+        if (E <= energyPoints[0]) return efficiencyPoints[0]
+        if (E >= energyPoints.last()) return efficiencyPoints.last()
 
-        for (i in 1 until E_knots.size) {
-            if (E <= E_knots[i]) {
-                val t = (E - E_knots[i - 1]) / (E_knots[i] - E_knots[i - 1])
-                return eff_knots[i - 1] + t * (eff_knots[i] - eff_knots[i - 1])
+        // Линейная интерполяция
+        for (i in 1 until energyPoints.size) {
+            if (E <= energyPoints[i]) {
+                val t = (E - energyPoints[i - 1]) / (energyPoints[i] - energyPoints[i - 1])
+                return efficiencyPoints[i - 1] + t * (efficiencyPoints[i] - efficiencyPoints[i - 1])
             }
         }
-        return eff_knots.last()
+        return efficiencyPoints.last()
     }
 
     /* Создаем матрицу отклика */
@@ -386,23 +410,25 @@ class MLEM(private val nChannels: Int, private val E_MIN: Double = 0.02, private
         val R = Array(nChannels) { DoubleArray(nChannels) }
         for (i in 0 until nChannels) {
             val resp = detectorResponse(energyCenters[i])
-            val total = resp.sum()
+            val currentSum = resp.sum()
+            val targetEfficiency = smoothPeakFraction(energyCenters[i])
+
+            // Нормируем до физически реалистичной эффективности
+            val scale = if (currentSum > 0) targetEfficiency / currentSum else 0.0
+
             for (j in 0 until nChannels) {
-                R[j][i] = if (total > 0) resp[j] / total else 0.0
+                R[j][i] = resp[j] * scale
             }
         }
         return R
     }
-
     private fun detectorResponse(E_true: Double): DoubleArray {
-        require(E_true > 0) { "Энергия должна быть положительной" }
-
         val response = DoubleArray(nChannels)
-
-        // 1. Фотопик (Гаусс)
-        val fwhm = 0.07 * sqrt(0.662 / E_true) * E_true
-        val sigma = fwhm / 2.355
         val peakFraction = smoothPeakFraction(E_true)
+
+        // FWHM для NaI(Tl) 10x10 мм
+        val fwhm_keV = 0.095 * sqrt(662.0 / (E_true * 1000)) * (E_true * 1000)
+        val sigma = (fwhm_keV / 1000.0) / 2.355 // Перевод в МэВ
 
         for (j in 0 until nChannels) {
             val E_det = energyCenters[j]
@@ -410,36 +436,68 @@ class MLEM(private val nChannels: Int, private val E_MIN: Double = 0.02, private
 
             // Гауссов пик
             val gaussian = if (sigma > 1e-6) {
-                exp(-0.5 * (diff / sigma).pow(2)) / (sigma * sqrt((2 * PI).toDouble()))
+                exp(-0.5 * (diff / sigma).pow(2))
             } else {
-                if (abs(diff) < deltaE/2) 1.0 / deltaE else 0.0
+                if (abs(diff) < deltaE/2) 1.0 else 0.0
             }
 
-            // Комптоновское распределение (упрощенное)
-            val compton = if (E_det > 0 && E_det < E_true) {
-                val E_compton_max = E_true / (1.0 + 0.511 / (2 * E_true))
-                if (E_det <= E_compton_max) {
-                    // Klein-Nishina приближение (упрощенное)
-                    val x = E_det / E_true
-                    if (abs(1 - x) < 1e-6) {
-                        0.0 // или малое значение
-                    } else {
-                        (1 + x*x) / (E_true * (1 - x))
-                    }
-                } else 0.0
-            } else 0.0
+            // Простой комптон
+            val compton = if (E_det > 0 && E_det < E_true * 0.8) 1.0 else 0.0
 
-            // Backscatter пик (~200 кэВ)
-            val backscatter = exp(-0.5 * ((E_det - 0.2) / 0.03).pow(2))
+            // Backscatter
+            val backscatter = if (abs(E_det - 0.2) < 0.03) 1.0 else 0.0
 
-            response[j] = peakFraction * gaussian +
-                    (1 - peakFraction) * (0.85 * compton + 0.15 * backscatter)
+            response[j] = peakFraction * gaussian + (1 - peakFraction) * (0.9 * compton + 0.1 * backscatter)
+        }
+        return response
+    }
+
+
+    fun calculateExposureRate_RperH(
+        rawSpectrum: DoubleArray, // исходный спектр (импульсы за всё время)
+        acquisitionTimeSeconds: Double
+    ): Double {
+        require(rawSpectrum.size >= nChannels) { "Неверный размер спектра" }
+
+        // Табличные данные (μ_en/ρ)_air из NIST XCOM (в см²/г)
+        val energyPoints = doubleArrayOf(
+            0.01, 0.015, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.15, 0.2, 0.3,
+            0.4, 0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0
+        )
+        val muEnRhoValues = doubleArrayOf(
+            8.33, 5.33, 3.97, 2.27, 1.53, 1.14, 0.893, 0.598, 0.429, 0.249, 0.170, 0.109,
+            0.0786, 0.0603, 0.0487, 0.0349, 0.0272, 0.0216, 0.0181, 0.0141, 0.0102, 0.0085
+        )
+
+        fun interpolateMuEnRho(energy_MeV: Double): Double {
+            if (energy_MeV <= energyPoints[0]) return muEnRhoValues[0]
+            if (energy_MeV >= energyPoints.last()) return muEnRhoValues.last()
+
+            for (i in 1 until energyPoints.size) {
+                if (energy_MeV <= energyPoints[i]) {
+                    val t = (energy_MeV - energyPoints[i - 1]) / (energyPoints[i] - energyPoints[i - 1])
+                    return muEnRhoValues[i - 1] + t * (muEnRhoValues[i] - muEnRhoValues[i - 1])
+                }
+            }
+            return muEnRhoValues.last() * 1e6
         }
 
-        // Нормировка на единицу
-        val sum = response.sum()
-        return if (sum > 0) response.map { it / sum }.toDoubleArray()
-        else DoubleArray(nChannels) { 0.0 }
+        var integral = 0.0
+        for (i in 0 until nChannels) {
+            val counts = rawSpectrum[i]
+            if (counts <= 0) continue
+
+            val energy_MeV = energyCenters[i]
+            val muEnRho = interpolateMuEnRho(energy_MeV) // в см²/г
+            val photonFlux = counts / acquisitionTimeSeconds // фотонов/с
+
+            // Вклад канала в интеграл: Φ * E * (μ_en/ρ)
+            integral += photonFlux * energy_MeV * muEnRho
+        }
+
+        // Коэффициент 0.869 уже даёт результат в R/h
+        val exposureRate_RperH = 0.869 * integral * deltaE
+        return exposureRate_RperH
     }
 
     fun calculateExposureRate(
