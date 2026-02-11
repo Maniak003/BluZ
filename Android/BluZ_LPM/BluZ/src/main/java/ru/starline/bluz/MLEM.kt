@@ -1,9 +1,9 @@
 package ru.starline.bluz
 import kotlin.math.*
 
-class MLEM(private val nChannels: Int) {
-    private val E_MIN = 0.02 // МэВ
-    private val E_MAX = 2.8  // МэВ
+class MLEM(private val nChannels: Int, private val E_MIN: Double = 0.02, private val E_MAX: Double = 2.8) {
+    //private val E_MIN = 0.02 // МэВ
+    //private val E_MAX = 2.8  // МэВ
     private val deltaE = (E_MAX - E_MIN) / nChannels
     private val energyCenters = DoubleArray(nChannels) {
         E_MIN + (it + 0.5) * deltaE
@@ -192,7 +192,7 @@ class MLEM(private val nChannels: Int) {
     suspend fun ufldSpectrumTV(
         measured: DoubleArray, // всегда 4096
         iterations: Int = 15,
-        beta: Double = 0.01,
+        beta: Double = 0.001,
         windowSize: Int = 15,
         onProgress: suspend (Int) -> Unit = {}
     ): DoubleArray {

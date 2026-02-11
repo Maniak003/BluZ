@@ -622,7 +622,7 @@ class NumberFragment : Fragment() {
                                         pbMLEM.isVisible = true
                                     }
 
-                                    val unfolder = MLEM(GO.drawSPECTER.ResolutionSpectr)
+                                    val unfolder = MLEM(GO.drawSPECTER.ResolutionSpectr, E_MIN = 0.02, E_MAX = 2.8)
 
                                     // Класический MLEM
                                     if (typeMLEM == 0) {
