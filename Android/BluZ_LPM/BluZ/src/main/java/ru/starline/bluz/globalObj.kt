@@ -537,7 +537,7 @@ class globalObj {
             pulseS = GO.PCounter.toInt()
         }
         GO.txtStat2.setText(String.format("Total:%d(%.2f%%) Avg:%.2f", pulseS, aquracy3S, cpsS))
-        if (GO.compMED > 0) {
+        if (GO.drawSPECTER.flagMLEM) {
             GO.txtCompMED.setText(String.format("EDR: %.2fuR/h", GO.compMED))
         } else {
             GO.txtCompMED.text = ""
