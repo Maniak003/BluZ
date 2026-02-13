@@ -17,7 +17,7 @@
     <string name="resetDosimeter">Reset complete</string>
     <string name="resetLogs">Reset logs complete</string>
     <string name="defaultMAC">XX:XX:XX:XX:XX:XX</string>
-    <string name="labelMAC">MAC Address:</string>
+    <string name="labelMAC">MAC:</string>
     <string name="labelAPP">Application parameters</string>
     <string name="labelDEVICE">Device parameters</string>
     <string name="labelSpecterType">Style</string>

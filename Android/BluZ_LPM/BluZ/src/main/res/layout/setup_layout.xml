@@ -73,6 +73,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="0"
                                 android:background="@color/black"
+                                android:imeOptions="actionDone"
                                 android:inputType="text"
                                 android:text="@string/defaultMAC"
                                 android:textColor="@color/editTextColor"
