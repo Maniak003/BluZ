@@ -100,7 +100,7 @@ class globalObj {
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var allPermissionAccept: Boolean = false
-    public var LEMAC: String = ""
+    public var LEMAC: String = ""               // default 00:08:E1:2A:12:34
     public lateinit var mainContext: Context
     public lateinit var drawSPECTER: drawSpecter
     public lateinit var drawHISTORY: drawHistory
@@ -721,8 +721,14 @@ class globalObj {
     *   Запись всех параметров в конфигурационный файл
     */
     fun writeConfigParameters() {
-        /* Сохраняем MAC адрес */
-        GO.LEMAC = GO.textMACADR.text.toString()
+        /* Сохраняем MAC адрес если корректный формат */
+        val norm = GO.textMACADR.text.toString().trim()
+        val macRegex = Regex("^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
+        if (norm.matches(macRegex) && norm.split(":").all { it.toInt(16) in 0..255 }) {
+            GO.LEMAC = GO.textMACADR.text.toString().uppercase()
+        } else {
+            Toast.makeText(GO.mainContext, "MAC: $norm incorrect", Toast.LENGTH_SHORT).show()
+        }
         //Log.d("BluZ-BT", "Reject chann: " + GO.rejectChann )
         GO.PP.setPropInt(propCfgRejectCann, GO.rejectChann)                    // Сохраним количество не отображаемых каналов
         GO.PP.setPropStr(propCfgADDRESS, GO.LEMAC)                             // Сохраним MAC адрес устройства
@@ -879,6 +885,7 @@ class globalObj {
             Log.d("BluZ-BT", "Start timer")
             GO.tmFull.startTimer();
         } else {                                            // MAC адрес не настроен, переходим к настройкам
+            GO.drawLOG.appendAppLogs("MAC address not set.", 0)
             //GO.viewPager.setCurrentItem(0, false)
             //GO.viewPager.setCurrentItem(4, false)
             GO.bColor.resetToDefault()

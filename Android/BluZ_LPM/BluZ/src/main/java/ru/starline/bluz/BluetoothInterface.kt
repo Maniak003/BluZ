@@ -123,16 +123,18 @@ class BluetoothInterface() {
         @SuppressLint("MissingPermission")
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-            if (result.getDevice() == null || TextUtils.isEmpty(result.getDevice().getName())) {
+            GO.drawLOG.appendAppLogs("Scan callback.", 5)
+            if (result.getDevice() == null || TextUtils.isEmpty(result.device.getName())) {
                 //GO.drawLOG.appendAppLogs("BLE device not init.", 0)
             } else {
                 Log.d("BluZ-BT", result.device.name + " " + result.device.address)
                 Log.d("BluZ-BT", result.scanRecord.toString())
-                if (result.device.name == "BluZ") {
+                if (result.device.name == GO.propCfgBLEDeviceName) {
                     LEMACADDRESS = result.device.address
                     txtMACADDRESS.setText(result.device.address)
+                    GO.drawLOG.appendAppLogs("Found MAC: $LEMACADDRESS.", 4)
                     GO.adapter.fragment.let {
-                        GO.scanButton.setTextColor(GO.mainContext.getResources().getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                        GO.scanButton.setTextColor(GO.mainContext.resources.getColor(R.color.buttonTextColor, GO.mainContext.theme))
                         GO.scanButton.setText(GO.mainContext.getString(R.string.textScan))
                     }
                     BTS.stopScan(this)
@@ -143,29 +145,29 @@ class BluetoothInterface() {
 
     @SuppressLint("MissingPermission")
     fun startScan(textMAC: EditText/*, startBTN: Button*/) {
-        val scanFilter: ScanFilter = ScanFilter.Builder().setDeviceName(GO.propCfgBLEDeviceName).build()
-        val scanSetting: ScanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).setReportDelay(0).build()
-        val filterList = ArrayList<ScanFilter>()
-        filterList.add(scanFilter)
-        //GO.adapter.fragment.let {
-        //    it.btnSpecterSS
-        //}
+        //val scanFilter: ScanFilter = ScanFilter.Builder().setDeviceName(GO.propCfgBLEDeviceName).build()
+        //val scanSetting: ScanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES).setReportDelay(0).build()
+        //val filterList = ArrayList<ScanFilter>()
+        //filterList.add(scanFilter)
         txtMACADDRESS = textMAC // Установить текст для редактирования
+        GO.drawLOG.appendAppLogs("Request scan LE.", 3)
         //startButton = startBTN
+        GO.tmFull.stopTimer()
+        GO.BTT.destroyDevice()
+        GO.BTT.connected = false
         MainScope().launch {                               // Конструкция необходима для модификации чужого контекста
             withContext(Dispatchers.Main) {       // Иначе перестает переключаться ViewPage2
                 textMAC.setText(GO.mainContext.getString(R.string.defaultMAC))
             }
         }
-        //BTS.startScan(leScanCallback)
-        if (!BTA.isEnabled()) {
+        if (!BTA.isEnabled) {
             GO.drawLOG.appendAppLogs("BLE disable.", 0)
             MainScope().launch {                                // Конструкция необходима для модификации чужого контекста
                 withContext(Dispatchers.Main) {        // Иначе перестает переключаться ViewPage2
                     Toast.makeText(GO.mainContext, "BlueTooth disable ?", Toast.LENGTH_LONG ).show()
                     GO.adapter.fragment.let {
-                        GO.scanButton.setTextColor(GO.mainContext.getResources().getColor(R.color.buttonTextColor, GO.mainContext.theme))
-                        GO.scanButton.setText(GO.mainContext.getString(R.string.textScan))
+                        GO.scanButton.setTextColor(GO.mainContext.resources.getColor(R.color.buttonTextColor, GO.mainContext.theme))
+                        GO.scanButton.text = GO.mainContext.getString(R.string.textScan)
                     }
                     MainScope().launch {
                         delay(3000L)
@@ -175,7 +177,9 @@ class BluetoothInterface() {
                 }
             }
         } else {
-            BTS.startScan(filterList, scanSetting, leScanCallback)
+            GO.drawLOG.appendAppLogs("Start scan LE.", 3)
+            //BTS.startScan(filterList, scanSetting, leScanCallback)        // Сканирование с фильтром по имени устройства
+            BTS.startScan(leScanCallback)                                   // Сканирование без аппаратного фильтра.
             Log.d("BluZ-BT", "LE scanning.")
             GO.drawLOG.appendAppLogs("LE scanning.", 3)
         }
@@ -233,12 +237,12 @@ class BluetoothInterface() {
     @SuppressLint("MissingPermission")
     fun initLeDevice() {
         if ((GO.LEMAC.length == 17) &&  GO.LEMAC[0] != 'X') {
-            MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
-                withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+            //MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
+            //    withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
                     //GO.btnSpecterSS.text = GO.mainContext.getString(R.string.textStartStop)
                     //GO.btnSpecterSS.setTextColor(GO.mainContext.getColor(R.color.buttonTextColor))
-                }
-            }
+            //    }
+            //}
             writeBuffer = ArrayList() // Буфер для передачи.
             Log.d("BluZ-BT", "Accept connect...")
             GO.drawLOG.appendAppLogs("Accept connect.", 1)
@@ -250,7 +254,7 @@ class BluetoothInterface() {
                 }
                 GO.needTerminate = true
             }
-            device = BTA.getRemoteDevice(GO.LEMAC) // Подключаемся по MAC адресу.
+            device = BTA.getRemoteDevice(GO.LEMAC.uppercase()) // Подключаемся по MAC адресу.
             Log.d("BluZ-BT", "Status: " + BTA.getState());
             GO.drawLOG.appendAppLogs("MAC:${GO.LEMAC}, Status: ${BTA.getState()}", 1)
             if (device == null) {
