@@ -5110,6 +5110,12 @@
 		(uuid "8d21cba8-7dfd-4499-ae78-94ecc4839e75")
 	)
 	(junction
+		(at 77.47 81.915)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "92f016cb-b68e-44eb-9977-87595083e6f5")
+	)
+	(junction
 		(at 158.75 55.88)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5684,6 +5690,26 @@
 			(type default)
 		)
 		(uuid "39dd3576-2904-4351-afbd-ba1d9082f0ed")
+	)
+	(wire
+		(pts
+			(xy 80.01 78.74) (xy 77.47 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3b0ce2c0-d73e-4b04-bb84-28c2a186b32e")
+	)
+	(wire
+		(pts
+			(xy 77.47 78.74) (xy 77.47 81.915)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3b31ea93-36f0-4fd4-8085-87756a8cf99e")
 	)
 	(wire
 		(pts
@@ -6875,6 +6901,16 @@
 		)
 		(uuid "4df54d2a-12ae-47f0-b026-c6c96e3a3791")
 	)
+	(label "1.8v"
+		(at 109.22 62.23 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "4ee8864f-2e32-4830-8059-e7ad585521f3")
+	)
 	(label "-SiPM"
 		(at 158.75 96.52 0)
 		(effects
@@ -7238,6 +7274,28 @@
 		(uuid "6673652a-b80a-433f-9159-748bbcfc325f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 183.5695 59.6106 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "Rst"
+		(shape input)
+		(at 80.01 78.74 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "71ba4f5a-8d5a-479f-9349-955a233be189")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 86.019 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
