@@ -117,6 +117,7 @@ extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
 extern bool flagTemperatureMess, autoStartSpecrometr;
 extern bool history_active, historyRequest/*, findDevice*/;
+extern bool divide10sound, divide10led;
 extern uint16_t HVoltage, comparatorLevel;
 extern LPTIM_HandleTypeDef hlptim2;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -260,6 +261,8 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define INTERVAL3 1
 #define INTERVAL4 120
 #define INTERVAL5 60									// Интервал звукового оповещения о низком заряде аккумулятора
+#define DIVCOUNTER 10									// Делитель событий для озвучки.
+#define DIVCOUNTERLED 10								// Делитель событий для светодиода.
 
 #define SOUND_TIME_NOTIFY 4096
 #define SOUND_NOTIFY 	1

@@ -208,6 +208,8 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						levelVibro3 = p_Notification->DataTransfered.p_Payload[20] & 0b10000000;			// Вибро для третьего порога
 						autoStartSpecrometr = p_Notification->DataTransfered.p_Payload[38] & 0b00000001;	// Запуск набора спектра при включении
 						uint8_t tmpSample = (p_Notification->DataTransfered.p_Payload[38] >> 1) & 0x7;		// Время выборки АЦП (0..7)
+						divide10sound = p_Notification->DataTransfered.p_Payload[38] & 0b00010000;			// Деление на 10 озвучки событий
+						divide10led = p_Notification->DataTransfered.p_Payload[38] & 0b00100000;			// Деление на 10 светодиода событий
 
 						/* Уровень порога 1 в uR/h */
 						level1 = p_Notification->DataTransfered.p_Payload[7]

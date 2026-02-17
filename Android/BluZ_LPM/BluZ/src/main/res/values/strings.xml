@@ -30,10 +30,10 @@
     <string name="RColor">R</string>
     <string name="GColor">G</string>
     <string name="BColor">B</string>
-    <string name="soundKvant">Sound</string>
-    <string name="ledKvant">Led</string>
+    <string name="soundKvant">Click:</string>
+    <string name="ledKvant">Led:</string>
     <string name="ledMarker">Marker</string>
-    <string name="autoStart">Specter</string>
+    <string name="autoStart">Auto start Spectrometer</string>
     <string name="readFromDevice">Read</string>
     <string name="writeToDevice">Write</string>
     <string name="textLevel_1">Level 1:</string>
@@ -44,7 +44,7 @@
     <string name="textRes2048">2048</string>
     <string name="textRes4096">4096</string>
     <string name="textAlarms">Alarms</string>
-    <string name="textPolinom">Ax<sup><font size="7">2</font></sup> + Bx + C</string>
+    <string name="textPolinom">Calibrate Ax<sup><font size="7">2</font></sup> + Bx + C</string>
     <string name="textPolinomA">A:</string>
     <string name="textPolinomB">B:</string>
     <string name="textPolinomC">C:</string>
@@ -71,6 +71,12 @@
     <string name="textKML">KML</string>
     <string name="saveMAP">Save</string>
     <string name="textFind">Find</string>
+    <string name="specterFormat">Export format</string>
+    <string name="textInterface">Interface</string>
+    <string name="textFull_scr">Full scr</string>
+    <string name="textMap_format">Map format</string>
+    <string name="textApplication_logs">Application logs</string>
+    <string name="textLog_level">Log level:</string>
     <!-- TODO: Remove or change this placeholder text
     <string name="hello_blank_fragment">Hello blank fragment</string> -->
 </resources>

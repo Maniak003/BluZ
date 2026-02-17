@@ -369,8 +369,35 @@ class NumberFragment : Fragment() {
             1 -> GO.rbGistogramSpectr.isChecked = true
         }
         /* Заполненние элементов управления из текущей конфигурации */
-        GO.cbSoundKvant.isChecked = GO.propSoundKvant              // Звук прихода частицы
-        GO.cbLedKvant.isChecked = GO.propLedKvant                  // Подсветка прихода частицы
+        when (GO.propSoundKvant) {                  // Звук прихода частицы
+            0 -> {
+                GO.rbClickNone.isChecked = true
+            }
+            1 -> {
+                GO.rbClick1.isChecked = true
+            }
+            2 -> {
+                GO.rbClick10.isChecked = true
+            }
+            else -> {
+                GO.rbClickNone.isChecked = true
+            }
+        }
+
+        when (GO.propLedKvant) { // Подсветка прихода частицы
+            0 -> {
+                GO.rbLedNone.isChecked = true
+            }
+            1 -> {
+                GO.rbLed1.isChecked = true
+            }
+            2 -> {
+                GO.rbLed10.isChecked = true
+            }
+            else -> {
+                GO.rbLedNone.isChecked = true
+            }
+        }
         GO.cbSpectrometr.isChecked = GO.propAutoStartSpectrometr   // Запуск набора спектра при включении прибора
         GO.editRejectChann.setText(GO.rejectChann.toString())      // Количество не отображаемых каналов от начала
 
@@ -927,8 +954,12 @@ class NumberFragment : Fragment() {
             } else if (getInt(ARG_OBJECT) == 4) {   // Настройки
                 GO.rbGistogramSpectr = view.findViewById(R.id.rbGistogram)
                 GO.rbLineSpectr = view.findViewById(R.id.rbLine)
-                GO.cbSoundKvant = view.findViewById(R.id.CBsoundKvant)
-                GO.cbLedKvant = view.findViewById(R.id.CBledKvant)
+                GO.rbClickNone = view.findViewById(R.id.rbClickNone)
+                GO.rbClick1 = view.findViewById(R.id.rbClick1)
+                GO.rbClick10 = view.findViewById(R.id.rbClick10)
+                GO.rbLedNone = view.findViewById(R.id.rbLedNone)
+                GO.rbLed1 = view.findViewById(R.id.rbLed1)
+                GO.rbLed10 = view.findViewById(R.id.rbLed10)
                 //GO.cbMarker = view.findViewById(R.id.CBSpectrometer)
                 GO.editPolinomA = view.findViewById(R.id.editPolA)
                 GO.editPolinomB = view.findViewById(R.id.editPolB)
@@ -1147,9 +1178,23 @@ class NumberFragment : Fragment() {
                         GO.specterGraphType = 1
                     }
                     /* Звуковое сопровождение регистрации частицы */
-                    GO.propSoundKvant = GO.cbSoundKvant.isChecked
+                    if (GO.rbClickNone.isChecked) {
+                        GO.propSoundKvant = 0
+                    } else if (GO.rbClick1.isChecked) {
+                        GO.propSoundKvant = 1
+                    } else if (GO.rbClick10.isChecked) {
+                        GO.propSoundKvant = 2
+                    }
                     /* Световое сопровождение регистрации частицы */
-                    GO.propLedKvant = GO.cbLedKvant.isChecked
+                    if (GO.rbClickNone.isChecked) {
+                        GO.propLedKvant = 0
+                    } else {
+                        if (GO.rbClick1.isChecked) {
+                            GO.propLedKvant = 1
+                        } else {
+                            GO.propLedKvant = 2
+                        }
+                    }
                     /* Запуск спектрометра при включении прибора (потребление 380uA) */
                     GO.propAutoStartSpectrometr = GO.cbSpectrometr.isChecked
 
@@ -1285,7 +1330,7 @@ class NumberFragment : Fragment() {
                     *                   1 - |
                     *                   2 - | Врямя выборки
                     *                   3 - |
-                    *                   4 -
+                    *                   4 - Деление на 10 озвучки событий
                     *                   5 -
                     *                   6 -
                     *                   7 -
@@ -1305,9 +1350,23 @@ class NumberFragment : Fragment() {
 
                     /* Перед сохранением загрузим текушие параметры из редактора */
                     /* Звуковое сопровождение регистрации частицы */
-                    GO.propSoundKvant = GO.cbSoundKvant.isChecked
+                    if (GO.rbClickNone.isChecked) {
+                        GO.propSoundKvant = 0
+                    } else if (GO.rbClick1.isChecked) {
+                        GO.propSoundKvant = 1
+                    } else if (GO.rbClick10.isChecked) {
+                        GO.propSoundKvant = 2
+                    }
                     /* Световое сопровождение регистрации частицы */
-                    GO.propLedKvant = GO.cbLedKvant.isChecked
+                    if (GO.rbClickNone.isChecked) {
+                        GO.propLedKvant = 0
+                    } else {
+                        if (GO.rbClick1.isChecked) {
+                            GO.propLedKvant = 1
+                        } else {
+                            GO.propLedKvant = 2
+                        }
+                    }
                     /* Запуск спектрометра при включении прибора (потребление 380uA) */
                     GO.propAutoStartSpectrometr = GO.cbSpectrometr.isChecked
 
@@ -1371,11 +1430,11 @@ class NumberFragment : Fragment() {
 
                     GO.BTT.sendBuffer[20] = 0u                  // Очистим флаги управления индикацией
                     /* Светодиод сопровождает приход частицы */
-                    if (GO.cbLedKvant.isChecked) {
+                    if (GO.rbLed1.isChecked || GO.rbLed10.isChecked) {
                         GO.BTT.sendBuffer[20] = 1u
                     }
                     /* Звук сопровождает приход частицы */
-                    if (GO.cbSoundKvant.isChecked) {
+                    if (GO.rbClick1.isChecked || GO.rbClick10.isChecked) {
                         GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00000010.toUByte()
                     }
                     /* Звуковая сигнализация первого порога */
@@ -1498,8 +1557,22 @@ class NumberFragment : Fragment() {
                     } else {
                         GO.BTT.sendBuffer[38] = 0u
                     }
+
+                    /* Время выборки для ADC */
                     val tmpSampleTime = ((GO.sampleTimeEdit.text.toString().toUInt() and 7u) shl 1).toUByte()
                     GO.BTT.sendBuffer[38] = GO.BTT.sendBuffer[38] or tmpSampleTime
+
+                    /* Деление на 10 озвучки событий */
+                    if (GO.rbClick10.isChecked) {
+                        GO.BTT.sendBuffer[38] = GO.BTT.sendBuffer[38] or 16u  // Установка 5 бита в 1.
+                    }
+
+                    /* Деление на 10 светодиода событий */
+                    if (GO.rbLed10.isChecked) {
+                        GO.BTT.sendBuffer[38] = GO.BTT.sendBuffer[38] or 32u  // Установка 6 бита в 1.
+                    }
+
+                    /* Пепредаем данные в прибор */
                     GO.BTT.sendCommand(0u)
                 }
 

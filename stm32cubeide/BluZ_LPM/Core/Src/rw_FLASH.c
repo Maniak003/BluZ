@@ -135,7 +135,7 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData = enCoefA4096.Uint32 | ((uint64_t)enCoefB4096.Uint32 << 32);
 	PL[idxPL++] = tmpData;					// 12, 13
 
-	tmpData = enCoefC4096.Uint32 | ((uint64_t)dozimetrAquracy << 32) | (((uint64_t) bitsOfChannal & 0xFF) << 48) | (((uint64_t) currentSamplingTime & 0x7) << 56);
+	tmpData = enCoefC4096.Uint32 | ((uint64_t)dozimetrAquracy << 32) | (((uint64_t) bitsOfChannal & 0xFF) << 48) | (((uint64_t) currentSamplingTime & 0x7) << 56) | (((uint64_t) divide10sound & 0x1) << 59) | (((uint64_t) divide10led & 0x1) << 60);
 	PL[idxPL++] = tmpData;					// 14, 15
 
 	tmpData = battKoeff.Uint32;
@@ -212,7 +212,7 @@ HAL_StatusTypeDef readFlash() {
 		 *	14			--	Коэффициент A пересчета канала в энергию для 4096
 		 *	15			--	Коэффициент B пересчета канала в энергию для 4096
 		 *	16			--	Коэффициент C пересчета канала в энергию для 4096
-		 *	17			--	Количество импульсов для усреднения (uint16_t), Разрядность канала (uint8_t), Время выборки АЦП (0x7 - три бита)
+		 *	17			--	Количество импульсов для усреднения (uint16_t), Разрядность канала (uint8_t), Время выборки АЦП (0x7 - три бита), Деление озвучки (0x10 - один бит)
 		 *	18			--  Коэффициент пересчета напряжения для аккумулятора (uint32_t)
 		 *
 		 */
@@ -274,30 +274,35 @@ HAL_StatusTypeDef readFlash() {
 		/* Коэффициент C полинома преобразования канала в энергию для 4096 каналов */
 		//tmpData = *(__IO uint32_t*) ((uint32_t) KOEF_C4096_ADDRESS);
 		tmpData = PL[idxPL++];						// 14, 15
-		enCoefC4096.Uint32 = tmpData & 0xFFFFFFFF;
+		enCoefC4096.Uint32 = tmpData & 0xFFFFFFFF;						// 0 - 31 биты
 
 		/* Количество импульсов до усреднения для дозиметра */
-		dozimetrAquracy = (tmpData >> 32) & 0xFFFF;
+		dozimetrAquracy = (tmpData >> 32) & 0xFFFF;						// 32 - 47 биты
 		if ((dozimetrAquracy == 0xFFFF) || (dozimetrAquracy == 0)) {
 			dozimetrAquracy = 100;
 		}
 		/* Разрядность канала */
-		bitsOfChannal = (tmpData >> 48) & 0xFF;
+		bitsOfChannal = (tmpData >> 48) & 0xFF;							// 48 - 55 биты
 		if ((bitsOfChannal < 16) || (bitsOfChannal > 32)) {
 			bitsOfChannal = CAPCHAN;
 		}
-		/* Время выборки для ADC */
+		/* Время выборки для ADC */										// 56 - 58 биты
 		currentSamplingTime = (tmpData >> 56) & 0x7;
 		if (currentSamplingTime > 7) {
 			currentSamplingTime = 1;	// ADC_SAMPLETIME_3CYCLE_5
 		}
+		/* Озвучка каждого 10 события */
+		divide10sound = (tmpData >> 59) & 0x1;							// 59 - 59 биты
+
+		/* Светодиод каждого 10 события */
+		divide10led = (tmpData >> 60) & 0x1;							// 60 - 60 биты
+
 		/* Коэффициент пересчета для аккумулятора */
 		tmpData = PL[idxPL++];
 		battKoeff.Uint32 = tmpData & 0xFFFFFFFF;
 		if (isnan(battKoeff.Float) || isinf(battKoeff.Float) || battKoeff.Float < 0.00095f || battKoeff.Float > 0.00115f) {
 			battKoeff.Float = ADC_VREF_COEF;
 		}
-
 
 	return HAL_OK;
 

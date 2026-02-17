@@ -82,6 +82,8 @@ uint64_t PL[19] = {0,};
 spectrResolution_t resolutionSpecter = resolution1024;
 uint8_t repetionCount = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
 uint8_t bitsOfChannal;	// Разрядность канала
+uint8_t divade10counter = 0;
+uint8_t div10Ledcounter = 0;
 /*
  * dataType
  * 0 - Дозиметр и логи,
@@ -107,6 +109,8 @@ bool startSpectrometr = false;
 bool vibroFlag = false, soundFlag = false;
 bool history_active = false; // Флаг набора истории.
 bool overloadFlag = false;	// Флаг перегрузки
+bool divide10sound = false; // Флаг деления озвучки событий на 10.
+bool divide10led = false; // Флаг деления озвучки событий на 10.
 
 double CoefChan;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
 uint32_t limitChan;
@@ -400,6 +404,8 @@ int main(void)
    *     6 - Вибро второго уровня
    *     7 - Вибро третьего уровня
    *     8 - Автозапуск спектрометра при включении
+   *     9 - Деление событий для озвучки
+   *     10- Деление событий для светодиода
    * 31, 32 - Коэффициент полинома A для 2048 каналов
    * 33, 34 - Коэффициент полинома B для 2048 каналов
    * 35, 36 - Коэффициент полинома C для 2048 каналов
@@ -679,7 +685,7 @@ int main(void)
 	  transmitBuffer[29] = level3;
 
 	  /* Битовый регистр конфигурации */
-	  transmitBuffer[30] = LEDEnable | (SoundEnable << 1) | (levelSound1 << 2) | (levelSound2 << 3) | (levelSound3 << 4) | (levelVibro1 << 5) | (levelVibro2 << 6) | (levelVibro3 << 7) | (autoStartSpecrometr << 8);
+	  transmitBuffer[30] = LEDEnable | (SoundEnable << 1) | (levelSound1 << 2) | (levelSound2 << 3) | (levelSound3 << 4) | (levelVibro1 << 5) | (levelVibro2 << 6) | (levelVibro3 << 7) | (autoStartSpecrometr << 8) | (divide10sound << 9) | (divide10led << 10);
 	  /* Коэффициенты преобразования канала в энергию для 2048 каналов*/
 	  transmitBuffer[31] = enCoefA2048.Uint16[0];
 	  transmitBuffer[32] = enCoefA2048.Uint16[1];
@@ -1596,47 +1602,54 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
 	  pulseCounter++;					// Общее количество импульсов с начала измерения
 	  pulseCounterSecond++;				// Количество импульсов за последнюю секунду
 		/* Оповещение об импульсе */
+	  LED_GPIO_Port->BRR = (uint32_t) LED_Pin;	// Если очередь задач переполнена, погасим светодиод принудительно.
 	  if (LEDEnable) {
-		  if (LED_GPIO_Port->IDR & LED_Pin) {	// Исправление переполнения очереди задач.
-			  LED_GPIO_Port->BRR = (uint32_t) LED_Pin;
+		  //if (LED_GPIO_Port->IDR & LED_Pin) {	// Исправление переполнения очереди задач.
+			//  LED_GPIO_Port->BRR = (uint32_t) LED_Pin;
+		  //}
+		  /* Требуется пропускать события ? */
+		  if (divide10led) {
+			  if (DIVCOUNTERLED <= div10Ledcounter++) {
+				  div10Ledcounter = 0;
+			  }
 		  } else {
-			  NotifyAct(LED_NOTIFY, 0);
+			  div10Ledcounter = 0;
 		  }
-	  } else { // Принудительно отключит светодиод если выключена нотификация.
-		  LED_GPIO_Port->BRR = (uint32_t) LED_Pin;
+		  if (div10Ledcounter == 0) {
+				LEDflag = true;
+				LED_GPIO_Port->BSRR = (uint32_t) LED_Pin;
+				UTIL_TIMER_Stop(&timerLed);
+				UTIL_TIMER_Start(&(timerLed));
+		  }
+	  //} else { // Принудительно отключит светодиод если выключена нотификация.
+		//  LED_GPIO_Port->BRR = (uint32_t) LED_Pin;
 	  }
+
+	  /* Звуковое сопровождение событий */
 	  if(SoundEnable) {
-		   // Настроить импульс
-		  //hlptim2.Instance->ARR = 4;      // период
-		  //LPTIM2->CMP = 3;     // ширина HIGH
+		  /* Требуется ли прореживание */
+		  if (divide10sound) {
+			  if (DIVCOUNTER <= divade10counter++) {
+				  divade10counter = 0;
+			  }
+		  } else {
+			  divade10counter = 0;
+		  }
 
-		  //HAL_LPTIM_OnePulse_Start(&hlptim2, LPTIM_CHANNEL_2);
-		  /* Переконфигурируем пин в обычный выход */
-		  //uint32_t tmp;
+		  if(divade10counter == 0) {
+			  /* Переконфигурируем пин в обычный выход */
+			  SOUND_GPIO_Port->MODER = (SOUND_GPIO_Port->MODER & ~GPIO_MODER_MODE1_Msk) | (1U << GPIO_MODER_MODE1_Pos);
+			  /* OTYPER: push-pull (0) */
+			  SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
+			  /* OSPEEDR: high speed (11b) */
+			  SOUND_GPIO_Port->OSPEEDR = (SOUND_GPIO_Port->OSPEEDR & ~GPIO_OSPEEDR_OSPEED1_Msk) | (3U << GPIO_OSPEEDR_OSPEED1_Pos);
+			  /* PUPDR: no pull (00b) */
+			  SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
 
-		  /* MODER: PA1 = 01b (output) */
-		  //tmp  = SOUND_GPIO_Port->MODER;
-		  //tmp &= ~GPIO_MODER_MODE1_Msk;          // clear bits 2:3
-		  //tmp |=  (1U << GPIO_MODER_MODE1_Pos);  // 01 = output
-		  //SOUND_GPIO_Port->MODER = tmp;
-
-		  SOUND_GPIO_Port->MODER = (SOUND_GPIO_Port->MODER & ~GPIO_MODER_MODE1_Msk) | (1U << GPIO_MODER_MODE1_Pos);
-		  /* OTYPER: push-pull (0) */
-		  SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
-
-		  /* OSPEEDR: high speed (11b) */
-		  //tmp  = SOUND_GPIO_Port->OSPEEDR;
-		  //tmp &= ~GPIO_OSPEEDR_OSPEED1_Msk;
-		  //tmp |=  (3U << GPIO_OSPEEDR_OSPEED1_Pos);
-		  //SOUND_GPIO_Port->OSPEEDR = tmp;
-
-		  SOUND_GPIO_Port->OSPEEDR = (SOUND_GPIO_Port->OSPEEDR & ~GPIO_OSPEEDR_OSPEED1_Msk) | (3U << GPIO_OSPEEDR_OSPEED1_Pos);
-		  /* PUPDR: no pull (00b) */
-		  SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
-
-		  SOUND_GPIO_Port->BSRR = (uint32_t) SOUND_Pin;
-		  UTIL_TIMER_Stop(&timerTick);
-		  UTIL_TIMER_Start(&timerTick);
+			  SOUND_GPIO_Port->BSRR = (uint32_t) SOUND_Pin;
+			  UTIL_TIMER_Stop(&timerTick);
+			  UTIL_TIMER_Start(&timerTick);
+		  }
 	  }
 	  /* Расчет с учетом точности */
 	  if (edgeCounter++ >= dozimetrAquracy) {
@@ -1644,6 +1657,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
 			  if (indexDozimetrBufer >= SIZE_DOZIMETR_BUFER) {
 				indexDozimetrBufer = 0;
 			  }
+			  /* TODO -- избавится от деления !!! */
 			  dozimetrBuffer[indexDozimetrBufer++] = edgeCounter / aquracyInterval;
 			  aquracyInterval = 0;
 			  edgeCounter = 0;
