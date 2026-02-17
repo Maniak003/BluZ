@@ -863,6 +863,8 @@ class BluetoothInterface() {
                                     GO.HWpropVibroLevel2 = ((GO.receiveData[60] and 64.toUByte()) != 0.toUByte())
                                     GO.HWpropVibroLevel3 = ((GO.receiveData[60] and 128.toUByte()) != 0.toUByte())
                                     GO.HWpropAutoStartSpectrometr = ((GO.receiveData[61] and 1.toUByte()) != 0.toUByte())
+                                    GO.HWpropClick10 = ((GO.receiveData[61] and 2.toUByte()) != 0.toUByte())
+                                    GO.HWpropLed10 = ((GO.receiveData[61] and 4.toUByte()) != 0.toUByte())
                                     //GO.HWpropLevel1 = (GO.receiveData[54] + (GO.receiveData[55] * 256u)).toInt()
                                     //GO.HWpropLevel2 = (GO.receiveData[56] + (GO.receiveData[57] * 256u)).toInt()
                                     //GO.HWpropLevel3 = (GO.receiveData[58] + (GO.receiveData[59] * 256u)).toInt()

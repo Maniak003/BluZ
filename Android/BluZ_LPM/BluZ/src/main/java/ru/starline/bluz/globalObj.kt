@@ -80,8 +80,8 @@ class globalObj {
     public val propCfgCoef4096C: String = "Coeff4096C"
     public val propCfgHV: String = "HVoltage"
     public val propCfgComparator: String = "Comparator"
-    public val propCfgSoundKvant: String = "SoundKvant"
-    public val propCfgLedKvant: String = "LedKvant"
+    public val propCfgSoundKvant: String = "SoundKvantN"
+    public val propCfgLedKvant: String = "LedKvantN"
     public val propCfgResolution: String = "Resolution"
     public val propCfgStartSpectrometr: String = "AutoStartSpectrometr"
     public val propCfgSMAWindow: String = "SMAWindow"
@@ -255,8 +255,15 @@ class globalObj {
     */
     lateinit var rbGistogramSpectr: RadioButton
     lateinit var rbLineSpectr: RadioButton
-    lateinit var cbSoundKvant: CheckBox
-    lateinit var cbLedKvant: CheckBox
+    lateinit var rbClickNone: RadioButton
+    lateinit var rbClick1: RadioButton
+    lateinit var rbClick10: RadioButton
+    lateinit var rbLedNone: RadioButton
+    lateinit var rbLed1: RadioButton
+    lateinit var rbLed10: RadioButton
+    lateinit var cbLedKvantNone: RadioButton
+    lateinit var cbLedKvant1: RadioButton
+    lateinit var cbLedKvant10: RadioButton
     lateinit var cbMarker: CheckBox
     lateinit var editPolinomA: EditText
     lateinit var editPolinomB: EditText
@@ -336,8 +343,8 @@ class globalObj {
     public var realResolution: Int = 30             // Разрешение на линии 662 кЭв в каналах
 
     /* Параметры для хранения в приборе */
-    public var propSoundKvant: Boolean = false      // Озвучка прихода частицы
-    public var propLedKvant: Boolean = true         // Подсветка прихода частицы
+    public var propSoundKvant: Int = 0              // Озвучка прихода частицы
+    public var propLedKvant: Int = 0                // Подсветка прихода частицы
     public var propLevel1: Int = 0                  // Значение первого уровня
     public var propLevel2: Int = 0                  // Значение второго уровня
     public var propLevel3: Int = 0                  // Значение третьего уровня
@@ -441,7 +448,9 @@ class globalObj {
 
 
     public var HWpropSoundKvant: Boolean = false      // Озвучка прихода частицы
+    public var HWpropClick10: Boolean = false         // Деление на 10 при озвучке события
     public var HWpropLedKvant: Boolean = true         // Подсветка прихода частицы
+    public var HWpropLed10: Boolean = false           // Деление на 10 при работе светодиода
     public var HWpropLevel1: Int = 0
     public var HWpropLevel2: Int = 0
     public var HWpropLevel3: Int = 0
@@ -670,9 +679,25 @@ class globalObj {
     *   Чтение параметров прибора в закладку Setup
     */
     fun readConfigFormDevice() {
-        GO.propLedKvant = GO.HWpropLedKvant
+        if (GO.HWpropLedKvant) {
+            if (HWpropLed10) {
+               GO.propLedKvant = 2
+            } else {
+               GO.propLedKvant = 1
+            }
+        } else {
+            GO.propLedKvant = 0
+        }
         //Log.d("BluZ-BT","LedKvant: ${GO.HWpropLedKvant}")
-        GO.propSoundKvant = GO.HWpropSoundKvant
+        if (GO.HWpropSoundKvant) {
+            if (GO.HWpropClick10) {
+                GO.propSoundKvant = 2
+            } else {
+                GO.propSoundKvant = 1
+            }
+        } else {
+            GO.propSoundKvant = 0
+        }
         GO.propCoef1024A = GO.HWCoef1024A
         GO.propCoef1024B = GO.HWCoef1024B
         GO.propCoef1024C = GO.HWCoef1024C
@@ -767,8 +792,8 @@ class globalObj {
         GO.PP.setPropInt(propCfgLevel2, GO.propLevel2)                     // Значение второго порога
         GO.PP.setPropInt(propCfgLevel3, GO.propLevel3)                     // Значение третьего порога
         GO.PP.setPropBoolean(propCfgStartSpectrometr, GO.propAutoStartSpectrometr)
-        GO.PP.setPropBoolean(propCfgLedKvant, GO.propLedKvant)
-        GO.PP.setPropBoolean(propCfgSoundKvant, GO.propSoundKvant)
+        GO.PP.setPropInt(propCfgLedKvant, GO.propLedKvant)
+        GO.PP.setPropInt(propCfgSoundKvant, GO.propSoundKvant)
         GO.PP.setPropInt(propCfgSpectrGraphType, GO.specterGraphType)
         GO.PP.setPropInt(propAquracy, GO.aqureValue)                        // Точность усреднения для дозиметра, количество импульсов.
         GO.PP.setPropInt(propBitsChan, GO.bitsChannel)                      // Количество  бит в канале
@@ -818,8 +843,8 @@ class globalObj {
         /*
         *       Параметры прибора
         */
-        GO.propSoundKvant = GO.PP.getPropBoolean(propCfgSoundKvant)
-        GO.propLedKvant = GO.PP.getPropBoolean(propCfgLedKvant)
+        GO.propSoundKvant = GO.PP.getPropInt(propCfgSoundKvant)
+        GO.propLedKvant = GO.PP.getPropInt(propCfgLedKvant)
         GO.propAutoStartSpectrometr = GO.PP.getPropBoolean(propCfgStartSpectrometr)
         GO.propSoundLevel1 = GO.PP.getPropBoolean(propCfgSoundLevel1)
         GO.propSoundLevel2 = GO.PP.getPropBoolean(propCfgSoundLevel2)

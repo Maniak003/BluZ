@@ -23,6 +23,7 @@
     <color name="activeColorCursor">#81FF4A</color>
     <color name="ColorDosimeter">#81FF4A</color>
     <color name="ColorDosimeterSMA">#F8E117</color>
+    <color name="ColorMainLabels">#242121</color>
 
     <color name="clr00">#7F0117ff</color>
     <color name="clr01">#7F012fff</color>
