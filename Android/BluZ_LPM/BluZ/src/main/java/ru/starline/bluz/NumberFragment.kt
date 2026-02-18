@@ -81,6 +81,9 @@ const val ARG_OBJECT = "oblect"
 
 class NumberFragment : Fragment() {
     private  lateinit var rbGroup: RadioGroup
+    private lateinit var rbGroup2: RadioGroup
+    private var lastCheckedId = -1
+    private var lastCheckedGroup: RadioGroup? = null
     private lateinit var rbLine: RadioButton
     private lateinit var rbLg: RadioButton
     private lateinit var rbFoneLin: RadioButton
@@ -131,6 +134,62 @@ class NumberFragment : Fragment() {
         super.onDestroy()
     }
 
+    private fun changeSpectrType(checkedId: Int) {
+        if (GO.rbLineSpectr.isChecked) {
+            if (checkedId == rbLine.id) {                                   // Цвет для линейного графика
+                //tvColor.setBackgroundColor(GO.ColorLin)
+                selA.setProgress(Color.alpha(GO.ColorLin), false)
+                selR.setProgress(Color.red(GO.ColorLin), false)
+                selG.setProgress(Color.green(GO.ColorLin), false)
+                selB.setProgress(Color.blue(GO.ColorLin), false)
+            } else if (checkedId == rbLg.id) {                              // Цвет для логарифмического графика
+                //tvColor.setBackgroundColor(GO.ColorLog)
+                selA.setProgress(Color.alpha(GO.ColorLog), false)
+                selR.setProgress(Color.red(GO.ColorLog), false)
+                selG.setProgress(Color.green(GO.ColorLog), false)
+                selB.setProgress(Color.blue(GO.ColorLog), false)
+            } else if (checkedId == rbFoneLin.id) {                         // Цвет для линейного графика фона
+                //tvColor.setBackgroundColor(GO.ColorFone)
+                selA.setProgress(Color.alpha(GO.ColorFone), false)
+                selR.setProgress(Color.red(GO.ColorFone), false)
+                selG.setProgress(Color.green(GO.ColorFone), false)
+                selB.setProgress(Color.blue(GO.ColorFone), false)
+            } else if (checkedId == rbFoneLg.id) {                          // Цвет для логарифмического графика фона
+                //tvColor.setBackgroundColor(GO.ColorFoneLg)
+                selA.setProgress(Color.alpha(GO.ColorFoneLg), false)
+                selR.setProgress(Color.red(GO.ColorFoneLg), false)
+                selG.setProgress(Color.green(GO.ColorFoneLg), false)
+                selB.setProgress(Color.blue(GO.ColorFoneLg), false)
+            }
+        } else if (GO.rbGistogramSpectr.isChecked) {
+            if (checkedId == rbLine.id) {                                   // Цвет для линейного графика
+                //tvColor.setBackgroundColor(GO.ColorLinGisto)
+                selA.setProgress(Color.alpha(GO.ColorLinGisto), false)
+                selR.setProgress(Color.red(GO.ColorLinGisto), false)
+                selG.setProgress(Color.green(GO.ColorLinGisto), false)
+                selB.setProgress(Color.blue(GO.ColorLinGisto), false)
+            } else if (checkedId == rbLg.id) {                              // Цвет для логарифмического графика
+                //tvColor.setBackgroundColor(GO.ColorLogGisto)
+                selA.setProgress(Color.alpha(GO.ColorLogGisto), false)
+                selR.setProgress(Color.red(GO.ColorLogGisto), false)
+                selG.setProgress(Color.green(GO.ColorLogGisto), false)
+                selB.setProgress(Color.blue(GO.ColorLogGisto), false)
+            } else if (checkedId == rbFoneLin.id) {                         // Цвет для линейного графика фона
+                //tvColor.setBackgroundColor(GO.ColorFoneGisto)
+                selA.setProgress(Color.alpha(GO.ColorFoneGisto), false)
+                selR.setProgress(Color.red(GO.ColorFoneGisto), false)
+                selG.setProgress(Color.green(GO.ColorFoneGisto), false)
+                selB.setProgress(Color.blue(GO.ColorFoneGisto), false)
+            } else if (checkedId == rbFoneLg.id) {                          // Цвет для логарифмического графика фона
+                //tvColor.setBackgroundColor(GO.ColorFoneLgGisto)
+                selA.setProgress(Color.alpha(GO.ColorFoneLgGisto), false)
+                selR.setProgress(Color.red(GO.ColorFoneLgGisto), false)
+                selG.setProgress(Color.green(GO.ColorFoneLgGisto), false)
+                selB.setProgress(Color.blue(GO.ColorFoneLgGisto), false)
+            }
+        }
+        GO.drawExamp.exampRedraw()
+    }
     /* Преобразование DP >> PX */
     private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
 
@@ -1619,6 +1678,7 @@ class NumberFragment : Fragment() {
                 rbFoneLin = view.findViewById(R.id.RBFoneLin)
                 rbFoneLg = view.findViewById(R.id.RBFoneLg)
                 rbGroup = view.findViewById(R.id.rbTypeGroup)
+                //rbGroup2 = view.findViewById(R.id.rbTypeGroup2)
                 rgTypeSpec = view.findViewById(R.id.rgTypeSpectr)
                 rbResolution = view.findViewById(R.id.RGResolution)
 
@@ -1763,67 +1823,53 @@ class NumberFragment : Fragment() {
                  *  Выбор графика для изменения
                  *  Установка текущих значений на ползунках
                  */
-                rbGroup.setOnCheckedChangeListener  { _, checkedId ->
-                    view.findViewById<RadioButton>(checkedId)?.apply {
-                        noChange = false
-                        if (GO.rbLineSpectr.isChecked) {
-                            if (checkedId == rbLine.id) {                                   // Цвет для линейного графика
-                                //tvColor.setBackgroundColor(GO.ColorLin)
-                                selA.setProgress(Color.alpha(GO.ColorLin), false)
-                                selR.setProgress(Color.red(GO.ColorLin), false)
-                                selG.setProgress(Color.green(GO.ColorLin), false)
-                                selB.setProgress(Color.blue(GO.ColorLin), false)
-                            } else if (checkedId == rbLg.id) {                              // Цвет для логарифмического графика
-                                //tvColor.setBackgroundColor(GO.ColorLog)
-                                selA.setProgress(Color.alpha(GO.ColorLog), false)
-                                selR.setProgress(Color.red(GO.ColorLog), false)
-                                selG.setProgress(Color.green(GO.ColorLog), false)
-                                selB.setProgress(Color.blue(GO.ColorLog), false)
-                            } else if (checkedId == rbFoneLin.id) {                         // Цвет для линейного графика фона
-                                //tvColor.setBackgroundColor(GO.ColorFone)
-                                selA.setProgress(Color.alpha(GO.ColorFone), false)
-                                selR.setProgress(Color.red(GO.ColorFone), false)
-                                selG.setProgress(Color.green(GO.ColorFone), false)
-                                selB.setProgress(Color.blue(GO.ColorFone), false)
-                            } else if (checkedId == rbFoneLg.id) {                          // Цвет для логарифмического графика фона
-                                //tvColor.setBackgroundColor(GO.ColorFoneLg)
-                                selA.setProgress(Color.alpha(GO.ColorFoneLg), false)
-                                selR.setProgress(Color.red(GO.ColorFoneLg), false)
-                                selG.setProgress(Color.green(GO.ColorFoneLg), false)
-                                selB.setProgress(Color.blue(GO.ColorFoneLg), false)
-                            }
-                        } else if (GO.rbGistogramSpectr.isChecked) {
-                            if (checkedId == rbLine.id) {                                   // Цвет для линейного графика
-                                //tvColor.setBackgroundColor(GO.ColorLinGisto)
-                                selA.setProgress(Color.alpha(GO.ColorLinGisto), false)
-                                selR.setProgress(Color.red(GO.ColorLinGisto), false)
-                                selG.setProgress(Color.green(GO.ColorLinGisto), false)
-                                selB.setProgress(Color.blue(GO.ColorLinGisto), false)
-                            } else if (checkedId == rbLg.id) {                              // Цвет для логарифмического графика
-                                //tvColor.setBackgroundColor(GO.ColorLogGisto)
-                                selA.setProgress(Color.alpha(GO.ColorLogGisto), false)
-                                selR.setProgress(Color.red(GO.ColorLogGisto), false)
-                                selG.setProgress(Color.green(GO.ColorLogGisto), false)
-                                selB.setProgress(Color.blue(GO.ColorLogGisto), false)
-                            } else if (checkedId == rbFoneLin.id) {                         // Цвет для линейного графика фона
-                                //tvColor.setBackgroundColor(GO.ColorFoneGisto)
-                                selA.setProgress(Color.alpha(GO.ColorFoneGisto), false)
-                                selR.setProgress(Color.red(GO.ColorFoneGisto), false)
-                                selG.setProgress(Color.green(GO.ColorFoneGisto), false)
-                                selB.setProgress(Color.blue(GO.ColorFoneGisto), false)
-                            } else if (checkedId == rbFoneLg.id) {                          // Цвет для логарифмического графика фона
-                                //tvColor.setBackgroundColor(GO.ColorFoneLgGisto)
-                                selA.setProgress(Color.alpha(GO.ColorFoneLgGisto), false)
-                                selR.setProgress(Color.red(GO.ColorFoneLgGisto), false)
-                                selG.setProgress(Color.green(GO.ColorFoneLgGisto), false)
-                                selB.setProgress(Color.blue(GO.ColorFoneLgGisto), false)
-                            }
-                        }
-                        GO.drawExamp.exampRedraw()
-                        noChange = true
+                /*
+                 var lastCheckedGroup: RadioGroup? = null
+
+                val radioGroupChangeListener = RadioGroup.OnCheckedChangeListener { group, checkedId ->
+                    if (checkedId == -1) return@OnCheckedChangeListener
+
+                    val radioButton = view.findViewById<RadioButton>(checkedId)
+
+                    // Игнорируем событие, если кнопка не отмечена (защита от ложных срабатываний)
+                    if (radioButton?.isChecked != true) return@OnCheckedChangeListener
+
+                    // Сбрасываем предыдущую группу
+                    if (lastCheckedGroup != null && lastCheckedGroup != group) {
+                        lastCheckedGroup?.clearCheck()
                     }
+
+                    lastCheckedGroup = group
+
+                    changeSpectrType(checkedId)
                 }
 
+                rbGroup.setOnCheckedChangeListener(radioGroupChangeListener)
+                rbGroup2.setOnCheckedChangeListener(radioGroupChangeListener)
+                */
+
+                rbGroup.setOnCheckedChangeListener  { _, checkedId ->
+                    if (checkedId != -1) {
+                        //rbGroup2.clearCheck()
+                        view.findViewById<RadioButton>(checkedId)?.apply {
+                            noChange = false
+                            changeSpectrType(checkedId)
+                            noChange = true
+                        }
+                    }
+                }
+                /*
+                rbGroup2.setOnCheckedChangeListener  { _, checkedId ->
+                    if (checkedId != -1) {
+                        rbGroup.clearCheck()
+                        view.findViewById<RadioButton>(checkedId)?.apply {
+                            noChange = false
+                            changeSpoectrType(checkedId)
+                            noChange = true
+                        }
+                    }
+                }
+                */
                 /* Установка прозрачности  A - канал */
                 selA = view.findViewById(R.id.seekBarA)
                 selA.setProgress(Color.alpha(GO.ColorLin), false)
