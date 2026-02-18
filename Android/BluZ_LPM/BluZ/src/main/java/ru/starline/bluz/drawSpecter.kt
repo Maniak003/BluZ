@@ -118,7 +118,7 @@ class drawSpecter {
             }
         }
 
-        xSize = HSize.toDouble() / ResolutionSpectr
+        xSize = HSize.toDouble() / ResolutionSpectr * GO.xZoom
         paintLin.strokeWidth = xSize.toFloat()
         paintLog.strokeWidth = xSize.toFloat()
         paintFoneLin.strokeWidth = xSize.toFloat() * 2

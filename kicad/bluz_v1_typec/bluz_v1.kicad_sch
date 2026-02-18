@@ -12265,13 +12265,12 @@
 		(dnp no)
 		(uuid "4134e61c-8821-429e-9605-e910b2760183")
 		(property "Reference" "R10"
-			(at 172.593 103.3053 0)
+			(at 165.608 103.886 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
 			)
 		)
 		(property "Value" "75k"
@@ -12470,13 +12469,12 @@
 		(dnp no)
 		(uuid "4bfaeba9-8178-41b9-9ef3-27a015e67ae7")
 		(property "Reference" "R6"
-			(at 164.338 103.3053 0)
+			(at 158.75 103.632 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
 			)
 		)
 		(property "Value" "3k"
@@ -13892,19 +13890,17 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "858a9170-d1aa-4fff-bdd3-585825022400")
 		(property "Reference" "R7"
-			(at 166.37 94.3442 90)
+			(at 167.64 95.25 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(property "Value" "10k"
-			(at 166.37 96.8812 90)
+			(at 167.894 97.028 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14296,17 +14292,16 @@
 		(dnp no)
 		(uuid "95b828e2-2230-4d8c-b384-f5b115a71403")
 		(property "Reference" "C12"
-			(at 177.546 103.3053 0)
+			(at 179.324 104.648 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
 			)
 		)
 		(property "Value" "10n"
-			(at 175.26 106.68 0)
+			(at 179.578 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14632,13 +14627,12 @@
 		(dnp no)
 		(uuid "a50b7282-1e2d-4959-9466-eac7c4aa1550")
 		(property "Reference" "R9"
-			(at 172.593 89.3353 0)
+			(at 172.72 88.138 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
 			)
 		)
 		(property "Value" "10M"
@@ -14973,16 +14967,15 @@
 		(dnp no)
 		(uuid "bd5cecec-cebb-4331-9968-eb56d44e302e")
 		(property "Reference" "C14"
-			(at 182.88 80.5012 90)
+			(at 183.134 89.916 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(property "Value" "22u"
-			(at 182.88 90.17 90)
+			(at 182.88 91.948 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15573,17 +15566,16 @@
 		(dnp no)
 		(uuid "cc7be890-b4cd-47f5-9d15-8143910c3e7e")
 		(property "Reference" "R8"
-			(at 169.418 89.3353 0)
+			(at 163.068 89.662 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
 			)
 		)
 		(property "Value" "10M"
-			(at 161.925 90.17 0)
+			(at 162.052 91.694 0)
 			(effects
 				(font
 					(size 1.27 1.27)

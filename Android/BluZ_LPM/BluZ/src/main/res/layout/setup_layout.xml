@@ -444,7 +444,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="0"
-                                android:text="Pad left"
+                                android:text="PadL"
                                 android:textColor="@color/labelTextColor" />
 
                             <EditText
@@ -464,7 +464,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="0"
-                                android:text="Pad right"
+                                android:text="PadR"
                                 android:textColor="@color/labelTextColor" />
 
                             <EditText
@@ -478,7 +478,28 @@
                                 android:text="0"
                                 android:textColor="@color/editTextColor"
                                 android:textSize="14sp" />
+
+                            <TextView
+                                android:id="@+id/textView36"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0"
+                                android:text="XZoom"
+                                android:textColor="@color/labelTextColor" />
+
+                            <EditText
+                                android:id="@+id/editTextXZoom"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:ems="10"
+                                android:imeOptions="actionDone"
+                                android:inputType="numberDecimal"
+                                android:text="1"
+                                android:textColor="@color/editTextColor"
+                                android:textSize="14sp" />
                         </LinearLayout>
+
                     </LinearLayout>
 
                     <Space
