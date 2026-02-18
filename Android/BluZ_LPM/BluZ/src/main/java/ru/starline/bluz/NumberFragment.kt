@@ -1,6 +1,5 @@
 package ru.starline.bluz
 
-import FastMLEM
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -492,6 +491,9 @@ class NumberFragment : Fragment() {
 
         /* Отступ справого края */
         paddingTextRight.setText(GO.paddingRight.toString())
+
+        /* Масштабирование по Y */
+        GO.textXZoom.setText(GO.xZoom.toString())
 
     }
 
@@ -995,6 +997,7 @@ class NumberFragment : Fragment() {
                 GO.rbTrackFmt = view.findViewById(R.id.RGTrackFormat)
                 GO.sampleTimeEdit = view.findViewById(R.id.editSampleTime)
                 GO.textAppLogLevel = view.findViewById(R.id.editTextApplucationLog)
+                GO.textXZoom = view.findViewById(R.id.editTextXZoom)
 
                 paddingTextLeft  = view.findViewById(R.id.editTextPaddingLeft)
                 paddingTextRight = view.findViewById(R.id.editTextPaddingRight)
@@ -1159,7 +1162,8 @@ class NumberFragment : Fragment() {
                         GO.paddingRight = pdTmpR
                         mainLayout.setPadding(GO.paddingLeft, mainLayout.paddingTop, GO.paddingRight, mainLayout.paddingBottom)
                     }
-
+                    /* Масштабирование по X */
+                    GO.xZoom = GO.textXZoom.text.toString().toFloatOrNull() ?: 1.0f
 
                     /* Уровень ногирования */
                     GO.appLogLevel = GO.textAppLogLevel.text.toString().toInt()

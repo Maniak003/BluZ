@@ -97,6 +97,7 @@ class globalObj {
     public val propLogLevel: String = "applicationLogLevel"
     public val propPaddingLeft: String = "PaddingLeft"
     public val propPaddingRight: String = "PaddingRight"
+    public val propXZoom: String = "XZoom"
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var allPermissionAccept: Boolean = false
@@ -111,6 +112,7 @@ class globalObj {
     public var appLogLevel: Int = 0
     public var paddingLeft: Int = 0
     public var paddingRight: Int = 0
+    public var xZoom: Float = 1.0f
     public lateinit var drawExamp: drawExmple
     public var drawObjectInit: Boolean = true
     public var drawObjectInitHistory: Boolean = true
@@ -293,6 +295,7 @@ class globalObj {
     lateinit var bitsChannelEdit: EditText
     lateinit var sampleTimeEdit: EditText
     lateinit var textAppLogLevel: EditText
+    lateinit var textXZoom: EditText
     var aqureValue: Int = 100
     var bitsChannel:Int = 20
     public lateinit var cbFullScrn: CheckBox            // Управление полноэкранным режимом
@@ -802,6 +805,7 @@ class globalObj {
         GO.PP.setPropInt(propSaveTrackType, GO.saveTrackType)               // Формат для сохранения трека
         GO.PP.setPropInt(propSampleTime, GO.sampleTime)                     // Время выборки АЦП
         GO.PP.setPropInt(propLogLevel, GO.appLogLevel)                      // Включает запись логов приложения
+        GO.PP.setPropFloat(propXZoom, GO.xZoom)                             // Масштабирование по Y
         GO.PP.setPropInt(propPaddingLeft, GO.paddingLeft)                   // Отступ слева
         GO.PP.setPropInt(propPaddingRight, GO.paddingRight)                 // Отступ справа
     }
@@ -894,6 +898,10 @@ class globalObj {
         GO.appLogLevel = GO.PP.getPropInt(propLogLevel)
         GO.paddingLeft = GO.PP.getPropInt(propPaddingLeft)
         GO.paddingRight = GO.PP.getPropInt(propPaddingRight)
+        GO.xZoom = GO.PP.getPropFloat(propXZoom)
+        if (GO.xZoom <= 0.0f) {
+            GO.xZoom = 1.0f
+        }
     }
 
     /* Запуск таймера для автоматического подключения */
