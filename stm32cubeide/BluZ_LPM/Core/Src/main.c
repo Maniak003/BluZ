@@ -1499,7 +1499,7 @@ void TVMeasure(void) {
 		HAL_ADC_Start_DMA(&hadc4, TVLevel, 1);
 		//hadc4.DMA_Handle->Instance->CCR &= ~DMA_IT_HT;				// Отключение прерывания по промежуточному значению.
 	}
-	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);			// По завершении обработки заснуть
 }
 
 /*
