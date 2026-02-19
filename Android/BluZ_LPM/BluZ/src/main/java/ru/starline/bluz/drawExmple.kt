@@ -68,6 +68,10 @@ class drawExmple {
         }
         clearExample()
         /* Выбор цветов для графиков */
+        paintLin.strokeWidth = 3.0f
+        paintLog.strokeWidth = 3.0f
+        paintFoneLin.strokeWidth = 3.0f
+        paintFoneLog.strokeWidth = 3.0f
         if (GO.specterGraphType == 0) {         // Стиль графика - линия
             paintLin.color = GO.ColorLin
             paintLog.color = GO.ColorLog

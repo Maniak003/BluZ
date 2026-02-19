@@ -77,6 +77,7 @@
     <string name="textMap_format">Map format</string>
     <string name="textApplication_logs">Application logs</string>
     <string name="textLog_level">Log level:</string>
+    <string name="textHardware">Hardware</string>
     <!-- TODO: Remove or change this placeholder text
     <string name="hello_blank_fragment">Hello blank fragment</string> -->
 </resources>

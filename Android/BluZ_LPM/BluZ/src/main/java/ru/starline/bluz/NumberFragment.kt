@@ -135,6 +135,7 @@ class NumberFragment : Fragment() {
     }
 
     private fun changeSpectrType(checkedId: Int) {
+        noChange = false
         if (GO.rbLineSpectr.isChecked) {
             if (checkedId == rbLine.id) {                                   // Цвет для линейного графика
                 //tvColor.setBackgroundColor(GO.ColorLin)
@@ -189,6 +190,7 @@ class NumberFragment : Fragment() {
             }
         }
         GO.drawExamp.exampRedraw()
+        noChange = true
     }
     /* Преобразование DP >> PX */
     private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
@@ -1394,7 +1396,7 @@ class NumberFragment : Fragment() {
                     *                   2 - | Врямя выборки
                     *                   3 - |
                     *                   4 - Деление на 10 озвучки событий
-                    *                   5 -
+                    *                   5 - Деление на 10 светодиода событий
                     *                   6 -
                     *                   7 -
                     * 39,40,41,42   - Коэффициент A полинома преобразования канала в энергию для 2048.
@@ -1412,6 +1414,7 @@ class NumberFragment : Fragment() {
                     //var convVal = ByteArray(4)
 
                     /* Перед сохранением загрузим текушие параметры из редактора */
+
                     /* Звуковое сопровождение регистрации частицы */
                     if (GO.rbClickNone.isChecked) {
                         GO.propSoundKvant = 0
@@ -1463,26 +1466,40 @@ class NumberFragment : Fragment() {
                     }
 
                     /* Подготовка массива для передачи */
+                    /*
+                    fun Int.writeToBuffer(buffer: UByteArray, offset: Int) {
+                        buffer[offset] = (this shr 24 and 0xFF).toUByte()
+                        buffer[offset + 1] = (this shr 16 and 0xFF).toUByte()
+                        buffer[offset + 2] = (this shr 8 and 0xFF).toUByte()
+                        buffer[offset + 3] = (this and 0xFF).toUByte()
+                    }*/
+
                     /* Первый порог */
+
                     var convVal = ByteBuffer.allocate(4).putInt(GO.propLevel1).array();
                     GO.BTT.sendBuffer[4] = convVal[0].toUByte()
                     GO.BTT.sendBuffer[5] = convVal[1].toUByte()
                     GO.BTT.sendBuffer[6] = convVal[2].toUByte()
                     GO.BTT.sendBuffer[7] = convVal[3].toUByte()
+                    //GO.propLevel1.writeToBuffer(GO.BTT.sendBuffer, 4)
 
                     /* Второй порог */
+
                     convVal = ByteBuffer.allocate(4).putInt(GO.propLevel2).array();
                     GO.BTT.sendBuffer[8] = convVal[0].toUByte()
                     GO.BTT.sendBuffer[9] = convVal[1].toUByte()
                     GO.BTT.sendBuffer[10] = convVal[2].toUByte()
                     GO.BTT.sendBuffer[11] = convVal[3].toUByte()
+                    //GO.propLevel2.writeToBuffer(GO.BTT.sendBuffer, 8)
 
                     /* Третий порог */
+
                     convVal = ByteBuffer.allocate(4).putInt(GO.propLevel3).array();
                     GO.BTT.sendBuffer[12] = convVal[0].toUByte()
                     GO.BTT.sendBuffer[13] = convVal[1].toUByte()
                     GO.BTT.sendBuffer[14] = convVal[2].toUByte()
                     GO.BTT.sendBuffer[15] = convVal[3].toUByte()
+                    //GO.propLevel3.writeToBuffer(GO.BTT.sendBuffer, 12)
 
                     /* Коэффициент пересчета cps в uRh */
                     convVal = ByteBuffer.allocate(4).putFloat(GO.propCPS2UR).array();
@@ -1498,31 +1515,31 @@ class NumberFragment : Fragment() {
                     }
                     /* Звук сопровождает приход частицы */
                     if (GO.rbClick1.isChecked || GO.rbClick10.isChecked) {
-                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00000010.toUByte()
+                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00000010u
                     }
                     /* Звуковая сигнализация первого порога */
                     if (GO.cbSoundLevel1.isChecked) {
-                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00000100.toUByte()
+                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00000100u
                     }
                     /* Звуковая сигнализация второго порога */
                     if (GO.cbSoundLevel2.isChecked) {
-                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00001000.toUByte()
+                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00001000u
                     }
                     /* Звуковая сигнализация третьего порога */
                     if (GO.cbSoundLevel3.isChecked) {
-                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00010000.toUByte()
+                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00010000u
                     }
                     /* Вибро первого порога */
                     if (GO.cbVibroLevel1.isChecked) {
-                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00100000.toUByte()
+                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b00100000u
                     }
                     /* Вибро второго порога */
                     if (GO.cbVibroLevel2.isChecked) {
-                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b01000000.toUByte()
+                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b01000000u
                     }
                     /* Вибро третьего порога */
                     if (GO.cbVibroLevel3.isChecked) {
-                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b10000000.toUByte()
+                        GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b10000000u
                     }
 
                     /* Коэффициент A полинома для 1024 */
@@ -1677,7 +1694,7 @@ class NumberFragment : Fragment() {
                 rbLg = view.findViewById(R.id.RBLg)
                 rbFoneLin = view.findViewById(R.id.RBFoneLin)
                 rbFoneLg = view.findViewById(R.id.RBFoneLg)
-                rbGroup = view.findViewById(R.id.rbTypeGroup)
+                //rbGroup = view.findViewById(R.id.rbTypeGroup)
                 //rbGroup2 = view.findViewById(R.id.rbTypeGroup2)
                 rgTypeSpec = view.findViewById(R.id.rgTypeSpectr)
                 rbResolution = view.findViewById(R.id.RGResolution)
@@ -1823,53 +1840,16 @@ class NumberFragment : Fragment() {
                  *  Выбор графика для изменения
                  *  Установка текущих значений на ползунках
                  */
-                /*
-                 var lastCheckedGroup: RadioGroup? = null
 
-                val radioGroupChangeListener = RadioGroup.OnCheckedChangeListener { group, checkedId ->
-                    if (checkedId == -1) return@OnCheckedChangeListener
-
-                    val radioButton = view.findViewById<RadioButton>(checkedId)
-
-                    // Игнорируем событие, если кнопка не отмечена (защита от ложных срабатываний)
-                    if (radioButton?.isChecked != true) return@OnCheckedChangeListener
-
-                    // Сбрасываем предыдущую группу
-                    if (lastCheckedGroup != null && lastCheckedGroup != group) {
-                        lastCheckedGroup?.clearCheck()
-                    }
-
-                    lastCheckedGroup = group
-
-                    changeSpectrType(checkedId)
-                }
-
-                rbGroup.setOnCheckedChangeListener(radioGroupChangeListener)
-                rbGroup2.setOnCheckedChangeListener(radioGroupChangeListener)
-                */
-
-                rbGroup.setOnCheckedChangeListener  { _, checkedId ->
-                    if (checkedId != -1) {
-                        //rbGroup2.clearCheck()
-                        view.findViewById<RadioButton>(checkedId)?.apply {
-                            noChange = false
-                            changeSpectrType(checkedId)
-                            noChange = true
-                        }
+                val radioButtons = listOf(rbLine, rbLg, rbFoneLin, rbFoneLg)
+                /* Переключение radioButtons без radioGroup */
+                radioButtons.forEach { radioButton ->
+                    radioButton.setOnClickListener {
+                        radioButtons.filter { it != radioButton }.forEach { it.isChecked = false }
+                        changeSpectrType(radioButton.id)
                     }
                 }
-                /*
-                rbGroup2.setOnCheckedChangeListener  { _, checkedId ->
-                    if (checkedId != -1) {
-                        rbGroup.clearCheck()
-                        view.findViewById<RadioButton>(checkedId)?.apply {
-                            noChange = false
-                            changeSpoectrType(checkedId)
-                            noChange = true
-                        }
-                    }
-                }
-                */
+
                 /* Установка прозрачности  A - канал */
                 selA = view.findViewById(R.id.seekBarA)
                 selA.setProgress(Color.alpha(GO.ColorLin), false)
