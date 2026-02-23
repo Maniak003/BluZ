@@ -1,0 +1,6 @@
+../System/Modules/Nvm/nvm_emul.c:66:6:NVM_Init	16	static
+../System/Modules/Nvm/nvm_emul.c:89:5:NVM_Add	56	static
+../System/Modules/Nvm/nvm_emul.c:203:5:NVM_Get	32	static
+../System/Modules/Nvm/nvm_emul.c:304:5:NVM_Compare	24	static
+../System/Modules/Nvm/nvm_emul.c:335:6:NVM_Discard	32	static
+../System/Modules/Nvm/nvm_emul.c:417:13:NVMCB_Store	16	static
