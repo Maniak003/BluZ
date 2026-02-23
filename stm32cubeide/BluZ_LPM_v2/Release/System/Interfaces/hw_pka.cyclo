@@ -1,0 +1,8 @@
+../System/Interfaces/hw_pka.c:38:5:HW_PKA_Enable	3
+../System/Interfaces/hw_pka.c:82:6:HW_PKA_WriteSingleInput	1
+../System/Interfaces/hw_pka.c:91:6:HW_PKA_WriteOperand	2
+../System/Interfaces/hw_pka.c:109:6:HW_PKA_Start	1
+../System/Interfaces/hw_pka.c:121:5:HW_PKA_EndOfOperation	1
+../System/Interfaces/hw_pka.c:129:10:HW_PKA_ReadSingleOutput	1
+../System/Interfaces/hw_pka.c:138:6:HW_PKA_ReadResult	2
+../System/Interfaces/hw_pka.c:152:6:HW_PKA_Disable	2

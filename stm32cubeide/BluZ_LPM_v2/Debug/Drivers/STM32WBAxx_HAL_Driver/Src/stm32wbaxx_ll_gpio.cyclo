@@ -1,0 +1,11 @@
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h:284:22:LL_GPIO_SetPinMode	3
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h:354:22:LL_GPIO_SetPinOutputType	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h:424:22:LL_GPIO_SetPinSpeed	3
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h:494:22:LL_GPIO_SetPinPull	3
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h:567:22:LL_GPIO_SetAFPin_0_7	3
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h:644:22:LL_GPIO_SetAFPin_8_15	3
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:569:22:LL_AHB2_GRP1_ForceReset	1
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_bus.h:603:22:LL_AHB2_GRP1_ReleaseReset	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c:107:13:LL_GPIO_DeInit	5
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c:152:13:LL_GPIO_Init	8
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c:225:6:LL_GPIO_StructInit	1

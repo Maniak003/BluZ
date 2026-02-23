@@ -1,0 +1,6 @@
+../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c:28:6:ll_sys_enable_irq	1
+../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c:37:6:ll_sys_disable_irq	1
+../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c:47:6:ll_sys_enable_specific_irq	1
+../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c:57:6:ll_sys_disable_specific_irq	1
+../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c:62:6:ll_sys_enable_os_context_switch	1
+../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c:67:6:ll_sys_disable_os_context_switch	1

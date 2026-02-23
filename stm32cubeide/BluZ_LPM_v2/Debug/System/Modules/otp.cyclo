@@ -1,0 +1,2 @@
+../System/Modules/otp.c:33:19:OTP_Read	4
+../System/Modules/otp.c:50:19:OTP_Write	8

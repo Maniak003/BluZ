@@ -1,0 +1,10 @@
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c:242:10:LL_DMA_DeInit	6
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c:333:10:LL_DMA_Init	5
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c:485:6:LL_DMA_StructInit	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c:523:6:LL_DMA_ListStructInit	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c:553:10:LL_DMA_List_DeInit	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c:582:10:LL_DMA_List_Init	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c:622:6:LL_DMA_NodeStructInit	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c:669:10:LL_DMA_CreateLinkNode	9
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c:876:6:LL_DMA_ConnectLinkNode	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c:891:6:LL_DMA_DisconnectNextLinkNode	1

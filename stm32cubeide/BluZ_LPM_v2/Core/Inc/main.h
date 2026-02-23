@@ -1,0 +1,295 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.h
+  * @brief          : Header for main.c file.
+  *                   This file contains the common defines of the application.
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2025 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __MAIN_H
+#define __MAIN_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Includes ------------------------------------------------------------------*/
+#include "stm32wbaxx_hal.h"
+#include "app_conf.h"
+#include "app_entry.h"
+#include "app_common.h"
+#include "app_debug.h"
+
+#include "stm32wbaxx_ll_dma.h"
+#include "stm32wbaxx_ll_icache.h"
+#include "stm32wbaxx_ll_tim.h"
+#include "stm32wbaxx_ll_bus.h"
+#include "stm32wbaxx_ll_cortex.h"
+#include "stm32wbaxx_ll_rcc.h"
+#include "stm32wbaxx_ll_system.h"
+#include "stm32wbaxx_ll_utils.h"
+#include "stm32wbaxx_ll_pwr.h"
+#include "stm32wbaxx_ll_gpio.h"
+
+#include "stm32wbaxx_ll_exti.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include <stdbool.h>
+#include "rw_FLASH.h"
+#include <stm32_timer.h>
+#include <stm32_seq.h>
+#include <stm32_lpm.h>
+#include "LTC1662.h"
+/* USER CODE END Includes */
+
+/* Exported types ------------------------------------------------------------*/
+/* USER CODE BEGIN ET */
+/*
+ * Размер буфера для служебных данных
+ * Значение для вычисления максимального размера буфера
+ * для разрешения 4096
+ * 8192 + 104 =  34 * 244(MTU)
+ */
+#define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
+#define CRC_SIZE 1											/* размер в uint16_t */
+#define MTU_SIZE DATA_NOTIFICATION_MAX_PACKET_SIZE			/* Размер mtu в uint8_t */
+#define HEADER_OFFSET 50									/* Начало данных дозиметра (uint16_t)*/
+#define SIZE_DOZIMETR_BUFER 512								/* Размер буфера для статистики дозиметра (uint16_t) */
+#define LOG_BUFER_SIZE 50									/* Количество записей в логе */
+#define LOG_OFFSET (HEADER_OFFSET + SIZE_DOZIMETR_BUFER)	/* Начало данных лога */
+#define SPECTER_OFFSET (LOG_OFFSET + LOG_BUFER_SIZE * 3)	/* Начало спектра в буфере в uint16_t */
+#define NUMBER_MTU_DOZR 6									/* Количество MTU для передачи накоплений дозиметра */
+#define NUMBER_MTU_1024 16									/* Количество MTU для передачи спектра разрешением 1024 */
+#define NUMBER_MTU_2048 23									/* Количество MTU для передачи спектра разрешением 2048 */
+#define NUMBER_MTU_4096 40									/* Количество MTU для передачи спектра разрешением 4096 */
+#define CHANNELS_1024	1024
+#define CHANNELS_2048	2048
+#define CHANNELS_4096	4096
+#define MAX_RESOLUTION 	4096
+#define CAPCHAN 20											/* Количество разрядов в канале */
+#define OFFSET_CHAN		1U									/* Смещение канала для усредненния */
+#define DEFAULTAQR		100									/* Точность дозиметра по умолчанию */
+#define SEND_DELAY		30									/* Задержка в ms между передачами MTU */
+#define DELAY_INTERVAL 10									/* Количество передач до задержке */
+#define LOW_BATT	2.9f									/* Критический уровень напряжения батареи */
+
+typedef enum spectrResolution {
+	resolution1024,
+	resolution2048,
+	resolution4096
+} spectrResolution_t;
+
+typedef enum sendDataTypes {
+	onlyDozimeter,
+	dozimeterSpecter1024,
+	dozimeterSpecter2048,
+	dozimeterSpecter4096,
+	dozimeterHistory1024,
+	dozimeterHistory2048,
+	dozimeterHistory4096
+} sendDataTypes_t;
+
+extern uint16_t MTUSizeValue;
+extern spectrResolution_t resolutionSpecter;
+extern sendDataTypes_t dataType;
+extern uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET];
+extern uint16_t currTemperature, currVoltage;
+extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION], spectrometerTime, spectrometerPulse;
+extern uint32_t historySpecterBuffer[MAX_RESOLUTION];
+extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, currentTime, pulseCounterSecond, CPS, intervalNow, TVLevel[3];
+extern uint32_t interval2;
+extern bool SoundEnable, VibroEnable, LEDEnable, LEDflag;
+extern bool levelSound1, levelSound2, levelSound3;
+extern bool levelVibro1, levelVibro2, levelVibro3;
+extern bool flagTemperatureMess, autoStartSpecrometr;
+extern bool history_active, historyRequest/*, findDevice*/;
+extern bool divide10sound, divide10led;
+extern uint16_t HVoltage, comparatorLevel;
+extern LPTIM_HandleTypeDef hlptim2;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+extern uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER];
+extern int indexDozimetrBufer;
+extern ADC_HandleTypeDef hadc4;
+extern uint64_t PL[19];
+extern uint32_t tmpLevel;
+extern uint32_t limitChan;
+extern double CoefChan;
+extern uint8_t currentSamplingTime;
+
+typedef enum commandTx {
+	cmd_setup,
+	cmd_clear_specter,
+	cmd_startup_spectrometer,
+	cmd_clear_dosimeter,
+	cmd_clear_logs,
+	cmd_history_request,
+	cmd_find_device,
+	cmd_calibrate_batt
+} commantTx_t;
+
+typedef enum logTypes {
+	nonLog,						// 0
+	powerOnLog,					// 1
+	level1Log,					// 2
+	level2Log,					// 3
+	level3Log,					// 4
+	level0Log,					// 5
+	resDozimeterLog,			// 6
+	resSpectrometerLog,			// 7
+	writeFlashLog,				// 8
+	startSpectrometerLog,		// 9
+	stopSpectrometerLog,		// 10
+	clearLog,					// 11
+	changeResolutionLog,		// 12
+	changeBitsOfChan,			// 13
+	overload,					// 14
+	calibrateBatt,				// 15
+	lowBatt						// 16
+} logTypes_t;
+
+struct LG {
+	uint32_t time;
+	uint8_t type;
+};
+
+extern struct LG logBuffer[LOG_BUFER_SIZE];
+
+union dataB {
+	float Float;
+	uint32_t Uint32;
+};
+union dataC {
+	float Float;
+	uint16_t Uint16[2];
+	uint8_t Uint[4];
+	uint32_t Uint32;
+};
+
+union dataA {
+	float Float;
+	uint16_t Uint[2];
+	uint32_t Uint32;
+};
+
+extern uint32_t level1_cps, level2_cps, level3_cps, tmp_level;
+extern uint16_t level1, level2, level3;
+extern uint8_t bitsOfChannal;
+extern union dataC calcCoeff;
+extern union dataC enCoefA1024, enCoefB1024, enCoefC1024;
+extern union dataC enCoefA2048, enCoefB2048, enCoefC2048;
+extern union dataC enCoefA4096, enCoefB4096, enCoefC4096;
+extern union dataA Temperature, Voltage;
+extern union dataA AvgCPS;
+extern union dataB battKoeff;
+extern uint16_t MTUSizeValue, dozimetrAquracy;
+
+uint8_t sendData( uint8_t *dataSpectrBufer );
+void logUpdate(uint8_t act);
+void APP_BLE_Update_Manufacturer_Data(uint32_t data);
+/* USER CODE END ET */
+
+/* Exported constants --------------------------------------------------------*/
+/* USER CODE BEGIN EC */
+
+/* USER CODE END EC */
+
+/* Exported macro ------------------------------------------------------------*/
+/* USER CODE BEGIN EM */
+
+/* USER CODE END EM */
+
+void HAL_LPTIM_MspPostInit(LPTIM_HandleTypeDef *hlptim);
+
+/* Exported functions prototypes ---------------------------------------------*/
+void Error_Handler(void);
+void MX_GPIO_Init(void);
+void MX_GPDMA1_Init(void);
+void MX_ADC4_Init(void);
+void MX_CRC_Init(void);
+void MX_ICACHE_Init(void);
+void MX_RAMCFG_Init(void);
+void MX_RNG_Init(void);
+void MX_RTC_Init(void);
+void MX_LPTIM2_Init(void);
+
+/* USER CODE BEGIN EFP */
+void NotifyAct(uint8_t SRC, uint32_t repCnt);
+/* USER CODE END EFP */
+
+/* Private defines -----------------------------------------------------------*/
+#define A_DATA_Pin GPIO_PIN_12
+#define A_DATA_GPIO_Port GPIOB
+#define A_SCK_Pin GPIO_PIN_8
+#define A_SCK_GPIO_Port GPIOA
+#define A_CS_Pin GPIO_PIN_7
+#define A_CS_GPIO_Port GPIOA
+#define VIBRO_Pin GPIO_PIN_6
+#define VIBRO_GPIO_Port GPIOA
+#define batLev_Pin GPIO_PIN_2
+#define batLev_GPIO_Port GPIOA
+#define SOUND_Pin GPIO_PIN_1
+#define SOUND_GPIO_Port GPIOA
+#define AIn_Pin GPIO_PIN_0
+#define AIn_GPIO_Port GPIOA
+#define NC_Pin GPIO_PIN_9
+#define NC_GPIO_Port GPIOB
+#define NCB8_Pin GPIO_PIN_8
+#define NCB8_GPIO_Port GPIOB
+#define LED_Pin GPIO_PIN_15
+#define LED_GPIO_Port GPIOA
+#define Sync_Pin GPIO_PIN_15
+#define Sync_GPIO_Port GPIOB
+#define Sync_EXTI_IRQn EXTI15_IRQn
+
+/* USER CODE BEGIN Private defines */
+#define INTERVAL1 1
+#define INTERVAL2 5
+#define INTERVAL3 1
+#define INTERVAL4 120
+#define INTERVAL5 60									// Интервал звукового оповещения о низком заряде аккумулятора
+#define DIVCOUNTER 10									// Делитель событий для озвучки.
+#define DIVCOUNTERLED 10								// Делитель событий для светодиода.
+
+#define SOUND_TIME_NOTIFY 4096
+#define SOUND_NOTIFY 	1
+#define VIBRO_NOTIFY 	2
+#define LED_NOTIFY   	4
+#define TEST_LED		1
+#define MEASURE_INTERVAL	1000
+#define VIBRO_TIME		50								// Время работы вибро
+#define VIBRO_PERIOD	100								// Интервал для вибро
+#define LED_PERIOD		10								// Время свечения светодиода
+#define TICK_PERIOD		1								// Время щелчка
+//#define MEDIAN										// Включить медианный фильтр
+#define SOUND_AF_NUM   GPIO_AF13_LPTIM2
+
+//#define DEBUG_USER
+
+/*
+ * TODO -- Нужно получить реальное напряжение питания
+ */
+#define ADC_VREF 2.8f									// Напряжение питания.
+//#define ADC_VREF_COEF 4.2f / 4080.0f
+static const float ADC_VREF_COEF = 4.2f / 4055.68f;		// Коэффициент завист от делителя напряжения. Нужно подбирать на полностью заряженном аккумуляторе.
+
+/* USER CODE END Private defines */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __MAIN_H */

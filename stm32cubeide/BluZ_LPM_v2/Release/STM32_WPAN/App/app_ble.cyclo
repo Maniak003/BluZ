@@ -1,0 +1,15 @@
+../STM32_WPAN/App/app_ble.c:1552:13:APP_BLE_AdvLowPower_timCB	1
+../STM32_WPAN/App/app_ble.c:1281:13:Ble_UserEvtRx	4
+../STM32_WPAN/App/app_ble.c:1506:13:BleStack_Process_BG	2
+../STM32_WPAN/App/app_ble.c:1531:13:BLE_ResumeFlowProcessCallback	1
+../STM32_WPAN/App/app_ble.c:1541:13:BLE_NvmCallback	2
+../STM32_WPAN/App/app_ble.c:715:22:APP_BLE_Get_Server_Connection_Status	1
+../STM32_WPAN/App/app_ble.c:720:6:APP_BLE_Procedure_Gap_General	9
+../STM32_WPAN/App/app_ble.c:815:6:APP_BLE_Procedure_Gap_Peripheral	8
+../STM32_WPAN/App/app_ble.c:224:6:APP_BLE_Init	21
+../STM32_WPAN/App/app_ble.c:1564:13:APP_BLE_AdvLowPower	1
+../STM32_WPAN/App/app_ble.c:304:28:SVCCTL_App_Notification	11
+../STM32_WPAN/App/app_ble.c:1013:16:BleGetBdAddress	1
+../STM32_WPAN/App/app_ble.c:1579:12:BLECB_Indication	5
+../STM32_WPAN/App/app_ble.c:1619:6:NVMCB_Store	1
+../STM32_WPAN/App/app_ble.c:1634:6:APP_BLE_Update_Manufacturer_Data	1

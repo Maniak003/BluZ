@@ -1,0 +1,11 @@
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rcc.h:2308:22:LL_RCC_PLL1_ConfigDomain_PLL1R	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c:143:6:LL_Init1msTick	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c:156:6:LL_Init1msTick_HCLK_Div8	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c:170:6:LL_Init1msTick_LSE	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c:184:6:LL_Init1msTick_LSI	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c:202:6:LL_mDelay	4
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c:273:6:LL_SetSystemCoreClock	1
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c:413:13:LL_SetFlashLatency	9
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c:550:20:UTILS_EnablePLLAndSwitchSystem	7
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c:298:13:LL_PLL1_ConfigSystemClock_HSI	4
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c:354:13:LL_PLL1_ConfigSystemClock_HSE	4
