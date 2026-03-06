@@ -114,8 +114,8 @@ HAL_StatusTypeDef writeFlash() {
 		tmpData |= 1 << 11;
 	}
 
-	tmpData |= HVoltage << 12;
-	tmpData |= (uint64_t)comparatorLevel << 22;
+	tmpData |= ((uint64_t)HVoltage & 0x3FF) << 12;
+	tmpData |= ((uint64_t)comparatorLevel  & 0x3FF) << 22;
 
 	tmpData |= ((uint64_t)calcCoeff.Uint32 << 32);
 	PL[idxPL++] = tmpData;					// 2,  3
