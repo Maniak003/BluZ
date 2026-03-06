@@ -878,19 +878,17 @@ class BluetoothInterface() {
 
                                     //GO.HWpropHVoltage = (GO.receiveData[50] + (GO.receiveData[51] * 256u)).toUShort()
                                     //GO.HWpropComparator = (GO.receiveData[52] + (GO.receiveData[53] * 256u)).toUShort()
-                                    GO.HWpropHVoltage = ((GO.receiveData[51].toUInt() shl 8) or GO.receiveData[50].toUInt()).toUShort()
-                                    GO.HWpropComparator = ((GO.receiveData[53].toUInt() shl 8) or GO.receiveData[52].toUInt()).toUShort()
+                                    GO.HWpropHVoltage = (((GO.receiveData[51].toUInt() shl 8) or GO.receiveData[50].toUInt()) and 0x3FFu ).toUShort()
+                                    GO.HWpropComparator = (((GO.receiveData[53].toUInt() shl 8) or GO.receiveData[52].toUInt()) and 0x3FFu).toUShort()
+                                    //Log.d("BluZ-BT", "HV: ${GO.HWpropHVoltage}, Comp: ${GO.HWpropComparator}")
 
                                     /* Коэффициенты полинома для 1024 */
                                     //GO.HWCoef1024A = java.lang.Float.intBitsToFloat((GO.receiveData[34] + (GO.receiveData[35] * 256u)  + (GO.receiveData[36] * 65536u) + (GO.receiveData[37] * 16777216u)).toInt())
                                     //GO.HWCoef1024B = java.lang.Float.intBitsToFloat((GO.receiveData[38] + (GO.receiveData[39] * 256u)  + (GO.receiveData[40] * 65536u) + (GO.receiveData[41] * 16777216u)).toInt())
                                     //GO.HWCoef1024C = java.lang.Float.intBitsToFloat((GO.receiveData[42] + (GO.receiveData[43] * 256u)  + (GO.receiveData[44] * 65536u) + (GO.receiveData[45] * 16777216u)).toInt())
-                                    GO.HWCoef1024A = ByteBuffer.wrap(GO.receiveData.asByteArray(), 34, 4).order(
-                                        ByteOrder.LITTLE_ENDIAN).float
-                                    GO.HWCoef1024B = ByteBuffer.wrap(GO.receiveData.asByteArray(), 38, 4).order(
-                                        ByteOrder.LITTLE_ENDIAN).float
-                                    GO.HWCoef1024C = ByteBuffer.wrap(GO.receiveData.asByteArray(), 42, 4).order(
-                                        ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef1024A = ByteBuffer.wrap(GO.receiveData.asByteArray(), 34, 4).order(ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef1024B = ByteBuffer.wrap(GO.receiveData.asByteArray(), 38, 4).order(ByteOrder.LITTLE_ENDIAN).float
+                                    GO.HWCoef1024C = ByteBuffer.wrap(GO.receiveData.asByteArray(), 42, 4).order(ByteOrder.LITTLE_ENDIAN).float
                                     /* Коэффициенты полинома для 2048 */
                                     //GO.HWCoef2048A = java.lang.Float.intBitsToFloat((GO.receiveData[62] + (GO.receiveData[63] * 256u)  + (GO.receiveData[64] * 65536u) + (GO.receiveData[65] * 16777216u)).toInt())
                                     //GO.HWCoef2048B = java.lang.Float.intBitsToFloat((GO.receiveData[66] + (GO.receiveData[67] * 256u)  + (GO.receiveData[68] * 65536u) + (GO.receiveData[69] * 16777216u)).toInt())

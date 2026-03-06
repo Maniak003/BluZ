@@ -70,8 +70,12 @@ class drawLogs {
             return
         }
         MainScope().launch {                    // Конструкция необходима для модификации чужого контекста
-            withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
-                appLogText.text = Html.fromHtml(GO.appLogBuffer, GO.appLogBuffer.length)
+            //withContext(Dispatchers.Main) {     // Иначе перестает переключаться ViewPage2
+                appLogText.text = Html.fromHtml(GO.appLogBuffer, Html.FROM_HTML_MODE_COMPACT)
+            // Прокрутка вниз после отрисовки
+            appLogView.post {
+                appLogView.fullScroll(ScrollView.FOCUS_DOWN)
+                //appLogView.smoothScrollTo(0, appLogView.getChildAt(0)?.height ?: 0)
             }
         }
     }
@@ -128,6 +132,6 @@ class drawLogs {
                 s = s + sdf.format(logTime) + " " + eventStr + "</font><br>"
             }
         }
-        logsText.text = Html.fromHtml(s, s.length)
+        logsText.text = Html.fromHtml(s, Html.FROM_HTML_MODE_COMPACT)
     }
 }

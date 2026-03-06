@@ -193,14 +193,16 @@ uint32_t samplingTm(uint8_t smplTm) {
  *	5 -  нормальный уровень
  *	6 -  Сброс дозиметра
  *	7 -  Сброс спектрометра
- *	8 -  Запись данных во флаш
+ *	8 -  Запись данных во флеш
  *	9 -  Запуск набора спектра
  *	10 - Останов набора спектра
  *	11 - Очистка лога
  *	12 - Сброс спектрометра при переключении разрешения
  *	13 - Изменение разрядности
+ *	14 - Перегрузка дозиметра
+ *	15 - Калибровка батареи
+ *	16 - Низкий заряд батареи
  */
-
 
 void logUpdate(logTypes_t act) {
 	logBuffer[logIndex].time = currentTime;
@@ -1324,14 +1326,6 @@ void updateMesurment(void) {
 		firstInital = false;
 		NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 1);
 	} else {
-		/*
-		int a = 0;
-		int b = 1;
-		int c = 0;
-		a = b / c;
-		if (a > 0) {
-			c = 0;
-		}*/
 		//NotifyAct(SOUND_NOTIFY, 3);		// Sound test
 		//if (! connectFlag) {
 		//	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);

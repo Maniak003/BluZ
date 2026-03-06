@@ -110,7 +110,8 @@ extern uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET];
 extern uint16_t currTemperature, currVoltage;
 extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION], spectrometerTime, spectrometerPulse;
 extern uint32_t historySpecterBuffer[MAX_RESOLUTION];
-extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, currentTime, pulseCounterSecond, CPS, intervalNow, TVLevel[3];
+extern uint32_t currentTimeAvg, pulseCounterAvg, currentTime, intervalNow, TVLevel[3];
+extern volatile uint32_t pulseCounter, pulseCounterSecond, CPS;
 extern uint32_t interval2;
 extern bool SoundEnable, VibroEnable, LEDEnable, LEDflag;
 extern bool levelSound1, levelSound2, levelSound3;
@@ -200,6 +201,7 @@ extern uint16_t MTUSizeValue, dozimetrAquracy;
 uint8_t sendData( uint8_t *dataSpectrBufer );
 void logUpdate(uint8_t act);
 void APP_BLE_Update_Manufacturer_Data(uint32_t data);
+void switchTMRGPIO(bool gpio_flag);
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

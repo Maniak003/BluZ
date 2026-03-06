@@ -58,8 +58,9 @@ RTC_HandleTypeDef hrtc;
 volatile bool connectFlag = false;
 bool historyRequest = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false, firstInital = true/*, findDevice = false*/;
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
-uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
+uint32_t tmpLevel, currentTime = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
+volatile uint32_t pulseCounterSecond = 0, pulseCounter = 0, CPS = 0;
 /*
  *	Точность измерения дозиметра
  *	1 sigma <10% -  100
@@ -107,10 +108,11 @@ bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активн
 bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
 bool startSpectrometr = false;
 bool vibroFlag = false, soundFlag = false;
-bool history_active = false; // Флаг набора истории.
-bool overloadFlag = false;	// Флаг перегрузки
-bool divide10sound = false; // Флаг деления озвучки событий на 10.
-bool divide10led = false; // Флаг деления озвучки событий на 10.
+bool history_active = false; 	// Флаг набора истории.
+bool overloadFlag = false;		// Флаг перегрузки
+bool divide10sound = false; 	// Флаг деления озвучки событий на 10.
+bool divide10led = false; 		// Флаг деления озвучки событий на 10.
+bool tickActiveFlag = true;	// Флаг разрешения активации щелчка
 
 double CoefChan;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
 uint32_t limitChan;
@@ -193,14 +195,16 @@ uint32_t samplingTm(uint8_t smplTm) {
  *	5 -  нормальный уровень
  *	6 -  Сброс дозиметра
  *	7 -  Сброс спектрометра
- *	8 -  Запись данных во флаш
+ *	8 -  Запись данных во флеш
  *	9 -  Запуск набора спектра
  *	10 - Останов набора спектра
  *	11 - Очистка лога
  *	12 - Сброс спектрометра при переключении разрешения
  *	13 - Изменение разрядности
+ *	14 - Перегрузка дозиметра
+ *	15 - Калибровка батареи
+ *	16 - Низкий заряд батареи
  */
-
 
 void logUpdate(logTypes_t act) {
 	logBuffer[logIndex].time = currentTime;
@@ -236,10 +240,12 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt) {
 
 	if (LEDEnable) {
 		if (SRC & LED_NOTIFY) {
-			LEDflag = true;
-			LED_GPIO_Port->BSRR = (uint32_t) LED_Pin;
-			UTIL_TIMER_Stop(&timerLed);
-			UTIL_TIMER_Start(&(timerLed));
+			if (! LEDflag) {
+				LEDflag = true;
+				LED_GPIO_Port->BSRR = (uint32_t) LED_Pin;
+				UTIL_TIMER_Stop(&timerLed);
+				UTIL_TIMER_Start(&(timerLed));
+			}
 		}
 	}
 }
@@ -1313,25 +1319,19 @@ void updateMesurment(void) {
 		currentTime = 0;
 		spectrometerTime = 0;
 		/* Очистка буфера дозиметра */
-		for (int ii = 0; ii < SIZE_DOZIMETR_BUFER; ii++) {
-			dozimetrBuffer[ii] = 0;
-		}
+		memset(dozimetrBuffer, 0, sizeof(dozimetrBuffer));
+		//for (int ii = 0; ii < SIZE_DOZIMETR_BUFER; ii++) {
+		//	dozimetrBuffer[ii] = 0;
+		//}
 
 		/* Очистка буфера спектрометра */
-		for (int ii = 0; ii < MAX_RESOLUTION; ii++) {
-			tmpSpecterBuffer[ii] = 0;
-		}
+		memset(tmpSpecterBuffer, 0, sizeof(tmpSpecterBuffer));
+		//for (int ii = 0; ii < MAX_RESOLUTION; ii++) {
+		//	tmpSpecterBuffer[ii] = 0;
+		//}
 		firstInital = false;
 		NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 1);
 	} else {
-		/*
-		int a = 0;
-		int b = 1;
-		int c = 0;
-		a = b / c;
-		if (a > 0) {
-			c = 0;
-		}*/
 		//NotifyAct(SOUND_NOTIFY, 3);		// Sound test
 		//if (! connectFlag) {
 		//	UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
@@ -1345,10 +1345,10 @@ void updateMesurment(void) {
 		currentTimeAvg = currentTime++;
 		pulseCounterAvg = pulseCounter;
 		CPS = pulseCounterSecond;
+		pulseCounterSecond = 0;
 		if (dataType > onlyDozimeter) {
 			spectrometerTime++;
 		}
-		pulseCounterSecond = 0;
 		/* Массив для гистограммы уровней */
 		/*
 		if (indexDozimetrBufer >= SIZE_DOZIMETR_BUFER) {
@@ -1372,8 +1372,23 @@ void updateMesurment(void) {
 			/*
 			 * Анализ CPS для управления порогами срабатывания сигнализации
 			 */
-			tmp_level = 0;
+
+		    // Оптимизация: проверка от большего к меньшему (ранний exit)
 			uint8_t tmpNotify = 0;
+	    	tmp_level = 0;
+	    	/*
+		    if ((level3 > 0U) && (CPS > level3_cps)) {
+		        tmp_level = 3U;
+		        tmpNotify = (levelSound3 ? SOUND_NOTIFY : 0U) | (levelVibro3 ? VIBRO_NOTIFY : 0U);
+		    } else if ((level2 > 0U) && (CPS > level2_cps)) {
+		        tmp_level = 2U;
+		        tmpNotify = (levelSound2 ? SOUND_NOTIFY : 0U) | (levelVibro2 ? VIBRO_NOTIFY : 0U);
+		    } else if ((level1 > 0U) && (CPS > level1_cps)) {
+		        tmp_level = 1U;
+		        tmpNotify = (levelSound1 ? SOUND_NOTIFY : 0U) | (levelVibro1 ? VIBRO_NOTIFY : 0U);
+		    }
+
+		    */
 			if ((level1 > 0) && (CPS > level1_cps)) {
 				tmp_level = 1;
 				if (levelSound1 || levelVibro1) {
@@ -1408,6 +1423,8 @@ void updateMesurment(void) {
 					tmpNotify |= VIBRO_NOTIFY;
 				}
 			}
+
+
 			/* Тревога если превышение. */
 			if (tmp_level > 0) {
 				history_active = true;
@@ -1478,6 +1495,7 @@ void TVMeasure(void) {
 		currTemperature = ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR);	// Канал для измерения температуры
 		currVoltage = ADC_Switch_Channel(ADC_CHANNEL_7);				// Канал для измерения напряжения.
 		HAL_ADC_DeInit(&hadc4);											// Для снижения потребления
+		switchTMRGPIO(false);											// Переключим выход звука на обчный gpio
 	} else {
 		/* Измерение температуры и напряжения в режиме спектрометра */
 		sendDataTypes_t tmp_data_type = dataType;						// Сохраним текущий режим.
@@ -1537,12 +1555,13 @@ void vibroActivate(void) {
 		VIBRO_GPIO_Port->BSRR = (uint32_t) VIBRO_Pin;		// Включение вибро.
 	}
 	if (soundFlag) {
+		switchTMRGPIO(false);								// Переключим выход на таймер
 		HAL_LPTIM_PWM_Start(&hlptim2, LPTIM_CHANNEL_2);		// Включение звука.
 	}
 	if (vibroFlag || soundFlag) {
 		UTIL_TIMER_Start(&timerVibroOff);					// Таймер для отключения (vibroActivateOff()) звука/вибро.
 		if (--repetionCount > 0) {
-			UTIL_TIMER_Start(&timerVibro);				// Повторный вызов (vibroActivate()) для включения звука/вибро.
+			UTIL_TIMER_Start(&timerVibro);					// Повторный вызов (vibroActivate()) для включения звука/вибро.
 		} else {
 			vibroFlag = false;
 			soundFlag = false;
@@ -1554,44 +1573,68 @@ void vibroActivate(void) {
 void ledActivate(void) {
 	//HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 	LED_GPIO_Port->BRR = (uint32_t) LED_Pin;
+	LEDflag = false;
+}
+
+void switchTMRGPIO(bool gpio_flag) {
+	if (gpio_flag) {
+		  /* Переконфигурируем пин в обычный выход */
+		  SOUND_GPIO_Port->MODER = (SOUND_GPIO_Port->MODER & ~GPIO_MODER_MODE1_Msk) | (1U << GPIO_MODER_MODE1_Pos);
+		  /* OTYPER: push-pull (0) */
+		  SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
+		  /* OSPEEDR: high speed (11b) */
+		  SOUND_GPIO_Port->OSPEEDR = (SOUND_GPIO_Port->OSPEEDR & ~GPIO_OSPEEDR_OSPEED1_Msk) | (3U << GPIO_OSPEEDR_OSPEED1_Pos);
+		  /* PUPDR: no pull (00b) */
+		  SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
+
+		  SOUND_GPIO_Port->BSRR = (uint32_t) SOUND_Pin;
+	} else {
+		/* Переключим выход в режим таймера */
+	    /* MODER: PA1 = 10b (AF) */
+	    SOUND_GPIO_Port->MODER = (SOUND_GPIO_Port->MODER & ~GPIO_MODER_MODE1_Msk) | (2U << GPIO_MODER_MODE1_Pos);
+	    /* OTYPER: push-pull (0) */
+	    SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
+
+	    /* OSPEEDR: low speed */
+	    SOUND_GPIO_Port->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED1_Msk;
+
+	    /* PUPDR: no pull (00b) */
+	    SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
+
+	    /* AFR[0]: AF13 для PA1 (биты 4...7) */
+	    SOUND_GPIO_Port->AFR[0] = (SOUND_GPIO_Port->AFR[0] & ~(0xF << GPIO_AFRL_AFSEL1_Pos)) | (13U << GPIO_AFRL_AFSEL1_Pos);
+	    /* разрешить выход LPTIM2_CH2 (CC2E) */
+	    LPTIM2->CR |= (1U << 16);   // бит CC2E
+	}
 }
 
 /* Таймер для формирование щелчка */
 void tickSoundDeactivate(void) {
 	SOUND_GPIO_Port->BRR = (uint32_t) SOUND_Pin;
-    //uint32_t tmp;
+	tickActiveFlag = true;							// Разрешаем воспроизведение следующего щелчка
 
     /* MODER: PA1 = 10b (AF) */
-    //tmp = SOUND_GPIO_Port->MODER;
-    //tmp &= ~GPIO_MODER_MODE1_Msk;          // clear MODE1[1:0]
-    //tmp |=  (2U << GPIO_MODER_MODE1_Pos);  // AF mode
-    //SOUND_GPIO_Port->MODER = tmp;
-
-    SOUND_GPIO_Port->MODER = (SOUND_GPIO_Port->MODER & ~GPIO_MODER_MODE1_Msk) | (2U << GPIO_MODER_MODE1_Pos);
+    //SOUND_GPIO_Port->MODER = (SOUND_GPIO_Port->MODER & ~GPIO_MODER_MODE1_Msk) | (2U << GPIO_MODER_MODE1_Pos);
     /* OTYPER: push-pull (0) */
-    SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
+    //SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
 
     /* OSPEEDR: low speed */
-    SOUND_GPIO_Port->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED1_Msk;
+    //SOUND_GPIO_Port->OSPEEDR &= ~GPIO_OSPEEDR_OSPEED1_Msk;
 
     /* PUPDR: no pull (00b) */
-    SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
+    //SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
 
     /* AFR[0]: AF13 для PA1 (биты 4...7) */
-    //tmp = SOUND_GPIO_Port->AFR[0];
-    //tmp &= ~(0xF << GPIO_AFRL_AFSEL1_Pos);
-    //tmp |=  (13U << GPIO_AFRL_AFSEL1_Pos);
-    //SOUND_GPIO_Port->AFR[0] = tmp;
-
-    SOUND_GPIO_Port->AFR[0] = (SOUND_GPIO_Port->AFR[0] & ~(0xF << GPIO_AFRL_AFSEL1_Pos)) | (13U << GPIO_AFRL_AFSEL1_Pos);
+    //SOUND_GPIO_Port->AFR[0] = (SOUND_GPIO_Port->AFR[0] & ~(0xF << GPIO_AFRL_AFSEL1_Pos)) | (13U << GPIO_AFRL_AFSEL1_Pos);
     /* разрешить выход LPTIM2_CH2 (CC2E) */
-    LPTIM2->CR |= (1U << 16);   // бит CC2E
+    //LPTIM2->CR |= (1U << 16);   // бит CC2E
 }
 
 
 /* Таймер для отключения звука и вибро */
 void vibroActivateOff(void) {
 	HAL_LPTIM_PWM_Stop(&hlptim2, LPTIM_CHANNEL_2);		// Отключение звука.
+	switchTMRGPIO(true);
 	//HAL_GPIO_WritePin(VIBRO_GPIO_Port, VIBRO_Pin, GPIO_PIN_RESET);
 	VIBRO_GPIO_Port->BRR = (uint32_t) VIBRO_Pin;		// Отключение вибро.
 }
@@ -1604,53 +1647,48 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
 		/* Оповещение об импульсе */
 	  LED_GPIO_Port->BRR = (uint32_t) LED_Pin;	// Если очередь задач переполнена, погасим светодиод принудительно.
 	  if (LEDEnable) {
-		  //if (LED_GPIO_Port->IDR & LED_Pin) {	// Исправление переполнения очереди задач.
-			//  LED_GPIO_Port->BRR = (uint32_t) LED_Pin;
-		  //}
 		  /* Требуется пропускать события ? */
 		  if (divide10led) {
-			  if (DIVCOUNTERLED <= div10Ledcounter++) {
-				  div10Ledcounter = 0;
+			  if (DIVCOUNTERLED > div10Ledcounter++) {
+				  goto M2;
 			  }
-		  } else {
 			  div10Ledcounter = 0;
 		  }
-		  if (div10Ledcounter == 0) {
-				LEDflag = true;
-				LED_GPIO_Port->BSRR = (uint32_t) LED_Pin;
-				UTIL_TIMER_Stop(&timerLed);
-				UTIL_TIMER_Start(&(timerLed));
+		  if (! LEDflag) {
+			  LEDflag = true;
+			  LED_GPIO_Port->BSRR = (uint32_t) LED_Pin;
+			  UTIL_TIMER_Stop(&timerLed);
+			  UTIL_TIMER_Start(&(timerLed));
 		  }
-	  //} else { // Принудительно отключит светодиод если выключена нотификация.
-		//  LED_GPIO_Port->BRR = (uint32_t) LED_Pin;
 	  }
-
+M2:
 	  /* Звуковое сопровождение событий */
 	  if(SoundEnable) {
 		  /* Требуется ли прореживание */
 		  if (divide10sound) {
-			  if (DIVCOUNTER <= divade10counter++) {
-				  divade10counter = 0;
+			  if (DIVCOUNTER > ++divade10counter) {
+				  goto M1;
 			  }
-		  } else {
 			  divade10counter = 0;
 		  }
 
-		  if(divade10counter == 0) {
-			  /* Переконфигурируем пин в обычный выход */
-			  SOUND_GPIO_Port->MODER = (SOUND_GPIO_Port->MODER & ~GPIO_MODER_MODE1_Msk) | (1U << GPIO_MODER_MODE1_Pos);
-			  /* OTYPER: push-pull (0) */
-			  SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
-			  /* OSPEEDR: high speed (11b) */
-			  SOUND_GPIO_Port->OSPEEDR = (SOUND_GPIO_Port->OSPEEDR & ~GPIO_OSPEEDR_OSPEED1_Msk) | (3U << GPIO_OSPEEDR_OSPEED1_Pos);
-			  /* PUPDR: no pull (00b) */
-			  SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
+		  /* Переконфигурируем пин в обычный выход */
+		  //SOUND_GPIO_Port->MODER = (SOUND_GPIO_Port->MODER & ~GPIO_MODER_MODE1_Msk) | (1U << GPIO_MODER_MODE1_Pos);
+		  /* OTYPER: push-pull (0) */
+		  //SOUND_GPIO_Port->OTYPER &= ~GPIO_OTYPER_OT1_Msk;
+		  /* OSPEEDR: high speed (11b) */
+		  //SOUND_GPIO_Port->OSPEEDR = (SOUND_GPIO_Port->OSPEEDR & ~GPIO_OSPEEDR_OSPEED1_Msk) | (3U << GPIO_OSPEEDR_OSPEED1_Pos);
+		  /* PUPDR: no pull (00b) */
+		  //SOUND_GPIO_Port->PUPDR &= ~GPIO_PUPDR_PUPD1_Msk;
 
+		  if (tickActiveFlag) {			// Если щелчок уже воспроизводтся - пропускаем активацию.
+			  tickActiveFlag = false;	// Запрещаем воспроизведение щелчка до его окончания.
 			  SOUND_GPIO_Port->BSRR = (uint32_t) SOUND_Pin;
 			  UTIL_TIMER_Stop(&timerTick);
 			  UTIL_TIMER_Start(&timerTick);
 		  }
 	  }
+M1:
 	  /* Расчет с учетом точности */
 	  if (edgeCounter++ >= dozimetrAquracy) {
 		  if (aquracyInterval > 0) {
