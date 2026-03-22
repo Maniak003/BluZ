@@ -15,13 +15,12 @@ RM := rm -rf
 -include Utilities/misc/subdir.mk
 -include Utilities/lpm/tiny_lpm/subdir.mk
 -include System/Startup/subdir.mk
--include System/Modules/baes/subdir.mk
 -include System/Modules/SerialCmdInterpreter/subdir.mk
 -include System/Modules/RTDebug/subdir.mk
--include System/Modules/RFControl/subdir.mk
 -include System/Modules/Nvm/subdir.mk
 -include System/Modules/MemoryManager/subdir.mk
 -include System/Modules/Flash/subdir.mk
+-include System/Modules/BasicAES/subdir.mk
 -include System/Modules/subdir.mk
 -include System/Interfaces/subdir.mk
 -include System/Config/LowPower/subdir.mk
@@ -85,8 +84,8 @@ all:
 main-build: BluZ_v1.elf secondary-outputs
 
 # Tool invocations
-BluZ_v1.elf BluZ_v1.map: $(OBJS) $(USER_OBJS) /home/ed/work/github/BluZ/stm32cubeide/BluZ_v1/STM32WBA54KGUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc  -z noexecstack -o "BluZ_v1.elf" @"objects.list" $(USER_OBJS) -Wl,--start-group $(LIBS) -Wl,--end-group -mcpu=cortex-m33 -T"/home/ed/work/github/BluZ/stm32cubeide/BluZ_v1/STM32WBA54KGUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="BluZ_v1.map" -Wl,--gc-sections -static -L../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib -L../Middlewares/ST/STM32_WPAN/ble/stack/lib --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+BluZ_v1.elf BluZ_v1.map: $(OBJS) $(USER_OBJS) /home/ed/work/github/BluZ/stm32cubeide/BluZ_archive/STM32WBA54KGUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc  -z noexecstack -o "BluZ_v1.elf" @"objects.list" $(USER_OBJS) -Wl,--start-group $(LIBS) -Wl,--end-group -mcpu=cortex-m33 -T"/home/ed/work/github/BluZ/stm32cubeide/BluZ_archive/STM32WBA54KGUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="BluZ_v1.map" -Wl,--gc-sections -static -L../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib -L../Middlewares/ST/STM32_WPAN/ble/stack/lib --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

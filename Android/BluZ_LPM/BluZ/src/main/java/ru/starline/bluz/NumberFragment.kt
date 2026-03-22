@@ -1251,10 +1251,10 @@ class NumberFragment : Fragment() {
                         GO.propSoundKvant = 2
                     }
                     /* Световое сопровождение регистрации частицы */
-                    if (GO.rbClickNone.isChecked) {
+                    if (GO.rbLedNone.isChecked) {
                         GO.propLedKvant = 0
                     } else {
-                        if (GO.rbClick1.isChecked) {
+                        if (GO.rbLed1.isChecked) {
                             GO.propLedKvant = 1
                         } else {
                             GO.propLedKvant = 2
@@ -1424,10 +1424,10 @@ class NumberFragment : Fragment() {
                         GO.propSoundKvant = 2
                     }
                     /* Световое сопровождение регистрации частицы */
-                    if (GO.rbClickNone.isChecked) {
+                    if (GO.rbLedNone.isChecked) {
                         GO.propLedKvant = 0
                     } else {
-                        if (GO.rbClick1.isChecked) {
+                        if (GO.rbLed1.isChecked) {
                             GO.propLedKvant = 1
                         } else {
                             GO.propLedKvant = 2

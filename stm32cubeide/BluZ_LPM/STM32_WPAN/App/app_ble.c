@@ -877,6 +877,8 @@ void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId)
       paramD = 0x01F4;
 
       /* USER CODE BEGIN CONN_PARAM_UPDATE */
+      paramA = CONN_INT_MS(2000);
+      paramB = CONN_INT_MS(2500);
       /* USER CODE END CONN_PARAM_UPDATE */
       break;
     }/* PROC_GAP_PERIPH_CONN_PARAM_UPDATE */

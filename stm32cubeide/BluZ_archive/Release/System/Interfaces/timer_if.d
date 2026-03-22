@@ -1,5 +1,5 @@
 System/Interfaces/timer_if.o: ../System/Interfaces/timer_if.c \
- ../Core/Inc/main.h ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h \
  ../Core/Inc/stm32wbaxx_hal_conf.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_dma.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h \
@@ -37,10 +37,11 @@ System/Interfaces/timer_if.o: ../System/Interfaces/timer_if.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart_ex.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
+ ../System/Interfaces/timer_if.h ../Utilities/tim_serv/stm32_timer.h \
+ ../Drivers/CMSIS/Include/cmsis_compiler.h ../Core/Inc/utilities_conf.h \
  ../Core/Inc/app_conf.h ../System/Interfaces/hw_if.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_exti.h \
@@ -51,38 +52,9 @@ System/Interfaces/timer_if.o: ../System/Interfaces/timer_if.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_cortex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_utils.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
- ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
- ../Utilities/misc/stm32_mem.h ../Core/Inc/utilities_conf.h \
+ ../Core/Inc/utilities_conf.h ../Utilities/misc/stm32_mem.h \
  ../Utilities/misc/stm32_tiny_vsnprintf.h \
- ../System/Config/Log/log_module.h ../Core/Inc/app_entry.h \
- ../Core/Inc/app_common.h ../System/Interfaces/hw.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files/DWC_ble154combo.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_basic/ll_fw_config.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/mem_intf.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/os_wrapper.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/pta.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/hci.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h \
- ../System/Config/Debug_GPIO/app_debug.h \
- ../System/Modules/RTDebug/RTDebug.h \
- ../System/Config/Debug_GPIO/debug_config.h ../Core/Inc/app_conf.h \
- ../System/Modules/RTDebug/debug_signals.h \
- ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
- ../Core/Inc/rw_FLASH.h ../System/Modules/Flash/simple_nvm_arbiter.h \
- ../System/Modules/Flash/simple_nvm_arbiter_common.h \
- ../System/Modules/utilities_common.h \
- ../System/Config/Flash/simple_nvm_arbiter_conf.h \
- ../System/Modules/Flash/simple_nvm_arbiter_common.h \
- ../System/Modules/Flash/rf_timing_synchro.h \
- ../System/Modules/Flash/flash_driver.h ../Core/Inc/main.h \
- ../System/Interfaces/timer_if.h ../Utilities/tim_serv/stm32_timer.h \
  ../Utilities/misc/stm32_systime.h
-../Core/Inc/main.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal.h:
 ../Core/Inc/stm32wbaxx_hal_conf.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_dma.h:
@@ -121,10 +93,13 @@ System/Interfaces/timer_if.o: ../System/Interfaces/timer_if.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart_ex.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h:
+../System/Interfaces/timer_if.h:
+../Utilities/tim_serv/stm32_timer.h:
+../Drivers/CMSIS/Include/cmsis_compiler.h:
+../Core/Inc/utilities_conf.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h:
@@ -136,42 +111,7 @@ System/Interfaces/timer_if.o: ../System/Interfaces/timer_if.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_cortex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_utils.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h:
 ../Core/Inc/utilities_conf.h:
-../Drivers/CMSIS/Include/cmsis_compiler.h:
 ../Utilities/misc/stm32_mem.h:
-../Core/Inc/utilities_conf.h:
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
-../System/Config/Log/log_module.h:
-../Core/Inc/app_entry.h:
-../Core/Inc/app_common.h:
-../System/Interfaces/hw.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc/ll_sys.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/common_types.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files/DWC_ble154combo.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_basic/ll_fw_config.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/mem_intf.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/os_wrapper.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/pta.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/hci.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ll_intf.h:
-../System/Config/Debug_GPIO/app_debug.h:
-../System/Modules/RTDebug/RTDebug.h:
-../System/Config/Debug_GPIO/debug_config.h:
-../Core/Inc/app_conf.h:
-../System/Modules/RTDebug/debug_signals.h:
-../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
-../Core/Inc/rw_FLASH.h:
-../System/Modules/Flash/simple_nvm_arbiter.h:
-../System/Modules/Flash/simple_nvm_arbiter_common.h:
-../System/Modules/utilities_common.h:
-../System/Config/Flash/simple_nvm_arbiter_conf.h:
-../System/Modules/Flash/simple_nvm_arbiter_common.h:
-../System/Modules/Flash/rf_timing_synchro.h:
-../System/Modules/Flash/flash_driver.h:
-../Core/Inc/main.h:
-../System/Interfaces/timer_if.h:
-../Utilities/tim_serv/stm32_timer.h:
 ../Utilities/misc/stm32_systime.h:

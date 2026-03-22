@@ -68,7 +68,6 @@ extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern ADC_HandleTypeDef hadc4;
 extern LPTIM_HandleTypeDef hlptim1;
 extern RTC_HandleTypeDef hrtc;
-extern TIM_HandleTypeDef htim17;
 /* USER CODE BEGIN EV */
 //extern TIM_HandleTypeDef htim3;
 extern LPTIM_HandleTypeDef hlptim2;
@@ -334,6 +333,32 @@ void LPTIM1_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles TIM16 global interrupt.
+  */
+void TIM16_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM16_IRQn 0 */
+
+  /* USER CODE END TIM16_IRQn 0 */
+  /* Check whether update interrupt is pending */
+  if(LL_TIM_IsActiveFlag_UPDATE(TIM16) == 1)
+  {
+    /* Clear the update interrupt flag */
+    LL_TIM_ClearFlag_UPDATE(TIM16);
+
+#if (CFG_SCM_SUPPORTED == 1)
+    /* SCM HSE BEGIN */
+    /* Update interrupt processing */
+    SCM_HSE_SW_HSERDY_isr();
+    /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
+  }
+  /* USER CODE BEGIN TIM16_IRQn 1 */
+
+  /* USER CODE END TIM16_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM17 global interrupt.
   */
 void TIM17_IRQHandler(void)
@@ -341,13 +366,12 @@ void TIM17_IRQHandler(void)
   /* USER CODE BEGIN TIM17_IRQn 0 */
 
   /* USER CODE END TIM17_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim17);
   /* USER CODE BEGIN TIM17_IRQn 1 */
   if (LEDflag) {
 	  LEDflag = false;
 	  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
   }
-  HAL_TIM_Base_Stop_IT(&htim17);
+  //HAL_TIM_Base_Stop_IT(&htim17);
   /* USER CODE END TIM17_IRQn 1 */
 }
 
