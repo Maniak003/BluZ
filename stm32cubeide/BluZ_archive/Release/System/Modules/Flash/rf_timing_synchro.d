@@ -41,8 +41,6 @@ System/Modules/Flash/rf_timing_synchro.o: \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h \
@@ -56,9 +54,8 @@ System/Modules/Flash/rf_timing_synchro.o: \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
  ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
- ../Utilities/misc/stm32_mem.h ../Core/Inc/utilities_conf.h \
- ../Utilities/misc/stm32_tiny_vsnprintf.h \
- ../System/Config/Log/log_module.h \
+ ../Core/Inc/app_conf.h ../Utilities/misc/stm32_mem.h \
+ ../Core/Inc/utilities_conf.h ../Utilities/misc/stm32_tiny_vsnprintf.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/evnt_schdlr_gnrc_if.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h \
  ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files/DWC_ble154combo.h \
@@ -110,8 +107,6 @@ System/Modules/Flash/rf_timing_synchro.o: \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h:
@@ -126,10 +121,10 @@ System/Modules/Flash/rf_timing_synchro.o: \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h:
 ../Core/Inc/utilities_conf.h:
 ../Drivers/CMSIS/Include/cmsis_compiler.h:
+../Core/Inc/app_conf.h:
 ../Utilities/misc/stm32_mem.h:
 ../Core/Inc/utilities_conf.h:
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
-../System/Config/Log/log_module.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/evnt_schdlr_gnrc_if.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/bsp.h:
 ../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files/DWC_ble154combo.h:

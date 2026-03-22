@@ -189,6 +189,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
   /* USER CODE BEGIN ADC4_MspInit 1 */
 
   /* USER CODE END ADC4_MspInit 1 */
+
   }
 
 }
@@ -245,6 +246,7 @@ void HAL_CRC_MspInit(CRC_HandleTypeDef* hcrc)
   /* USER CODE BEGIN CRC_MspInit 1 */
 
   /* USER CODE END CRC_MspInit 1 */
+
   }
 
 }
@@ -457,6 +459,7 @@ void HAL_RNG_MspInit(RNG_HandleTypeDef* hrng)
   /* USER CODE BEGIN RNG_MspInit 1 */
 
   /* USER CODE END RNG_MspInit 1 */
+
   }
 
 }
@@ -515,6 +518,7 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
   /* USER CODE BEGIN RTC_MspInit 1 */
 
   /* USER CODE END RTC_MspInit 1 */
+
   }
 
 }
@@ -540,56 +544,6 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* hrtc)
   /* USER CODE BEGIN RTC_MspDeInit 1 */
 
   /* USER CODE END RTC_MspDeInit 1 */
-  }
-
-}
-
-/**
-* @brief TIM_Base MSP Initialization
-* This function configures the hardware resources used in this example
-* @param htim_base: TIM_Base handle pointer
-* @retval None
-*/
-void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
-{
-  if(htim_base->Instance==TIM17)
-  {
-  /* USER CODE BEGIN TIM17_MspInit 0 */
-
-  /* USER CODE END TIM17_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_TIM17_CLK_ENABLE();
-    /* TIM17 interrupt Init */
-    HAL_NVIC_SetPriority(TIM17_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(TIM17_IRQn);
-  /* USER CODE BEGIN TIM17_MspInit 1 */
-
-  /* USER CODE END TIM17_MspInit 1 */
-  }
-
-}
-
-/**
-* @brief TIM_Base MSP De-Initialization
-* This function freeze the hardware resources used in this example
-* @param htim_base: TIM_Base handle pointer
-* @retval None
-*/
-void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
-{
-  if(htim_base->Instance==TIM17)
-  {
-  /* USER CODE BEGIN TIM17_MspDeInit 0 */
-
-  /* USER CODE END TIM17_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_TIM17_CLK_DISABLE();
-
-    /* TIM17 interrupt DeInit */
-    HAL_NVIC_DisableIRQ(TIM17_IRQn);
-  /* USER CODE BEGIN TIM17_MspDeInit 1 */
-
-  /* USER CODE END TIM17_MspDeInit 1 */
   }
 
 }
@@ -636,6 +590,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
   /* USER CODE BEGIN USART2_MspInit 1 */
 
   /* USER CODE END USART2_MspInit 1 */
+
   }
 
 }

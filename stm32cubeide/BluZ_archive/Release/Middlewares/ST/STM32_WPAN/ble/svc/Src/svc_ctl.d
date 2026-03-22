@@ -42,8 +42,6 @@ Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.o: \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h \
- ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h \
@@ -57,10 +55,9 @@ Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.o: \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_gpio.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h \
  ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
- ../Utilities/misc/stm32_mem.h ../Core/Inc/utilities_conf.h \
- ../Utilities/misc/stm32_tiny_vsnprintf.h \
- ../System/Config/Log/log_module.h ../STM32_WPAN/App/ble_dbg_conf.h \
- ../Middlewares/ST/STM32_WPAN/ble/ble.h \
+ ../Core/Inc/app_conf.h ../Utilities/misc/stm32_mem.h \
+ ../Core/Inc/utilities_conf.h ../Utilities/misc/stm32_tiny_vsnprintf.h \
+ ../STM32_WPAN/App/ble_dbg_conf.h ../Middlewares/ST/STM32_WPAN/ble/ble.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_core.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_std.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_defs.h \
@@ -124,8 +121,6 @@ Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.o: \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h:
-../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_uart_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h:
@@ -140,10 +135,10 @@ Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.o: \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_rtc.h:
 ../Core/Inc/utilities_conf.h:
 ../Drivers/CMSIS/Include/cmsis_compiler.h:
+../Core/Inc/app_conf.h:
 ../Utilities/misc/stm32_mem.h:
 ../Core/Inc/utilities_conf.h:
 ../Utilities/misc/stm32_tiny_vsnprintf.h:
-../System/Config/Log/log_module.h:
 ../STM32_WPAN/App/ble_dbg_conf.h:
 ../Middlewares/ST/STM32_WPAN/ble/ble.h:
 ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_core.h:
