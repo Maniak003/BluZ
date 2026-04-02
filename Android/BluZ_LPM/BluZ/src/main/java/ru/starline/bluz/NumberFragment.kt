@@ -108,6 +108,9 @@ class NumberFragment : Fragment() {
     private var cps2urh: Float? = 0f
     private lateinit var paddingTextLeft: EditText
     private lateinit var paddingTextRight: EditText
+    private lateinit var rgUnit : RadioGroup
+    private lateinit var rbuRh : RadioButton
+    private lateinit var rbuSvh : RadioButton
     // Поля для горизонтального зума
 /*
     override fun onResume() {
@@ -305,7 +308,11 @@ class NumberFragment : Fragment() {
                     if (closestPoint.cps < 0) {
                         cpsStr = "CPS: N/A\n"
                     } else {
-                        cpsStr = "CPS: ${"%.2f / %.2f".format(closestPoint.cps, closestPoint.cps * cps2urh!! ) }uRh\n"
+                        val uM = when (GO.unitsMess) {
+                            1 -> "uSv/h"
+                            else -> "uR/h"
+                        }
+                        cpsStr = "CPS: ${"%.2f / %.2f".format(closestPoint.cps, closestPoint.cps * cps2urh!! ) }$uM\n"
                     }
                     hintView.text = buildString {
                         append(cpsStr)
@@ -602,6 +609,12 @@ class NumberFragment : Fragment() {
 
         /* Масштабирование по Y */
         GO.textXZoom.setText(GO.xZoom.toString())
+
+        /* Единици измерения uR/h uSv/h */
+        when (GO.unitsMess) {
+            1 -> rbuSvh.isChecked = true
+            else -> rbuRh.isChecked = true
+        }
 
     }
 
@@ -1152,6 +1165,11 @@ class NumberFragment : Fragment() {
                 paddingTextLeft  = view.findViewById(R.id.editTextPaddingLeft)
                 paddingTextRight = view.findViewById(R.id.editTextPaddingRight)
 
+                /* Единици измерения uRh, uSvh */
+                rgUnit = view.findViewById(R.id.RGUnits)
+                rbuRh = view.findViewById(R.id.rbURH)
+                rbuSvh = view.findViewById(R.id.rbUSVH)
+
                 reloadConfigParameters()
 
                 /* Изменение отображения режима карты */
@@ -1294,6 +1312,7 @@ class NumberFragment : Fragment() {
                     GO.readConfigParameters()
                     reloadConfigParameters()
                 }
+
                 /*
                  * Сохранение параметров в конфигурационном файле смартфона
                  */
@@ -1317,6 +1336,13 @@ class NumberFragment : Fragment() {
 
                     /* Уровень ногирования */
                     GO.appLogLevel = GO.textAppLogLevel.text.toString().toInt()
+
+                    /* Единици измерения ur, usv */
+                    if (rbuRh.isChecked) {
+                        GO.unitsMess = 0
+                    } else {
+                        GO.unitsMess = 1
+                    }
 
                     /* Тип файла для сохранения спектра */
                     if (GO.rbSpctTypeBq.isChecked) {
@@ -1860,6 +1886,17 @@ class NumberFragment : Fragment() {
                         noChange = true
                     }
                 }
+
+                /* Выбор единиц измерения uR, uSv */
+                rgUnit.setOnCheckedChangeListener { _, checkedId -> view.findViewById<RadioButton>(checkedId)?.apply {
+                    noChange = false
+                    GO.unitsMess = when (checkedId) {
+                        rbuSvh.id -> 1
+                        else -> 0
+                    }
+                    noChange = true
+                }
+                }
                 /*
                 * Выбор типа отображения спектра. Линейный, гистограмма
                 */
@@ -2203,7 +2240,10 @@ class NumberFragment : Fragment() {
                                                             "____POINT____",
                                                             "CPS:" + df.format(detLoc.cps) + " / " + df.format(
                                                                 detLoc.cps * GO.propCPS2UR
-                                                            ) + "uR/h"
+                                                            ) + when (GO.unitsMess) {
+                                                                1 -> "uSv/h"
+                                                                else -> "uR/h"
+                                                            }
                                                         )
                                                             .replace(
                                                                 "____STR1____",

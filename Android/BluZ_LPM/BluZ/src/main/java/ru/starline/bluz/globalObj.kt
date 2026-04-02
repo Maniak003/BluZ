@@ -98,6 +98,7 @@ class globalObj {
     public val propPaddingLeft: String = "PaddingLeft"
     public val propPaddingRight: String = "PaddingRight"
     public val propXZoom: String = "XZoom"
+    public val propUnits: String = "UnitsMess"
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var allPermissionAccept: Boolean = false
@@ -113,6 +114,7 @@ class globalObj {
     public var paddingLeft: Int = 0
     public var paddingRight: Int = 0
     public var xZoom: Float = 1.0f
+    public var unitsMess: Int = 0
     public lateinit var drawExamp: drawExmple
     public var drawObjectInit: Boolean = true
     public var drawObjectInitHistory: Boolean = true
@@ -537,6 +539,7 @@ class globalObj {
         var aquracy3S: Double
         var cpsS: Float
         var pulseS: Int
+
         if (GO.viewPager.currentItem == 0) {        // Статистика для спектрометра
             /* Расчет погрешности по трем сигмам для спектрометра */
             aquracy3S = 300.0 / kotlin.math.sqrt(GO.spectrometerPulse.toDouble())
@@ -548,9 +551,27 @@ class globalObj {
             cpsS = GO.cps
             pulseS = GO.PCounter.toInt()
         }
+
+        var unitM: String
+        var edr: Float
+        when (GO.unitsMess) {
+            0 -> {
+                unitM = "uR/h"
+                edr = GO.compMED
+            }
+            1 -> {
+                unitM = "uSv/h"
+                edr = GO.compMED * 0.01f
+            }
+            else -> {
+                unitM = "uR/h"
+                edr = GO.compMED
+            }
+        }
+
         GO.txtStat2.setText(String.format("Total:%d(%.2f%%) Avg:%.2f", pulseS, aquracy3S, cpsS))
         if (GO.drawSPECTER.flagMLEM) {
-            GO.txtCompMED.setText(String.format("EDR: %.2fuR/h", GO.compMED))
+            GO.txtCompMED.setText(String.format("EDR: %.2f%s", edr, unitM))
         } else {
             GO.txtCompMED.text = ""
         }
@@ -808,6 +829,7 @@ class globalObj {
         GO.PP.setPropFloat(propXZoom, GO.xZoom)                             // Масштабирование по Y
         GO.PP.setPropInt(propPaddingLeft, GO.paddingLeft)                   // Отступ слева
         GO.PP.setPropInt(propPaddingRight, GO.paddingRight)                 // Отступ справа
+        GO.PP.setPropInt(propUnits, GO.unitsMess)                           // Единици измеения uR/h, uSv/h
     }
 
     /*
@@ -902,6 +924,7 @@ class globalObj {
         if (GO.xZoom <= 0.0f) {
             GO.xZoom = 1.0f
         }
+        GO.unitsMess = GO.PP.getPropInt(propUnits)
     }
 
     /* Запуск таймера для автоматического подключения */
