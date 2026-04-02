@@ -610,6 +610,46 @@
 
                     </LinearLayout>
 
+                    <TextView
+                        android:id="@+id/textView39"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0"
+                        android:background="@color/ColorMainLabels"
+                        android:text="Units of measurement"
+                        android:textAlignment="center"
+                        android:textColor="@color/labelTextColor" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0"
+                        android:orientation="horizontal">
+
+                        <RadioGroup
+                            android:id="@+id/RGUnits"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:id="@+id/rbURH"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="true"
+                                android:text="uR/h"
+                                android:textColor="@color/editTextColor" />
+
+                            <RadioButton
+                                android:id="@+id/rbUSVH"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="uSv/h"
+                                android:textColor="@color/editTextColor" />
+                        </RadioGroup>
+                    </LinearLayout>
+
                 </LinearLayout>
             </ScrollView>
         </LinearLayout>
