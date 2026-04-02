@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Matrix
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
@@ -18,6 +19,7 @@ import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
@@ -28,6 +30,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -105,6 +108,7 @@ class NumberFragment : Fragment() {
     private var cps2urh: Float? = 0f
     private lateinit var paddingTextLeft: EditText
     private lateinit var paddingTextRight: EditText
+    // Поля для горизонтального зума
 /*
     override fun onResume() {
         super.onResume()
@@ -126,7 +130,50 @@ class NumberFragment : Fragment() {
 
     }
 */
-    override fun onDestroy() {
+
+        /* Горизонтальный зум */
+        private var currentScaleX = 1f
+        private val MIN_SCALE = 1f
+        private val MAX_SCALE = 5f
+        private var translateX = 0f  // Смещение по горизонтали
+        // Для отслеживания скролла
+        private var lastTouchX = 0f
+        private var isScrolling = false
+
+
+        // ScaleGestureDetector с анонимным слушателем
+        private val scaleDetector by lazy {
+            ScaleGestureDetector(
+                requireContext(),
+                object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                    override fun onScale(detector: ScaleGestureDetector): Boolean {
+                        val scale = detector.scaleFactor
+                        val focusX = detector.focusX
+                        val focusY = detector.focusY
+
+                        val newScale = (currentScaleX * scale).coerceIn(MIN_SCALE, MAX_SCALE)
+
+                        // Пересоздаём матрицу с масштабом и смещением
+                        val matrix = Matrix()
+                        matrix.postScale(newScale, 1f, focusX, focusY)
+                        matrix.postTranslate(translateX, 0f)  // Добавляем смещение
+                        GO.drawSPECTER.imgView.imageMatrix = matrix
+                        currentScaleX = newScale
+
+                        GO.drawCURSOR.showCorsor(GO.drawCURSOR.oldX, GO.drawCURSOR.oldY)
+                        return true
+                    }
+
+                    override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                        return detector.currentSpan > 40f
+                    }
+                }
+            )
+        }
+
+
+
+        override fun onDestroy() {
         mapInputListener?.let {
             GO.map?.removeInputListener(it)
         }
@@ -593,8 +640,49 @@ class NumberFragment : Fragment() {
                 GO.btnSaveBQ = view.findViewById(R.id.buttonSaveBQ)
 
                 GO.drawCURSOR.cursorView = view.findViewById(R.id.cursorView)
-
                 GO.drawSPECTER.imgView = view.findViewById(R.id.specterView)
+
+                GO.drawSPECTER.imgView.apply {
+                    scaleType = ImageView.ScaleType.MATRIX
+                    imageMatrix = Matrix()
+                    isClickable = false
+                }
+
+                GO.drawCURSOR.cursorView.apply {
+                    isClickable = true
+                    isFocusable = true
+                }
+                GO.drawCURSOR.cursorView.setOnTouchListener { _, event ->
+                    when {
+                        // 🎯 2+ пальца → горизонтальный зум specterView
+                        event.pointerCount >= 2 -> {
+                            scaleDetector.onTouchEvent(event)
+                            true
+                        }
+                        // 👆 1 палец → перемещение курсора
+                        event.pointerCount == 1 -> {
+                            val rawX = event.x
+                            val rawY = event.y
+
+                            if (event.action == MotionEvent.ACTION_DOWN ||
+                                event.action == MotionEvent.ACTION_MOVE) {
+
+                                // ⚠️ КОРРЕКТИРУЕМ X с учётом масштаба!
+                                // Защита от деления на 0 через coerceAtLeast
+                                val correctedX = rawX / currentScaleX.coerceAtLeast(0.001f)
+
+                                if (GO.drawCURSOR.oldX != correctedX) {
+                                    GO.drawCURSOR.showCorsor(correctedX, rawY)
+                                    // Log.i("BluZ-BT", "X: $correctedX, Y: $rawY, Scale: $currentScaleX")
+                                }
+                            }
+                            true
+                        }
+                        else -> false
+                    }
+                }
+
+                /*
                 GO.drawSPECTER.imgView.setOnTouchListener { _, event ->
                     val x: Float = event.x
                     val y: Float = event.y
@@ -605,7 +693,8 @@ class NumberFragment : Fragment() {
                         }
                     }
                     true
-                }
+                }*/
+
 
                 val CBSMA: CheckBox = view.findViewById(R.id.cbSMA)
                 val CBMEDIAN: CheckBox = view.findViewById(R.id.cbMED)
