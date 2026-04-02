@@ -11,6 +11,7 @@ import java.lang.Math.log
 import kotlin.math.ln
 import kotlin.math.round
 import androidx.core.graphics.withRotation
+import androidx.core.graphics.createBitmap
 
 class drawCursor {
     public var oldX: Float = 0.0f
@@ -40,7 +41,7 @@ class drawCursor {
             } else {
                 //Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize")
                 /* Подготавливаем bitmap для рисования */
-                cursorBitmap = Bitmap.createBitmap(HSize, VSize, Bitmap.Config.ARGB_8888)
+                cursorBitmap = createBitmap(HSize, VSize)
                 cursorCanvas = Canvas(cursorBitmap)
                 drawCursorInit = true
             }
