@@ -552,26 +552,16 @@ class globalObj {
             pulseS = GO.PCounter.toInt()
         }
 
-        var unitM: String
-        var edr: Float
-        when (GO.unitsMess) {
-            0 -> {
-                unitM = "uR/h"
-                edr = GO.compMED
-            }
-            1 -> {
-                unitM = "uSv/h"
-                edr = GO.compMED * 0.01f
-            }
-            else -> {
-                unitM = "uR/h"
-                edr = GO.compMED
-            }
-        }
-
-        GO.txtStat2.setText(String.format("Total:%d(%.2f%%) Avg:%.2f", pulseS, aquracy3S, cpsS))
+        GO.txtStat2.text = String.format("Total:%d(%.2f%%) Avg:%.2f", pulseS, aquracy3S, cpsS)
         if (GO.drawSPECTER.flagMLEM) {
-            GO.txtCompMED.setText(String.format("EDR: %.2f%s", edr, unitM))
+            GO.txtCompMED.text = when (GO.unitsMess) {
+                1 -> {
+                    "EDR: %.3f uSv/h".format(GO.compMED * 0.01f)
+                }
+                else -> {
+                    "EDR: %.2f uR/h".format(GO.compMED)
+                }
+            }
         } else {
             GO.txtCompMED.text = ""
         }

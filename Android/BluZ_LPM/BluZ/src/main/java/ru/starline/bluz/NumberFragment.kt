@@ -308,11 +308,10 @@ class NumberFragment : Fragment() {
                     if (closestPoint.cps < 0) {
                         cpsStr = "CPS: N/A\n"
                     } else {
-                        val uM = when (GO.unitsMess) {
-                            1 -> "uSv/h"
-                            else -> "uR/h"
+                        cpsStr = when (GO.unitsMess) {
+                            1 -> "CPS: ${"%.2f / %.3f".format(closestPoint.cps, closestPoint.cps * cps2urh!! * 0.01f ) }uSv/h\n"
+                            else -> "CPS: ${"%.2f / %.2f".format(closestPoint.cps, closestPoint.cps * cps2urh!! ) }uR/h\n"
                         }
-                        cpsStr = "CPS: ${"%.2f / %.2f".format(closestPoint.cps, closestPoint.cps * cps2urh!! ) }$uM\n"
                     }
                     hintView.text = buildString {
                         append(cpsStr)
@@ -2236,10 +2235,14 @@ class NumberFragment : Fragment() {
                                                         } else {
                                                             styleStr = "#blackStyle"
                                                         }
+                                                        val uK = when (GO.unitsMess) {
+                                                            1 -> 0.01f
+                                                            else -> 1.0f
+                                                        }
                                                         val kmlPnt = kmlTmp.replace(
                                                             "____POINT____",
                                                             "CPS:" + df.format(detLoc.cps) + " / " + df.format(
-                                                                detLoc.cps * GO.propCPS2UR
+                                                                detLoc.cps * GO.propCPS2UR * uK
                                                             ) + when (GO.unitsMess) {
                                                                 1 -> "uSv/h"
                                                                 else -> "uR/h"

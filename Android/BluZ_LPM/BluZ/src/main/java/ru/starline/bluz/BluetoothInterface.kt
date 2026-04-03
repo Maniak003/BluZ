@@ -927,13 +927,9 @@ class BluetoothInterface() {
                                     if (GO.overloadFlag) {
                                         GO.txtStat3.setText(Html.fromHtml("<font color=#FF2EE8>Overload"));
                                     } else {
-                                        when(GO.unitsMess) {
-                                            1 -> {
-                                                GO.txtStat3.setText("CPS:${GO.pulsePerSec} (${doze * 0.01f} uSv/h) Avg:${avgDoze * 0.01f} uSv/h")
-                                            }
-                                            else -> {
-                                                GO.txtStat3.setText("CPS:${GO.pulsePerSec} ($doze uR/h) Avg:$avgDoze uR/h")
-                                            }
+                                        GO.txtStat3.text = when(GO.unitsMess) {
+                                            1 -> "CPS:%d (%.3f uSv/h) Avg:%.3f uSv/h".format(GO.pulsePerSec.toLong(), doze * 0.01f, avgDoze * 0.01f)
+                                            else -> "CPS:%d (%.2f uR/h) Avg:%.2f uR/h".format(GO.pulsePerSec.toLong(), doze, avgDoze)
                                         }
                                     }
                                     //Log.d("BluZ-BT", "sampleTime: ${GO.receiveData[97].toUByte() and 7.toUByte()}, overloadFlag: ${GO.overloadFlag}")
