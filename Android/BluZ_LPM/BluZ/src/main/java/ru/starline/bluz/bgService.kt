@@ -42,8 +42,8 @@ class BleMonitoringService : Service() {
     private lateinit var sensorManager: SensorManager
     private var magnetometer: Sensor? = null
     private val magneticBuffer = mutableListOf<Double>() // буфер для значений магнитометра
-    private val BUFFER_SIZE = 20 // усреднять по 20 измерениям магнитного поля
-    private var currentMagnitude: Double = 0.0 // текущее усреднённое значение магнитного поля
+    private val BUFFER_SIZE = 20                         // усреднять по 20 измерениям магнитного поля
+    private var currentMagnitude: Double = 0.0           // текущее усреднённое значение магнитного поля
 
     // MAC-адрес BluZ
     companion object {
@@ -240,7 +240,7 @@ class BleMonitoringService : Service() {
     override fun onDestroy() {
         scope.cancel()
         try {
-            if (::scanner.isInitialized && hasPermissions()) {
+            if (hasPermissions() && ::scanner.isInitialized) {
                 scanner.stopScan(scanCallback)
                 Log.d("BluZ-BT", "BLE scan stopped gracefully")
             }
@@ -302,7 +302,7 @@ class BleMonitoringService : Service() {
             Log.e("BluZ-BT", "Failed to stop scan", e)
         }
 
-        // Проверь разрешения и Bluetooth
+        // Проверка разрешений и Bluetooth
         if (!hasPermissions() || !bluetoothAdapter.isEnabled) {
             Log.w("BluZ-BT", "Permissions or Bluetooth not available, skipping restart")
             return
@@ -325,10 +325,10 @@ class BleMonitoringService : Service() {
         }
     }
 
-    @RequiresPermission(allOf = [
-        Manifest.permission.BLUETOOTH_SCAN,
-        Manifest.permission.ACCESS_FINE_LOCATION
-    ])
+    //@RequiresPermission(allOf = [
+    //    Manifest.permission.BLUETOOTH_SCAN,
+    //    Manifest.permission.ACCESS_FINE_LOCATION
+    //])
     @SuppressLint("MissingPermission")
     private fun startBleScan() {
         val mac = TARGET_DEVICE_MAC
@@ -436,7 +436,7 @@ class BleMonitoringService : Service() {
                         val cpsValue = bytesToUInt(userData[0], userData[1], userData[2], userData[3])
                         return cpsValue.toFloat()
                     } catch (e: IndexOutOfBoundsException) {
-                        Log.w("BluZ-BT", "CPS data too short", e)
+                        Log.w("BluZ-BT", "Error convert CPS data to float", e)
                     }
                 } else {
                     Log.w("BluZ-BT", "User data too short: ${userData.size} bytes")
@@ -453,15 +453,23 @@ class BleMonitoringService : Service() {
                 ((b2.toUInt() and 0xFFu) shl 16) or
                 ((b3.toUInt() and 0xFFu) shl 24)
     }
+
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun updateNotification(cps: Float, rssi: Int): Notification {
         var formattedCps: String = ""
         /*  CPS и магнитуда в уведомлении. */
         if (currentMagnitude > 0) {
-            formattedCps = "CPS:%.2f / %.2fuR/h\nMagnitude: %.2fuT\nRSSI: %ddBm".format(cps, cps * cps2doze, currentMagnitude, rssi)
+            formattedCps = when (GO.unitsMess) {
+                1 -> "CPS: %.0f / %.3f uSv/h\nMagnitude: %.2f uT\nRSSI: %d dBm".format(cps, cps * cps2doze * 0.01, currentMagnitude, rssi)
+                else -> "CPS: %.0f / %.2f uR/h\nMagnitude: %.2f uT\nRSSI: %d dBm".format(cps, cps * cps2doze, currentMagnitude, rssi)
+            }
         } else {
-            formattedCps = "CPS:%.2f / %.2fuR/h".format(cps, cps * cps2doze)
+            formattedCps = when (GO.unitsMess) {
+                1-> "CPS: %.0f / %.3f uSv/h\nRSSI: %d dBm".format(cps, cps * cps2doze * 0.01, rssi)
+                else -> "CPS: %.0f / %.2f uR/h\nRSSI: %d dBm".format(cps, cps * cps2doze, rssi)
+            }
         }
+
         val stopIntent = createStopServiceIntent()
         //val largeIcon = ContextCompat.getDrawable(this, R.drawable.ic_radiation_192)
         //    ?.toBitmap(

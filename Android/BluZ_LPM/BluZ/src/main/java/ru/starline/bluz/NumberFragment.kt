@@ -1003,6 +1003,17 @@ class NumberFragment : Fragment() {
                     Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_LONG).show()
                 }
 
+                /* Очистка истории */
+                val btnHistoryClear: Button = view.findViewById(R.id.buttonClearHistory)
+                btnHistoryClear.setOnClickListener {
+                    GO.BTT.sendCommand(8u)
+                    for (iii in 0 until GO.drawHISTORY.ResolutionHistory) {
+                        GO.drawHISTORY.historyData[iii] = 0.0
+                    }
+                    GO.drawHISTORY.clearHistory()
+                    GO.drawHISTORY.redrawSpecter(GO.specterType)
+                }
+
             } else if (getInt(ARG_OBJECT) == 2) {   // Дозиметр
             /*
             *   Обекты закладки дозиметра

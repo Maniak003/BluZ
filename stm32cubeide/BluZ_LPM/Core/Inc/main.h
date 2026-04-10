@@ -131,14 +131,15 @@ extern double CoefChan;
 extern uint8_t currentSamplingTime;
 
 typedef enum commandTx {
-	cmd_setup,
-	cmd_clear_specter,
-	cmd_startup_spectrometer,
-	cmd_clear_dosimeter,
-	cmd_clear_logs,
-	cmd_history_request,
-	cmd_find_device,
-	cmd_calibrate_batt
+	cmd_setup,					// 0
+	cmd_clear_specter,			// 1
+	cmd_startup_spectrometer,	// 2
+	cmd_clear_dosimeter,		// 3
+	cmd_clear_logs,				// 4
+	cmd_history_request,		// 5
+	cmd_find_device,			// 6
+	cmd_calibrate_batt,			// 7
+	cmd_clear_history			// 8
 } commantTx_t;
 
 typedef enum logTypes {
@@ -158,7 +159,9 @@ typedef enum logTypes {
 	changeBitsOfChan,			// 13
 	overload,					// 14
 	calibrateBatt,				// 15
-	lowBatt						// 16
+	lowBatt,					// 16
+	clearHistory,				// 17
+	unknownCommand				// 18
 } logTypes_t;
 
 struct LG {
