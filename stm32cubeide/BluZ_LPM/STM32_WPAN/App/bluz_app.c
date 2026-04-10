@@ -372,7 +372,13 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						}
 						spectrometerPulse = 0;
 						spectrometerTime = 0;
-						logUpdate(writeFlashLog);
+						logUpdate(resSpectrometerLog);
+					/* Очистка спектра событий */
+					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_clear_history) {
+						for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
+							historySpecterBuffer[iii] = 0;
+						}
+						logUpdate(clearHistory);
 					/* Включение/выключение спектрометра */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_startup_spectrometer) {	// Запуск/останов спектрометра
 						HAL_ADC_Stop_DMA(&hadc4);
@@ -453,6 +459,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						}
 					}
 				} else {
+					logUpdate(unknownCommand);
 				}
 			}
 

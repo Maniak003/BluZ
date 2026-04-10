@@ -35,6 +35,7 @@
                 android:id="@+id/buttonLoadHistory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textLoadSpectr"
                 android:textAllCaps="false"
@@ -44,11 +45,22 @@
                 android:id="@+id/buttonHistorySave"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:text="@string/textSaveBQ"
                 android:textAllCaps="false"
                 android:textColor="@color/buttonTextColor"
                 android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/buttonClearHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
+                android:backgroundTint="@color/buttonColor"
+                android:text="@string/textClearSpectr"
+                android:textAllCaps="false"
+                android:textColor="@color/buttonTextColor" />
         </LinearLayout>
 
     </LinearLayout>
