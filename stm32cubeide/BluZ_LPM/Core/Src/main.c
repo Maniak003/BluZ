@@ -553,7 +553,7 @@ int main(void)
 	  if (dataType > onlyDozimeter) {							/* Нужно передавать спектр ? */
 		  /* Test */
 		  //for (int jjj = 0; jjj < nm_channel; jjj++) {
-			//  tmpSpecterBuffer[jjj] = jjj * 100;
+		//	  tmpSpecterBuffer[jjj] = (uint32_t) jjj;
 		  //}
 		  /* Медианный фильтр для устранения артефактов ADC */
 		#ifdef MEDIAN
@@ -565,18 +565,13 @@ int main(void)
 		  double tmpLog;
 		  uint32_t tmpSpectrData;
 		  bool limFlag = false;
+		  /* Что будем передавать, историю или текущий спектр */
 		  const uint32_t * __restrict src = (dataType > dozimeterSpecter4096) ? historySpecterBuffer : tmpSpecterBuffer;
 		  uint16_t *dest = &transmitBuffer[SPECTER_OFFSET];
 		  for (int jjj = 0; jjj < nm_channel; jjj++) {
-			  /* Что будем передавать, историю или текущий спектр */
 			  tmpSpectrData = 0;
 			  for (int chIdx = 0; chIdx < chanCnt; chIdx++) {
 				  tmpSpectrData += src[kkk++];
-				  //if (dataType > dozimeterSpecter4096) {
-					//  tmpSpectrData += historySpecterBuffer[kkk++];
-				  //} else {
-					//  tmpSpectrData += tmpSpecterBuffer[kkk++];
-				  //}
 			  }
 			  limFlag |= (tmpSpectrData >= limitChan);
 			#ifdef MEDIAN
@@ -1095,7 +1090,7 @@ void MX_LPTIM2_Init(void)
   hlptim2.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
   hlptim2.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV1;
   hlptim2.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
-  hlptim2.Init.Period = 7;
+  hlptim2.Init.Period = 15;
   hlptim2.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
   hlptim2.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
   hlptim2.Init.Input1Source = LPTIM_INPUT1SOURCE_GPIO;
@@ -1105,7 +1100,7 @@ void MX_LPTIM2_Init(void)
   {
     Error_Handler();
   }
-  sConfig1.Pulse = 4;
+  sConfig1.Pulse = 7;
   sConfig1.OCPolarity = LPTIM_OCPOLARITY_HIGH;
   if (HAL_LPTIM_OC_ConfigChannel(&hlptim2, &sConfig1, LPTIM_CHANNEL_2) != HAL_OK)
   {

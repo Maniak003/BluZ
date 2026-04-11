@@ -994,7 +994,11 @@ class BluetoothInterface() {
                                                         //d1 = GO.receiveData[iii++]      // Выбираем старший байт
                                                         /* Логарифмическое сжатие - декомпрессия */
                                                         //GO.drawSPECTER.spectrData[jjj++] = round(2.0.pow((d0 + d1 * 256u).toDouble() * koefChan)) - 1
-                                                        GO.drawSPECTER.spectrData[jjj++] = round(exp((GO.receiveData[iii++] + (GO.receiveData[iii++].toUInt() shl 8)).toDouble() * mult) - 1.0)
+                                                        val lowByte = GO.receiveData[iii++].toUInt() and 0xFFu
+                                                        val highByte = GO.receiveData[iii++].toUInt() and 0xFFu
+                                                        val compressed = lowByte or (highByte shl 8)
+                                                        GO.drawSPECTER.spectrData[jjj++] = exp(compressed.toDouble() * mult) - 1.0
+                                                        //GO.drawSPECTER.spectrData[jjj++] = round(exp((GO.receiveData[iii++] + (GO.receiveData[iii++].toUInt() shl 8)).toDouble() * mult) - 1.0)
                                                     }
                                                     //Log.d("BluZ-BT", "SpectrSUMM:$sm_test, MAX:$max_test ($idx_test)")
                                                     GO.drawSPECTER.init()
