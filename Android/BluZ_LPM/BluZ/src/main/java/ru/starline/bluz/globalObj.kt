@@ -114,6 +114,7 @@ class globalObj {
     public var paddingLeft: Int = 0
     public var paddingRight: Int = 0
     public var xZoom: Float = 1.0f
+    public var xPosition: Float = 0.0f
     public var unitsMess: Int = 0
     public lateinit var drawExamp: drawExmple
     public var drawObjectInit: Boolean = true

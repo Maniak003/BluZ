@@ -1006,7 +1006,7 @@ class BluetoothInterface() {
                                                         /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
                                                         //Log.d("BluZ-BT", "call drawSPEC")
                                                         GO.drawSPECTER.clearSpecter()
-                                                        GO.drawSPECTER.redrawSpecter(GO.specterType)
+                                                        GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
                                                     } else {
                                                         //GO.drawObjectInit = true
                                                         Log.e("BluZ-BT", "drawSPEC is null")

@@ -145,6 +145,7 @@ class NumberFragment : Fragment() {
 
 
         // ScaleGestureDetector с анонимным слушателем
+/*
         private val scaleDetector by lazy {
             ScaleGestureDetector(
                 requireContext(),
@@ -153,17 +154,21 @@ class NumberFragment : Fragment() {
                         val scale = detector.scaleFactor
                         val focusX = detector.focusX
                         val focusY = detector.focusY
+                        val distance = detector.currentSpan
 
                         val newScale = (currentScaleX * scale).coerceIn(MIN_SCALE, MAX_SCALE)
+                        Log.d("BluZ-BT", "FocusX:${focusX}, FocusY:${focusY}, Scale: ${distance}")
 
                         // Пересоздаём матрицу с масштабом и смещением
-                        val matrix = Matrix()
-                        matrix.postScale(newScale, 1f, focusX, focusY)
-                        matrix.postTranslate(translateX, 0f)  // Добавляем смещение
-                        GO.drawSPECTER.imgView.imageMatrix = matrix
-                        currentScaleX = newScale
 
-                        GO.drawCURSOR.showCorsor(GO.drawCURSOR.oldX, GO.drawCURSOR.oldY)
+                        //val matrix = Matrix()
+                        //matrix.postScale(newScale, 1f, focusX, focusY)
+                        //matrix.postTranslate(translateX, 0f)  // Добавляем смещение
+                        //GO.drawSPECTER.imgView.imageMatrix = matrix
+                        //currentScaleX = newScale
+
+                        //GO.drawCURSOR.showCorsor(GO.drawCURSOR.oldX, GO.drawCURSOR.oldY)
+
                         return true
                     }
 
@@ -172,7 +177,7 @@ class NumberFragment : Fragment() {
                     }
                 }
             )
-        }
+        }*/
 
 
 
@@ -664,22 +669,50 @@ class NumberFragment : Fragment() {
                     isClickable = true
                     isFocusable = true
                 }
+                var lastDist = 0.0f
+                var resizeKf = 0.0f
+                var xPos = 0.0f
                 GO.drawCURSOR.cursorView.setOnTouchListener { _, event ->
                     when {
-                        // 🎯 2+ пальца → горизонтальный зум specterView
-                        event.pointerCount >= 2 -> {
-                            scaleDetector.onTouchEvent(event)
+                        // 2 пальца - горизонтальный зум и перемещение
+                        event.pointerCount == 2 -> {
+                            /* Получим координаты касания */
+                            val x1 = event.getX(0)                     // Первая точка касания
+                            val x2 = event.getX(1)                     // Вторая точка касания
+                            val dist = kotlin.math.hypot(x1 - x2, x2 - x1)  // Получим текущую дистанцию
+                            if (xPos > 0) {
+                                GO.xPosition += (xPos - x1) * 0.5f                  // Перемещение масштабированного спектра
+                                if (GO.xPosition < 0) {                             // Минимальная позиция не может быть отрицательной.
+                                    GO.xPosition = 0.0f
+                                }
+                            }
+                            if (lastDist > 0) {                                     // Предыдущая дистанция должна быть актуальна
+                                resizeKf = kotlin.math.abs(dist / lastDist)     // Вычислим изменение относительно предыдущего масштаба
+                                GO.xZoom = GO.xZoom * resizeKf
+                                if (GO.xZoom < 1) {                                 // Масштаб не меньше 1:1
+                                    GO.xZoom = 1.0f
+                                } else if (GO.xZoom > 5) {
+                                    GO.xZoom = 5.0f
+                                }
+                                GO.drawSPECTER.clearSpecter()
+                                GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
+                            }
+                            lastDist = dist                                         // Запомним текущую дистанцию.
+                            xPos = x1                                               // Запомним позицию для отображения
+                            Log.i("BluZ-BT", "X1: $x1, Xpos: ${GO.xPosition}, Scale: ${GO.xZoom}")
                             true
                         }
-                        // 👆 1 палец → перемещение курсора
+                        // 1 палец - перемещение курсора
                         event.pointerCount == 1 -> {
+                            lastDist = 0.0f                                         // Очистим дистанцию, что бы начинать масштабирование с начала
+                            xPos = 0.0f                                             // Очистим последнюю позицию, что бы перемещать с начала
                             val rawX = event.x
                             val rawY = event.y
 
                             if (event.action == MotionEvent.ACTION_DOWN ||
                                 event.action == MotionEvent.ACTION_MOVE) {
 
-                                // ⚠️ КОРРЕКТИРУЕМ X с учётом масштаба!
+                                // КОРРЕКТИРУЕМ X с учётом масштаба!
                                 // Защита от деления на 0 через coerceAtLeast
                                 val correctedX = rawX / currentScaleX.coerceAtLeast(0.001f)
 
@@ -853,7 +886,7 @@ class NumberFragment : Fragment() {
                                     withContext(Dispatchers.Main) {
                                         if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                                             GO.drawSPECTER.clearSpecter()
-                                            GO.drawSPECTER.redrawSpecter(GO.specterType)
+                                            GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
                                         }
                                         GO.showStatistics()
                                         /* Спрячем прогресс индикатор и покажем check box */
@@ -877,7 +910,7 @@ class NumberFragment : Fragment() {
                     }
                     if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                         GO.drawSPECTER.clearSpecter()
-                        GO.drawSPECTER.redrawSpecter(GO.specterType)
+                        GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
                     }
                 }
 
@@ -889,7 +922,7 @@ class NumberFragment : Fragment() {
                             /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
                             //Log.d("BluZ-BT", "call drawSPEC")
                             GO.drawSPECTER.clearSpecter()
-                            GO.drawSPECTER.redrawSpecter(GO.specterType)
+                            GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
                         } else {
                             //GO.drawObjectInit = true
                             Log.e("BluZ-BT", "drawSPEC is null")
@@ -905,7 +938,7 @@ class NumberFragment : Fragment() {
                             /* specterType: 0 - 1024, 1 - 2048, 2 - 4096 */
                             //Log.d("BluZ-BT", "call drawSPEC")
                             GO.drawSPECTER.clearSpecter()
-                            GO.drawSPECTER.redrawSpecter(GO.specterType)
+                            GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
                         } else {
                             //GO.drawObjectInit = true
                             Log.e("BluZ-BT", "drawSPEC is null")

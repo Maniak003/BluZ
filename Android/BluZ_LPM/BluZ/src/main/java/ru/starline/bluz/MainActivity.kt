@@ -69,12 +69,12 @@ public class MainActivity : FragmentActivity() {
         return when (keyCode) {
             KeyEvent.KEYCODE_VOLUME_UP -> {
                 // Обработка события "+"
-                //Toast.makeText(this, "Кнопка +", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Кнопка +", Toast.LENGTH_SHORT).show()
                 true
             }
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
                 // Обработка события "-"
-                //Toast.makeText(this, "Кнопка -", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Кнопка -", Toast.LENGTH_SHORT).show()
                 true
             }
             else -> super.onKeyUp(keyCode, event)
@@ -84,7 +84,7 @@ public class MainActivity : FragmentActivity() {
     /* Переход в паузу*/
     override fun onPause() {
         super.onPause()
-        orientationListener.disable() // ←←← Освобождаем ресурсы
+        orientationListener.disable() // Освобождаем ресурсы
     }
 
 
