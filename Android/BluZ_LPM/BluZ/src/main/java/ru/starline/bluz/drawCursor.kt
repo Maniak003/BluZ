@@ -91,7 +91,7 @@ class drawCursor {
             cursorCanvas.drawLine(x, 0.0f, x, HSize.toFloat(), aCursor);
 
             /* Указатель горизонтального положения */
-            curChan = (x / GO.drawSPECTER.xSize).toInt()
+            curChan = (x / GO.drawSPECTER.xSize + GO.xPosition).toInt()
             if (curChan > 4095) {
                 curChan = 4095
             }

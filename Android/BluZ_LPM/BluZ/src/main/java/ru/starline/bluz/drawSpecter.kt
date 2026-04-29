@@ -69,17 +69,17 @@ class drawSpecter {
         //txtStat3.text = saveStat3
     }
 
-    fun redrawSpecter(spType: Int) {
+    fun redrawSpecter(spType: Int, offSetX: Float) {
         if (!this::specBitmap.isInitialized) {
             Log.w("BluZ-BT", "specBitmap not initialized, call init() first")
             return
         }
         Log.d("BluZ-BT", "Type: $spType HSize: $HSize VSize: $VSize, Res: $ResolutionSpectr")
         //Log.d("BluZ-BT", "Draw specter.")
-        var paintLin: Paint = Paint()
-        var paintLog: Paint = Paint()
-        var paintFoneLin = Paint()
-        var paintFoneLog = Paint()
+        val paintLin: Paint = Paint()
+        val paintLog: Paint = Paint()
+        val paintFoneLin = Paint()
+        val paintFoneLog = Paint()
 
         /*
          *  Подготовка массива для отрисовки данных
@@ -119,10 +119,10 @@ class drawSpecter {
         }
 
         xSize = HSize.toDouble() / ResolutionSpectr * GO.xZoom
-        paintLin.strokeWidth = xSize.toFloat()
-        paintLog.strokeWidth = xSize.toFloat()
-        paintFoneLin.strokeWidth = xSize.toFloat() * 2
-        paintFoneLog.strokeWidth = xSize.toFloat() * 2
+        paintLin.strokeWidth = 3.0f //xSize.toFloat()
+        paintLog.strokeWidth = 3.0f // xSize.toFloat()
+        paintFoneLin.strokeWidth = 5.0f //xSize.toFloat() * 2
+        paintFoneLog.strokeWidth = 5.0f //xSize.toFloat() * 2
 
         if (GO.specterGraphType == 0) {         // Линейный стиль графика
             paintLin.color = GO.ColorLin        // Цвет для отображения линейного спектра
@@ -177,17 +177,18 @@ class drawSpecter {
         var Ylin: Float
         var Ylog: Float
         for (idx in 0 until ResolutionSpectr) {
+            val idx1 = (idx + GO.xPosition).toInt()
             /* Подготовка данных спектра */
-            Ylin = (VSize - tmpSpecterData[idx] * koefLin).toFloat()
-            if (tmpSpecterData[idx] != 0.0) {
-                Ylog = (VSize - ln(tmpSpecterData[idx]) * koefLog).toFloat()
+            Ylin = (VSize - tmpSpecterData[idx1] * koefLin).toFloat()
+            Ylog = if (tmpSpecterData[idx1] != 0.0) {
+                (VSize - ln(tmpSpecterData[idx1]) * koefLog).toFloat()
             } else {
-                Ylog = VSize.toFloat()
+                VSize.toFloat()
             }
             if (GO.specterGraphType == 0) {         // Стиль графика - линия
                 /* Прорисовка линейного графика */
 
-                if ( ! (oldYlin == VSize.toDouble() && tmpSpecterData[idx] == 0.0)) {
+                if ( ! (oldYlin == VSize.toDouble() && tmpSpecterData[idx1] == 0.0)) {
                     specCanvas.drawLine(
                         (oldX * xSize).toFloat(),   // Начальный X
                         oldYlin.toFloat(),          // Начальный Y
