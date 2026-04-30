@@ -8,6 +8,7 @@ import android.text.Html
 import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.collection.emptyLongSet
 import androidx.core.text.HtmlCompat
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.internal.synchronized
@@ -40,7 +41,7 @@ class drawSpecter {
     public var koefLin: Double = 1.0
     public var koefLinMLEM: Double = 1.0
     public var koefLogMLEM: Double = 1.0
-    public var xSize: Double = 1.0
+    public var xSize: Double = 1.0                          // Размер для одного канала.
     private var MF: DoubleArray = DoubleArray(3)
     private var indexMF: Int = 0
 
@@ -119,10 +120,34 @@ class drawSpecter {
         }
 
         xSize = HSize.toDouble() / ResolutionSpectr * GO.xZoom
-        paintLin.strokeWidth = 3.0f //xSize.toFloat()
-        paintLog.strokeWidth = 3.0f // xSize.toFloat()
-        paintFoneLin.strokeWidth = 5.0f //xSize.toFloat() * 2
-        paintFoneLog.strokeWidth = 5.0f //xSize.toFloat() * 2
+        when (ResolutionSpectr) {
+            1024 -> {
+                paintLin.strokeWidth = 3.0f //xSize.toFloat()
+                paintLog.strokeWidth = 3.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 4.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 4.0f //xSize.toFloat() * 2
+            }
+
+            2048 -> {
+                paintLin.strokeWidth = 2.0f //xSize.toFloat()
+                paintLog.strokeWidth = 2.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 3.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 3.0f //xSize.toFloat() * 2
+            }
+
+            4096 -> {
+                paintLin.strokeWidth = 1.0f //xSize.toFloat()
+                paintLog . strokeWidth = 1.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 2.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 2.0f //xSize.toFloat() * 2
+            }
+            else -> {
+                paintLin.strokeWidth = 3.0f //xSize.toFloat()
+                paintLog.strokeWidth = 3.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 4.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 4.0f //xSize.toFloat() * 2
+            }
+        }
 
         if (GO.specterGraphType == 0) {         // Линейный стиль графика
             paintLin.color = GO.ColorLin        // Цвет для отображения линейного спектра
@@ -177,7 +202,10 @@ class drawSpecter {
         var Ylin: Float
         var Ylog: Float
         for (idx in 0 until ResolutionSpectr) {
-            val idx1 = (idx + GO.xPosition).toInt()
+            var idx1 = (idx + GO.xPosition).toInt()
+            if (idx1 >= ResolutionSpectr) {
+                idx1 = ResolutionSpectr - 1
+            }
             /* Подготовка данных спектра */
             Ylin = (VSize - tmpSpecterData[idx1] * koefLin).toFloat()
             Ylog = if (tmpSpecterData[idx1] != 0.0) {

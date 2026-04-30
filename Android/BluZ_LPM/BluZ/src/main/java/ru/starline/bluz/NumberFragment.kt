@@ -684,6 +684,9 @@ class NumberFragment : Fragment() {
                                 GO.xPosition += (xPos - x1) * 0.5f                  // Перемещение масштабированного спектра
                                 if (GO.xPosition < 0) {                             // Минимальная позиция не может быть отрицательной.
                                     GO.xPosition = 0.0f
+                                    /* Проверим на выход за граници правого края */
+                                } else if (0 > GO.drawSPECTER.ResolutionSpectr * GO.drawSPECTER.xSize - GO.drawSPECTER.HSize - GO.xPosition) {
+                                    GO.xPosition = (GO.drawSPECTER.ResolutionSpectr * GO.drawSPECTER.xSize - GO.drawSPECTER.HSize).toFloat()
                                 }
                             }
                             if (lastDist > 0) {                                     // Предыдущая дистанция должна быть актуальна
@@ -699,7 +702,7 @@ class NumberFragment : Fragment() {
                             }
                             lastDist = dist                                         // Запомним текущую дистанцию.
                             xPos = x1                                               // Запомним позицию для отображения
-                            Log.i("BluZ-BT", "X1: $x1, Xpos: ${GO.xPosition}, Scale: ${GO.xZoom}")
+                            Log.i("BluZ-BT", "X1: $x1, Resol: ${GO.drawSPECTER.ResolutionSpectr}, HSize: ${GO.drawSPECTER.HSize}, xSize: ${GO.drawSPECTER.xSize}, Xpos: ${GO.xPosition}, Scale: ${GO.xZoom}")
                             true
                         }
                         // 1 палец - перемещение курсора
