@@ -164,7 +164,8 @@
                     android:layout_weight="1"
                     android:buttonTint="@color/buttonColor"
                     android:text="MLEM"
-                    android:textColor="@color/labelTextColor2" />
+                    android:textColor="@color/labelTextColor2"
+                    android:visibility="invisible" />
             </LinearLayout>
 
             <ProgressBar

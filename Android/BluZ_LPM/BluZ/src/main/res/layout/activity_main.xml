@@ -102,6 +102,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
                         android:gravity="center_horizontal"
+                        android:text="----"
                         android:textColor="@color/buttonColor"
                         android:textSize="12sp" />
 
@@ -192,20 +193,20 @@
                 android:src="@drawable/ic_action_logapp" />
 
             <ImageButton
-                android:id="@+id/buttonSetup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-5dp"
-                android:backgroundTint="@color/buttonColor"
-                android:src="@drawable/ic_action_optionapp" />
-
-            <ImageButton
                 android:id="@+id/buttonMap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-5dp"
                 android:backgroundTint="@color/buttonColor"
                 android:src="@drawable/ic_menu_gallery" />
+
+            <ImageButton
+                android:id="@+id/buttonSetup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-5dp"
+                android:backgroundTint="@color/buttonColor"
+                android:src="@drawable/ic_action_optionapp" />
 
             <ImageButton
                 android:id="@+id/buttonExit"

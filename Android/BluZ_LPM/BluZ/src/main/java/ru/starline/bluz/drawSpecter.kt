@@ -290,6 +290,7 @@ class drawSpecter {
         //saveStat1 = txtStat1.text.toString()
         //saveStat2 = txtStat2.text.toString()
         //saveStat3 = txtStat3.text.toString()
+        GO.compMED = DoseCalculator.calculateH10DoseSafe(DoseCalculator.chiVectorOrg, spectrData).toFloat()
     }
 
     fun clearSpecter() {

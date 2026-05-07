@@ -99,6 +99,7 @@ class globalObj {
     public val propPaddingRight: String = "PaddingRight"
     public val propXZoom: String = "XZoom"
     public val propUnits: String = "UnitsMess"
+    public val propDetector: String = "DetectorType"
 
     public var receiveData: UByteArray = UByteArray(9760)
     public var allPermissionAccept: Boolean = false
@@ -172,6 +173,8 @@ class globalObj {
     public var curretnTrcName: String = ""
     public var currentTrack4Show: Long = 0L
     public var nightMapModeEnab: Boolean = false
+    public var currentDetector: Long = 0L
+    public var curretnDetectorName: String = ""
     public lateinit var cbNightMapMode: CheckBox
     public lateinit var recordTrc: Button
     public var trackIsRecordeed: Boolean = false
@@ -554,6 +557,8 @@ class globalObj {
         }
 
         GO.txtStat2.text = String.format("Total:%d(%.2f%%) Avg:%.2f", pulseS, aquracy3S, cpsS)
+
+        /* Вывод энергокомпенсированной дозы */
         if (GO.drawSPECTER.flagMLEM) {
             GO.txtCompMED.text = when (GO.unitsMess) {
                 1 -> {
@@ -564,7 +569,7 @@ class globalObj {
                 }
             }
         } else {
-            GO.txtCompMED.text = ""
+            GO.txtCompMED.text = "---"
         }
     }
 
@@ -821,6 +826,7 @@ class globalObj {
         GO.PP.setPropInt(propPaddingLeft, GO.paddingLeft)                   // Отступ слева
         GO.PP.setPropInt(propPaddingRight, GO.paddingRight)                 // Отступ справа
         GO.PP.setPropInt(propUnits, GO.unitsMess)                           // Единици измеения uR/h, uSv/h
+        GO.PP.setPropInt(propDetector, GO.currentDetector.toInt())          // Детектор для энергокомпенсации
     }
 
     /*
@@ -916,6 +922,7 @@ class globalObj {
             GO.xZoom = 1.0f
         }
         GO.unitsMess = GO.PP.getPropInt(propUnits)
+        GO.currentDetector = GO.PP.getPropInt(propDetector).toLong()
     }
 
     /* Запуск таймера для автоматического подключения */

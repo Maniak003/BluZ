@@ -7,6 +7,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.Matrix
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -38,6 +39,7 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -79,6 +81,9 @@ import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import ru.starline.bluz.data.entity.DetectorType
+import ru.starline.bluz.ui.dialog.ChiFilePickerDialog
+import java.nio.ByteOrder
 
 const val ARG_OBJECT = "oblect"
 
@@ -111,6 +116,7 @@ class NumberFragment : Fragment() {
     private lateinit var rgUnit : RadioGroup
     private lateinit var rbuRh : RadioButton
     private lateinit var rbuSvh : RadioButton
+    private lateinit var textDetectName: TextView
     // Поля для горизонтального зума
 /*
     override fun onResume() {
@@ -179,14 +185,67 @@ class NumberFragment : Fragment() {
             )
         }*/
 
-
-
         override fun onDestroy() {
         mapInputListener?.let {
             GO.map?.removeInputListener(it)
         }
         hideHintRunnable?.let { hintView.removeCallbacks(it) }
         super.onDestroy()
+    }
+
+    /* Чтение файла в массив */
+    private suspend fun readDoubleArrayFromUri(uri: Uri): DoubleArray =
+        withContext(Dispatchers.IO) {
+            requireContext().contentResolver.openInputStream(uri)?.use {
+                bytesToDoubleArray(it.readBytes())
+            } ?: throw IOException("Error open file")
+        }
+
+    private fun bytesToDoubleArray(bytes: ByteArray): DoubleArray {
+        require(bytes.size % 8 == 0) { "The size must be a multiple of 8" }
+        val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+        return DoubleArray(bytes.size / 8) { buffer.getDouble() }
+    }
+
+    private fun loadChiFileFromPath(filePath: String) {
+        lifecycleScope.launch {
+            try {
+                //showLoadingIndicator(true)
+
+                val chiVector = withContext(Dispatchers.IO) {
+                    val file = File(filePath)
+                    val bytes = file.readBytes()
+                    bytesToDoubleArray(bytes)
+                }
+
+                onChiVectorLoaded(chiVector)
+                Toast.makeText(requireContext(), "File loaded.: ${File(filePath).name}", Toast.LENGTH_SHORT).show()
+
+            } catch (e: Exception) {
+                Log.e("BluZ-BT", "Error: ${e.message}", e)
+                Toast.makeText(
+                    requireContext(),
+                    "Load error: ${e.localizedMessage}",
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                //showLoadingIndicator(false)
+            }
+        }
+    }
+
+    /**
+     * Вызывается после успешной загрузки вектора
+     */
+    private fun onChiVectorLoaded(chiVector: DoubleArray) {
+        if (chiVector.size != 512) {
+            Toast.makeText(requireContext(), "Wrong vector size - expect 1024.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Сохраняем в БД или используем напрямую
+        //saveChiVectorToDatabase(chiVector)
+        Toast.makeText(requireContext(), "Vector load success.", Toast.LENGTH_SHORT).show()
     }
 
     private fun changeSpectrType(checkedId: Int) {
@@ -620,6 +679,17 @@ class NumberFragment : Fragment() {
             else -> rbuRh.isChecked = true
         }
 
+        /* Тип детектора */
+        lifecycleScope.launch {
+            GO.dao.getByIdDetector(GO.currentDetector)?.let { detectorType ->
+                GO.curretnDetectorName = detectorType.name
+                textDetectName.text = detectorType.name
+                Log.d("BluZ-BT", "Detector type Ok.")
+            } ?: run {
+                GO.curretnDetectorName = ""
+                Log.d("BluZ-BT", "Detector type wrong.")
+            }
+        }
     }
 
     override fun onCreateView(
@@ -831,6 +901,7 @@ class NumberFragment : Fragment() {
                 GO.propButtonInit = true
 
                 /* Обработка MLEM */
+                /*
                 CBMLEM.setOnCheckedChangeListener {_, isChecked ->
                     if (isChecked) {
                         if (GO.spectrometerPulse > 0u) {
@@ -915,7 +986,7 @@ class NumberFragment : Fragment() {
                         GO.drawSPECTER.clearSpecter()
                         GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
                     }
-                }
+                }*/
 
                 /* Управление SMA фильтром */
                 CBSMA.setOnCheckedChangeListener {_, isChecked ->
@@ -1210,6 +1281,202 @@ class NumberFragment : Fragment() {
 
                 paddingTextLeft  = view.findViewById(R.id.editTextPaddingLeft)
                 paddingTextRight = view.findViewById(R.id.editTextPaddingRight)
+
+                /* Кнопки для управления энергокомпенсацией */
+                val buttonNewDetect : Button = view.findViewById(R.id.buttonNewDetector)
+                val buttomLoadDetect : Button = view.findViewById(R.id.buttonLoadDetector)
+                val buttonSelectDetect : Button = view.findViewById(R.id.buttonSelectDetector)
+                textDetectName  = view.findViewById(R.id.textDetectorName)
+
+                /* Загрузка CHI */
+                buttomLoadDetect.setOnClickListener {
+                    // Проверка доступа
+                    val bluZDir = File(
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),
+                        "BluZ"
+                    )
+                    /* Проверим, существует ли каталог */
+                    if (!bluZDir.exists()) {
+                        bluZDir.mkdirs()
+                    }
+
+                    /* Есть ли доступ к чтению каталога */
+                    if (bluZDir.canRead()) {
+                        val dialog = ChiFilePickerDialog()
+                        dialog.setOnFileSelectedListener(object : ChiFilePickerDialog.OnChiFileSelectedListener {
+                            override fun onChiFileSelected(filePath: String) {
+                                // Проверяем существование файла
+                                val file = File(filePath)
+                                if (!file.exists()) {
+                                    Toast.makeText(requireContext(), "File not found.", Toast.LENGTH_SHORT).show()
+                                }
+                                // Загружаем файл
+                                loadChiFileFromPath(filePath)
+                            }
+                        })
+                        dialog.show(childFragmentManager, "ChiFilePicker")
+                    } else {
+                        Toast.makeText(context, "Access deny ${bluZDir.name}.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                /* Изменение названия детектора */
+                textDetectName.setOnClickListener {
+                    if (textDetectName.text.isNotEmpty()) {
+                        val context = requireContext()
+                        // Создаём EditText для изменения имени
+                        val input = EditText(context)
+                        input.setText(textDetectName.text)
+                        AlertDialog.Builder(context)
+                            .setTitle("Edit detector")
+                            .setView(input) // добавляем поле ввода
+                            .setPositiveButton("Save") { dialog, _ ->
+                                val name = input.text.toString().trim()
+                                if (name.isEmpty()) {
+                                    Toast.makeText(context, "Name is empty.", Toast.LENGTH_SHORT).show()
+                                    return@setPositiveButton
+                                }
+
+                                // Запускаем корутину для изменения названия трека в БД
+                                lifecycleScope.launch {
+                                    try {
+                                        GO.dao.editDetector(GO.currentDetector, name)
+                                        GO.curretnDetectorName = name
+                                        textDetectName.text = name
+                                    } catch (e: Exception) {
+                                        Log.e("DetectorDialog", "Error edit detector", e)
+                                    }
+                                }
+                                dialog.dismiss()
+                            }
+                            .setNegativeButton("Close") { dialog, _ ->
+                                dialog.cancel()
+                            }
+                            .setNeutralButton("Delete") { dialog, which ->
+                                if (GO.currentDetector > 1) {
+                                    lifecycleScope.launch {
+                                        try {
+                                            GO.dao.deleteDetector(GO.currentDetector)
+                                            GO.currentDetector = 0
+                                            GO.curretnDetectorName = ""
+                                            textDetectName.text = ""
+                                        } catch (e: Exception) {
+                                            Log.e("DetectorDialog", "Error delete detector", e)
+                                        }
+                                    }
+                                }
+                            }
+                            .show()
+                    }
+                }
+
+                /* Выбор детектора из списка */
+                buttonSelectDetect.setOnClickListener {
+                    lifecycleScope.launch {
+                        val detect = GO.dao.getAllDetector()
+                        val names = detect.map { it.name }.toTypedArray()
+
+                        /* Изменение стиля диалогового окна,
+                         * для уменьшения межстрочных интервалов
+                         * и раскраски отдельных полей
+                         */
+                        val adapter = object : ArrayAdapter<String>(
+                            requireContext(),
+                            R.layout.item_track_dialog,
+                            names
+                        ) {
+                            override fun getView(
+                                position: Int,
+                                convertView: View?,
+                                parent: ViewGroup
+                            ): View {
+                                val view = super.getView(position, convertView, parent)
+                                val textView = view.findViewById<TextView>(R.id.textView)
+                                val fullText = names[position]
+                                val dateLength = 20
+                                if (fullText.length >= dateLength) {
+                                    val spannable = SpannableString(fullText)
+                                    val dateColor = ContextCompat.getColor(
+                                        requireContext(),
+                                        R.color.labelTextColor2
+                                    )
+                                    spannable.setSpan(
+                                        ForegroundColorSpan(dateColor),
+                                        0,
+                                        dateLength,
+                                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                                    )
+                                    textView.text = spannable
+                                } else {
+                                    textView.text = fullText
+                                }
+                                return view
+                            }
+                        }
+
+                        AlertDialog.Builder(requireContext())
+                            .setTitle("Select detector")
+                            .setAdapter(adapter) { _, which ->
+                                val selectedDet = detect[which]
+                                GO.curretnDetectorName = selectedDet.name
+                                textDetectName.text = selectedDet.name
+                                GO.currentDetector = selectedDet.id     // Запомним текущий отображаемый трек.
+                                lifecycleScope.launch {
+                                    GO.dao.activateDetector(selectedDet.id)
+                                }
+                            }
+                            .setNegativeButton("Close", null)
+                            .show()
+                    }
+                }
+
+                /* Создание нового детектора */
+                buttonNewDetect.setOnClickListener {
+                    val context = requireContext()
+
+                    // Создаём EditText для ввода имени
+                    val input = EditText(context)
+                    input.hint = "Enter Detector name"
+
+                    // Диалог создания нового детектора
+                    AlertDialog.Builder(context)
+                        .setTitle("New detector")
+                        .setView(input) // добавляем поле ввода
+                        .setPositiveButton("Create") { dialog, _ ->
+                            val name = input.text.toString().trim()
+                            if (name.isEmpty()) {
+                                Toast.makeText(context, "Name is empty.", Toast.LENGTH_SHORT).show()
+                                return@setPositiveButton
+                            }
+
+                            // Запускаем корутину для сохранения в БД
+                            lifecycleScope.launch {
+                                try {
+                                    val newDetector = DetectorType(
+                                        id = 0,
+                                        name = name,
+                                        changeAt = System.currentTimeMillis() / 1000,
+                                        chiVector = DoubleArray(1024),
+                                        curActive = false
+                                    )
+                                    GO.currentDetector = GO.dao.insertDetector(newDetector)
+                                    GO.curretnDetectorName = name
+                                    textDetectName.text = name
+                                    /* Сразу делаем активным */
+                                    GO.dao.activateDetector(GO.currentDetector)
+                                } catch (e: Exception) {
+                                    Log.e("DetectorDialog", "Error create detector", e)
+                                }
+                            }
+                            dialog.dismiss()
+                        }
+                        .setNegativeButton("Close") { dialog, _ ->
+                            dialog.cancel()
+                        }
+                        .show()
+                }
+
+
 
                 /* Единици измерения uRh, uSvh */
                 rgUnit = view.findViewById(R.id.RGUnits)

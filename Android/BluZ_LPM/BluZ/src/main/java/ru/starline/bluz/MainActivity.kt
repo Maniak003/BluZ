@@ -558,6 +558,12 @@ public class MainActivity : FragmentActivity() {
             }
         }
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+        }
+
         if (permissionsToRequest.isNotEmpty()) {
             // Проверяем, нужно ли показать объяснение
             //if (shouldShowRequestPermissionRationale(permissionsToRequest.toTypedArray())) {

@@ -65,6 +65,7 @@
     <string name="textAddGPS">Add</string>
     <string name="newTarck">New</string>
     <string name="current_track_label">Current track: %s</string>
+    <string name="current_detector_label">Current detector: %s</string>
     <string name="startRec">Record</string>
     <string name="stopRec">Stop</string>
     <string name="textGPX">CSV</string>
