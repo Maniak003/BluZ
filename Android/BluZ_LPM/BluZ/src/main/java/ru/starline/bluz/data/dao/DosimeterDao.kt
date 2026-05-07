@@ -2,6 +2,7 @@ package ru.starline.bluz.data.dao
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
+import ru.starline.bluz.data.entity.DetectorType
 import ru.starline.bluz.data.entity.Track
 import ru.starline.bluz.data.entity.TrackDetail
 
@@ -37,7 +38,6 @@ interface DosimeterDao {
     @Query("SELECT ifnull(max(cps),0) as max, ifnull(min(cps), 0) as min FROM track_details WHERE cps > 0 and track_id = :trackId")
     suspend fun getMaxMinForTrack(trackId: Long): MaxMinDetail?
 
-
     @Query("UPDATE tracks SET is_active = 0 WHERE id = :trackId")
     suspend fun deactivateTrack(trackId: Long)
 
@@ -58,9 +58,46 @@ interface DosimeterDao {
 
     @Insert
     suspend fun insertTrack(track: Track): Long
+
+    /* Добавление детектора */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDetector(detector: DetectorType): Long
+
+    /* Переименование детектора */
+    @Query(value = "UPDATE detectors SET name = :detectorName WHERE id = :detectorId")
+    suspend fun editDetector(detectorId: Long, detectorName: String)
+
+    /* Изменение вектора детектора */
+    @Query(value = "UPDATE detectors SET chiVector = :detectorVector WHERE id = :detectorId")
+    suspend fun editDetectorCHI(detectorId: Long, detectorVector: DoubleArray)
+
+    /* Удаление детектора */
+    @Query(value = "DELETE FROM detectors WHERE id = :detectorId")
+    suspend fun deleteDetector(detectorId: Long)
+
+    /* Выборка конкретного детектора */
+    @Query("SELECT * FROM detectors WHERE id = :id")
+    suspend fun getByIdDetector(id: Long): DetectorType?
+
+    /* Список детекторов без вектора */
+    @Query("SELECT id, name, changeAt, curActive FROM detectors ORDER BY name")
+    suspend fun getAllDetector(): List<DetectorSummary>
+
+    /* Переключение активности детектора */
+    @Query("UPDATE detectors SET curActive = CASE WHEN id = :detectorId THEN 1 ELSE 0 END")
+    suspend fun activateDetector(detectorId: Long)
 }
 
 data class MaxMinDetail (
     val max: Long,
     val min: Long
 )
+
+// DTO для списка в UI без загрузки BLOB)
+data class DetectorSummary(
+    val id: Long,
+    val name: String,
+    val changeAt: Long,
+    val curActive: Boolean
+)
+
