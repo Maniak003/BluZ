@@ -16,11 +16,12 @@ object DoseCalculator {
     fun calculateH10Dose(
         chi: DoubleArray,
         spectrum: DoubleArray,
-        normalize: Boolean = false
+        normalize: Boolean = false,
+        acquisitionTimeSec: Double = 0.0
     ): Double {
-        require(chi.size == 1024) { "chi должен содержать ровно 1024 элемента" }
+        require(chi.size == 1024) { "chi size is 1024." }
         require(spectrum.size % 1024 == 0) {
-            "Размер спектра должен быть кратен 1024 (1024, 2048, 4096)"
+            "Size multiplay 1024 (1024, 2048, 4096)"
         }
 
         val ratio = spectrum.size / 1024
@@ -37,9 +38,17 @@ object DoseCalculator {
             spectrumSum += binSum
             dose += chi[i] * binSum
         }
+        // Нормировка спектра (если нужно)
+        if (normalize && spectrumSum > 0.0) {
+            dose /= spectrumSum
+        }
 
-        // Нормировка, если требуется
-        return if (normalize && spectrumSum > 0.0) dose / spectrumSum else dose
+        // Пересчёт в мощность дозы (если задано время)
+        return if (acquisitionTimeSec > 0.0) {
+            dose / acquisitionTimeSec * 3600.0  // [доза/час]
+        } else {
+            dose  // [доза] за всё время измерения
+        }
     }
 
     /**
@@ -49,13 +58,14 @@ object DoseCalculator {
     fun calculateH10DoseSafe(
         chi: DoubleArray,
         spectrum: DoubleArray,
-        normalize: Boolean = false
+        normalize: Boolean = false,
+        acquisitionTimeSec: Double = 0.0
     ): Double {
         // Очищаем спектр от артефактов АЦП
         val cleanedSpectrum = DoubleArray(spectrum.size) { idx ->
             val v = spectrum[idx]
             if (v < 0.0 || v.isNaN()) 0.0 else v
         }
-        return calculateH10Dose(chi, cleanedSpectrum, normalize)
+        return calculateH10Dose(chi, cleanedSpectrum, normalize, acquisitionTimeSec)
     }
 }

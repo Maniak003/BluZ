@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.OpenableColumns
 import android.text.Editable
 import android.text.InputType
 import android.text.Spannable
@@ -82,7 +83,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ru.starline.bluz.data.entity.DetectorType
-import ru.starline.bluz.ui.dialog.ChiFilePickerDialog
 import java.nio.ByteOrder
 
 const val ARG_OBJECT = "oblect"
@@ -142,12 +142,12 @@ class NumberFragment : Fragment() {
 
         /* Горизонтальный зум */
         private var currentScaleX = 1f
-        private val MIN_SCALE = 1f
-        private val MAX_SCALE = 5f
-        private var translateX = 0f  // Смещение по горизонтали
+        //private val MIN_SCALE = 1f
+        //private val MAX_SCALE = 5f
+        //private var translateX = 0f  // Смещение по горизонтали
         // Для отслеживания скролла
-        private var lastTouchX = 0f
-        private var isScrolling = false
+        //private var lastTouchX = 0f
+        //private var isScrolling = false
 
 
         // ScaleGestureDetector с анонимным слушателем
@@ -193,59 +193,106 @@ class NumberFragment : Fragment() {
         super.onDestroy()
     }
 
-    /* Чтение файла в массив */
-    private suspend fun readDoubleArrayFromUri(uri: Uri): DoubleArray =
-        withContext(Dispatchers.IO) {
-            requireContext().contentResolver.openInputStream(uri)?.use {
-                bytesToDoubleArray(it.readBytes())
-            } ?: throw IOException("Error open file")
-        }
+    /* Загрузка вектора CHI */
 
     private fun bytesToDoubleArray(bytes: ByteArray): DoubleArray {
-        require(bytes.size % 8 == 0) { "The size must be a multiple of 8" }
-        val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+        val buffer = ByteBuffer.wrap(bytes)
+            .order(ByteOrder.LITTLE_ENDIAN)  // Совпадает с 'ieee-le' в MATLAB
         return DoubleArray(bytes.size / 8) { buffer.getDouble() }
     }
 
-    private fun loadChiFileFromPath(filePath: String) {
-        lifecycleScope.launch {
-            try {
-                //showLoadingIndicator(true)
+    private fun loadChiFile(uri: Uri) {
+    lifecycleScope.launch {
+        try {
+            val chiVector = withContext(Dispatchers.IO) {
+                requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
+                    val bytes = inputStream.readBytes()
 
-                val chiVector = withContext(Dispatchers.IO) {
-                    val file = File(filePath)
-                    val bytes = file.readBytes()
+                    // Валидация размера (1024 канала * 8 байт = 8192 байт)
+                    if (bytes.size % 8 != 0) {
+                        throw IllegalArgumentException("Illegal file size: size not multiple 8")
+                    }
                     bytesToDoubleArray(bytes)
-                }
-
-                onChiVectorLoaded(chiVector)
-                Toast.makeText(requireContext(), "File loaded.: ${File(filePath).name}", Toast.LENGTH_SHORT).show()
-
-            } catch (e: Exception) {
-                Log.e("BluZ-BT", "Error: ${e.message}", e)
-                Toast.makeText(
-                    requireContext(),
-                    "Load error: ${e.localizedMessage}",
-                    Toast.LENGTH_LONG
-                ).show()
-            } finally {
-                //showLoadingIndicator(false)
+                } ?: throw IOException("File read error")
             }
+            /* Проверим размер вектора */
+            if (chiVector.size != 1024 ) {
+                Toast.makeText(requireContext(), "Illigal load CHI, size is ${chiVector.size}.", Toast.LENGTH_LONG).show()
+            } else {
+                /* Если все нормально - сохраним в базу и сделаем актуальным*/
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        // Сохраняем CHI вектор в базу.
+                        val buffBlob = ByteBuffer.allocate(chiVector.size * 8).order(ByteOrder.LITTLE_ENDIAN)
+                        chiVector.forEach { buffBlob.putDouble(it) }
+                        val chiBlob = buffBlob.array()
+
+                        val rowsAffect = GO.dao.editDetectorCHI(GO.currentDetector, chiBlob)
+                        if (rowsAffect == 1) {
+                            /* Перегружаем вектор в процедуру для расчета */
+                            DoseCalculator.chiVectorOrg = chiVector
+                            // Возвращаемся в Main поток для работы с UI/состоянием
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(requireContext(), "Vector saved success.", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(requireContext(), "Update error CHI.", Toast.LENGTH_LONG).show()
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Log.e("BluZ-BT", "Error: ${e.message}", e)
+                            Toast.makeText(requireContext(), "Save error CHI: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+                //Toast.makeText(requireContext(), "Load CHI complete.", Toast.LENGTH_SHORT).show()
+            }
+
+        } catch (e: Exception) {
+            Log.e("BluZ-BT", "Error: ${e.message}", e)
+            Toast.makeText(
+                requireContext(),
+                "Error: ${e.localizedMessage}",
+                Toast.LENGTH_LONG
+            ).show()
+        } finally {
+            //showLoadingIndicator(false)
+        }
+    }
+}
+
+    private fun getFileNameFromUri(uri: Uri): String? {
+    var name: String? = null
+    val cursor = requireContext().contentResolver.query(uri, null, null, null, null)
+    cursor?.use {
+        val nameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+        if (it.moveToFirst() && nameIndex != -1) {
+            name = it.getString(nameIndex)
+        }
+    }
+    // Фоллбэк, если курсор не сработал
+    return name ?: uri.lastPathSegment
+}
+
+    private fun handleChiFileSelection(uri: Uri) {
+        val fileName = getFileNameFromUri(uri) ?: "unknown"
+
+        if (!fileName.endsWith(".chi", ignoreCase = true)) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("️Format incorrect.")
+                .setMessage("Selected: $fileName\nExpect extension .chi\nContinue ?")
+                .setPositiveButton("Yes") { _, _ -> loadChiFile(uri) }
+                .setNegativeButton("No", null)
+                .show()
+        } else {
+            loadChiFile(uri)
         }
     }
 
-    /**
-     * Вызывается после успешной загрузки вектора
-     */
-    private fun onChiVectorLoaded(chiVector: DoubleArray) {
-        if (chiVector.size != 512) {
-            Toast.makeText(requireContext(), "Wrong vector size - expect 1024.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // Сохраняем в БД или используем напрямую
-        //saveChiVectorToDatabase(chiVector)
-        Toast.makeText(requireContext(), "Vector load success.", Toast.LENGTH_SHORT).show()
+    private val chiFileLauncher = registerForActivityResult(
+    ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { handleChiFileSelection(it) }
     }
 
     private fun changeSpectrType(checkedId: Int) {
@@ -664,7 +711,7 @@ class NumberFragment : Fragment() {
         /* Уровень логирования */
         GO.textAppLogLevel.setText(GO.appLogLevel.toString())
 
-        /* Отступ слевого края */
+        /* Отступ с левого края */
         paddingTextLeft.setText(GO.paddingLeft.toString())
 
         /* Отступ справого края */
@@ -678,18 +725,7 @@ class NumberFragment : Fragment() {
             1 -> rbuSvh.isChecked = true
             else -> rbuRh.isChecked = true
         }
-
-        /* Тип детектора */
-        lifecycleScope.launch {
-            GO.dao.getByIdDetector(GO.currentDetector)?.let { detectorType ->
-                GO.curretnDetectorName = detectorType.name
-                textDetectName.text = detectorType.name
-                Log.d("BluZ-BT", "Detector type Ok.")
-            } ?: run {
-                GO.curretnDetectorName = ""
-                Log.d("BluZ-BT", "Detector type wrong.")
-            }
-        }
+        textDetectName.text = GO.curretnDetectorName
     }
 
     override fun onCreateView(
@@ -1302,19 +1338,7 @@ class NumberFragment : Fragment() {
 
                     /* Есть ли доступ к чтению каталога */
                     if (bluZDir.canRead()) {
-                        val dialog = ChiFilePickerDialog()
-                        dialog.setOnFileSelectedListener(object : ChiFilePickerDialog.OnChiFileSelectedListener {
-                            override fun onChiFileSelected(filePath: String) {
-                                // Проверяем существование файла
-                                val file = File(filePath)
-                                if (!file.exists()) {
-                                    Toast.makeText(requireContext(), "File not found.", Toast.LENGTH_SHORT).show()
-                                }
-                                // Загружаем файл
-                                loadChiFileFromPath(filePath)
-                            }
-                        })
-                        dialog.show(childFragmentManager, "ChiFilePicker")
+                        chiFileLauncher.launch("application/octet-stream")
                     } else {
                         Toast.makeText(context, "Access deny ${bluZDir.name}.", Toast.LENGTH_SHORT).show()
                     }

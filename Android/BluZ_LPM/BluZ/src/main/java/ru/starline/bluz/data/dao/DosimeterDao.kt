@@ -69,7 +69,7 @@ interface DosimeterDao {
 
     /* Изменение вектора детектора */
     @Query(value = "UPDATE detectors SET chiVector = :detectorVector WHERE id = :detectorId")
-    suspend fun editDetectorCHI(detectorId: Long, detectorVector: DoubleArray)
+    suspend fun editDetectorCHI(detectorId: Long, detectorVector: ByteArray): Int
 
     /* Удаление детектора */
     @Query(value = "DELETE FROM detectors WHERE id = :detectorId")
