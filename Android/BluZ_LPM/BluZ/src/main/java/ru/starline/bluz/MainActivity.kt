@@ -524,6 +524,26 @@ public class MainActivity : FragmentActivity() {
         if (GO.fullScrn) {
             enableEdgeToEdge()
         }
+
+        /* Тип детектора */
+        lifecycleScope.launch {
+            GO.dao.getByIdDetector(GO.currentDetector)?.let { detectorType ->
+                val hasNaN = detectorType.chiVector.any { it.isNaN() }
+                val hasInf = detectorType.chiVector.any { it.isInfinite() }
+                if (hasNaN || hasInf) {
+                    Log.i("BluZ-BT", "CHI vector is wrong.")
+                } else {
+                    GO.curretnDetectorName = detectorType.name
+                    DoseCalculator.chiVectorOrg = detectorType.chiVector
+                    GO.drawSPECTER.flagMLEM = true
+                    Log.d("BluZ-BT", "Detector type Ok. ${DoseCalculator.chiVectorOrg}")
+                }
+            } ?: run {
+                GO.curretnDetectorName = ""
+                Log.d("BluZ-BT", "Detector type wrong.")
+            }
+        }
+
         //val activity = requireActivity()
         mainLayout.setPadding(GO.paddingLeft, mainLayout.paddingTop, GO.paddingRight, mainLayout.paddingBottom)
         /* Загрузка справочника изотопов */

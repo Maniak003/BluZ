@@ -39,8 +39,6 @@ class drawSpecter {
     public var ResolutionSpectr: Int = 1024;
     public var koefLog: Double = 1.0
     public var koefLin: Double = 1.0
-    public var koefLinMLEM: Double = 1.0
-    public var koefLogMLEM: Double = 1.0
     public var xSize: Double = 1.0                          // Размер для одного канала.
     private var MF: DoubleArray = DoubleArray(3)
     private var indexMF: Int = 0
@@ -162,15 +160,10 @@ class drawSpecter {
         }
         var oldYlin: Double = VSize.toDouble()
         var oldYlog: Double = VSize.toDouble()
-        var oldMLEMLin: Double = VSize.toDouble()
-        var oldMLEMLog: Double = VSize.toDouble()
         var oldX: Double = 0.0
-        var oldXMLEM: Double = 0.0
         var maxYlin: Double = 0.0
         var maxYlog: Double = 0.0
         //var tmpLog: Double
-        var maxMLEMLin: Double = 0.0
-        var maxMLENLog: Double = 0.0
 
         /* Поиск максимального значения массива MLEM */
         if (flagMLEM) { // Массив готов и можно прорисовывать
@@ -178,12 +171,6 @@ class drawSpecter {
             for (idxm in 0 until 20) {
                 mlemBuffer[idxm] = 0.0
             }
-            for(idxm in GO.rejectChann until ResolutionSpectr) {
-                if (maxMLEMLin < mlemBuffer[idxm]) {
-                    maxMLEMLin = mlemBuffer[idxm]
-                }
-            }
-            maxMLENLog = ln(maxMLEMLin)
         }
         /* Поиск максимального значения для масштабирования */
         for (idx in GO.rejectChann .. ResolutionSpectr - 1) {
@@ -195,10 +182,6 @@ class drawSpecter {
         //Log.d("BluZ-BT", "MAX: : $maxYlin")
         koefLin = VSize / maxYlin
         koefLog = VSize / maxYlog
-        koefLinMLEM = VSize / maxMLEMLin
-        koefLogMLEM = VSize / maxMLENLog
-        var YLinMLEM: Float = 0f
-        var YLogMLEM: Float = 0f
         var Ylin: Float
         var Ylog: Float
         for (idx in 0 until ResolutionSpectr) {
@@ -241,46 +224,11 @@ class drawSpecter {
                 /* Логарифмический график */
                 specCanvas.drawLine((idx * xSize).toFloat(), Ylog, (idx * xSize).toFloat(),VSize.toFloat(), paintLog )
             }
-
-            /* Прорисовка MLEM необходима */
-            if (flagMLEM) {
-                YLinMLEM = (VSize - mlemBuffer[idx] * koefLinMLEM).toFloat()
-                if (mlemBuffer[idx] != 0.0) {
-                    YLogMLEM = (VSize - ln(mlemBuffer[idx]) * koefLogMLEM).toFloat()
-                } else {
-                    YLogMLEM = VSize.toFloat()
-                }
-                if ( ! (oldMLEMLin == VSize.toDouble() || mlemBuffer[idx] == 0.0)) {
-                    /* Линейный график */
-                    specCanvas.drawLine(
-                        (oldXMLEM * xSize).toFloat(),   // Начальный X
-                        oldMLEMLin.toFloat(),           // Начальный Y
-                        (idx * xSize).toFloat(),        // Конечный X
-                        YLinMLEM,                       // Конечный Y
-                        paintFoneLin
-                    )
-                }
-                /* Прорисовка логарифмического графика */
-                if ( ! (oldMLEMLog == VSize.toDouble() /*&& spectrData[idx] == 0.0*/ || YLogMLEM == VSize.toFloat())) {
-                    specCanvas.drawLine(
-                        (oldXMLEM * xSize).toFloat(),   // Начальный X
-                        oldMLEMLog.toFloat(),           // Начальный Y
-                        (idx * xSize).toFloat(),        // Конечный X
-                        YLogMLEM,                       // Конечный Y
-                        paintFoneLog
-                    )
-                }
-            }
             //if ((Ylin.toDouble() < VSize) && (GO.specterGraphType == 0)) {
                 oldYlin = Ylin.toDouble()
                 oldYlog = Ylog.toDouble()
                 oldX = idx.toDouble()
             //}
-            if (YLinMLEM.toDouble() < VSize) {
-                oldMLEMLin = YLinMLEM.toDouble()
-                oldMLEMLog = YLogMLEM.toDouble()
-                oldXMLEM = idx.toDouble()
-            }
         }
         /* Тестовая диния */
         //specCanvas.drawLine(0.0f, VSize.toFloat(), HSize.toFloat(),VSize.toFloat(), paintLin )
@@ -290,7 +238,68 @@ class drawSpecter {
         //saveStat1 = txtStat1.text.toString()
         //saveStat2 = txtStat2.text.toString()
         //saveStat3 = txtStat3.text.toString()
-        GO.compMED = DoseCalculator.calculateH10DoseSafe(DoseCalculator.chiVectorOrg, spectrData).toFloat()
+        //analyzeChiVector(DoseCalculator.chiVectorOrg)
+        //debugDoseCalculation(DoseCalculator.chiVectorOrg, spectrData, GO.spectrometerTime.toDouble())
+        GO.compMED = DoseCalculator.calculateH10DoseSafe(DoseCalculator.chiVectorOrg, spectrData, false, GO.spectrometerTime.toDouble()).toFloat()
+    }
+
+    fun analyzeChiVector(chi: DoubleArray) {
+        val positive = chi.count { it > 0 }
+        val negative = chi.count { it < 0 }
+        val zero = chi.count { it == 0.0 }
+
+        Log.d("CHI_ANALYSIS", """
+        Размер: ${chi.size}
+        Положительные: $positive (${100*positive/chi.size}%)
+        Отрицательные: $negative (${100*negative/chi.size}%)
+        Нули: $zero
+        Сумма: ${"%.3e".format(chi.sum())}
+        Среднее: ${"%.3e".format(chi.average())}
+        Медиана: ${"%.3e".format(chi.sorted()[chi.size/2])}
+    """.trimIndent())
+    }
+
+    fun debugDoseCalculation(
+        chi: DoubleArray,
+        spectrum: DoubleArray,
+        acquisitionTimeSec: Double
+    ) {
+        Log.d("DOSE_DEBUG", "=== ОТЛАДКА РАСЧЁТА ДОЗЫ ===")
+
+        // 1. Параметры χ
+        Log.d("DOSE_DEBUG", "χ: size=${chi.size}, min=${"%.3e".format(chi.minOrNull() ?: 0.0)}, max=${"%.3e".format(chi.maxOrNull() ?: 0.0)}")
+
+        // 2. Параметры спектра
+        val specSum = spectrum.sum()
+        val specMax = spectrum.maxOrNull() ?: 0.0
+        Log.d("DOSE_DEBUG", "Спектр: size=${spectrum.size}, sum=$specSum, max=$specMax")
+
+        // 3. Время
+        Log.d("DOSE_DEBUG", "Время: $acquisitionTimeSec с")
+
+        // 4. Расчёт полной дозы (без нормировки и времени)
+        val rawDose = DoseCalculator.calculateH10DoseSafe(
+            chi = chi,
+            spectrum = spectrum,
+            normalize = false,
+            acquisitionTimeSec = 0.0  // Полная доза
+        )
+        Log.d("DOSE_DEBUG", "Полная доза (сырая): %.4e".format(rawDose))
+
+        // 5. Расчёт мощности дозы
+        val doseRate = if (acquisitionTimeSec > 0) {
+            rawDose / acquisitionTimeSec * 3600.0
+        } else {
+            rawDose
+        }
+        Log.d("DOSE_DEBUG", "Мощность дозы: %.4f μR/ч (или пЗв/ч)".format(doseRate))
+
+        // 6. Ожидаемая оценка по счётчику
+        val cps = specSum / acquisitionTimeSec
+        val estimatedDoseRate = cps * 0.1  // Грубая оценка: ~0.1 μR/ч на 1 cps для малого NaI
+        Log.d("DOSE_DEBUG", "Оценка по cps: $cps cps → ~%.2f μR/ч".format(estimatedDoseRate))
+
+        Log.d("DOSE_DEBUG", "===============================")
     }
 
     fun clearSpecter() {

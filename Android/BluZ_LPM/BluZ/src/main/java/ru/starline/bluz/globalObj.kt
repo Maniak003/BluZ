@@ -569,7 +569,7 @@ class globalObj {
                 }
             }
         } else {
-            GO.txtCompMED.text = "---"
+            GO.txtCompMED.text = ""
         }
     }
 
