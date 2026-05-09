@@ -1,4 +1,4 @@
-26277793949924069
+26290227382596033
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -104265,12 +104265,26 @@ CSPG-6_L1.6-W1.0-P0.50-TL_MLPF-WB-04D3
 6
 6
 easyeda2kicad
+IND-SMD_L4.0-W4.0_SMNR4018
+
+
+0
+2
+2
+easyeda2kicad
 LCD-SMD_X096-2864KSWAG01-H30
 
 
 0
 30
 30
+easyeda2kicad
+MSOP-8_L3.0-W3.0-P0.65-LS4.9-BL
+
+
+0
+8
+8
 easyeda2kicad
 MSOP-12_L4.0-W3.0-P0.65-LS4.9-BL-EP
 
@@ -104306,6 +104320,13 @@ OSC-SMD_3P-L3.2-W1.3-P0.95-L
 0
 3
 3
+easyeda2kicad
+QFN-68_L8.0-W8.0-P0.40-TL-EP6.4
+
+
+0
+69
+69
 easyeda2kicad
 SC-70-5_L2.0-W1.3-P0.65-LS2.1-BL
 
@@ -104370,6 +104391,20 @@ W-QFN2020-12_L2.0-W2.0-P0.40-TL-EP0.9
 13
 13
 easyeda2kicad
+WSON-8_L6.0-W5.0-P1.27-TL-EP
+
+
+0
+9
+9
+easyeda2kicad
+WSON-12_L3.0-W2.0-P0.5-BL-EP
+
+
+0
+13
+13
+easyeda2kicad
 XFMR-SMD_ATB322515-0110-T000
 
 
@@ -104391,12 +104426,26 @@ HY931147C
 16
 16
 my-lib
+Jack_3.5mm_audio
+TRS 3.5mm, horizontal, Surface Mount (SMT), https://downloads.lumberg.com/datenblaetter/en/1503_02.pdf
+TRS audio jack horizontal
+0
+4
+3
+my-lib
 SW_Push_1P1T_NO_CK_PTS125Sx43PSMTR
 C&K Switches 1P1T SMD PTS125 Series 12mm Tact Switch with Pegs, https://www.ckswitches.com/media/1462/pts125.pdf
 Button Tactile Switch SPST 1P1T
 0
 4
 2
+my-lib
+conn_flat
+
+
+0
+1
+1
 my-lib
 mini_conn
 
