@@ -1,4 +1,4 @@
-26290227382596033
+26292005787058378
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -104425,6 +104425,13 @@ HY931147C
 0
 16
 16
+my-lib
+JST_SH_BM04B-SRSS-TB_1x04-1MP_P1.00mm_Vertical
+JST SH series connector, BM04B-SRSS-TB (http://www.jst-mfg.com/product/pdf/eng/eSH.pdf), generated with kicad-footprint-generator
+connector JST SH vertical
+0
+6
+5
 my-lib
 Jack_3.5mm_audio
 TRS 3.5mm, horizontal, Surface Mount (SMT), https://downloads.lumberg.com/datenblaetter/en/1503_02.pdf
