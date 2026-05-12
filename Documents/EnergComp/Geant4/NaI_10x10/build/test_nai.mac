@@ -14,4 +14,4 @@
 /gun/direction 0 0 1
 
 # Запускаем моделирование
-/run/beamOn 100000
+/run/beamOn 10000000

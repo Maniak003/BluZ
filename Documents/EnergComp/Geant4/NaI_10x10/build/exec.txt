@@ -810,22 +810,22 @@ G4WT0 > Accumulable registered as "accumulable_1"
 G4WT0 >      Cr_sctns:          tritonParticleXS: 0 eV  ---> 25.6 PeV
 
 G4WT0 > --------------------End of Local Run------------------------
-G4WT0 >  The run is 100000 gamma of 662 keV
+G4WT0 >  The run is 10000000 gamma of 662 keV
 G4WT0 > 
-G4WT0 >   --> cumulated edep per run in scoring volume = 8.04006 GeV = 1.28816e-09 joule
+G4WT0 >   --> cumulated edep per run in scoring volume = 813.967 GeV = 1.30412e-07 joule
 G4WT0 >   --> mass of scoring volume = 2.88006 g 
 G4WT0 > 
-G4WT0 >  Absorbed dose per run in scoring volume = edep/mass = 447.269 nanoGy ; rms = 3.13341 nanoGy 
+G4WT0 >  Absorbed dose per run in scoring volume = edep/mass = 45.281 microGy; rms = 31.5383 nanoGy 
 G4WT0 > ------------------------------------------------------------
 G4WT0 > 
 
 --------------------End of Global Run-----------------------
- The run is 100000 
+ The run is 10000000 
 
-  --> cumulated edep per run in scoring volume = 8.04006 GeV = 1.28816e-09 joule
+  --> cumulated edep per run in scoring volume = 813.967 GeV = 1.30412e-07 joule
   --> mass of scoring volume = 2.88006 g 
 
- Absorbed dose per run in scoring volume = edep/mass = 447.269 nanoGy ; rms = 3.13341 nanoGy 
+ Absorbed dose per run in scoring volume = edep/mass = 45.281 microGy; rms = 31.5383 nanoGy 
 ------------------------------------------------------------
 
 Graphics systems deleted.
