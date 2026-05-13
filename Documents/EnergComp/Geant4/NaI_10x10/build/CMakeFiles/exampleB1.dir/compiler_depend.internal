@@ -1894,11 +1894,9 @@ CMakeFiles/exampleB1.dir/src/PrimaryGeneratorAction.cc.o
  /usr/include/stdc-predef.h
  /home/ed/work/github/BluZ/Documents/EnergComp/Geant4/NaI_10x10/include/PrimaryGeneratorAction.hh
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4VUserPrimaryGeneratorAction.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Box.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4GeomTypes.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4GeomConfig.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4CSGSolid.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4VSolid.hh
+ /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4ParticleGun.hh
+ /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/globals.hh
+ /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4ios.hh
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Types.hh
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4GlobalConfig.hh
  /usr/include/c++/12/complex
@@ -2110,7 +2108,7 @@ CMakeFiles/exampleB1.dir/src/PrimaryGeneratorAction.cc.o
  /usr/include/c++/12/bits/istream.tcc
  /usr/include/c++/12/bits/sstream.tcc
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/tls.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4String.hh
+ /usr/include/c++/12/iostream
  /usr/include/c++/12/algorithm
  /usr/include/c++/12/bits/stl_algo.h
  /usr/include/c++/12/bits/algorithmfwd.h
@@ -2119,14 +2117,11 @@ CMakeFiles/exampleB1.dir/src/PrimaryGeneratorAction.cc.o
  /usr/include/c++/12/bits/uniform_int_dist.h
  /usr/include/c++/12/pstl/glue_algorithm_defs.h
  /usr/include/c++/12/pstl/execution_defs.h
+ /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4String.hh
  /usr/include/c++/12/cstring
  /usr/include/string.h
  /usr/include/strings.h
- /usr/include/c++/12/iostream
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4String.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/geomdefs.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/globals.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4ios.hh
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/templates.hh
  /usr/include/c++/12/climits
  /usr/lib/gcc/x86_64-linux-gnu/12/include/limits.h
@@ -2167,93 +2162,40 @@ CMakeFiles/exampleB1.dir/src/PrimaryGeneratorAction.cc.o
  /usr/include/c++/12/bits/parse_numbers.h
  /usr/include/c++/12/bits/std_mutex.h
  /usr/include/c++/12/bits/unique_lock.h
+ /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4VPrimaryGenerator.hh
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4ThreeVector.hh
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/ThreeVector.h
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Utility/defs.h
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/ThreeVector.icc
- /usr/include/c++/12/vector
- /usr/include/c++/12/bits/stl_uninitialized.h
- /usr/include/c++/12/bits/stl_vector.h
- /usr/include/c++/12/bits/stl_bvector.h
- /usr/include/c++/12/bits/vector.tcc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4VSolid.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Polyhedron.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/HepPolyhedron.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4TwoVector.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/TwoVector.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/TwoVector.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Point3D.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Geometry/Point3D.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Geometry/BasicVector3D.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Normal3D.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Geometry/Normal3D.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Transform3D.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Geometry/Transform3D.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Geometry/Transform3D.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/Rotation.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/RotationInterfaces.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/LorentzVector.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/LorentzVector.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/AxisAngle.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/AxisAngle.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/RotationInterfaces.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/RotationX.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/RotationX.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Units/PhysicalConstants.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Units/SystemOfUnits.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/RotationY.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/RotationY.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/RotationZ.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/RotationZ.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Vector/Rotation.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Geometry/Vector3D.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Visible.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Visible.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Box.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4LogicalVolume.hh
- /usr/include/c++/12/memory
- /usr/include/c++/12/bits/stl_raw_storage_iter.h
- /usr/include/c++/12/bits/align.h
- /usr/include/c++/12/bit
- /usr/include/c++/12/bits/unique_ptr.h
- /usr/include/c++/12/bits/shared_ptr.h
- /usr/include/c++/12/bits/shared_ptr_base.h
- /usr/include/c++/12/bits/allocated_ptr.h
- /usr/include/c++/12/ext/concurrence.h
- /usr/include/c++/12/bits/shared_ptr_atomic.h
- /usr/include/c++/12/bits/atomic_base.h
- /usr/include/c++/12/bits/atomic_lockfree_defines.h
- /usr/include/c++/12/backward/auto_ptr.h
- /usr/include/c++/12/pstl/glue_memory_defs.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Region.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4GeomSplitter.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/geomwdefs.hh
+ /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4ParticleDefinition.hh
+ /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4PDefManager.hh
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4AutoLock.hh
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Threading.hh
  /usr/include/c++/12/chrono
  /usr/include/c++/12/condition_variable
+ /usr/include/c++/12/bits/shared_ptr.h
+ /usr/include/c++/12/bits/shared_ptr_base.h
+ /usr/include/c++/12/bits/allocated_ptr.h
+ /usr/include/c++/12/bits/unique_ptr.h
+ /usr/include/c++/12/ext/concurrence.h
  /usr/include/c++/12/future
+ /usr/include/c++/12/bits/atomic_base.h
+ /usr/include/c++/12/bits/atomic_lockfree_defines.h
  /usr/include/c++/12/bits/atomic_futex.h
  /usr/include/c++/12/atomic
  /usr/include/c++/12/bits/std_function.h
  /usr/include/c++/12/bits/std_thread.h
  /usr/include/c++/12/thread
  /usr/include/c++/12/bits/this_thread_sleep.h
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Region.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4VPhysicalVolume.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4RotationMatrix.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4VPhysicalVolume.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4LogicalVolume.icc
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4LogicalVolumeStore.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4LogicalVolume.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4VStoreNotifier.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4VNotifier.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4ParticleGun.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4VPrimaryGenerator.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4ParticleDefinition.hh
- /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4PDefManager.hh
+ /usr/include/c++/12/vector
+ /usr/include/c++/12/bits/stl_uninitialized.h
+ /usr/include/c++/12/bits/stl_vector.h
+ /usr/include/c++/12/bits/stl_bvector.h
+ /usr/include/c++/12/bits/vector.tcc
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/pwdefs.hh
  /usr/include/c++/12/stdlib.h
+ /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Units/PhysicalConstants.h
+ /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Units/SystemOfUnits.h
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4ParticleDefinition.icc
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4PrimaryVertex.hh
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/G4Allocator.hh
@@ -2288,6 +2230,13 @@ CMakeFiles/exampleB1.dir/src/PrimaryGeneratorAction.cc.o
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Random/Random.h
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Random/Random.icc
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Utility/memory.h
+ /usr/include/c++/12/memory
+ /usr/include/c++/12/bits/stl_raw_storage_iter.h
+ /usr/include/c++/12/bits/align.h
+ /usr/include/c++/12/bit
+ /usr/include/c++/12/bits/shared_ptr_atomic.h
+ /usr/include/c++/12/backward/auto_ptr.h
+ /usr/include/c++/12/pstl/glue_memory_defs.h
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Random/RandBinomial.icc
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Random/RandBreitWigner.h
  /home/ed/tmp/Geant4-11.4.1-Linux/include/Geant4/CLHEP/Random/RandFlat.h
