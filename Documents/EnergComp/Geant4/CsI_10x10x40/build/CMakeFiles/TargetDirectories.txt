@@ -1,0 +1,3 @@
+/home/ed/work/github/BluZ/Documents/EnergComp/Geant4/CsI_10x10x40/build/CMakeFiles/exampleB1.dir
+/home/ed/work/github/BluZ/Documents/EnergComp/Geant4/CsI_10x10x40/build/CMakeFiles/edit_cache.dir
+/home/ed/work/github/BluZ/Documents/EnergComp/Geant4/CsI_10x10x40/build/CMakeFiles/rebuild_cache.dir

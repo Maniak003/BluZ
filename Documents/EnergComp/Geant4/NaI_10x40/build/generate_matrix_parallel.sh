@@ -1,0 +1,85 @@
+#!/bin/bash
+# generate_matrix_parallel.sh - Параллельная генерация матрицы отклика
+# Каждый поток запускает Geant4 в изолированной директории
+
+source ~/tmp/Geant4-11.4.1-Linux/bin/geant4.sh
+
+# === Чтение config.txt ===
+if [[ ! -f config.txt ]]; then
+    echo "Ошибка: файл config.txt не найден!"
+    exit 1
+fi
+
+while IFS='=' read -r key value; do
+    [[ "$key" =~ ^[[:space:]]*# || -z "$key" ]] && continue
+    key=$(echo "$key" | xargs); value=$(echo "$value" | xargs)
+    case "$key" in
+        ENERGIES) IFS=' ' read -r -a ENERGIES <<< "$value" ;;
+        N_EVENTS) N_EVENTS="$value" ;;
+    esac
+done < config.txt
+
+echo "=== Запуск: ${#ENERGIES[@]} энергий × $N_EVENTS событий ==="
+START_TIME=$(date +%s)
+
+# === Настройка параллелизма ===
+# По умолчанию: число физических ядер, но не больше числа энергий
+MAX_JOBS=$(nproc)
+if (( MAX_JOBS > ${#ENERGIES[@]} )); then MAX_JOBS=${#ENERGIES[@]}; fi
+echo "Параллельных потоков: $MAX_JOBS (из $(nproc) доступных ядер)"
+
+# === Функция запуска одной симуляции ===
+run_sim() {
+    local E=$1
+    local E_NAME=$(echo "$E" | sed 's/\./_/g')
+    local JOB_DIR="job_${E_NAME}"
+
+    # 1. Изолированная директория для потока
+    mkdir -p "$JOB_DIR"
+    ln -sf "$(realpath exampleB1)" "$JOB_DIR/"
+
+    # 2. Генерация макроса
+    cat > "$JOB_DIR/run.mac" << EOF
+/run/initialize
+/gun/particle gamma
+/gun/energy ${E} keV
+/gun/position 0 0 -6.5 cm
+/gun/direction 0 0 1
+/run/beamOn ${N_EVENTS}
+EOF
+
+    # 3. Запуск Geant4 (строго 1 поток на процесс, чтобы не перегружать CPU)
+    (cd "$JOB_DIR" && G4FORCENUMBEROFTHREADS=1 ./exampleB1 run.mac > /dev/null 2>&1)
+
+    # 4. Сбор результатов
+    if [[ -f "$JOB_DIR/NaI_response_h1_Edep.csv" ]]; then
+        mv "$JOB_DIR/NaI_response_h1_Edep.csv" "response_${E_NAME}keV.csv"
+        echo "[OK] ${E} keV"
+    else
+        echo "[FAIL] ${E} keV - файл не создан"
+    fi
+
+    # 5. Очистка временной директории
+    rm -rf "$JOB_DIR"
+}
+export -f run_sim
+
+# === Запуск с контролем параллелизма ===
+ACTIVE=0
+for E in "${ENERGIES[@]}"; do
+    run_sim "$E" &
+    ((ACTIVE++))
+    
+    # Ждём, пока количество фоновых процессов не упадёт ниже лимита
+    while (( $(jobs -r | wc -l) >= MAX_JOBS )); do
+        sleep 0.2
+    done
+done
+
+# Ждём завершения всех оставшихся процессов
+wait
+
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+echo "=== Готово за $((DURATION/60)) мин $((DURATION%60)) с ==="
+echo "Проверьте файлы: ls -1 response_*.csv | wc -l"
