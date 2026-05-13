@@ -29,7 +29,7 @@
 #include "DetectorConstruction.hh"
 
 #include "G4Box.hh"
-#include "G4Tubs.hh"              // <-- ДОБАВЛЕНО: для цилиндра
+#include "G4Tubs.hh"              // для цилиндра
 #include "G4LogicalVolume.hh"
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"

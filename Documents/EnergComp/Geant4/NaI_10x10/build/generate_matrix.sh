@@ -1,30 +1,48 @@
 #!/bin/bash
-# generate_response_matrix.sh
+# generate_matrix.sh - Генерация матрицы отклика для NaI(Tl) 10×10 мм
+
 source ~/tmp/Geant4-11.4.1-Linux/bin/geant4.sh
 export G4FORCENUMBEROFTHREADS=1
 
-#30 33 35 40 50 59.5 88 100 122 150 165 200 245 300 356 400 450 500 511 600 662 700 800 835 900 1000 1173 1200 1332 1500 1800 2000 2614 3000 
+# === Чтение config.txt ===
+if [[ ! -f config.txt ]]; then
+    echo "Ошибка: файл config.txt не найден!"
+    exit 1
+fi
 
-ENERGIES=(28.5 30 33 33.2 35 40 50 59.5 75 88 100 122 150 165 200 245 300 356 400 420 450 500 511 600 662 700 800 835 900 950 1000 1173 1200 1332 1500 1800 2000 2614 3000 3500)
+while IFS='=' read -r key value; do
+    [[ "$key" =~ ^[[:space:]]*# ]] && continue
+    [[ -z "$key" ]] && continue
+    key=$(echo "$key" | xargs)
+    value=$(echo "$value" | xargs)
+    case "$key" in
+        ENERGIES) IFS=' ' read -r -a ENERGIES <<< "$value" ;;
+        N_EVENTS) N_EVENTS="$value" ;;
+        OUTPUT_FILE) OUTPUT_FILE="$value" ;;
+    esac
+done < config.txt
+
+echo "=== Запуск: ${#ENERGIES[@]} энергий × $N_EVENTS событий ==="
+START_TIME=$(date +%s)
 
 for E in "${ENERGIES[@]}"; do
-    #echo "=== Simulating ${E} keV ==="
-    
-    # Создаём временный макрос
+    E_NAME=$(echo "$E" | sed 's/\./_/g')
     cat > run_temp.mac << EOF
 /run/initialize
 /gun/particle gamma
 /gun/energy ${E} keV
 /gun/position 0 0 -5 cm
 /gun/direction 0 0 1
-/run/beamOn 1000000
+/run/beamOn ${N_EVENTS}
 EOF
     
-    ./exampleB1 run_temp.mac > /dev/null 2>&1
-    mv NaI_response_h1_Edep.csv "response_${E}keV.csv"
-    echo "Saved: response_${E}keV.csv"
+    echo -n "[$(date +%H:%M:%S)] ${E} keV ... "
+    ./exampleB1 run_temp.mac > /dev/null 2>&1 &
+    mv NaI_response_h1_Edep.csv "response_${E_NAME}keV.csv"
+    echo "Ok"
 done
 
 rm -f run_temp.mac
-echo "=== Matrix generation complete ==="
-
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+echo "=== Готово за $((DURATION/60)) мин $((DURATION%60)) с ==="
