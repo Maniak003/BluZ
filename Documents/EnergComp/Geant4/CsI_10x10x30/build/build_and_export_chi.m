@@ -207,8 +207,8 @@ k = k(:);  % столбец [N_energies × 1]
 % Вариант №6
 % min ||R'w - k||² + λ_s ||D2 w||²   при   w >= 0
 n = N_BINS;
-D2 = diff(eye(n), 2);                    % (n-2) x n
-lambda_s = LAMBDA ;                          % выбрать по L-кривой, см. ниже
+D2 = diff(eye(n), 2);                       % (n-2) x n
+lambda_s = LAMBDA ;                         % выбрать по L-кривой, см. ниже
 
 % Сводим к NNLS форме: min ||C*w - d||²,  w >= 0
 C = [R'; sqrt(lambda_s) * D2];           % (n_E + n - 2) x n
@@ -216,7 +216,7 @@ d = [k; zeros(n-2, 1)];
 
 w = lsqnonneg(C, d);
 % 4. Принудительное обнуление отрицательных весов (физически невозможны)
-w(w < 0) = 0;
+%w(w < 0) = 0;
 %fprintf('Вектор весов сглажен и очищен: диапазон [%.3e, %.3e]\n', min(w), max(w));
 %fprintf('Вес при 0.1 МэВ:  %.3f (ожидается: 0.3–1.0)\n', w(35));
 %fprintf('Вес при 0.66 МэВ: %.3f (ожидается: 2–8)\n', w(226));
@@ -239,11 +239,12 @@ if DO_CALIBRATION && exist(CALIB_SPECTRUM_FILE, 'file')
 end
 
 % Реконструкция для проверки сходимости.
-k_reconstructed = R' * w;
-figure; plot(energies_keV/1000, k, 'ro-', energies_keV/1000, k_reconstructed, 'bs-');
-legend('Target k(E)', 'Reconstructed k(E)');
+%
+%k_reconstructed = R' * w;
+%figure; plot(energies_keV/1000, k, 'ro-', energies_keV/1000, k_reconstructed, 'bs-');
+%legend('Target k(E)', 'Reconstructed k(E)');
 
-%n = N_BINS;
+% Подбор LAMBDA (версия №1 - медлено)
 %lambdas = logspace(-6, 2, 30);
 %resid = zeros(size(lambdas));
 %sol_curv = zeros(size(lambdas));
@@ -254,8 +255,44 @@ legend('Target k(E)', 'Reconstructed k(E)');
 %    w_i = lsqnonneg(C, d);
     
 %    resid(i) = norm(R'*w_i - k);          % ошибка сходимости
-%    sol_curv(i) = norm(D2 * w_i);          % «изгибность» решения
+%    sol_curv(i) = norm(D2 * w_i);         % «изгибность» решения
 %end
+
+% Подбор LAMBDA (версия №2)
+%D2 = diff(speye(N_BINS), 2);       % разреженная, размер (N_BINS-2) × N_BINS
+%L = D2' * D2;                      % матрица штрафа, N_BINS × N_BINS
+%RtR = R * R';                      % N_BINS × N_BINS
+
+%lambdas = logspace(-6, 2, 30);
+%resid = zeros(size(lambdas));
+%sol_curv = zeros(size(lambdas));
+
+%for i = 1:numel(lambdas)
+%    A = RtR + lambdas(i) * L;
+%    w = A \ (R * k);               % R*k имеет размер N_BINS × 1
+%    %w(w < 0) = 0;                 % обрезаем отрицательные (опционально)
+%    
+%    resid(i) = norm(R' * w - k);   % невязка восстановления k
+%    sol_curv(i) = norm(D2 * w);    % гладкость (вторая производная)
+%end
+
+% Выбор λ по L-кривой
+%log_res = log10(resid);
+%log_curv = log10(sol_curv);
+% Кривизна как вторая производная
+%curvature = diff(diff(log_res) ./ diff(log_curv));
+%[~, idx_opt] = max(curvature);
+%lambda_opt = lambdas(idx_opt + 1);
+%fprintf('Оптимальный Lambda: %d\n', lambda_opt);
+
+%figure;
+%loglog(resid, sol_curv, 'o-');
+%hold on;
+%for i = 1:numel(lambdas)
+%    text(resid(i), sol_curv(i), sprintf(' %.1e', lambdas(i)), 'FontSize', 8);
+%end
+%xlabel('||R''w - k||');
+%ylabel('||D_2 w||');
 
 %figure; loglog(resid, sol_curv, 'o-'); grid on;
 %xlabel('R''w - k'); ylabel('D_2 w');
