@@ -240,7 +240,47 @@ class drawSpecter {
         //saveStat3 = txtStat3.text.toString()
         //analyzeChiVector(DoseCalculator.chiVectorOrg)
         //debugDoseCalculation(DoseCalculator.chiVectorOrg, spectrData, GO.spectrometerTime.toDouble())
-        GO.compMED = DoseCalculator.calculateH10DoseSafe(DoseCalculator.chiVectorOrg, spectrData, false, GO.spectrometerTime.toDouble()).toFloat()
+
+        /* Проверим наличие калибровки */
+        val needCalcH10D = when (GO.specterType) {
+            /* 2048 */
+            1 -> {
+                GO.propCoef2048A > 0
+            }
+            /* 4096 */
+            2 -> {
+                GO.propCoef4096A > 0
+            }
+            /* 1024 */
+            else -> {
+                GO.propCoef1024A > 0
+            }
+        }
+
+        /* Определим максимальную отображаемую энергию */
+        val maxEnergy = when(GO.specterType) {
+            1 -> {
+                Math.pow(2048.0, 2.0) * GO.propCoef2048A + 2048.0 * GO.propCoef2048B + GO.propCoef2048C
+            }
+            2 -> {
+                Math.pow(4096.0, 2.0) * GO.propCoef4096A + 2048.0 * GO.propCoef4096B + GO.propCoef4096C
+            }
+            else -> {
+                Math.pow(1024.0, 2.0) * GO.propCoef1024A + 1024.0 * GO.propCoef1024B + GO.propCoef1024C
+            }
+        }
+        /* Расчет энергокомпенсированный МЕД */
+        if (needCalcH10D && maxEnergy > 0) {
+            GO.compMED = DoseCalculator.calculateH10DoseSafe(
+                DoseCalculator.chiVectorOrg,
+                spectrData,
+                false,
+                GO.spectrometerTime.toDouble(),
+                maxEnergy.toFloat()
+            ).toFloat()
+        } else {
+            GO.compMED = 0f
+        }
     }
 
     fun analyzeChiVector(chi: DoubleArray) {

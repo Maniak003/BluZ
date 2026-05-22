@@ -961,8 +961,8 @@ class globalObj {
         val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
         bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
         canvas = Canvas(bitmap)
-        for (i in 0 until 16) {
-            val hue = i * 270f / 16f  // От 0 до ~270 градусов
+        for (i in 0 until imp.size) {
+            val hue = i * 270f / imp.size  // От 0 до ~270 градусов
             val hsv = floatArrayOf(hue, 1.0f, 1.0f)  // Насыщенность и яркость = 100%
             DrawableCompat.setTint(drawable, Color.HSVToColor(hsv))
             drawable.setBounds(0, 0, canvas.width, canvas.height)
