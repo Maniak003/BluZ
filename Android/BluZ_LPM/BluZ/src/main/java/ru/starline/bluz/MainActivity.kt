@@ -364,42 +364,48 @@ public class MainActivity : FragmentActivity() {
         var btnExit: ImageButton = findViewById(R.id.buttonExit)
         btnExit.setOnClickListener {
             /* Выполняется запись трека, нужно запустить сервис */
-            if (GO.trackIsRecordeed) {
-                // Проверяем разрешения перед запуском сервиса
-                if (!hasPermissions()) {
-                    Toast.makeText(this, "Нужны разрешения для фоновой записи", Toast.LENGTH_LONG).show()
-                    return@setOnClickListener
-                }
-                val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
-                if (checkSerice()) {
-                    Log.i("BluZ-BT", "Service already running.")
-                } else {
-                    Log.i("BluZ-BT", "Service need start.")
+            if (! GO.needTerminate) {
+                if (GO.trackIsRecordeed) {
+                    // Проверяем разрешения перед запуском сервиса
+                    if (!hasPermissions()) {
+                        Toast.makeText(
+                            this,
+                            "Нужны разрешения для фоновой записи",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@setOnClickListener
+                    }
+                    val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
+                    if (checkSerice()) {
+                        Log.i("BluZ-BT", "Service already running.")
+                    } else {
+                        Log.i("BluZ-BT", "Service need start.")
 
-                    // Подготавливаем интент для сервиса
-                    Intent(this, BleMonitoringService::class.java).also { intent ->
-                        try {
-                            val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
-                            prefs.edit {
-                                putString("device_mac", GO.LEMAC)
-                                putLong("current_track_id", GO.currentTrck)
-                                putFloat("cps_2_doze", GO.propCPS2UR)
+                        // Подготавливаем интент для сервиса
+                        Intent(this, BleMonitoringService::class.java).also { intent ->
+                            try {
+                                val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
+                                prefs.edit {
+                                    putString("device_mac", GO.LEMAC)
+                                    putLong("current_track_id", GO.currentTrck)
+                                    putFloat("cps_2_doze", GO.propCPS2UR)
+                                }
+                                startForegroundService(intent)
+                                Log.i("BluZ-BT", "BleMonitoringService run.")
+                            } catch (e: Exception) {
+                                Log.e("BluZ-BT", "Не удалось запустить сервис", e)
+                                Toast.makeText(this, "Ошибка запуска сервиса", Toast.LENGTH_SHORT)
+                                    .show()
                             }
-                            startForegroundService(intent)
-                            Log.i("BluZ-BT", "BleMonitoringService run.")
-                        } catch (e: Exception) {
-                            Log.e("BluZ-BT", "Не удалось запустить сервис", e)
-                            Toast.makeText(this, "Ошибка запуска сервиса", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
+                /* Отключаем таймер проверки BLE соединения */
+                GO.tmFull.stopTimer()
+                GO.oneShotBLETimer = false
+                GO.BTT.stopScan()
+                GO.BTT.destroyDevice()
             }
-            /* Отключаем таймер проверки BLE соединения */
-            GO.tmFull.stopTimer()
-            GO.oneShotBLETimer = false
-            GO.BTT.stopScan()
-            GO.BTT.destroyDevice()
-
             // Закрываем активность корректно
             finishAndRemoveTask()
 
