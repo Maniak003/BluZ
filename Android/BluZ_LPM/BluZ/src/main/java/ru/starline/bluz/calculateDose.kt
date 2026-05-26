@@ -25,7 +25,7 @@ object DoseCalculator {
         normalize: Boolean = false,
         acquisitionTimeSec: Double = 0.0,
         exnergyMaxSpecter:Float = 4.5f,
-        energyMaxCHI:Float = 3.5f
+        energyMaxCHI:Float = 8.0f
     ): Double {
         require(chi.size == 1024) { "chi size is 1024." }
         require(spectrum.size % 1024 == 0) { "Size multiplay 1024 (1024, 2048, 4096)" }
@@ -70,7 +70,7 @@ object DoseCalculator {
         spectrum: DoubleArray,
         normalize: Boolean = false,
         acquisitionTimeSec: Double = 0.0,
-        exnergyMaxSpecter:Float = 4.5f
+        exnergyMaxSpecter:Float = 8.0f
     ): Double {
         if (exnergyMaxSpecter > 0.0f) {
             // Очищаем спектр от артефактов АЦП

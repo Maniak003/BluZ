@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     //id 'com.android.application' version '8.5.0' apply false
     //id 'com.android.library' version '8.5.0' apply false
+    id 'org.jetbrains.dokka'
     id 'kotlin-kapt'
     //id 'com.google.devtools.ksp' //version '1.9.20-1.0.15'
     //id("com.google.devtools.ksp") version "1.9.20-1.0.15" apply false
@@ -35,12 +36,12 @@ android {
     }
     packagingOptions {
         resources {
-            excludes += ['res/**/*.arb']
+            excludes += ['res/**/*.arb', 'dump_syms/**']
         }
         jniLibs {
             useLegacyPackaging false
+            excludes += ['dump_syms/**']
         }
-        exclude "dump_syms/**"
     }
     namespace 'ru.starline.bluz'
     compileSdk 36
