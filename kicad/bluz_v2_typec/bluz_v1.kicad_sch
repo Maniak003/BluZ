@@ -10165,18 +10165,17 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "394adc32-5baa-4d53-bb42-ce68183a99e1")
 		(property "Reference" "L3"
-			(at 143.51 22.797 0)
+			(at 143.256 23.114 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "SRN4018-6R8M"
-			(at 143.51 25.2213 0)
+		(property "Value" "LQH31MN5R6J03L"
+			(at 143.764 25.146 0)
 			(effects
 				(font
 					(size 1.27 1.27)
