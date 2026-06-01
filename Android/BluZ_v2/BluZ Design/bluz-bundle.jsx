@@ -1,0 +1,4450 @@
+
+// ═══ design-canvas.jsx ═══
+
+// DesignCanvas.jsx — Figma-ish design canvas wrapper
+// Warm gray grid bg + Sections + Artboards + PostIt notes.
+// Artboards are reorderable (grip-drag), deletable, labels/titles are
+// inline-editable, and any artboard can be opened in a fullscreen focus
+// overlay (←/→/Esc). State persists to a .design-canvas.state.json sidecar
+// via the host bridge. No assets, no deps.
+//
+// Usage:
+//   <DesignCanvas>
+//     <DCSection id="onboarding" title="Onboarding" subtitle="First-run variants">
+//       <DCArtboard id="a" label="A · Dusk" width={260} height={480}>…</DCArtboard>
+//       <DCArtboard id="b" label="B · Minimal" width={260} height={480}>…</DCArtboard>
+//     </DCSection>
+//   </DesignCanvas>
+
+const DC = {
+  bg: '#f0eee9',
+  grid: 'rgba(0,0,0,0.06)',
+  label: 'rgba(60,50,40,0.7)',
+  title: 'rgba(40,30,20,0.85)',
+  subtitle: 'rgba(60,50,40,0.6)',
+  postitBg: '#fef4a8',
+  postitText: '#5a4a2a',
+  font: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+};
+
+// One-time CSS injection (classes are dc-prefixed so they don't collide with
+// the hosted design's own styles).
+if (typeof document !== 'undefined' && !document.getElementById('dc-styles')) {
+  const s = document.createElement('style');
+  s.id = 'dc-styles';
+  s.textContent = [
+    '.dc-editable{cursor:text;outline:none;white-space:nowrap;border-radius:3px;padding:0 2px;margin:0 -2px}',
+    '.dc-editable:focus{background:#fff;box-shadow:0 0 0 1.5px #c96442}',
+    '[data-dc-slot]{transition:transform .18s cubic-bezier(.2,.7,.3,1)}',
+    '[data-dc-slot].dc-dragging{transition:none;z-index:10;pointer-events:none}',
+    '[data-dc-slot].dc-dragging .dc-card{box-shadow:0 12px 40px rgba(0,0,0,.25),0 0 0 2px #c96442;transform:scale(1.02)}',
+    // isolation:isolate contains artboard content's z-indexes so a
+    // z-indexed child (sticky navbar etc.) can't paint over .dc-header or
+    // the .dc-menu popover that drops into the top of the card.
+    '.dc-card{isolation:isolate;transition:box-shadow .15s,transform .15s}',
+    '.dc-card *{scrollbar-width:none}',
+    '.dc-card *::-webkit-scrollbar{display:none}',
+    // Per-artboard header: grip + label on the left, delete/expand on the
+    // right. Single flex row; when the artboard's on-screen width is too
+    // narrow for both the label yields (ellipsis, then hidden entirely below
+    // ~4ch via the container query) and the buttons stay on the row.
+    '.dc-header{position:absolute;bottom:100%;left:-4px;margin-bottom:calc(4px * var(--dc-inv-zoom,1));z-index:2;',
+    '  display:flex;align-items:center;container-type:inline-size}',
+    '.dc-labelrow{display:flex;align-items:center;gap:4px;height:24px;flex:1 1 auto;min-width:0}',
+    '.dc-grip{flex:0 0 auto;cursor:grab;display:flex;align-items:center;padding:5px 4px;border-radius:4px;transition:background .12s,opacity .12s}',
+    '.dc-grip:hover{background:rgba(0,0,0,.08)}',
+    '.dc-grip:active{cursor:grabbing}',
+    '.dc-labeltext{flex:1 1 auto;min-width:0;cursor:pointer;border-radius:4px;padding:3px 6px;',
+    '  display:flex;align-items:center;transition:background .12s;overflow:hidden}',
+    // Below ~4ch of label room: hide the label entirely, and drop the grip to
+    // hover-only (same reveal rule as .dc-btns) so a narrow header is clean
+    // until the card is moused.
+    '@container (max-width: 110px){',
+    '  .dc-labeltext{display:none}',
+    '  .dc-grip{opacity:0}',
+    '  [data-dc-slot]:hover .dc-grip{opacity:1}',
+    '}',
+    '.dc-labeltext:hover{background:rgba(0,0,0,.05)}',
+    '.dc-labeltext .dc-editable{overflow:hidden;text-overflow:ellipsis;max-width:100%}',
+    '.dc-labeltext .dc-editable:focus{overflow:visible;text-overflow:clip}',
+    '.dc-btns{flex:0 0 auto;margin-left:auto;display:flex;gap:2px;opacity:0;transition:opacity .12s}',
+    '[data-dc-slot]:hover .dc-btns,.dc-btns:has(.dc-menu){opacity:1}',
+    '.dc-expand,.dc-kebab{width:22px;height:22px;border-radius:5px;border:none;cursor:pointer;padding:0;',
+    '  background:transparent;color:rgba(60,50,40,.7);display:flex;align-items:center;justify-content:center;',
+    '  font:inherit;transition:background .12s,color .12s}',
+    '.dc-expand:hover,.dc-kebab:hover{background:rgba(0,0,0,.06);color:#2a251f}',
+    // Slot hosting an open menu floats above later siblings (which otherwise
+    // paint on top — same z-index:auto, later DOM order) so the popup isn't
+    // clipped by the next card.
+    '[data-dc-slot]:has(.dc-menu){z-index:10}',
+    '.dc-menu{position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border-radius:8px;',
+    '  box-shadow:0 8px 28px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.05);padding:4px;min-width:160px;z-index:10}',
+    '.dc-menu button{display:block;width:100%;padding:7px 10px;border:0;background:transparent;',
+    '  border-radius:5px;font-family:inherit;font-size:13px;font-weight:500;line-height:1.2;',
+    '  color:#29261b;cursor:pointer;text-align:left;transition:background .12s;white-space:nowrap}',
+    '.dc-menu button:hover{background:rgba(0,0,0,.05)}',
+    '.dc-menu hr{border:0;border-top:1px solid rgba(0,0,0,.08);margin:4px 2px}',
+    '.dc-menu .dc-danger{color:#c96442}',
+    '.dc-menu .dc-danger:hover{background:rgba(201,100,66,.1)}',
+    // Chrome (titles / labels / buttons) counter-scales against the viewport
+    // zoom so it stays a constant on-screen size. --dc-inv-zoom is set by
+    // DCViewport on every transform update and inherits to all descendants —
+    // any overlay inside the world (e.g. a TweaksPanel on an artboard) can use
+    // it the same way.
+    //
+    // The header uses transform:scale (out-of-flow, so layout impact doesn't
+    // matter) with its world-space width set to card-width / inv-zoom so that
+    // after counter-scaling its on-screen width exactly matches the card's —
+    // that's what lets the container query + text-overflow behave against the
+    // card's visible edge at every zoom level.
+    //
+    // The section head uses CSS zoom instead of transform so its layout box
+    // grows with the counter-scale, pushing the card row down — otherwise the
+    // constant-screen-size title would overflow into the (shrinking) world-
+    // space gap and overlap the artboard headers at low zoom.
+    '.dc-header{width:calc((100% + 4px) / var(--dc-inv-zoom,1));',
+    '  transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom left}',
+    '.dc-sectionhead{zoom:var(--dc-inv-zoom,1)}',
+  ].join('\n');
+  document.head.appendChild(s);
+}
+
+const DCCtx = React.createContext(null);
+
+// Recursively unwrap React.Fragment so <>…</> grouping doesn't hide
+// DCSection/DCArtboard children from the type-based walks below.
+function dcFlatten(children) {
+  const out = [];
+  React.Children.forEach(children, (c) => {
+    if (c && c.type === React.Fragment) out.push(...dcFlatten(c.props.children));
+    else out.push(c);
+  });
+  return out;
+}
+
+// ─────────────────────────────────────────────────────────────
+// DesignCanvas — stateful wrapper around the pan/zoom viewport.
+// Owns runtime state (per-section order, renamed titles/labels, hidden
+// artboards, focused artboard). Order/titles/labels/hidden persist to a
+// .design-canvas.state.json
+// sidecar next to the HTML. Reads go via plain fetch() so the saved
+// arrangement is visible anywhere the HTML + sidecar are served together
+// (omelette preview, direct link, downloaded zip). Writes go through the
+// host's window.omelette bridge — editing requires the omelette runtime.
+// Focus is ephemeral.
+// ─────────────────────────────────────────────────────────────
+const DC_STATE_FILE = '.design-canvas.state.json';
+
+function DesignCanvas({ children, minScale, maxScale, style }) {
+  const [state, setState] = React.useState({ sections: {}, focus: null });
+  // Hold rendering until the sidecar read settles so the saved order/titles
+  // appear on first paint (no source-order flash). didRead gates writes until
+  // the read settles so the empty initial state can't clobber a slow read;
+  // skipNextWrite suppresses the one echo-write that would otherwise follow
+  // hydration.
+  const [ready, setReady] = React.useState(false);
+  const didRead = React.useRef(false);
+  const skipNextWrite = React.useRef(false);
+
+  React.useEffect(() => {
+    let off = false;
+    fetch('./' + DC_STATE_FILE)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((saved) => {
+        if (off || !saved || !saved.sections) return;
+        skipNextWrite.current = true;
+        setState((s) => ({ ...s, sections: saved.sections }));
+      })
+      .catch(() => {})
+      .finally(() => { didRead.current = true; if (!off) setReady(true); });
+    const t = setTimeout(() => { if (!off) setReady(true); }, 150);
+    return () => { off = true; clearTimeout(t); };
+  }, []);
+
+  React.useEffect(() => {
+    if (!didRead.current) return;
+    if (skipNextWrite.current) { skipNextWrite.current = false; return; }
+    const t = setTimeout(() => {
+      window.omelette?.writeFile(DC_STATE_FILE, JSON.stringify({ sections: state.sections })).catch(() => {});
+    }, 250);
+    return () => clearTimeout(t);
+  }, [state.sections]);
+
+  // Build registries synchronously from children so FocusOverlay can read
+  // them in the same render. Fragments are flattened; wrapping in other
+  // elements still opts out of focus/reorder.
+  const registry = {};     // slotId -> { sectionId, artboard }
+  const sectionMeta = {};  // sectionId -> { title, subtitle, slotIds[] }
+  const sectionOrder = [];
+  dcFlatten(children).forEach((sec) => {
+    if (!sec || sec.type !== DCSection) return;
+    const sid = sec.props.id ?? sec.props.title;
+    if (!sid) return;
+    sectionOrder.push(sid);
+    const persisted = state.sections[sid] || {};
+    const abs = [];
+    dcFlatten(sec.props.children).forEach((ab) => {
+      if (!ab || ab.type !== DCArtboard) return;
+      const aid = ab.props.id ?? ab.props.label;
+      if (aid) abs.push([aid, ab]);
+    });
+    // hidden is scoped to one source revision — when the agent regenerates
+    // (artboard-ID set changes), prior deletes don't apply to new content.
+    const srcKey = abs.map(([k]) => k).join('\x1f');
+    const hidden = persisted.srcKey === srcKey ? (persisted.hidden || []) : [];
+    const srcIds = [];
+    abs.forEach(([aid, ab]) => {
+      if (hidden.includes(aid)) return;
+      registry[`${sid}/${aid}`] = { sectionId: sid, artboard: ab };
+      srcIds.push(aid);
+    });
+    const kept = (persisted.order || []).filter((k) => srcIds.includes(k));
+    sectionMeta[sid] = {
+      title: persisted.title ?? sec.props.title,
+      subtitle: sec.props.subtitle,
+      slotIds: [...kept, ...srcIds.filter((k) => !kept.includes(k))],
+    };
+  });
+
+  const api = React.useMemo(() => ({
+    state,
+    section: (id) => state.sections[id] || {},
+    patchSection: (id, p) => setState((s) => ({
+      ...s,
+      sections: { ...s.sections, [id]: { ...s.sections[id], ...(typeof p === 'function' ? p(s.sections[id] || {}) : p) } },
+    })),
+    setFocus: (slotId) => setState((s) => ({ ...s, focus: slotId })),
+  }), [state]);
+
+  // Esc exits focus; any outside pointerdown commits an in-progress rename.
+  React.useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') api.setFocus(null); };
+    const onPd = (e) => {
+      const ae = document.activeElement;
+      if (ae && ae.isContentEditable && !ae.contains(e.target)) ae.blur();
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPd, true);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPd, true);
+    };
+  }, [api]);
+
+  return (
+    <DCCtx.Provider value={api}>
+      <DCViewport minScale={minScale} maxScale={maxScale} style={style}>{ready && children}</DCViewport>
+      {state.focus && registry[state.focus] && (
+        <DCFocusOverlay entry={registry[state.focus]} sectionMeta={sectionMeta} sectionOrder={sectionOrder} />
+      )}
+    </DCCtx.Provider>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// DCViewport — transform-based pan/zoom (internal)
+//
+// Input mapping (Figma-style):
+//   • trackpad pinch  → zoom   (ctrlKey wheel; Safari gesture* events)
+//   • trackpad scroll → pan    (two-finger)
+//   • mouse wheel     → zoom   (notched; distinguished from trackpad scroll)
+//   • middle-drag / primary-drag-on-bg → pan
+//
+// Transform state lives in a ref and is written straight to the DOM
+// (translate3d + will-change) so wheel ticks don't go through React —
+// keeps pans at 60fps on dense canvases.
+// ─────────────────────────────────────────────────────────────
+function DCViewport({ children, minScale = 0.1, maxScale = 8, style = {} }) {
+  const vpRef = React.useRef(null);
+  const worldRef = React.useRef(null);
+  const tf = React.useRef({ x: 0, y: 0, scale: 1 });
+  // Persist viewport across reloads so the user lands back where they were
+  // after an agent edit or browser refresh. The sandbox origin is already
+  // per-project; pathname keeps multiple canvas files in one project apart.
+  const tfKey = 'dc-viewport:' + location.pathname;
+  const saveT = React.useRef(0);
+
+  const lastPostedScale = React.useRef();
+  const apply = React.useCallback(() => {
+    const { x, y, scale } = tf.current;
+    const el = worldRef.current;
+    if (!el) return;
+    el.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
+    // Exposed for zoom-invariant chrome (labels, buttons, TweaksPanel).
+    el.style.setProperty('--dc-inv-zoom', String(1 / scale));
+    // Keep the host toolbar's % readout in sync with the canvas scale. Pan
+    // ticks leave scale unchanged — skip the cross-frame post for those.
+    if (lastPostedScale.current !== scale) {
+      lastPostedScale.current = scale;
+      window.parent.postMessage({ type: '__dc_zoom', scale }, '*');
+    }
+    clearTimeout(saveT.current);
+    saveT.current = setTimeout(() => {
+      try { localStorage.setItem(tfKey, JSON.stringify(tf.current)); } catch {}
+    }, 200);
+  }, [tfKey]);
+
+  React.useLayoutEffect(() => {
+    const flush = () => {
+      clearTimeout(saveT.current);
+      try { localStorage.setItem(tfKey, JSON.stringify(tf.current)); } catch {}
+    };
+    try {
+      const s = JSON.parse(localStorage.getItem(tfKey) || 'null');
+      if (s && Number.isFinite(s.x) && Number.isFinite(s.y) && Number.isFinite(s.scale)) {
+        tf.current = { x: s.x, y: s.y, scale: Math.min(maxScale, Math.max(minScale, s.scale)) };
+        apply();
+      }
+    } catch {}
+    // Flush on pagehide and unmount so a reload within the 200ms debounce
+    // window doesn't drop the last pan/zoom.
+    window.addEventListener('pagehide', flush);
+    return () => { window.removeEventListener('pagehide', flush); flush(); };
+  }, []);
+
+  React.useEffect(() => {
+    const vp = vpRef.current;
+    if (!vp) return;
+
+    const zoomAt = (cx, cy, factor) => {
+      const r = vp.getBoundingClientRect();
+      const px = cx - r.left, py = cy - r.top;
+      const t = tf.current;
+      const next = Math.min(maxScale, Math.max(minScale, t.scale * factor));
+      const k = next / t.scale;
+      // --dc-inv-zoom consumers (.dc-sectionhead's CSS zoom, each section's
+      // marginBottom) reflow on every scale change, vertically shifting the
+      // world layout — so a world point mathematically pinned under the cursor
+      // drifts as you zoom (content creeps up on zoom-in, down on zoom-out).
+      // Anchor the DOM element under the cursor instead: record its screen Y,
+      // apply the transform + --dc-inv-zoom, then cancel whatever vertical
+      // drift the reflow introduced so it stays put on screen.
+      let marker = null, markerY0 = 0;
+      if (k !== 1) {
+        const hit = document.elementFromPoint(cx, cy);
+        marker = hit && hit.closest ? hit.closest('[data-dc-slot],[data-dc-section]') : null;
+        if (marker) markerY0 = marker.getBoundingClientRect().top;
+      }
+      // keep the world point under the cursor fixed
+      t.x = px - (px - t.x) * k;
+      t.y = py - (py - t.y) * k;
+      t.scale = next;
+      apply();
+      if (marker) {
+        // A pure zoom around (cx, cy) maps screen Y → cy + (Y - cy) * k. Any
+        // departure after the --dc-inv-zoom reflow is the layout drift.
+        const drift = marker.getBoundingClientRect().top - (cy + (markerY0 - cy) * k);
+        if (Math.abs(drift) > 0.1) { t.y -= drift; apply(); }
+      }
+    };
+
+    // Mouse-wheel vs trackpad-scroll heuristic. A physical wheel sends
+    // line-mode deltas (Firefox) or large integer pixel deltas with no X
+    // component (Chrome/Safari, typically multiples of 100/120). Trackpad
+    // two-finger scroll sends small/fractional pixel deltas, often with
+    // non-zero deltaX. ctrlKey is set by the browser for trackpad pinch.
+    const isMouseWheel = (e) =>
+      e.deltaMode !== 0 ||
+      (e.deltaX === 0 && Number.isInteger(e.deltaY) && Math.abs(e.deltaY) >= 40);
+
+    const onWheel = (e) => {
+      e.preventDefault();
+      if (isGesturing) return; // Safari: gesture* owns the pinch — discard concurrent wheels
+      if ((e.ctrlKey || e.metaKey) && !isMouseWheel(e)) {
+        // trackpad pinch, or ctrl/cmd + smooth-scroll mouse. Notched
+        // wheels fall through to the fixed-step branch below.
+        zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * 0.01));
+      } else if (isMouseWheel(e)) {
+        // notched mouse wheel — fixed-ratio step per click
+        zoomAt(e.clientX, e.clientY, Math.exp(-Math.sign(e.deltaY) * 0.18));
+      } else {
+        // trackpad two-finger scroll — pan
+        tf.current.x -= e.deltaX;
+        tf.current.y -= e.deltaY;
+        apply();
+      }
+    };
+
+    // Safari sends native gesture* events for trackpad pinch with a smooth
+    // e.scale; preferring these over the ctrl+wheel fallback gives a much
+    // better feel there. No-ops on other browsers. Safari also fires
+    // ctrlKey wheel events during the same pinch — isGesturing makes
+    // onWheel drop those entirely so they neither zoom nor pan.
+    let gsBase = 1;
+    let isGesturing = false;
+    const onGestureStart = (e) => { e.preventDefault(); isGesturing = true; gsBase = tf.current.scale; };
+    const onGestureChange = (e) => {
+      e.preventDefault();
+      zoomAt(e.clientX, e.clientY, (gsBase * e.scale) / tf.current.scale);
+    };
+    const onGestureEnd = (e) => { e.preventDefault(); isGesturing = false; };
+
+    // Drag-pan: middle button anywhere, or primary button on canvas
+    // background (anything that isn't an artboard or an inline editor).
+    let drag = null;
+    const onPointerDown = (e) => {
+      const onBg = !e.target.closest('[data-dc-slot], .dc-editable');
+      if (!(e.button === 1 || (e.button === 0 && onBg))) return;
+      e.preventDefault();
+      vp.setPointerCapture(e.pointerId);
+      drag = { id: e.pointerId, lx: e.clientX, ly: e.clientY };
+      vp.style.cursor = 'grabbing';
+    };
+    const onPointerMove = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      tf.current.x += e.clientX - drag.lx;
+      tf.current.y += e.clientY - drag.ly;
+      drag.lx = e.clientX; drag.ly = e.clientY;
+      apply();
+    };
+    const onPointerUp = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      vp.releasePointerCapture(e.pointerId);
+      drag = null;
+      vp.style.cursor = '';
+    };
+
+    // Host-driven zoom (toolbar % menu). Zooms around viewport centre so the
+    // visible midpoint stays fixed — matching the host's iframe-zoom feel.
+    const onHostMsg = (e) => {
+      const d = e.data;
+      if (d && d.type === '__dc_set_zoom' && typeof d.scale === 'number') {
+        const r = vp.getBoundingClientRect();
+        zoomAt(r.left + r.width / 2, r.top + r.height / 2, d.scale / tf.current.scale);
+      } else if (d && d.type === '__dc_probe') {
+        // Host's [readyGen] reset asks whether a canvas is present; it
+        // fires on the iframe's native 'load', which for canvases with
+        // images/fonts is after our mount-time announce, so re-announce.
+        // Clear the pan-tick guard so apply() re-posts the current scale
+        // even if it's unchanged — the host just reset dcScale to 1.
+        window.parent.postMessage({ type: '__dc_present' }, '*');
+        lastPostedScale.current = undefined;
+        apply();
+      }
+    };
+    window.addEventListener('message', onHostMsg);
+    // Announce canvas mode so the host toolbar proxies its % control here
+    // instead of scaling the iframe element (which would just shrink the
+    // viewport window of an infinite canvas). The apply() that follows emits
+    // the initial __dc_zoom so the toolbar % is correct before first pinch.
+    // lastPostedScale reset mirrors the __dc_probe handler: the layout
+    // effect's restore-path apply() may already have posted the restored
+    // scale (before __dc_present), so clear the guard to re-post it in order.
+    window.parent.postMessage({ type: '__dc_present' }, '*');
+    lastPostedScale.current = undefined;
+    apply();
+
+    vp.addEventListener('wheel', onWheel, { passive: false });
+    vp.addEventListener('gesturestart', onGestureStart, { passive: false });
+    vp.addEventListener('gesturechange', onGestureChange, { passive: false });
+    vp.addEventListener('gestureend', onGestureEnd, { passive: false });
+    vp.addEventListener('pointerdown', onPointerDown);
+    vp.addEventListener('pointermove', onPointerMove);
+    vp.addEventListener('pointerup', onPointerUp);
+    vp.addEventListener('pointercancel', onPointerUp);
+    return () => {
+      window.removeEventListener('message', onHostMsg);
+      vp.removeEventListener('wheel', onWheel);
+      vp.removeEventListener('gesturestart', onGestureStart);
+      vp.removeEventListener('gesturechange', onGestureChange);
+      vp.removeEventListener('gestureend', onGestureEnd);
+      vp.removeEventListener('pointerdown', onPointerDown);
+      vp.removeEventListener('pointermove', onPointerMove);
+      vp.removeEventListener('pointerup', onPointerUp);
+      vp.removeEventListener('pointercancel', onPointerUp);
+    };
+  }, [apply, minScale, maxScale]);
+
+  const gridSvg = `url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M120 0H0v120' fill='none' stroke='${encodeURIComponent(DC.grid)}' stroke-width='1'/%3E%3C/svg%3E")`;
+  return (
+    <div
+      ref={vpRef}
+      className="design-canvas"
+      style={{
+        height: '100vh', width: '100vw',
+        background: DC.bg,
+        overflow: 'hidden',
+        overscrollBehavior: 'none',
+        touchAction: 'none',
+        position: 'relative',
+        fontFamily: DC.font,
+        boxSizing: 'border-box',
+        ...style,
+      }}
+    >
+      <div
+        ref={worldRef}
+        style={{
+          position: 'absolute', top: 0, left: 0,
+          transformOrigin: '0 0',
+          willChange: 'transform',
+          width: 'max-content', minWidth: '100%',
+          minHeight: '100%',
+          padding: '60px 0 80px',
+        }}
+      >
+        <div style={{ position: 'absolute', inset: -6000, backgroundImage: gridSvg, backgroundSize: '120px 120px', pointerEvents: 'none', zIndex: -1 }} />
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// DCSection — editable title + h-row of artboards in persisted order
+// ─────────────────────────────────────────────────────────────
+function DCSection({ id, title, subtitle, children, gap = 48 }) {
+  const ctx = React.useContext(DCCtx);
+  const sid = id ?? title;
+  const all = React.Children.toArray(dcFlatten(children));
+  const artboards = all.filter((c) => c && c.type === DCArtboard);
+  const rest = all.filter((c) => !(c && c.type === DCArtboard));
+  const sec = (ctx && sid && ctx.section(sid)) || {};
+  // Must match DesignCanvas's srcKey computation exactly (it filters falsy
+  // IDs), or onDelete persists a srcKey that DesignCanvas never recognizes.
+  const allIds = artboards.map((a) => a.props.id ?? a.props.label).filter(Boolean);
+  const srcKey = allIds.join('\x1f');
+  const hidden = sec.srcKey === srcKey ? (sec.hidden || []) : [];
+  const srcOrder = allIds.filter((k) => !hidden.includes(k));
+
+  const order = React.useMemo(() => {
+    const kept = (sec.order || []).filter((k) => srcOrder.includes(k));
+    return [...kept, ...srcOrder.filter((k) => !kept.includes(k))];
+  }, [sec.order, srcOrder.join('|')]);
+
+  const byId = Object.fromEntries(artboards.map((a) => [a.props.id ?? a.props.label, a]));
+
+  // marginBottom counter-scales so the on-screen gap between sections stays
+  // constant — otherwise at low zoom the (world-space) gap collapses while
+  // the screen-constant sectionhead below it doesn't, and the title reads as
+  // belonging to the section above. paddingBottom below is just enough for
+  // the 24px artboard-header (abs-positioned above each card) plus ~8px, so
+  // the title sits tight against its own row at every zoom.
+  return (
+    <div data-dc-section={sid}
+      style={{ marginBottom: 'calc(80px * var(--dc-inv-zoom, 1))', position: 'relative' }}>
+      <div style={{ padding: '0 60px' }}>
+        <div className="dc-sectionhead" style={{ paddingBottom: 36 }}>
+          <DCEditable tag="div" value={sec.title ?? title}
+            onChange={(v) => ctx && sid && ctx.patchSection(sid, { title: v })}
+            style={{ fontSize: 28, fontWeight: 600, color: DC.title, letterSpacing: -0.4, marginBottom: 6, display: 'inline-block' }} />
+          {subtitle && <div style={{ fontSize: 16, color: DC.subtitle }}>{subtitle}</div>}
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap, padding: '0 60px', alignItems: 'flex-start', width: 'max-content' }}>
+        {order.map((k) => (
+          <DCArtboardFrame key={k} sectionId={sid} artboard={byId[k]} order={order}
+            label={(sec.labels || {})[k] ?? byId[k].props.label}
+            onRename={(v) => ctx && ctx.patchSection(sid, (x) => ({ labels: { ...x.labels, [k]: v } }))}
+            onReorder={(next) => ctx && ctx.patchSection(sid, { order: next })}
+            onDelete={() => ctx && ctx.patchSection(sid, (x) => ({
+              hidden: [...(x.srcKey === srcKey ? (x.hidden || []) : []), k],
+              srcKey,
+            }))}
+            onFocus={() => ctx && ctx.setFocus(`${sid}/${k}`)} />
+        ))}
+      </div>
+      {rest}
+    </div>
+  );
+}
+
+// DCArtboard — marker; rendered by DCArtboardFrame via DCSection.
+function DCArtboard() { return null; }
+
+// Per-artboard export (kind: 'png' | 'html'). Both paths share the same
+// self-contained clone: computed styles baked in, @font-face / <img> /
+// inline-style background-image urls inlined as data URIs. PNG wraps the
+// clone in foreignObject→canvas at 3× the artboard's natural width×height
+// (same pipeline the host uses for page captures); HTML wraps it in a
+// minimal standalone document. Both are independent of viewport zoom.
+async function dcExport(node, w, h, name, kind) {
+  try { await document.fonts.ready; } catch {}
+  const toDataURL = (url) => fetch(url).then((r) => r.blob()).then((b) => new Promise((res) => {
+    const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => res(url); fr.readAsDataURL(b);
+  })).catch(() => url);
+
+  // Collect @font-face rules. ss.cssRules throws SecurityError on
+  // cross-origin sheets (e.g. fonts.googleapis.com) — in that case fetch
+  // the CSS text directly (those endpoints send ACAO:*) and regex-extract
+  // the blocks. @import and @media/@supports are walked so nested
+  // @font-face rules aren't missed.
+  const fontRules = [], pending = [], seen = new Set();
+  const scrapeCss = (href) => {
+    if (seen.has(href)) return; seen.add(href);
+    pending.push(fetch(href).then((r) => r.text()).then((css) => {
+      for (const m of css.match(/@font-face\s*{[^}]*}/g) || []) fontRules.push({ css: m, base: href });
+      for (const m of css.matchAll(/@import\s+(?:url\()?['"]?([^'")\s;]+)/g))
+        scrapeCss(new URL(m[1], href).href);
+    }).catch(() => {}));
+  };
+  const walk = (rules, base) => {
+    for (const r of rules) {
+      if (r.type === CSSRule.FONT_FACE_RULE) fontRules.push({ css: r.cssText, base });
+      else if (r.type === CSSRule.IMPORT_RULE && r.styleSheet) {
+        const ibase = r.styleSheet.href || base;
+        try { walk(r.styleSheet.cssRules, ibase); } catch { scrapeCss(ibase); }
+      } else if (r.cssRules) walk(r.cssRules, base);
+    }
+  };
+  for (const ss of document.styleSheets) {
+    const base = ss.href || location.href;
+    try { walk(ss.cssRules, base); } catch { if (ss.href) scrapeCss(ss.href); }
+  }
+  while (pending.length) await pending.shift();
+  const fontCss = (await Promise.all(fontRules.map(async (rule) => {
+    let out = rule.css, m; const re = /url\((['"]?)([^'")]+)\1\)/g;
+    while ((m = re.exec(rule.css))) {
+      if (m[2].indexOf('data:') === 0) continue;
+      let abs; try { abs = new URL(m[2], rule.base).href; } catch { continue; }
+      out = out.split(m[0]).join('url("' + await toDataURL(abs) + '")');
+    }
+    return out;
+  }))).join('\n');
+
+  const cloneStyled = (src) => {
+    if (src.nodeType === 8 || (src.nodeType === 1 && src.tagName === 'SCRIPT')) return document.createTextNode('');
+    const dst = src.cloneNode(false);
+    if (src.nodeType === 1) {
+      const cs = getComputedStyle(src); let txt = '';
+      for (let i = 0; i < cs.length; i++) txt += cs[i] + ':' + cs.getPropertyValue(cs[i]) + ';';
+      dst.setAttribute('style', txt + 'animation:none;transition:none;');
+      if (src.tagName === 'CANVAS') try { const im = document.createElement('img'); im.src = src.toDataURL(); im.setAttribute('style', txt); return im; } catch {}
+    }
+    for (let c = src.firstChild; c; c = c.nextSibling) dst.appendChild(cloneStyled(c));
+    return dst;
+  };
+  const clone = cloneStyled(node);
+  clone.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+  // Drop the card's own shadow/radius so the export is a flush w×h rect;
+  // the artboard's own background (if any) is already in the computed style.
+  clone.style.boxShadow = 'none'; clone.style.borderRadius = '0';
+
+  const jobs = [];
+  clone.querySelectorAll('img').forEach((el) => {
+    const s = el.getAttribute('src');
+    if (s && s.indexOf('data:') !== 0) jobs.push(toDataURL(el.src).then((d) => el.setAttribute('src', d)));
+  });
+  [clone, ...clone.querySelectorAll('*')].forEach((el) => {
+    const bg = el.style.backgroundImage; if (!bg) return;
+    let m; const re = /url\(["']?([^"')]+)["']?\)/g;
+    while ((m = re.exec(bg))) {
+      const tok = m[0], url = m[1];
+      if (url.indexOf('data:') === 0) continue;
+      jobs.push(toDataURL(url).then((d) => { el.style.backgroundImage = el.style.backgroundImage.split(tok).join('url("' + d + '")'); }));
+    }
+  });
+  await Promise.all(jobs);
+
+  const xml = new XMLSerializer().serializeToString(clone);
+  const save = (blob, ext) => {
+    if (!blob) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name + '.' + ext; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+
+  if (kind === 'html') {
+    const html = '<!doctype html><html><head><meta charset="utf-8"><title>' + name + '</title>' +
+      (fontCss ? '<style>' + fontCss + '</style>' : '') +
+      '</head><body style="margin:0">' + xml + '</body></html>';
+    return save(new Blob([html], { type: 'text/html' }), 'html');
+  }
+
+  // PNG: the SVG's own width/height must be the output resolution — an
+  // <img>-loaded SVG rasterizes at its intrinsic size, so sizing it at 1×
+  // and ctx.scale()-ing up would just upscale a 1× bitmap. viewBox maps the
+  // w×h foreignObject onto the px·w × px·h SVG canvas so the browser renders
+  // the HTML at full resolution.
+  const px = 3;
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w * px + '" height="' + h * px +
+    '" viewBox="0 0 ' + w + ' ' + h + '"><foreignObject width="' + w + '" height="' + h + '">' +
+    (fontCss ? '<style><![CDATA[' + fontCss + ']]></style>' : '') + xml + '</foreignObject></svg>';
+  const img = new Image();
+  await new Promise((res, rej) => {
+    img.onload = res; img.onerror = () => rej(new Error('svg load failed'));
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  });
+  const cv = document.createElement('canvas');
+  cv.width = w * px; cv.height = h * px;
+  cv.getContext('2d').drawImage(img, 0, 0);
+  cv.toBlob((blob) => save(blob, 'png'), 'image/png');
+}
+
+function DCArtboardFrame({ sectionId, artboard, label, order, onRename, onReorder, onFocus, onDelete }) {
+  const { id: rawId, label: rawLabel, width = 260, height = 480, children, style = {} } = artboard.props;
+  const id = rawId ?? rawLabel;
+  const ref = React.useRef(null);
+  const cardRef = React.useRef(null);
+  const menuRef = React.useRef(null);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [confirming, setConfirming] = React.useState(false);
+
+  // ⋯ menu: close on any outside pointerdown. Two-click delete lives inside
+  // the menu — first click arms the row, second commits; closing disarms.
+  React.useEffect(() => {
+    if (!menuOpen) { setConfirming(false); return; }
+    const off = (e) => { if (!menuRef.current || !menuRef.current.contains(e.target)) setMenuOpen(false); };
+    document.addEventListener('pointerdown', off, true);
+    return () => document.removeEventListener('pointerdown', off, true);
+  }, [menuOpen]);
+
+  const doExport = (kind) => {
+    setMenuOpen(false);
+    if (!cardRef.current) return;
+    const name = String(label || id || 'artboard').replace(/[^\w\s.-]+/g, '_');
+    dcExport(cardRef.current, width, height, name, kind)
+      .catch((e) => console.error('[design-canvas] export failed:', e));
+  };
+
+  // Live drag-reorder: dragged card sticks to cursor; siblings slide into
+  // their would-be slots in real time via transforms. DOM order only
+  // changes on drop.
+  const onGripDown = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const me = ref.current;
+    // translateX is applied in local (pre-scale) space but pointer deltas and
+    // getBoundingClientRect().left are screen-space — divide by the viewport's
+    // current scale so the dragged card tracks the cursor at any zoom level.
+    const scale = me.getBoundingClientRect().width / me.offsetWidth || 1;
+    const peers = Array.from(document.querySelectorAll(`[data-dc-section="${sectionId}"] [data-dc-slot]`));
+    const homes = peers.map((el) => ({ el, id: el.dataset.dcSlot, x: el.getBoundingClientRect().left }));
+    const slotXs = homes.map((h) => h.x);
+    const startIdx = order.indexOf(id);
+    const startX = e.clientX;
+    let liveOrder = order.slice();
+    me.classList.add('dc-dragging');
+
+    const layout = () => {
+      for (const h of homes) {
+        if (h.id === id) continue;
+        const slot = liveOrder.indexOf(h.id);
+        h.el.style.transform = `translateX(${(slotXs[slot] - h.x) / scale}px)`;
+      }
+    };
+
+    const move = (ev) => {
+      const dx = ev.clientX - startX;
+      me.style.transform = `translateX(${dx / scale}px)`;
+      const cur = homes[startIdx].x + dx;
+      let nearest = 0, best = Infinity;
+      for (let i = 0; i < slotXs.length; i++) {
+        const d = Math.abs(slotXs[i] - cur);
+        if (d < best) { best = d; nearest = i; }
+      }
+      if (liveOrder.indexOf(id) !== nearest) {
+        liveOrder = order.filter((k) => k !== id);
+        liveOrder.splice(nearest, 0, id);
+        layout();
+      }
+    };
+
+    const up = () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      const finalSlot = liveOrder.indexOf(id);
+      me.classList.remove('dc-dragging');
+      me.style.transform = `translateX(${(slotXs[finalSlot] - homes[startIdx].x) / scale}px)`;
+      // After the settle transition, kill transitions + clear transforms +
+      // commit the reorder in the same frame so there's no visual snap-back.
+      setTimeout(() => {
+        for (const h of homes) { h.el.style.transition = 'none'; h.el.style.transform = ''; }
+        if (liveOrder.join('|') !== order.join('|')) onReorder(liveOrder);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          for (const h of homes) h.el.style.transition = '';
+        }));
+      }, 180);
+    };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+  };
+
+  return (
+    <div ref={ref} data-dc-slot={id} style={{ position: 'relative', flexShrink: 0 }}>
+      <div className="dc-header" data-omelette-chrome="" style={{ color: DC.label }} onPointerDown={(e) => e.stopPropagation()}>
+        <div className="dc-labelrow">
+          <div className="dc-grip" onPointerDown={onGripDown} title="Drag to reorder">
+            <svg width="9" height="13" viewBox="0 0 9 13" fill="currentColor"><circle cx="2" cy="2" r="1.1"/><circle cx="7" cy="2" r="1.1"/><circle cx="2" cy="6.5" r="1.1"/><circle cx="7" cy="6.5" r="1.1"/><circle cx="2" cy="11" r="1.1"/><circle cx="7" cy="11" r="1.1"/></svg>
+          </div>
+          <div className="dc-labeltext" onClick={onFocus} title="Click to focus">
+            <DCEditable value={label} onChange={onRename} onClick={(e) => e.stopPropagation()}
+              style={{ fontSize: 15, fontWeight: 500, color: DC.label, lineHeight: 1 }} />
+          </div>
+        </div>
+        <div className="dc-btns">
+          <div ref={menuRef} style={{ position: 'relative' }}>
+            <button className="dc-kebab" title="More" onClick={() => setMenuOpen((o) => !o)}>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><circle cx="2.5" cy="6" r="1.1"/><circle cx="6" cy="6" r="1.1"/><circle cx="9.5" cy="6" r="1.1"/></svg>
+            </button>
+            {menuOpen && (
+              <div className="dc-menu" onPointerDown={(e) => e.stopPropagation()}>
+                <button onClick={() => doExport('png')}>Download PNG</button>
+                <button onClick={() => doExport('html')}>Download HTML</button>
+                <hr />
+                <button className="dc-danger"
+                  onClick={() => { if (confirming) { setMenuOpen(false); onDelete(); } else setConfirming(true); }}>
+                  {confirming ? 'Click again to delete' : 'Delete'}
+                </button>
+              </div>
+            )}
+          </div>
+          <button className="dc-expand" onClick={onFocus} title="Focus">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M7 1h4v4M5 11H1V7M11 1L7.5 4.5M1 11l3.5-3.5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div ref={cardRef} className="dc-card"
+        style={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06)', overflow: 'hidden', width, height, background: '#fff', ...style }}>
+        {children || <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: 13, fontFamily: DC.font }}>{id}</div>}
+      </div>
+    </div>
+  );
+}
+
+// Inline rename — commits on blur or Enter.
+function DCEditable({ value, onChange, style, tag = 'span', onClick }) {
+  const T = tag;
+  return (
+    <T className="dc-editable" contentEditable suppressContentEditableWarning
+      onClick={onClick}
+      onPointerDown={(e) => e.stopPropagation()}
+      onBlur={(e) => onChange && onChange(e.currentTarget.textContent)}
+      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
+      style={style}>{value}</T>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Focus mode — overlay one artboard; ←/→ within section, ↑/↓ across
+// sections, Esc or backdrop click to exit.
+// ─────────────────────────────────────────────────────────────
+function DCFocusOverlay({ entry, sectionMeta, sectionOrder }) {
+  const ctx = React.useContext(DCCtx);
+  const { sectionId, artboard } = entry;
+  const sec = ctx.section(sectionId);
+  const meta = sectionMeta[sectionId];
+  const peers = meta.slotIds;
+  const aid = artboard.props.id ?? artboard.props.label;
+  const idx = peers.indexOf(aid);
+  const secIdx = sectionOrder.indexOf(sectionId);
+
+  const go = (d) => { const n = peers[(idx + d + peers.length) % peers.length]; if (n) ctx.setFocus(`${sectionId}/${n}`); };
+  const goSection = (d) => {
+    // Sections whose artboards are all deleted have slotIds:[] — step past
+    // them to the next non-empty section so ↑/↓ doesn't dead-end.
+    const n = sectionOrder.length;
+    for (let i = 1; i < n; i++) {
+      const ns = sectionOrder[(((secIdx + d * i) % n) + n) % n];
+      const first = sectionMeta[ns] && sectionMeta[ns].slotIds[0];
+      if (first) { ctx.setFocus(`${ns}/${first}`); return; }
+    }
+  };
+
+  React.useEffect(() => {
+    const k = (e) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); goSection(-1); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); goSection(1); }
+    };
+    document.addEventListener('keydown', k);
+    return () => document.removeEventListener('keydown', k);
+  });
+
+  const { width = 260, height = 480, children } = artboard.props;
+  const [vp, setVp] = React.useState({ w: window.innerWidth, h: window.innerHeight });
+  React.useEffect(() => { const r = () => setVp({ w: window.innerWidth, h: window.innerHeight }); window.addEventListener('resize', r); return () => window.removeEventListener('resize', r); }, []);
+  const scale = Math.max(0.1, Math.min((vp.w - 200) / width, (vp.h - 260) / height, 2));
+
+  const [ddOpen, setDd] = React.useState(false);
+  const Arrow = ({ dir, onClick }) => (
+    <button onClick={(e) => { e.stopPropagation(); onClick(); }}
+      style={{ position: 'absolute', top: '50%', [dir]: 28, transform: 'translateY(-50%)',
+        border: 'none', background: 'rgba(255,255,255,.08)', color: 'rgba(255,255,255,.9)',
+        width: 44, height: 44, borderRadius: 22, fontSize: 18, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .15s' }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.18)')}
+      onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.08)')}>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d={dir === 'left' ? 'M11 3L5 9l6 6' : 'M7 3l6 6-6 6'} /></svg>
+    </button>
+  );
+
+  // Portal to body so position:fixed is the real viewport regardless of any
+  // transform on DesignCanvas's ancestors (including the canvas zoom itself).
+  return ReactDOM.createPortal(
+    <div onClick={() => ctx.setFocus(null)}
+      onWheel={(e) => e.preventDefault()}
+      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(24,20,16,.6)', backdropFilter: 'blur(14px)',
+        fontFamily: DC.font, color: '#fff' }}>
+
+      {/* top bar: section dropdown (left) · close (right) */}
+      <div onClick={(e) => e.stopPropagation()}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 72, display: 'flex', alignItems: 'flex-start', padding: '16px 20px 0', gap: 16 }}>
+        <div style={{ position: 'relative' }}>
+          <button onClick={() => setDd((o) => !o)}
+            style={{ border: 'none', background: 'transparent', color: '#fff', cursor: 'pointer', padding: '6px 8px',
+              borderRadius: 6, textAlign: 'left', fontFamily: 'inherit' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: -0.3 }}>{meta.title}</span>
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ opacity: .7 }}><path d="M2 4l3.5 3.5L9 4"/></svg>
+            </span>
+            {meta.subtitle && <span style={{ display: 'block', fontSize: 13, opacity: .6, fontWeight: 400, marginTop: 2 }}>{meta.subtitle}</span>}
+          </button>
+          {ddOpen && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#2a251f', borderRadius: 8,
+              boxShadow: '0 8px 32px rgba(0,0,0,.4)', padding: 4, minWidth: 200, zIndex: 10 }}>
+              {sectionOrder.filter((sid) => sectionMeta[sid].slotIds.length).map((sid) => (
+                <button key={sid} onClick={() => { setDd(false); const f = sectionMeta[sid].slotIds[0]; if (f) ctx.setFocus(`${sid}/${f}`); }}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer',
+                    background: sid === sectionId ? 'rgba(255,255,255,.1)' : 'transparent', color: '#fff',
+                    padding: '8px 12px', borderRadius: 5, fontSize: 14, fontWeight: sid === sectionId ? 600 : 400, fontFamily: 'inherit' }}>
+                  {sectionMeta[sid].title}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{ flex: 1 }} />
+        <button onClick={() => ctx.setFocus(null)}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.12)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          style={{ border: 'none', background: 'transparent', color: 'rgba(255,255,255,.7)', width: 32, height: 32,
+            borderRadius: 16, fontSize: 20, cursor: 'pointer', lineHeight: 1, transition: 'background .12s' }}>×</button>
+      </div>
+
+      {/* card centered, label + index below — only the card itself stops
+          propagation so any backdrop click (including the margins around
+          the card) exits focus */}
+      <div
+        style={{ position: 'absolute', top: 64, bottom: 56, left: 100, right: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <div onClick={(e) => e.stopPropagation()} style={{ width: width * scale, height: height * scale, position: 'relative' }}>
+          <div style={{ width, height, transform: `scale(${scale})`, transformOrigin: 'top left', background: '#fff', borderRadius: 2, overflow: 'hidden',
+            boxShadow: '0 20px 80px rgba(0,0,0,.4)' }}>
+            {children || <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb' }}>{aid}</div>}
+          </div>
+        </div>
+        <div onClick={(e) => e.stopPropagation()} style={{ fontSize: 14, fontWeight: 500, opacity: .85, textAlign: 'center' }}>
+          {(sec.labels || {})[aid] ?? artboard.props.label}
+          <span style={{ opacity: .5, marginLeft: 10, fontVariantNumeric: 'tabular-nums' }}>{idx + 1} / {peers.length}</span>
+        </div>
+      </div>
+
+      <Arrow dir="left" onClick={() => go(-1)} />
+      <Arrow dir="right" onClick={() => go(1)} />
+
+      {/* dots */}
+      <div onClick={(e) => e.stopPropagation()}
+        style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8 }}>
+        {peers.map((p, i) => (
+          <button key={p} onClick={() => ctx.setFocus(`${sectionId}/${p}`)}
+            style={{ border: 'none', padding: 0, cursor: 'pointer', width: 6, height: 6, borderRadius: 3,
+              background: i === idx ? '#fff' : 'rgba(255,255,255,.3)' }} />
+        ))}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Post-it — absolute-positioned sticky note
+// ─────────────────────────────────────────────────────────────
+function DCPostIt({ children, top, left, right, bottom, rotate = -2, width = 180 }) {
+  return (
+    <div style={{
+      position: 'absolute', top, left, right, bottom, width,
+      background: DC.postitBg, padding: '14px 16px',
+      fontFamily: '"Comic Sans MS", "Marker Felt", "Segoe Print", cursive',
+      fontSize: 14, lineHeight: 1.4, color: DC.postitText,
+      boxShadow: '0 2px 8px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)',
+      transform: `rotate(${rotate}deg)`,
+      zIndex: 5,
+    }}>{children}</div>
+  );
+}
+
+Object.assign(window, { DesignCanvas, DCSection, DCArtboard, DCPostIt });
+
+
+
+// ═══ tweaks-panel.jsx ═══
+
+// tweaks-panel.jsx
+// Reusable Tweaks shell + form-control helpers.
+//
+// Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
+// posts __edit_mode_available / __edit_mode_set_keys / __edit_mode_dismissed) so
+// individual prototypes don't re-roll it. Ships a consistent set of controls so you
+// don't hand-draw <input type="range">, segmented radios, steppers, etc.
+//
+// Usage (in an HTML file that loads React + Babel):
+//
+//   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+//     "primaryColor": "#D97757",
+//     "palette": ["#D97757", "#29261b", "#f6f4ef"],
+//     "fontSize": 16,
+//     "density": "regular",
+//     "dark": false
+//   }/*EDITMODE-END*/;
+//
+//   function App() {
+//     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+//     return (
+//       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
+//         Hello
+//         <TweaksPanel>
+//           <TweakSection label="Typography" />
+//           <TweakSlider label="Font size" value={t.fontSize} min={10} max={32} unit="px"
+//                        onChange={(v) => setTweak('fontSize', v)} />
+//           <TweakRadio  label="Density" value={t.density}
+//                        options={['compact', 'regular', 'comfy']}
+//                        onChange={(v) => setTweak('density', v)} />
+//           <TweakSection label="Theme" />
+//           <TweakColor  label="Primary" value={t.primaryColor}
+//                        options={['#D97757', '#2A6FDB', '#1F8A5B', '#7A5AE0']}
+//                        onChange={(v) => setTweak('primaryColor', v)} />
+//           <TweakColor  label="Palette" value={t.palette}
+//                        options={[['#D97757', '#29261b', '#f6f4ef'],
+//                                  ['#475569', '#0f172a', '#f1f5f9']]}
+//                        onChange={(v) => setTweak('palette', v)} />
+//           <TweakToggle label="Dark mode" value={t.dark}
+//                        onChange={(v) => setTweak('dark', v)} />
+//         </TweaksPanel>
+//       </div>
+//     );
+//   }
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+
+  .twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+
+  .twk-num{display:flex;align-items:center;box-sizing:border-box;min-width:0;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;
+    user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{
+    -webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:46px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);
+    transition:transform .12s cubic-bezier(.3,.7,.4,1),box-shadow .12s}
+  .twk-chip:hover{transform:translateY(-1px);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.12)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),
+    0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1;box-shadow:0 -1px 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i:first-child{box-shadow:none}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
+
+// ── useTweaks ───────────────────────────────────────────────────────────────
+// Single source of truth for tweak values. setTweak persists via the host
+// (__edit_mode_set_keys → host rewrites the EDITMODE block on disk).
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  // Accepts either setTweak('key', value) or setTweak({ key: value, ... }) so a
+  // useState-style call doesn't write a "[object Object]" key into the persisted
+  // JSON block.
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    // Same-window signal so in-page listeners (deck-stage rail thumbnails)
+    // can react — the parent message only reaches the host, not peers.
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+// ── TweaksPanel ─────────────────────────────────────────────────────────────
+// Floating shell. Registers the protocol listener BEFORE announcing
+// availability — if the announce ran first, the host's activate could land
+// before our handler exists and the toolbar toggle would silently no-op.
+// The close button posts __edit_mode_dismissed so the host's toolbar toggle
+// flips off in lockstep; the host echoes __deactivate_edit_mode back which
+// is what actually hides the panel.
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', clampToViewport);
+      return () => window.removeEventListener('resize', clampToViewport);
+    }
+    const ro = new ResizeObserver(clampToViewport);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, [open, clampToViewport]);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const dismiss = () => {
+    setOpen(false);
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  };
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" data-omelette-chrome=""
+           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd" onMouseDown={onDragStart}>
+          <b>{title}</b>
+          <button className="twk-x" aria-label="Close tweaks"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={dismiss}>✕</button>
+        </div>
+        <div className="twk-body">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Layout helpers ──────────────────────────────────────────────────────────
+
+function TweakSection({ label, children }) {
+  return (
+    <>
+      <div className="twk-sect">{label}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  // The active value is read by pointer-move handlers attached for the lifetime
+  // of a drag — ref it so a stale closure doesn't fire onChange for every move.
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  // Segments wrap mid-word once per-segment width runs out. The track is
+  // ~248px (280 panel − 28 body pad − 4 seg pad), each button loses 12px
+  // to its own padding, and 11.5px system-ui averages ~6.3px/char — so 2
+  // options fit ~16 chars each, 3 fit ~10. Past that (or >3 options), fall
+  // back to a dropdown rather than wrap.
+  const labelLen = (o) => String(typeof o === 'object' ? o.label : o).length;
+  const maxLen = options.reduce((m, o) => Math.max(m, labelLen(o)), 0);
+  const fitsAsSegments = maxLen <= ({ 2: 16, 3: 10 }[options.length] ?? 0);
+  if (!fitsAsSegments) {
+    // <select> emits strings — map back to the original option value so the
+    // fallback stays type-preserving (numbers, booleans) like the segment path.
+    const resolve = (s) => {
+      const m = options.find((o) => String(typeof o === 'object' ? o.value : o) === s);
+      return m === undefined ? s : typeof m === 'object' ? m.value : m;
+    };
+    return <TweakSelect label={label} value={value} options={options}
+                        onChange={(s) => onChange(resolve(s))} />;
+  }
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <TweakRow label={label}>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => {
+          const v = typeof o === 'object' ? o.value : o;
+          const l = typeof o === 'object' ? o.label : o;
+          return <option key={v} value={v}>{l}</option>;
+        })}
+      </select>
+    </TweakRow>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => {
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault();
+    startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => {
+      const dx = ev.clientX - startRef.current.x;
+      const raw = startRef.current.val + dx * step;
+      const snapped = Math.round(raw / step) * step;
+      onChange(clamp(Number(snapped.toFixed(decimals))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  return (
+    <div className="twk-num">
+      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
+      <input type="number" value={value} min={min} max={max} step={step}
+             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
+      {unit && <span className="twk-num-unit">{unit}</span>}
+    </div>
+  );
+}
+
+// Relative-luminance contrast pick — checkmarks drawn over a swatch need to
+// read on both #111 and #fafafa without per-option configuration. Hex input
+// only (#rgb / #rrggbb); named or rgb()/hsl() colors fall through to "light".
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const n = parseInt(x.slice(0, 6), 16);
+  if (Number.isNaN(n)) return true;
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return r * 299 + g * 587 + b * 114 > 148000;
+}
+
+const __TwkCheck = ({ light }) => (
+  <svg viewBox="0 0 14 14" aria-hidden="true">
+    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
+          strokeLinecap="round" strokeLinejoin="round"
+          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
+  </svg>
+);
+
+// TweakColor — curated color/palette picker. Each option is either a single
+// hex string or an array of 1-5 hex strings; the card adapts — a lone color
+// renders solid, a palette renders colors[0] as the hero (left ~2/3) with the
+// rest stacked in a sharp column on the right. onChange emits the
+// option in the shape it was passed (string stays string, array stays array).
+// Without options it falls back to the native color input for back-compat.
+function TweakColor({ label, value, options, onChange }) {
+  if (!options || !options.length) {
+    return (
+      <div className="twk-row twk-row-h">
+        <div className="twk-lbl"><span>{label}</span></div>
+        <input type="color" className="twk-swatch" value={value}
+               onChange={(e) => onChange(e.target.value)} />
+      </div>
+    );
+  }
+  // Native <input type=color> emits lowercase hex per the HTML spec, so
+  // compare case-insensitively. String() guards JSON.stringify(undefined),
+  // which returns the primitive undefined (no .toLowerCase).
+  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const cur = key(value);
+  return (
+    <TweakRow label={label}>
+      <div className="twk-chips" role="radiogroup">
+        {options.map((o, i) => {
+          const colors = Array.isArray(o) ? o : [o];
+          const [hero, ...rest] = colors;
+          const sup = rest.slice(0, 4);
+          const on = key(o) === cur;
+          return (
+            <button key={i} type="button" className="twk-chip" role="radio"
+                    aria-checked={on} data-on={on ? '1' : '0'}
+                    aria-label={colors.join(', ')} title={colors.join(' · ')}
+                    style={{ background: hero }}
+                    onClick={() => onChange(o)}>
+              {sup.length > 0 && (
+                <span>
+                  {sup.map((c, j) => <i key={j} style={{ background: c }} />)}
+                </span>
+              )}
+              {on && <__TwkCheck light={__twkIsLight(hero)} />}
+            </button>
+          );
+        })}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+Object.assign(window, {
+  useTweaks, TweaksPanel, TweakSection, TweakRow,
+  TweakSlider, TweakToggle, TweakRadio, TweakSelect,
+  TweakText, TweakNumber, TweakColor, TweakButton,
+});
+
+
+// ═══ phone-frame.jsx ═══
+/* PhoneFrame — minimal Android device chrome with notch & safe-areas.
+   Renders a true rounded-corner screen, draws a punch-hole notch in
+   either portrait (top-center) or landscape (left-side or right-side),
+   and exposes safe-area variables via inline style. The status content
+   the OS would draw lives on a thin OS bar above the cutout. */
+
+function PhoneFrame({
+  orientation = "portrait",
+  notch = "center",          // 'left' | 'center' | 'right'
+  showFrame = true,
+  scale = 1,
+  os = "10:24",
+  battery = 72,
+  theme = "dark",            // 'dark' | 'light'
+  children,
+}) {
+  const W = orientation === "portrait" ? 412 : 892;
+  const H = orientation === "portrait" ? 892 : 412;
+  const bezel = showFrame ? 10 : 0;
+  const radius = showFrame ? 44 : 36;
+
+  // notch position
+  const notchSize = 22;
+  let cutout = null;
+  if (orientation === "portrait") {
+    const left =
+      notch === "left" ? 28 :
+      notch === "right" ? W - 28 - notchSize :
+      (W - notchSize) / 2;
+    cutout = { left, top: 14, w: notchSize, h: notchSize };
+  } else {
+    const top = (H - notchSize) / 2;
+    const left = notch === "right" ? W - 14 - notchSize : 14;
+    cutout = { left, top, w: notchSize, h: notchSize };
+  }
+
+  // safe area top depends on orientation
+  const safeTop = orientation === "portrait" ? 44 : 0;
+  const safeBottom = orientation === "portrait" ? 22 : 0;
+  const safeLeft  = orientation === "landscape" && notch === "left"  ? 56 : 0;
+  const safeRight = orientation === "landscape" && notch === "right" ? 56 : 0;
+
+  return (
+    <div
+      className="bz-phone"
+      style={{
+        position: "relative",
+        width: W + bezel * 2,
+        height: H + bezel * 2,
+        padding: bezel,
+        borderRadius: radius,
+        background: showFrame
+          ? "linear-gradient(150deg,#2a2f37 0%,#16191e 50%,#2a2f37 100%)"
+          : "transparent",
+        boxShadow: showFrame
+          ? "0 30px 80px -20px rgba(0,0,0,0.55), 0 0 0 1.5px rgba(0,0,0,0.6), inset 0 0 0 1.5px rgba(255,255,255,0.06)"
+          : "none",
+        boxSizing: "content-box",
+        transform: scale !== 1 ? `scale(${scale})` : undefined,
+        transformOrigin: "top left",
+      }}
+    >
+      {/* Screen */}
+      <div
+        className="bz-screen"
+        data-theme={theme}
+        style={{
+          position: "relative",
+          width: W,
+          height: H,
+          borderRadius: radius - bezel,
+          overflow: "hidden",
+          background: "var(--bz-bg)",
+          "--bz-inset-top": safeTop + "px",
+          "--bz-inset-bottom": safeBottom + "px",
+          "--bz-inset-left": safeLeft + "px",
+          "--bz-inset-right": safeRight + "px",
+        }}
+      >
+        {/* OS status bar (portrait only — landscape collapses it) */}
+        {orientation === "portrait" && (
+          <div
+            style={{
+              position: "absolute", top: 0, left: 0, right: 0,
+              height: safeTop, zIndex: 30,
+              display: "flex", alignItems: "center",
+              justifyContent: "space-between",
+              padding: "0 22px",
+              fontFamily: "var(--bz-font-ui)",
+              fontSize: 13, fontWeight: 500,
+              color: theme === "light" ? "rgba(0,0,0,0.78)" : "rgba(255,255,255,0.78)",
+              pointerEvents: "none",
+            }}
+          >
+            <span style={{
+              minWidth: 60,
+              textAlign: notch === "left" ? "right" : "left",
+              marginLeft: notch === "left" ? 28 : 0,
+            }}>{os}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <SignalIcon />
+              <WifiIcon />
+              <BatteryIcon pct={battery} />
+            </span>
+          </div>
+        )}
+
+        {/* Camera punch-hole */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: cutout.left, top: cutout.top,
+            width: cutout.w, height: cutout.h,
+            borderRadius: "50%",
+            background: "#000",
+            boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.08), 0 0 0 1px rgba(0,0,0,0.8)",
+            zIndex: 50,
+          }}
+        >
+          <div style={{
+            position: "absolute", inset: 5, borderRadius: "50%",
+            background: "radial-gradient(circle at 35% 35%, #1a2233 0%, #060810 70%)",
+          }} />
+        </div>
+
+        {/* App content */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+          }}
+        >
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SignalIcon() {
+  return (
+    <svg width="14" height="11" viewBox="0 0 14 11" fill="currentColor">
+      <rect x="0"  y="7" width="2.4" height="4" rx="0.4"/>
+      <rect x="3.4" y="5" width="2.4" height="6" rx="0.4"/>
+      <rect x="6.8" y="3" width="2.4" height="8" rx="0.4"/>
+      <rect x="10.2" y="0" width="2.4" height="11" rx="0.4"/>
+    </svg>
+  );
+}
+function WifiIcon() {
+  return (
+    <svg width="14" height="11" viewBox="0 0 14 11" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+      <path d="M1 4.2A9 9 0 0 1 13 4.2"/>
+      <path d="M3.2 6.5A6 6 0 0 1 10.8 6.5"/>
+      <path d="M5.4 8.7A3 3 0 0 1 8.6 8.7"/>
+      <circle cx="7" cy="10" r="0.7" fill="currentColor" stroke="none"/>
+    </svg>
+  );
+}
+function BatteryIcon({ pct = 72 }) {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+      <span style={{ fontSize: 11, opacity: 0.75 }}>{pct}%</span>
+      <svg width="22" height="11" viewBox="0 0 22 11" fill="none">
+        <rect x="0.5" y="0.5" width="18" height="10" rx="2.5" stroke="currentColor" opacity="0.6"/>
+        <rect x="19.5" y="3.5" width="2" height="4" rx="0.5" fill="currentColor" opacity="0.6"/>
+        <rect x="2" y="2" width={Math.max(0, 15 * pct / 100)} height="7" rx="1" fill="currentColor"/>
+      </svg>
+    </span>
+  );
+}
+
+Object.assign(window, { PhoneFrame });
+
+
+// ═══ spectrum-chart.jsx ═══
+// SpectrumChart — animated radiation spectrum curve, with optional
+// secondary (history) trace, gridlines, log/lin scale, channel cursor,
+// and customizable RGB color. Designed to fit any container.
+
+function SpectrumChart({
+  width = 380, height = 240,
+  log = false,
+  style = "line",          // 'line' | 'gisto' | 'fill'
+  color = "#00d4aa",
+  theme = "dark",
+  secondary = null,        // optional second color
+  overload = false,
+  channels = 2048,
+  showGrid = true,
+  showPeaks = true,
+}) {
+  // In light theme, blend user color toward black for readability against
+  // a near-white background. Dark theme uses the color as-is.
+  const drawColor = theme === "light"
+    ? `color-mix(in srgb, ${color} 50%, #06140f)`
+    : color;
+  const secColor = theme === "light" && secondary
+    ? `color-mix(in srgb, ${secondary} 55%, #06140f)`
+    : secondary;
+  // Deterministic gamma spectrum — Cs-137 (~662 keV peak) + K-40 (~1460)
+  // background + Compton continuum
+  const data = React.useMemo(() => {
+    const n = 220;
+    const arr = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      const x = i / n;
+      // exponentially decaying continuum
+      let v = Math.exp(-x * 4) * 920;
+      // Cs-137 photopeak
+      v += 720 * Math.exp(-Math.pow((i - 38) / 7, 2));
+      // Compton edge bump
+      v += 90 * Math.exp(-Math.pow((i - 28) / 12, 2));
+      // K-40 small bump
+      v += 60 * Math.exp(-Math.pow((i - 88) / 5, 2));
+      // Tl-208 line
+      v += 30 * Math.exp(-Math.pow((i - 152) / 4, 2));
+      // pseudo-random noise (seeded)
+      const seed = Math.sin(i * 12.9898) * 43758.5453;
+      v += (seed - Math.floor(seed)) * v * 0.18;
+      arr[i] = Math.max(0.5, v);
+    }
+    return arr;
+  }, []);
+
+  const secData = React.useMemo(() => {
+    return data.map((v, i) => v * (0.35 + 0.12 * Math.sin(i * 0.4)));
+  }, [data]);
+
+  const max = Math.max(...data) * 1.05;
+  const padL = 8, padR = 8, padT = 8, padB = 8;
+  const innerW = width - padL - padR;
+  const innerH = height - padT - padB;
+
+  const scaleY = (v) => {
+    if (log) {
+      const lv = Math.log10(Math.max(1, v));
+      const lm = Math.log10(max);
+      return innerH - (lv / lm) * innerH;
+    }
+    return innerH - (v / max) * innerH;
+  };
+
+  // build path
+  const buildPath = (arr) => {
+    if (style === "gisto") {
+      let d = "";
+      const bw = innerW / arr.length;
+      arr.forEach((v, i) => {
+        const x = i * bw;
+        const y = scaleY(v);
+        d += `M${x.toFixed(2)} ${innerH} L${x.toFixed(2)} ${y.toFixed(2)} L${(x + bw).toFixed(2)} ${y.toFixed(2)} L${(x + bw).toFixed(2)} ${innerH} `;
+      });
+      return d;
+    } else {
+      const pts = arr.map((v, i) => [(i / (arr.length - 1)) * innerW, scaleY(v)]);
+      return "M " + pts.map(([x, y]) => `${x.toFixed(2)} ${y.toFixed(2)}`).join(" L ");
+    }
+  };
+
+  const path = buildPath(data);
+  const secPath = buildPath(secData);
+  const fillPath = path + ` L ${innerW} ${innerH} L 0 ${innerH} Z`;
+
+  // peak labels (Cs-137 photopeak at index 38)
+  const peakIdx = 38;
+  const peakX = (peakIdx / (data.length - 1)) * innerW;
+  const peakY = scaleY(data[peakIdx]);
+
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ display: "block", overflow: "visible", color: "var(--bz-text-muted)" }}
+    >
+      <defs>
+        <linearGradient id="bz-sfill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={drawColor} stopOpacity="0.35"/>
+          <stop offset="1" stopColor={drawColor} stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+
+      <g transform={`translate(${padL} ${padT})`}>
+        {/* gridlines */}
+        {showGrid && (
+          <g stroke="currentColor" strokeOpacity="0.22" strokeWidth="1">
+            {[0, 0.25, 0.5, 0.75, 1].map((p) => (
+              <line key={"h" + p} x1="0" y1={innerH * p} x2={innerW} y2={innerH * p}/>
+            ))}
+            {[0, 0.2, 0.4, 0.6, 0.8, 1].map((p) => (
+              <line key={"v" + p} x1={innerW * p} y1="0" x2={innerW * p} y2={innerH}/>
+            ))}
+          </g>
+        )}
+
+        {/* secondary trace (history) */}
+        {secondary && (
+          <path d={secPath} fill="none" stroke={secColor} strokeWidth="1" strokeOpacity="0.55"/>
+        )}
+
+        {/* main fill (only for fill style) */}
+        {style === "fill" && (
+          <path d={fillPath} fill={`url(#bz-sfill)`}/>
+        )}
+        {/* gisto fill */}
+        {style === "gisto" && (
+          <path d={path} fill={drawColor} fillOpacity="0.85"/>
+        )}
+        {/* line */}
+        {(style === "line" || style === "fill") && (
+          <path d={path} fill="none" stroke={drawColor} strokeWidth="1.9" strokeLinejoin="round" strokeLinecap="round"
+            style={overload ? { animation: "bz-pulse 0.45s ease-in-out infinite" } : undefined}/>
+        )}
+
+        {/* peak callout */}
+        {showPeaks && !overload && (
+          <g>
+            <line x1={peakX} y1={peakY - 2} x2={peakX} y2={peakY - 14} stroke={drawColor} strokeWidth="1" strokeOpacity="0.6"/>
+            <circle cx={peakX} cy={peakY} r="2.4" fill={drawColor}/>
+            <text x={peakX + 6} y={peakY - 8}
+              fill="currentColor" fontSize="10" fontFamily="JetBrains Mono, ui-monospace, monospace" letterSpacing="0.3" fontWeight="600">
+              Cs-137  662 keV
+            </text>
+          </g>
+        )}
+
+        {/* edge axis labels */}
+        <text x="0" y={innerH + 14} fill="currentColor" fontSize="9" fontWeight="600" fontFamily="JetBrains Mono, ui-monospace, monospace">0</text>
+        <text x={innerW - 4} y={innerH + 14} fill="currentColor" fontSize="9" fontWeight="600" fontFamily="JetBrains Mono, ui-monospace, monospace" textAnchor="end">
+          {channels}
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+// CpsOscilloscope — instantaneous + smoothed CPS trace (the dosimeter screen)
+function CpsOscilloscope({ width = 380, height = 200, color = "#00d4aa", smoothColor = "#f5b400", theme = "dark" }) {
+  const drawColor = theme === "light" ? `color-mix(in srgb, ${color} 50%, #06140f)` : color;
+  const drawSmoothColor = theme === "light" ? `color-mix(in srgb, ${smoothColor} 50%, #06140f)` : smoothColor;
+  const n = 120;
+  const data = React.useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < n; i++) {
+      const seed = Math.sin(i * 91.213) * 43758.5453;
+      const r = seed - Math.floor(seed);
+      arr.push(12 + r * 12 + (i > 60 && i < 75 ? 14 : 0));
+    }
+    return arr;
+  }, []);
+  const sma = React.useMemo(() => {
+    const k = 8;
+    return data.map((_, i) => {
+      let s = 0, c = 0;
+      for (let j = Math.max(0, i - k); j <= Math.min(n - 1, i + k); j++) { s += data[j]; c++; }
+      return s / c;
+    });
+  }, [data]);
+
+  const max = Math.max(...data) * 1.15;
+  const pad = 10;
+  const w = width - pad * 2, h = height - pad * 2;
+  const toPts = (arr) => arr.map((v, i) => [(i / (n - 1)) * w, h - (v / max) * h]);
+  const ptsA = toPts(data);
+  const ptsB = toPts(sma);
+
+  // step-line for instantaneous reading
+  const stepPath = "M " + ptsA.map(([x, y], i) => {
+    if (i === 0) return `${x} ${y}`;
+    const [px] = ptsA[i - 1];
+    return `L ${px} ${y} L ${x} ${y}`;
+  }).join(" ");
+
+  const smaPath = "M " + ptsB.map(([x, y]) => `${x.toFixed(2)} ${y.toFixed(2)}`).join(" L ");
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: "block", color: "var(--bz-text-muted)" }}>
+      <g transform={`translate(${pad} ${pad})`}>
+        {/* gridlines */}
+        <g stroke="currentColor" strokeOpacity="0.22" strokeWidth="1">
+          {[0.25, 0.5, 0.75].map((p) => (
+            <line key={p} x1="0" y1={h * p} x2={w} y2={h * p}/>
+          ))}
+        </g>
+        {/* instantaneous step trace */}
+        <path d={stepPath} fill="none" stroke={drawColor} strokeWidth="1.4" strokeOpacity="0.85"/>
+        {/* SMA overlay */}
+        <path d={smaPath} fill="none" stroke={drawSmoothColor} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round"/>
+        {/* axis labels */}
+        <text x="0" y={h + 12} fill="currentColor" fontSize="10" fontWeight="600" fontFamily="JetBrains Mono, ui-monospace, monospace">cps · 60s</text>
+        <text x={w} y={h + 12} fill="currentColor" fontSize="9" fontWeight="600" fontFamily="JetBrains Mono, ui-monospace, monospace" textAnchor="end">now</text>
+      </g>
+    </svg>
+  );
+}
+
+Object.assign(window, { SpectrumChart, CpsOscilloscope });
+
+
+// ═══ bluz-ui.jsx ═══
+// BluZ shared UI atoms — status bar, nav rails, icons, controls.
+
+// ─── Icons (24px) ──────────────────────────────────────────────
+const Ico = {
+  spectrum: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 20V8M8 20V4M13 20v-8M18 20v-5"/>
+    </svg>
+  ),
+  history: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 8v5l3 2"/>
+    </svg>
+  ),
+  dose: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 17l4-4 3 3 5-7 4 6 4-4"/>
+      <circle cx="12" cy="12" r="0" />
+    </svg>
+  ),
+  log: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 6h12M4 12h16M4 18h10"/>
+      <circle cx="20" cy="6" r="0.6" fill="currentColor"/>
+    </svg>
+  ),
+  map: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v16M15 6v16"/>
+    </svg>
+  ),
+  settings: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+    </svg>
+  ),
+  play: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg>
+  ),
+  stop: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>
+  ),
+  save: (s = 18) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
+      <path d="M7 4v5h8V4"/><path d="M7 21v-7h10v7"/>
+    </svg>
+  ),
+  zoom: (s = 18) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5M9 11h4M11 9v4"/>
+    </svg>
+  ),
+  scale: (s = 18) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 21v-6M3 21h6M3 21l8-8M21 3v6M21 3h-6M21 3l-8 8"/>
+    </svg>
+  ),
+  clear: (s = 18) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6"/>
+    </svg>
+  ),
+  bt: (s = 16) => (
+    <svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
+      <path d="M5 4l6 6-3 3V2l3 3-6 6"/>
+    </svg>
+  ),
+  warn: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3l10 17H2z"/><path d="M12 10v5"/><circle cx="12" cy="18" r="0.8" fill="currentColor"/>
+    </svg>
+  ),
+  radiation: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="12" cy="12" r="2.4" fill="currentColor"/>
+      <path d="M12 3a9 9 0 0 1 7.8 4.5L13.5 11A2.4 2.4 0 0 0 12 10z" fill="currentColor"/>
+      <path d="M19.8 16.5A9 9 0 0 1 12 21v-7c.55 0 1.05-.18 1.45-.5z" fill="currentColor"/>
+      <path d="M4.2 16.5A9 9 0 0 0 12 21v-7c-.55 0-1.05-.18-1.45-.5z" fill="currentColor"/>
+    </svg>
+  ),
+  chevron: (dir = "right", s = 16) => {
+    const paths = {
+      right: "M6 4l5 5-5 5",
+      down:  "M4 6l5 5 5-5",
+      up:    "M4 10l5-5 5 5",
+      left:  "M11 4l-5 5 5 5",
+    };
+    return (
+      <svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round">
+        <path d={paths[dir]}/>
+      </svg>
+    );
+  },
+  thermometer: (s = 14) => (
+    <svg width={s} height={s} viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 1.5a1.5 1.5 0 0 0-1.5 1.5v6.2a3 3 0 1 0 3 0V3A1.5 1.5 0 0 0 7 1.5z"/>
+      <circle cx="7" cy="11" r="1.2" fill="currentColor"/>
+    </svg>
+  ),
+  clock: (s = 14) => (
+    <svg width={s} height={s} viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="7" cy="7" r="5.5"/><path d="M7 3.5v3.7l2.3 1.5"/>
+    </svg>
+  ),
+  battery: (s = 14) => (
+    <svg width={s} height={s} viewBox="0 0 18 12" fill="none" stroke="currentColor" strokeWidth="1.3">
+      <rect x="1" y="2" width="13" height="8" rx="1.5"/><rect x="15" y="4.5" width="2" height="3" rx="0.5" fill="currentColor"/>
+      <rect x="2.5" y="3.5" width="6" height="5" rx="0.5" fill="currentColor"/>
+    </svg>
+  ),
+  exit: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 3h5v18h-5"/><path d="M3 12h12M11 8l4 4-4 4"/>
+    </svg>
+  ),
+  check: (s = 14) => (
+    <svg width={s} height={s} viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2.5 7.5l3 3 6-6.5"/>
+    </svg>
+  ),
+  plus: (s = 14) => (
+    <svg width={s} height={s} viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+      <path d="M7 2.5v9M2.5 7h9"/>
+    </svg>
+  ),
+  target: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>
+      <path d="M12 1v3M12 20v3M1 12h3M20 12h3"/>
+    </svg>
+  ),
+  pin: (s = 22) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s7-7.6 7-13a7 7 0 1 0-14 0c0 5.4 7 13 7 13z"/>
+      <circle cx="12" cy="9" r="2.5"/>
+    </svg>
+  ),
+  search: (s = 16) => (
+    <svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+      <circle cx="7" cy="7" r="4.5"/><path d="M13.5 13.5L10.5 10.5"/>
+    </svg>
+  ),
+};
+
+// ─── BT pill ──────────────────────────────────────────────────
+function BtIndicator({ status = "on", label = "BluZ-2A12", compact = false }) {
+  const c = status === "on" ? "var(--bz-bt-on)" :
+            status === "warn" ? "var(--bz-bt-warn)" :
+            "var(--bz-bt-off)";
+  if (compact) {
+    return (
+      <span style={{
+        display: "inline-flex", alignItems: "center", gap: 5,
+        padding: "5px 9px 5px 8px",
+        borderRadius: "var(--bz-r-pill)",
+        background: "var(--bz-surface-2)",
+        border: "1px solid var(--bz-line-soft)",
+        color: c, fontSize: 11, fontWeight: 700,
+      }}>
+        <span style={{ width:6, height:6, borderRadius:3, background:c }}/>
+        {Ico.bt(11)}
+      </span>
+    );
+  }
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 6,
+      padding: "4px 8px 4px 6px",
+      borderRadius: "var(--bz-r-pill)",
+      background: "var(--bz-surface-2)",
+      border: "1px solid var(--bz-line-soft)",
+      color: c, fontSize: 12, fontWeight: 600,
+      letterSpacing: 0.2,
+    }}>
+      <span style={{ display: "inline-flex" }}>{Ico.bt(13)}</span>
+      <span style={{ fontFamily: "var(--bz-font-mono)", color: "var(--bz-text)" }}>{label}</span>
+    </div>
+  );
+}
+
+// ─── Big-number readout (CPS / dose rate) ─────────────────────
+function Readout({ label, value, unit, accent = false, danger = false, large = false }) {
+  const color = danger ? "var(--bz-danger)" : accent ? "var(--bz-accent)" : "var(--bz-text)";
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+      <span style={{
+        fontSize: 10, letterSpacing: 1.2, textTransform: "uppercase",
+        color: "var(--bz-text-muted)", fontWeight: 600,
+      }}>{label}</span>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+        <span className="bz-mono bz-tabular" style={{
+          fontSize: large ? 32 : 22, lineHeight: 1, fontWeight: 600,
+          color, letterSpacing: -0.5,
+        }}>{value}</span>
+        {unit && (
+          <span style={{
+            fontSize: 11, color: "var(--bz-text-dim)",
+            fontFamily: "var(--bz-font-mono)", letterSpacing: 0.4,
+          }}>{unit}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Compact stat for status strips
+function Stat({ icon, value, unit, color = "var(--bz-text)" }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 5,
+      color: "var(--bz-text-dim)", fontSize: 12,
+    }}>
+      {icon && <span style={{ display: "inline-flex", color: "var(--bz-text-muted)" }}>{icon}</span>}
+      <span className="bz-mono bz-tabular" style={{ color, fontSize: 12, fontWeight: 600 }}>
+        {value}{unit && <span style={{ color: "var(--bz-text-muted)", marginLeft: 2, fontWeight: 500 }}>{unit}</span>}
+      </span>
+    </div>
+  );
+}
+
+// ─── Status bar (above-the-fold persistent strip) ─────────────
+function StatusStrip({ orientation = "portrait", overload = false, btStatus = "on", elapsed = "07:19:22" }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 10,
+      padding: orientation === "portrait" ? "8px 14px" : "6px 14px",
+      borderBottom: "1px solid var(--bz-line-soft)",
+      background: overload ? "var(--bz-danger-soft)" : "var(--bz-surface)",
+      transition: "background .2s",
+      minWidth: 0,
+    }}>
+      <BtIndicator status={btStatus} compact/>
+      <Stat
+        icon={Ico.radiation(13)}
+        value="14"
+        unit="cps"
+        color={overload ? "var(--bz-danger)" : "var(--bz-accent)"}
+      />
+      <Stat icon={Ico.clock(12)} value={elapsed} />
+      <div style={{ flex: 1, minWidth: 0 }}/>
+      <Stat icon={Ico.thermometer(12)} value="27" unit="°C"/>
+      <Stat icon={Ico.battery(13)} value="3.58" unit="V"/>
+    </div>
+  );
+}
+
+// ─── Bottom nav (portrait default) ────────────────────────────
+function BottomNav({ active = "spectrum", variant = "bar", onChange }) {
+  const tabs = [
+    { id: "spectrum", label: "Спектр",   icon: Ico.spectrum },
+    { id: "history",  label: "История",  icon: Ico.history },
+    { id: "dose",     label: "Доза",     icon: Ico.dose },
+    { id: "map",      label: "Карта",    icon: Ico.map },
+    { id: "settings", label: "Настр.",   icon: Ico.settings },
+  ];
+
+  if (variant === "fab") {
+    // Compact FAB row: 4 primary
+    const primary = tabs.slice(0, 4);
+    return (
+      <div style={{
+        position: "absolute", left: 16, right: 16, bottom: 18,
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+        zIndex: 20,
+      }}>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 4,
+          padding: 6,
+          borderRadius: 28,
+          background: "color-mix(in srgb, var(--bz-surface) 92%, transparent)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid var(--bz-line)",
+          boxShadow: "0 12px 32px -8px rgba(0,0,0,0.6)",
+        }}>
+          {tabs.map((t) => {
+            const isActive = t.id === active;
+            return (
+              <button
+                key={t.id}
+                onClick={() => onChange && onChange(t.id)}
+                style={{
+                  width: 52, height: 52, borderRadius: 22,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: isActive ? "var(--bz-accent)" : "transparent",
+                  color: isActive ? "var(--bz-on-accent)" : "var(--bz-text-dim)",
+                  border: "none", cursor: "pointer", padding: 0,
+                  transition: "background .15s",
+                }}
+                title={t.label}
+              >
+                {t.icon(22)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      display: "flex",
+      borderTop: "1px solid var(--bz-line-soft)",
+      background: "var(--bz-surface)",
+      paddingBottom: 8,
+      overflow: "hidden",
+    }}>
+      {tabs.map((t) => {
+        const isActive = t.id === active;
+        return (
+          <button
+            key={t.id}
+            onClick={() => onChange && onChange(t.id)}
+            style={{
+              flex: 1, minWidth: 0, height: 64, minHeight: 64,
+              display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center",
+              gap: 4, padding: "8px 2px",
+              background: "transparent", border: "none", cursor: "pointer",
+              color: isActive ? "var(--bz-accent)" : "var(--bz-text-dim)",
+              position: "relative",
+            }}
+          >
+            {isActive && (
+              <span style={{
+                position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+                width: 32, height: 3, borderRadius: 2,
+                background: "var(--bz-accent)",
+              }}/>
+            )}
+            {t.icon(22)}
+            <span style={{
+              fontSize: 11, fontWeight: isActive ? 600 : 500, letterSpacing: 0.2,
+            }}>{t.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Side rail (landscape) ────────────────────────────────────
+function SideRail({ active = "spectrum", side = "right", onChange }) {
+  const tabs = [
+    { id: "spectrum", label: "Спектр",   icon: Ico.spectrum },
+    { id: "history",  label: "История",  icon: Ico.history },
+    { id: "dose",     label: "Доза",     icon: Ico.dose },
+    { id: "map",      label: "Карта",    icon: Ico.map },
+    { id: "settings", label: "Настр.",   icon: Ico.settings },
+  ];
+  return (
+    <div style={{
+      width: 76, height: "100%",
+      display: "flex", flexDirection: "column", alignItems: "center",
+      paddingTop: 8, paddingBottom: 8,
+      background: "var(--bz-surface)",
+      borderLeft:  side === "right" ? "1px solid var(--bz-line-soft)" : "none",
+      borderRight: side === "left"  ? "1px solid var(--bz-line-soft)" : "none",
+      gap: 2,
+    }}>
+      {tabs.map((t) => {
+        const isActive = t.id === active;
+        return (
+          <button key={t.id}
+            onClick={() => onChange && onChange(t.id)}
+            style={{
+              width: 64, minHeight: 58, height: 58,
+              display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", gap: 3,
+              background: isActive ? "var(--bz-accent-soft)" : "transparent",
+              border: "none", cursor: "pointer", padding: 0,
+              borderRadius: 14,
+              color: isActive ? "var(--bz-accent)" : "var(--bz-text-dim)",
+              position: "relative",
+            }}>
+            {t.icon(20)}
+            <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 500 }}>{t.label}</span>
+          </button>
+        );
+      })}
+      <div style={{ flex: 1 }}/>
+      <button style={{
+        width: 64, height: 50, borderRadius: 14, background: "transparent",
+        border: "none", cursor: "pointer", color: "var(--bz-text-muted)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        {Ico.exit(20)}
+      </button>
+    </div>
+  );
+}
+
+// ─── Big circle button (play/stop) ────────────────────────────
+function CircleButton({ icon, label, color = "var(--bz-accent)", onClick, danger = false }) {
+  const bg = danger ? "var(--bz-danger)" : color;
+  return (
+    <button onClick={onClick}
+      style={{
+        width: 64, height: 64, borderRadius: "50%",
+        background: bg,
+        color: danger ? "#fff" : "var(--bz-on-accent)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        border: "none", cursor: "pointer", padding: 0,
+        boxShadow: `0 6px 20px -4px ${danger ? "rgba(255,64,64,0.45)" : "rgba(0,212,170,0.4)"}`,
+      }}
+      title={label}
+    >{icon}</button>
+  );
+}
+
+// ─── Icon button (chart controls) ─────────────────────────────
+function IconButton({ icon, label, active = false, onClick, size = 44 }) {
+  return (
+    <button onClick={onClick}
+      style={{
+        minWidth: size, height: size,
+        padding: label ? "0 14px" : 0,
+        borderRadius: 12,
+        background: active ? "var(--bz-accent-soft)" : "var(--bz-surface-2)",
+        color: active ? "var(--bz-accent)" : "var(--bz-text)",
+        border: `1px solid ${active ? "var(--bz-accent)" : "var(--bz-line)"}`,
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+        cursor: "pointer",
+        fontFamily: "var(--bz-font-ui)", fontSize: 13, fontWeight: 600,
+      }}
+      title={label}
+    >
+      {icon}
+      {label && <span>{label}</span>}
+    </button>
+  );
+}
+
+// ─── Section header / cards for settings ─────────────────────
+function Card({ title, action, children, style }) {
+  return (
+    <div style={{
+      background: "var(--bz-surface)",
+      border: "1px solid var(--bz-line-soft)",
+      borderRadius: "var(--bz-r)",
+      ...style,
+    }}>
+      {(title || action) && (
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "14px 16px 10px",
+        }}>
+          <span style={{
+            fontSize: 12, letterSpacing: 1.4, textTransform: "uppercase",
+            color: "var(--bz-text-muted)", fontWeight: 600,
+          }}>{title}</span>
+          {action}
+        </div>
+      )}
+      <div>{children}</div>
+    </div>
+  );
+}
+
+function Row({ label, value, sub, action, divider = true, onClick }) {
+  return (
+    <div onClick={onClick}
+      style={{
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "13px 16px", minHeight: 52,
+        borderTop: divider ? "1px solid var(--bz-divider)" : "none",
+        cursor: onClick ? "pointer" : "default",
+      }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, color: "var(--bz-text)", fontWeight: 500 }}>{label}</div>
+        {sub && <div style={{ fontSize: 12, color: "var(--bz-text-muted)", marginTop: 2 }}>{sub}</div>}
+      </div>
+      {value && (
+        <div className="bz-mono" style={{ fontSize: 14, color: "var(--bz-text-dim)" }}>{value}</div>
+      )}
+      {action}
+    </div>
+  );
+}
+
+function Toggle({ on = false, onClick }) {
+  return (
+    <button onClick={onClick} style={{
+      width: 44, height: 26, borderRadius: 13,
+      background: on ? "var(--bz-accent)" : "var(--bz-surface-3)",
+      border: "1px solid " + (on ? "var(--bz-accent)" : "var(--bz-line)"),
+      position: "relative", cursor: "pointer", padding: 0,
+      transition: "background .15s",
+    }}>
+      <span style={{
+        position: "absolute", top: 2, left: on ? 20 : 2,
+        width: 20, height: 20, borderRadius: "50%",
+        background: on ? "var(--bz-on-accent)" : "var(--bz-text-dim)",
+        transition: "left .15s",
+      }}/>
+    </button>
+  );
+}
+
+function Segmented({ options, value, onChange, fill = false }) {
+  return (
+    <div style={{
+      display: "inline-flex", padding: 3,
+      background: "var(--bz-surface-3)",
+      borderRadius: 10, border: "1px solid var(--bz-line)",
+      width: fill ? "100%" : undefined,
+    }}>
+      {options.map((o) => {
+        const isActive = o.value === value;
+        return (
+          <button key={o.value}
+            onClick={() => onChange && onChange(o.value)}
+            style={{
+              flex: fill ? 1 : undefined,
+              padding: "7px 14px", borderRadius: 7,
+              background: isActive ? "var(--bz-accent)" : "transparent",
+              color: isActive ? "var(--bz-on-accent)" : "var(--bz-text-dim)",
+              border: "none", cursor: "pointer",
+              fontSize: 12, fontWeight: 600, letterSpacing: 0.3,
+              fontFamily: "var(--bz-font-mono)",
+            }}>{o.label}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+Object.assign(window, {
+  Ico, BtIndicator, Readout, Stat, StatusStrip,
+  BottomNav, SideRail, CircleButton, IconButton, Card, Row, Toggle, Segmented,
+});
+
+
+// ═══ bluz-screens.jsx ═══
+// BluZ screens — full layouts for each artboard.
+// All assume they're rendered inside a <PhoneFrame> which sets the
+// --bz-inset-* vars on the parent so safe-areas adapt to orientation/notch.
+
+// ════════════════════════════════════════════════════════════════
+// 1) SPECTRUM — PORTRAIT
+// ════════════════════════════════════════════════════════════════
+function _Legacy_ScreenSpectrumPortrait({ overload = false, navVariant = "bar", spectrumColor = "#00d4aa", chartStyle = "line", log = false, theme = "dark" }) {
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+      paddingBottom: navVariant === "fab" ? 0 : 0,
+    }}>
+      {/* App title row — overload state appears INLINE so layout doesn't jump */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "12px 18px 8px",
+      }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: 11, letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 700,
+            color: overload ? "var(--bz-danger)" : "var(--bz-text-muted)",
+            display: "flex", alignItems: "center", gap: 6,
+            animation: overload ? "bz-pulse 1.1s ease-in-out infinite" : undefined,
+          }}>
+            {overload && <span style={{ display:"inline-flex" }}>{Ico.warn(13)}</span>}
+            {overload ? "Перегрузка детектора · CPS > 25 000" : "Канал · 2048 · 0 – 3 МэВ"}
+          </div>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            fontSize: 22, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.4,
+          }}>
+            <span>Гамма-спектр</span>
+            {overload && (
+              <span style={{
+                fontSize: 11, fontFamily: "var(--bz-font-mono)", fontWeight: 700, letterSpacing: 0.6,
+                padding: "2px 7px", borderRadius: 5,
+                background: "var(--bz-danger)", color: "#fff",
+              }}>L3</span>
+            )}
+          </div>
+        </div>
+        <IconButton icon={Ico.save(18)} size={40}/>
+      </div>
+
+      {/* Status strip */}
+      <StatusStrip orientation="portrait" overload={overload} btStatus="on"/>
+
+      {/* Hero readouts */}
+      <div style={{
+        padding: "14px 18px 10px",
+        display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16,
+      }}>
+        <Readout label="МОЩНОСТЬ ДОЗЫ" value="12.44" unit="мкР/ч" accent={!overload} danger={overload} large/>
+        <Readout label="СРЕДНЯЯ" value="13.99" unit="мкР/ч" large/>
+      </div>
+
+      {/* Chart */}
+      <div style={{
+        flex: 1, margin: "4px 14px 12px",
+        background: "var(--bz-surface)",
+        border: "1px solid var(--bz-line-soft)",
+        borderRadius: "var(--bz-r)",
+        padding: "12px 12px 8px",
+        display: "flex", flexDirection: "column", minHeight: 0,
+      }}>
+        {/* y-axis labels above */}
+        <div style={{
+          display: "flex", justifyContent: "space-between",
+          fontSize: 10, color: "var(--bz-text-muted)",
+          fontFamily: "var(--bz-font-mono)", letterSpacing: 0.5,
+          marginBottom: 6,
+        }}>
+          <span>{log ? "LOG" : "LIN"} · counts</span>
+          <span>Total 10 623 119  ·  0.09%</span>
+        </div>
+        <div style={{ flex: 1, position: "relative", display: "flex" }}>
+          <SpectrumChart theme={theme} width={344}
+            height={overload ? 320 : 360}
+            log={log}
+            style={chartStyle}
+            color={overload ? "var(--bz-danger)" : spectrumColor}
+            overload={overload}
+            channels={2048}
+            showPeaks={!overload}
+          />
+        </div>
+        {/* Chart toolbar */}
+        <div style={{
+          display: "flex", gap: 8, marginTop: 8, paddingTop: 10,
+          borderTop: "1px solid var(--bz-divider)",
+        }}>
+          <IconButton icon={Ico.scale(16)} label={log ? "Log" : "Lin"} size={40}/>
+          <IconButton icon={Ico.zoom(16)} label="1×" size={40}/>
+          <div style={{ flex: 1 }}/>
+          <IconButton icon={Ico.clear(16)} label="Clear" size={40}/>
+        </div>
+      </div>
+
+      {/* Big start/stop affordance */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "0 18px 14px", gap: 16,
+      }}>
+        <div style={{ flex: 1, minWidth: 0, fontSize: 11, color: "var(--bz-text-muted)", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 600 }}>
+          <span style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
+            <span style={{ width:7, height:7, borderRadius:4, background:"var(--bz-danger)", animation:"bz-pulse 1.2s ease-in-out infinite" }}/>
+            Идёт измерение
+          </span>
+          <div className="bz-mono" style={{ fontSize: 18, color: "var(--bz-text)", marginTop: 4, letterSpacing: -0.3 }}>
+            07:19:22<span style={{ color: "var(--bz-text-muted)" }}>:48</span>
+          </div>
+        </div>
+        <CircleButton icon={Ico.stop(22)} label="Стоп" danger/>
+      </div>
+
+      {/* Nav */}
+      {navVariant === "bar" && <BottomNav active="spectrum"/>}
+      {navVariant === "fab" && <BottomNav active="spectrum" variant="fab"/>}
+    </div>
+  );
+}
+
+// Red overload banner (inline at top of content, below OS status area)
+function OverloadBanner() {
+  return (
+    <div className="bz-overload-banner" style={{
+      flexShrink: 0,
+      display: "flex", alignItems: "center", gap: 10,
+      padding: "10px 16px",
+      background: "linear-gradient(90deg, var(--bz-danger) 0%, var(--bz-danger-2) 100%)",
+      color: "#fff",
+      animation: "bz-pulse-bg 1s ease-in-out infinite",
+      borderBottom: "1px solid rgba(255,255,255,0.15)",
+    }}>
+      <span style={{
+        display: "inline-flex", padding: 2,
+        animation: "bz-pulse 0.45s ease-in-out infinite",
+      }}>{Ico.warn(18)}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: 0.3, textTransform: "uppercase" }}>
+        Перегрузка детектора
+      </span>
+      <span style={{ flex: 1, fontSize: 12, opacity: 0.92, fontWeight: 500 }}>
+        CPS &gt; 25 000 · уменьшите дозу
+      </span>
+      <span className="bz-mono" style={{
+        fontSize: 13, fontWeight: 700, padding: "3px 8px",
+        background: "rgba(0,0,0,0.25)", borderRadius: 4,
+      }}>L3</span>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// 2) SPECTRUM — LANDSCAPE
+// ════════════════════════════════════════════════════════════════
+function ScreenSpectrumLandscape({ overload = false, side = "right", spectrumColor = "#00d4aa", chartStyle = "line", log = false, theme = "dark" }) {
+  // safe-left/right are already in the screen-level paddings via the parent;
+  // here we lay out: rail | content | (rail). side='right' = rail on the right.
+  const rail = <SideRail side={side} active="spectrum"/>;
+
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "row",
+      paddingLeft: "var(--bz-inset-left)", paddingRight: "var(--bz-inset-right)",
+    }}>
+      {side === "left" && rail}
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <StatusStrip orientation="landscape" overload={overload} btStatus="on"/>
+
+        {/* Hero readouts row — overload chip inlined; layout stays stable */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 18,
+          padding: "8px 16px 6px",
+          borderBottom: "1px solid var(--bz-line-soft)",
+        }}>
+          <Readout label="ДОЗА" value="12.44" unit="мкР/ч" accent={!overload} danger={overload} large/>
+          <div style={{ width: 1, height: 32, background: "var(--bz-line)" }}/>
+          <Readout label="СРЕДНЯЯ" value="13.99" unit="мкР/ч" large/>
+          {overload && (
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "5px 10px 5px 8px", borderRadius: 6,
+              background: "var(--bz-danger)", color: "#fff",
+              fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
+              animation: "bz-pulse 1.1s ease-in-out infinite",
+            }}>
+              {Ico.warn(14)} Перегрузка · L3
+            </span>
+          )}
+          <div style={{ flex: 1 }}/>
+          <div style={{ display: "flex", gap: 6 }}>
+            <IconButton icon={Ico.scale(16)} label={log ? "Log" : "Lin"} size={38}/>
+            <IconButton icon={Ico.zoom(16)} label="1×" size={38}/>
+            <IconButton icon={Ico.save(16)} size={38}/>
+            <CircleButton icon={Ico.stop(18)} danger/>
+          </div>
+        </div>
+
+        {/* Chart — fills remaining */}
+        <div style={{ flex: 1, padding: "12px 18px 12px", minHeight: 0, display: "flex" }}>
+          <div style={{
+            flex: 1,
+            background: "var(--bz-surface)",
+            border: "1px solid var(--bz-line-soft)",
+            borderRadius: "var(--bz-r)",
+            padding: "10px 12px",
+            display: "flex", flexDirection: "column",
+          }}>
+            <div style={{
+              display: "flex", justifyContent: "space-between",
+              fontSize: 10, color: "var(--bz-text-muted)",
+              fontFamily: "var(--bz-font-mono)", letterSpacing: 0.5,
+            }}>
+              <span>{log ? "LOG" : "LIN"} · counts</span>
+              <span>2048 каналов · Cs-137 пик @ 662 keV</span>
+            </div>
+            <div style={{ flex: 1, display: "flex" }}>
+              <SpectrumChart theme={theme} width={720}
+                height={260}
+                log={log}
+                style={chartStyle}
+                color={overload ? "var(--bz-danger)" : spectrumColor}
+                overload={overload}
+                channels={2048}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {side === "right" && rail}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// 3) SETTINGS — PORTRAIT
+// ════════════════════════════════════════════════════════════════
+function _Legacy_ScreenSettings({ navVariant = "bar" }) {
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+    }}>
+      <div style={{ padding: "12px 18px 4px" }}>
+        <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+          BluZ · MAC 00:08:E1:2A:12:34
+        </div>
+        <div style={{ fontSize: 22, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.4 }}>
+          Настройки
+        </div>
+      </div>
+      <StatusStrip orientation="portrait"/>
+
+      <div style={{
+        flex: 1, overflow: "auto",
+        padding: "14px 14px 14px",
+        display: "flex", flexDirection: "column", gap: 12,
+      }}>
+
+        {/* Search */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "11px 14px",
+          background: "var(--bz-surface-2)",
+          border: "1px solid var(--bz-line-soft)",
+          borderRadius: 10,
+          color: "var(--bz-text-muted)",
+        }}>
+          {Ico.search(15)}
+          <span style={{ fontSize: 13 }}>Поиск по настройкам</span>
+        </div>
+
+        {/* Оповещения */}
+        <Card title="Оповещения · уровни тревоги" action={
+          <button style={{
+            display: "inline-flex", alignItems: "center", gap: 4,
+            padding: "4px 8px", borderRadius: 8,
+            background: "transparent", border: "1px solid var(--bz-line)",
+            color: "var(--bz-text-dim)", cursor: "pointer",
+            fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
+          }}>{Ico.plus(12)} <span>Уровень</span></button>
+        }>
+          <AlarmLevelRow level={1} color="var(--bz-warn)" name="Жёлтый" hint="информационный"  value={40}    s v/>
+          <AlarmLevelRow level={2} color="#ff6b35"        name="Оранжевый" hint="повышенный фон" value={200}   s v/>
+          <AlarmLevelRow level={3} color="var(--bz-danger)" name="Красный" hint="опасно"        value={1000}  s v/>
+        </Card>
+
+        {/* Оборудование */}
+        <Card title="Оборудование">
+          <Row label="Звуковой клик" sub="на каждый импульс детектора"
+            action={<Segmented options={[{label:"–",value:"none"},{label:"1/1",value:"1"},{label:"1/10",value:"10"}]} value="none"/>}/>
+          <Row label="LED-индикатор" sub="вспышка при импульсе"
+            action={<Segmented options={[{label:"–",value:"none"},{label:"1/1",value:"1"},{label:"1/10",value:"10"}]} value="1"/>}/>
+          <Row label="Вибрация" sub="при тревоге"
+            action={<Toggle on/>}/>
+          <Row label="Автозапуск спектрометра" sub="при подключении прибора"
+            action={<Toggle on/>}/>
+          <Row label="Каналов спектра" sub="разрешение АЦП"
+            action={<Segmented options={[{label:"1024",value:"1"},{label:"2048",value:"2"},{label:"4096",value:"4"}]} value="2"/>}/>
+        </Card>
+
+        {/* Калибровка */}
+        <Card title="Калибровка" action={
+          <button style={{
+            fontSize: 12, color: "var(--bz-accent)", background: "none",
+            border: "none", cursor: "pointer", fontWeight: 600, letterSpacing: 0.3,
+          }}>Открыть →</button>
+        }>
+          <Row label="Полиномиальная Ax² + Bx + C"
+            sub="A: 0.00012  ·  B: 1.0042  ·  C: -0.18"/>
+          <Row label="Высокое напряжение" value="780 В"/>
+          <Row label="Компаратор" value="-70 dBm"/>
+        </Card>
+
+        {/* Интерфейс */}
+        <Card title="Интерфейс">
+          <Row label="Стиль спектра"
+            action={<Segmented options={[{label:"Линия",value:"line"},{label:"Заливка",value:"fill"},{label:"Бар",value:"gisto"}]} value="line"/>}/>
+          <Row label="Цвет спектра"
+            action={<ColorPalette/>}/>
+          <Row label="Ночной режим" sub="инверсия контрастности под слабый свет"
+            action={<Toggle on/>}/>
+          <Row label="Сглаживание SMA" value="3"/>
+        </Card>
+
+        <Card title="Действия">
+          <Row label="Журнал событий" sub="турн-он, тревоги, write to flash"
+            onClick={()=>{}}
+            action={<span style={{ color: "var(--bz-text-muted)" }}>{Ico.chevron("right")}</span>}/>
+          <Row label="Сохранить профиль настроек"
+            action={<span style={{ color:"var(--bz-accent)" }}>{Ico.chevron("right")}</span>} onClick={()=>{}}/>
+          <Row label="Сбросить устройство" onClick={()=>{}}
+            action={<span style={{ color:"var(--bz-text-muted)" }}>{Ico.chevron("right")}</span>}/>
+        </Card>
+
+      </div>
+
+      {navVariant === "bar" && <BottomNav active="settings"/>}
+      {navVariant === "fab" && <BottomNav active="settings" variant="fab"/>}
+    </div>
+  );
+}
+
+// Editable alarm level — stepper input + S/V indicators
+function AlarmLevelRow({ level, color, name, hint, value, s, v }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 12,
+      padding: "12px 16px", minHeight: 60,
+      borderTop: "1px solid var(--bz-divider)",
+    }}>
+      <span style={{
+        flexShrink: 0,
+        width: 32, height: 32, borderRadius: 10,
+        background: "color-mix(in srgb, " + color + " 16%, transparent)",
+        color: color,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontWeight: 700, fontSize: 13, fontFamily: "var(--bz-font-mono)",
+      }}>L{level}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, color: "var(--bz-text)", fontWeight: 500 }}>{name}</div>
+        <div style={{ fontSize: 11, color: "var(--bz-text-muted)", marginTop: 2 }}>{hint}</div>
+      </div>
+      {/* Stepper */}
+      <div style={{
+        display: "inline-flex", alignItems: "stretch",
+        borderRadius: 9, border: "1px solid var(--bz-line)",
+        background: "var(--bz-surface-2)",
+        overflow: "hidden",
+      }}>
+        <button style={{
+          width: 30, padding: 0, background: "transparent", border: "none",
+          color: "var(--bz-text-dim)", cursor: "pointer", fontSize: 16, fontWeight: 600,
+          borderRight: "1px solid var(--bz-line)",
+        }}>−</button>
+        <span className="bz-mono bz-tabular" style={{
+          minWidth: 64, padding: "0 10px",
+          display: "inline-flex", alignItems: "center", justifyContent: "flex-end",
+          fontSize: 14, fontWeight: 600, color: "var(--bz-text)",
+        }}>{value.toLocaleString("ru-RU")}<span style={{
+          marginLeft: 4, fontSize: 10, color: "var(--bz-text-muted)", letterSpacing: 0.3,
+        }}>мкР/ч</span></span>
+        <button style={{
+          width: 30, padding: 0, background: "transparent", border: "none",
+          color: "var(--bz-text-dim)", cursor: "pointer", fontSize: 16, fontWeight: 600,
+          borderLeft: "1px solid var(--bz-line)",
+        }}>+</button>
+      </div>
+      <span style={{ display: "inline-flex", flexDirection: "column", gap: 4 }}>
+        <AlarmFlag on={s} label="ЗВУК"/>
+        <AlarmFlag on={v} label="ВИБРО"/>
+      </span>
+    </div>
+  );
+}
+
+function AlarmFlag({ on, label }) {
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 3,
+      padding: "2px 6px", borderRadius: 5,
+      background: on ? "var(--bz-accent-soft)" : "var(--bz-surface-3)",
+      color: on ? "var(--bz-accent)" : "var(--bz-text-muted)",
+      border: "1px solid " + (on ? "color-mix(in srgb, var(--bz-accent) 30%, transparent)" : "var(--bz-line)"),
+      fontSize: 9, fontWeight: 700, letterSpacing: 0.4,
+    }}>{label}</span>
+  );
+}
+
+function AlarmFlags({ s, v }) {
+  const dot = (on, label) => (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 4,
+      padding: "3px 8px", borderRadius: 6,
+      background: on ? "var(--bz-accent-soft)" : "var(--bz-surface-3)",
+      border: `1px solid ${on ? "var(--bz-accent)" : "var(--bz-line)"}`,
+      color: on ? "var(--bz-accent)" : "var(--bz-text-muted)",
+      fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+    }}>{label}</span>
+  );
+  return (
+    <span style={{ display: "inline-flex", gap: 4 }}>
+      {dot(s, "ЗВУК")}
+      {dot(v, "ВИБРО")}
+    </span>
+  );
+}
+
+
+function ColorPalette() {
+  const colors = ["#00d4aa", "#4ea3ff", "#facc15", "#ff6b35", "#a3e635"];
+  return (
+    <span style={{ display: "inline-flex", gap: 6 }}>
+      {colors.map((c, i) => (
+        <span key={c} style={{
+          width: 22, height: 22, borderRadius: "50%",
+          background: c,
+          boxShadow: i === 0 ? "0 0 0 2px var(--bz-bg), 0 0 0 4px var(--bz-accent)" : undefined,
+        }}/>
+      ))}
+    </span>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// 4) OVERLOAD STATE — PORTRAIT (already shown via overload prop above,
+//    but this is a dedicated artboard showing the full state)
+// ════════════════════════════════════════════════════════════════
+function ScreenOverload({ navVariant = "bar" }) {
+  return (
+    <ScreenSpectrumPortrait overload navVariant={navVariant} spectrumColor="var(--bz-danger)"/>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// 5) HISTORY — accumulated spectrum
+// ════════════════════════════════════════════════════════════════
+function _Legacy_ScreenHistory({ navVariant = "bar", theme = "dark" }) {
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+    }}>
+      <div style={{ padding: "12px 18px 8px" }}>
+        <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+          История · накопленный спектр
+        </div>
+        <div style={{ fontSize: 22, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.4 }}>
+          7ч 19м 22с
+        </div>
+      </div>
+      <StatusStrip orientation="portrait"/>
+
+      <div style={{
+        padding: "14px 18px 8px",
+        display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16,
+      }}>
+        <Readout label="ИНТЕГРАЛ" value="10 623 119" unit="имп" accent large/>
+        <Readout label="СР. CPS" value="15.75" unit="имп/с" large/>
+      </div>
+
+      <div style={{
+        flex: 1, margin: "4px 14px 12px",
+        background: "var(--bz-surface)",
+        border: "1px solid var(--bz-line-soft)",
+        borderRadius: "var(--bz-r)",
+        padding: "12px 12px 8px",
+        display: "flex", flexDirection: "column",
+      }}>
+        <div style={{
+          display: "flex", justifyContent: "space-between",
+          fontSize: 10, color: "var(--bz-text-muted)",
+          fontFamily: "var(--bz-font-mono)", letterSpacing: 0.5,
+          marginBottom: 6,
+        }}>
+          <span>LOG · cumulative</span>
+          <span>2048 ch · с 23-05 15:31</span>
+        </div>
+        <div style={{ flex: 1, display: "flex" }}>
+          <SpectrumChart theme={theme} width={344}
+            height={360}
+            log
+            style="fill"
+            color="#4ea3ff"
+            secondary="#00d4aa"
+            channels={2048}
+          />
+        </div>
+        {/* Legend */}
+        <div style={{
+          display: "flex", gap: 18, marginTop: 8, paddingTop: 10,
+          borderTop: "1px solid var(--bz-divider)",
+          fontSize: 11,
+        }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--bz-text-dim)" }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: "#4ea3ff" }}/>
+            Накопленный
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--bz-text-dim)" }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: "#00d4aa", opacity: 0.6 }}/>
+            Фон
+          </span>
+          <div style={{ flex: 1 }}/>
+          <IconButton icon={Ico.save(14)} size={32}/>
+        </div>
+      </div>
+
+      {navVariant === "bar" && <BottomNav active="history"/>}
+      {navVariant === "fab" && <BottomNav active="history" variant="fab"/>}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// 6) DOSE — CPS oscilloscope
+// ════════════════════════════════════════════════════════════════
+function _Legacy_ScreenDose({ navVariant = "bar", theme = "dark" }) {
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+    }}>
+      <div style={{ padding: "12px 18px 8px" }}>
+        <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+          Дозиметр · CPS мониторинг
+        </div>
+        <div style={{ fontSize: 22, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.4 }}>
+          В норме
+        </div>
+      </div>
+      <StatusStrip orientation="portrait"/>
+
+      {/* Hero gauge — big number with level indicator */}
+      <div style={{
+        margin: "14px 16px 8px",
+        padding: "18px 18px 16px",
+        background: "var(--bz-surface)",
+        border: "1px solid var(--bz-line-soft)",
+        borderRadius: "var(--bz-r)",
+      }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
+          <div>
+            <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+              Текущая мощность дозы
+            </div>
+            <div style={{ marginTop: 6, display: "flex", alignItems: "baseline", gap: 6 }}>
+              <span className="bz-mono bz-tabular" style={{
+                fontSize: 56, lineHeight: 1, fontWeight: 600,
+                color: "var(--bz-accent)", letterSpacing: -1.5,
+              }}>12.44</span>
+              <span style={{ fontSize: 14, color: "var(--bz-text-dim)", fontFamily: "var(--bz-font-mono)" }}>мкР/ч</span>
+            </div>
+            <div style={{ fontSize: 12, color: "var(--bz-text-muted)", marginTop: 6, fontFamily: "var(--bz-font-mono)" }}>
+              Среднее за 60с: <span style={{ color: "var(--bz-text-dim)" }}>13.99</span>
+            </div>
+          </div>
+          <div style={{
+            display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6,
+          }}>
+            <span style={{
+              padding: "4px 10px", borderRadius: 6,
+              background: "rgba(0,212,170,0.14)", color: "var(--bz-accent)",
+              fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
+            }}>NORMAL</span>
+            <span style={{ fontSize: 11, color: "var(--bz-text-muted)", fontFamily: "var(--bz-font-mono)" }}>
+              31% от L1
+            </span>
+          </div>
+        </div>
+
+        {/* Levels gauge */}
+        <LevelGauge value={12.44} l1={40} l2={200} l3={1000}/>
+      </div>
+
+      {/* CPS oscilloscope */}
+      <div style={{
+        flex: 1, margin: "0 16px 12px",
+        background: "var(--bz-surface)",
+        border: "1px solid var(--bz-line-soft)",
+        borderRadius: "var(--bz-r)",
+        padding: "14px 14px 10px",
+        display: "flex", flexDirection: "column", minHeight: 0,
+      }}>
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          fontSize: 10, color: "var(--bz-text-muted)",
+          fontFamily: "var(--bz-font-mono)", letterSpacing: 0.5,
+          marginBottom: 6,
+        }}>
+          <span>CPS · последние 60 секунд</span>
+          <span style={{ display: "flex", gap: 10 }}>
+            <span style={{ color: "var(--bz-accent)" }}>━━ мгновенно</span>
+            <span style={{ color: "var(--bz-warn)" }}>━━ среднее</span>
+          </span>
+        </div>
+        <div style={{ flex: 1, display: "flex" }}>
+          <CpsOscilloscope theme={theme} width={344} height={210} color="var(--bz-accent)" smoothColor="var(--bz-warn)"/>
+        </div>
+      </div>
+
+      {navVariant === "bar" && <BottomNav active="dose"/>}
+      {navVariant === "fab" && <BottomNav active="dose" variant="fab"/>}
+    </div>
+  );
+}
+
+function LevelGauge({ value, l1, l2, l3 }) {
+  // log-scaled bar with 3 thresholds
+  const max = l3 * 1.1;
+  const lg = (v) => Math.log10(v + 1) / Math.log10(max + 1);
+  const pct = (v) => Math.min(1, Math.max(0, lg(v))) * 100;
+  return (
+    <div>
+      <div style={{
+        height: 10, borderRadius: 5, overflow: "hidden",
+        background: "var(--bz-surface-3)", position: "relative",
+        border: "1px solid var(--bz-line)",
+      }}>
+        {/* segment colors */}
+        <div style={{ position: "absolute", left: 0,         width: `${pct(l1)}%`, top: 0, bottom: 0, background: "var(--bz-accent)", opacity: 0.4 }}/>
+        <div style={{ position: "absolute", left: `${pct(l1)}%`, width: `${pct(l2) - pct(l1)}%`, top: 0, bottom: 0, background: "var(--bz-warn)", opacity: 0.4 }}/>
+        <div style={{ position: "absolute", left: `${pct(l2)}%`, width: `${pct(l3) - pct(l2)}%`, top: 0, bottom: 0, background: "#ff6b35", opacity: 0.4 }}/>
+        <div style={{ position: "absolute", left: `${pct(l3)}%`, right: 0, top: 0, bottom: 0, background: "var(--bz-danger)", opacity: 0.4 }}/>
+
+        {/* current */}
+        <div style={{
+          position: "absolute", left: `calc(${pct(value)}% - 1px)`, top: -3, bottom: -3,
+          width: 2, background: "var(--bz-text)",
+          boxShadow: "0 0 0 1px var(--bz-bg)",
+        }}/>
+      </div>
+      <div style={{
+        display: "flex", justifyContent: "space-between",
+        marginTop: 6, fontSize: 10, color: "var(--bz-text-muted)",
+        fontFamily: "var(--bz-font-mono)", letterSpacing: 0.4,
+      }}>
+        <span>0</span>
+        <span style={{ color: "var(--bz-accent)" }}>L1 · 40</span>
+        <span style={{ color: "var(--bz-warn)" }}>L2 · 200</span>
+        <span style={{ color: "#ff6b35" }}>L3 · 1k</span>
+        <span style={{ color: "var(--bz-danger)" }}>∞</span>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// 7) MAP — GPS radiation track
+// ════════════════════════════════════════════════════════════════
+function _Legacy_ScreenMap({ navVariant = "bar" }) {
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+      position: "relative",
+    }}>
+      {/* Map "tiles" — placeholder grid (theme-aware via currentColor) */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "var(--bz-surface-2)",
+        color: "var(--bz-text-muted)",
+      }}>
+        <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, color: "currentColor" }}>
+          <defs>
+            <pattern id="bz-mapgrid" width="32" height="32" patternUnits="userSpaceOnUse">
+              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="1" strokeOpacity="0.18"/>
+            </pattern>
+            <pattern id="bz-mapdots" width="80" height="80" patternUnits="userSpaceOnUse">
+              <circle cx="40" cy="40" r="0.8" fill="currentColor" fillOpacity="0.25"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#bz-mapgrid)"/>
+          <rect width="100%" height="100%" fill="url(#bz-mapdots)"/>
+
+          {/* roads */}
+          <path d="M -10 600 Q 200 400 412 380" stroke="currentColor" strokeOpacity="0.32" strokeWidth="14" fill="none"/>
+          <path d="M -10 600 Q 200 400 412 380" stroke="currentColor" strokeOpacity="0.18" strokeWidth="2" fill="none"/>
+          <path d="M 130 -10 L 200 900" stroke="currentColor" strokeOpacity="0.28" strokeWidth="10" fill="none"/>
+          <path d="M 350 -10 Q 320 300 200 540 L 80 800" stroke="currentColor" strokeOpacity="0.22" strokeWidth="8" fill="none"/>
+
+          {/* GPS track */}
+          <path
+            d="M 60 720 L 110 670 L 140 600 L 170 540 L 210 470 L 220 410 L 250 350 L 280 290 L 330 240 L 360 180"
+            stroke="var(--bz-accent)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"
+            strokeOpacity="0.95"
+          />
+          <path
+            d="M 60 720 L 110 670 L 140 600 L 170 540 L 210 470 L 220 410 L 250 350 L 280 290 L 330 240 L 360 180"
+            stroke="var(--bz-accent)" strokeWidth="10" fill="none" strokeLinecap="round" strokeLinejoin="round"
+            strokeOpacity="0.18"
+          />
+
+          {/* radiation markers — color by level */}
+          {[
+            [60, 720, "#00d4aa", "9"],
+            [140, 600, "#00d4aa", "12"],
+            [210, 470, "#facc15", "48"],
+            [250, 350, "#ff6b35", "210"],
+            [280, 290, "#ff6b35", "180"],
+            [330, 240, "#facc15", "75"],
+            [360, 180, "#00d4aa", "15"],
+          ].map(([x, y, c, v]) => (
+            <g key={x}>
+              <circle cx={x} cy={y} r="12" fill={c} fillOpacity="0.18"/>
+              <circle cx={x} cy={y} r="6" fill={c} stroke="var(--bz-bg)" strokeWidth="1.5"/>
+            </g>
+          ))}
+
+          {/* current location */}
+          <g>
+            <circle cx="360" cy="180" r="20" fill="var(--bz-info)" fillOpacity="0.12"/>
+            <circle cx="360" cy="180" r="10" fill="var(--bz-info)" fillOpacity="0.4"/>
+            <circle cx="360" cy="180" r="5" fill="var(--bz-info)" stroke="var(--bz-bg)" strokeWidth="2"/>
+          </g>
+        </svg>
+      </div>
+
+      {/* Header — overlay */}
+      <div style={{
+        position: "relative", zIndex: 2,
+        padding: "12px 16px 10px",
+        background: "linear-gradient(180deg, color-mix(in srgb, var(--bz-bg) 92%, transparent) 0%, color-mix(in srgb, var(--bz-bg) 60%, transparent) 75%, transparent 100%)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+              Карта · GPS трек
+            </div>
+            <div style={{ fontSize: 18, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.3 }}>
+              Track 23-05-2026
+            </div>
+          </div>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "5px 9px 5px 8px", borderRadius: "var(--bz-r-pill)",
+            background: "rgba(255,64,64,0.16)", color: "var(--bz-danger)",
+            fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
+          }}>
+            <span style={{
+              width: 7, height: 7, borderRadius: 4, background: "var(--bz-danger)",
+              animation: "bz-pulse 1s ease-in-out infinite",
+            }}/>
+            REC
+          </span>
+        </div>
+      </div>
+
+      {/* Bottom card — track stats */}
+      <div style={{ flex: 1 }}/>
+      <div style={{
+        position: "relative", zIndex: 2,
+        margin: "0 14px 12px",
+        padding: "12px 14px",
+        background: "color-mix(in srgb, var(--bz-surface) 92%, transparent)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid var(--bz-line)",
+        borderRadius: "var(--bz-r)",
+      }}>
+        <div style={{
+          display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10,
+        }}>
+          <Readout label="ДОЗА" value="12.44" unit="мкР/ч" accent/>
+          <Readout label="MAX" value="210" unit="мкР/ч"/>
+          <Readout label="ПУТЬ" value="1.84" unit="км"/>
+        </div>
+      </div>
+
+      {/* Floating controls — right */}
+      <div style={{
+        position: "absolute", right: 14, bottom: 96, zIndex: 3,
+        display: "flex", flexDirection: "column", gap: 10,
+      }}>
+        <button style={{
+          width: 48, height: 48, borderRadius: 14,
+          background: "color-mix(in srgb, var(--bz-surface) 92%, transparent)",
+          backdropFilter: "blur(8px)",
+          border: "1px solid var(--bz-line)",
+          color: "var(--bz-info)", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>{Ico.target(22)}</button>
+        <button style={{
+          width: 48, height: 48, borderRadius: 14,
+          background: "color-mix(in srgb, var(--bz-surface) 92%, transparent)",
+          backdropFilter: "blur(8px)",
+          border: "1px solid var(--bz-line)",
+          color: "var(--bz-accent)", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>{Ico.pin(22)}</button>
+      </div>
+
+      {navVariant === "bar" && <BottomNav active="map"/>}
+      {navVariant === "fab" && <BottomNav active="map" variant="fab"/>}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// 8) CALIBRATION — settings sub-page
+// ════════════════════════════════════════════════════════════════
+function ScreenCalibration({ navVariant = "bar" }) {
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+    }}>
+      {/* Top: back + title */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10,
+        padding: "12px 16px 8px",
+      }}>
+        <button style={{
+          width: 40, height: 40, borderRadius: 12,
+          background: "var(--bz-surface-2)", border: "1px solid var(--bz-line)",
+          color: "var(--bz-text)", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>{Ico.chevron("left", 16)}</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+            Настройки  /  Калибровка
+          </div>
+          <div style={{ fontSize: 20, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.3 }}>
+            Энергетическая шкала
+          </div>
+        </div>
+      </div>
+      <StatusStrip orientation="portrait"/>
+
+      <div style={{
+        flex: 1, overflow: "auto",
+        padding: "14px 14px 14px",
+        display: "flex", flexDirection: "column", gap: 12,
+      }}>
+
+        {/* Polynomial preview */}
+        <div style={{
+          padding: "16px 16px 14px",
+          background: "var(--bz-surface)",
+          border: "1px solid var(--bz-line-soft)",
+          borderRadius: "var(--bz-r)",
+        }}>
+          <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600, marginBottom: 10 }}>
+            Полином Ax² + Bx + C
+          </div>
+          <div className="bz-mono" style={{
+            fontSize: 16, color: "var(--bz-text)", letterSpacing: -0.2,
+            display: "flex", alignItems: "baseline", gap: 4, flexWrap: "wrap",
+          }}>
+            E (keV) =
+            <span style={{ color: "var(--bz-accent)" }}>0.000 12</span>·N²
+            <span style={{ color: "var(--bz-text-muted)" }}>+</span>
+            <span style={{ color: "var(--bz-accent)" }}>1.0042</span>·N
+            <span style={{ color: "var(--bz-text-muted)" }}>+</span>
+            <span style={{ color: "var(--bz-accent)" }}>−0.18</span>
+          </div>
+          <div style={{ fontSize: 12, color: "var(--bz-text-muted)", marginTop: 8 }}>
+            Cs-137 пик 662 keV → канал 658 (ошибка 0.6%)
+          </div>
+        </div>
+
+        <Card title="Коэффициенты">
+          <CalRow letter="A" value="0.000 12" unit="keV/N²" tone="accent"/>
+          <CalRow letter="B" value="1.0042" unit="keV/N" tone="accent"/>
+          <CalRow letter="C" value="−0.18" unit="keV" tone="accent"/>
+        </Card>
+
+        <Card title="Опорные пики">
+          <CalRow letter="●" value="662" unit="keV · Cs-137" sub="канал 658"/>
+          <CalRow letter="●" value="1 460" unit="keV · K-40" sub="канал 1452"/>
+          <CalRow letter="+" value="Добавить пик" sub="ручная привязка" tone="muted"/>
+        </Card>
+
+        <Card title="Действия">
+          <Row label="Автокалибровка" sub="по обнаруженным пикам"
+            action={<button style={{ padding:"6px 12px", borderRadius:8, border:"1px solid var(--bz-accent)", background:"var(--bz-accent-soft)", color:"var(--bz-accent)", fontWeight:600, fontSize:12, cursor:"pointer" }}>Запустить</button>}/>
+          <Row label="Записать в прибор" onClick={()=>{}}
+            action={<span style={{ color: "var(--bz-accent)" }}>{Ico.chevron("right")}</span>}/>
+          <Row label="Считать из прибора" onClick={()=>{}}
+            action={<span style={{ color: "var(--bz-text-muted)" }}>{Ico.chevron("right")}</span>}/>
+        </Card>
+      </div>
+
+      {navVariant === "bar" && <BottomNav active="settings"/>}
+      {navVariant === "fab" && <BottomNav active="settings" variant="fab"/>}
+    </div>
+  );
+}
+
+function CalRow({ letter, value, unit, sub, tone = "default" }) {
+  const color = tone === "accent" ? "var(--bz-accent)" :
+                tone === "muted"  ? "var(--bz-text-muted)" :
+                "var(--bz-text)";
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 14,
+      padding: "13px 16px", minHeight: 56,
+      borderTop: "1px solid var(--bz-divider)",
+    }}>
+      <span style={{
+        width: 32, height: 32, borderRadius: 10,
+        background: tone === "accent" ? "var(--bz-accent-soft)" : "var(--bz-surface-3)",
+        color: tone === "accent" ? "var(--bz-accent)" : "var(--bz-text-dim)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 16, fontWeight: 700, fontFamily: "var(--bz-font-mono)",
+      }}>{letter}</span>
+      <div style={{ flex: 1 }}>
+        <div className="bz-mono" style={{ fontSize: 15, color, fontWeight: 600 }}>
+          {value} {unit && <span style={{ color: "var(--bz-text-muted)", fontWeight: 500, marginLeft: 4 }}>{unit}</span>}
+        </div>
+        {sub && <div style={{ fontSize: 12, color: "var(--bz-text-muted)", marginTop: 2 }}>{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// 9) LOG — diagnostic event journal (accessed from Settings)
+// ════════════════════════════════════════════════════════════════
+function _Legacy_ScreenLog({ navVariant = "bar" }) {
+  const events = [
+    { t: "23-05 15:31:34", kind: "info", text: "Start spectrometer" },
+    { t: "23-05 15:18:18", kind: "info", text: "Stop spectrometer" },
+    { t: "18-05 16:24:12", kind: "info", text: "Start spectrometer" },
+    { t: "18-05 14:51:59", kind: "ok",   text: "Normal" },
+    { t: "18-05 14:51:58", kind: "warn", text: "Level 1" },
+    { t: "18-05 13:32:58", kind: "ok",   text: "Normal" },
+    { t: "18-05 13:32:57", kind: "warn", text: "Level 1" },
+    { t: "16-05 20:39:33", kind: "muted", text: "Write to flash" },
+    { t: "16-05 20:39:12", kind: "muted", text: "Write to flash" },
+    { t: "15-05 21:11:35", kind: "muted", text: "Write to flash" },
+    { t: "15-05 20:41:27", kind: "muted", text: "Write to flash" },
+    { t: "15-05 20:31:49", kind: "muted", text: "Write to flash" },
+    { t: "15-05 20:28:29", kind: "info", text: "Stop spectrometer" },
+    { t: "15-05 20:28:27", kind: "muted", text: "Write to flash" },
+    { t: "15-05 20:28:25", kind: "ok",   text: "Normal" },
+    { t: "15-05 20:28:22", kind: "warn", text: "Level 1" },
+    { t: "15-05 20:28:20", kind: "ok",   text: "Normal" },
+    { t: "15-05 20:26:20", kind: "warn", text: "Level 1" },
+    { t: "15-05 20:26:04", kind: "ok",   text: "Normal" },
+    { t: "15-05 20:26:03", kind: "info", text: "Dosimeter reset" },
+    { t: "15-05 20:26:03", kind: "info", text: "Start spectrometer" },
+    { t: "15-05 20:26:03", kind: "info", text: "Turn on" },
+  ];
+  const colorFor = (k) => ({
+    ok:    "var(--bz-accent)",
+    warn:  "var(--bz-warn)",
+    danger:"var(--bz-danger)",
+    info:  "var(--bz-text)",
+    muted: "var(--bz-text-muted)",
+  }[k] || "var(--bz-text)");
+
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+    }}>
+      {/* Top: back + title */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10,
+        padding: "12px 16px 8px",
+      }}>
+        <button style={{
+          width: 40, height: 40, borderRadius: 12,
+          background: "var(--bz-surface-2)", border: "1px solid var(--bz-line)",
+          color: "var(--bz-text)", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>{Ico.chevron("left", 16)}</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+            Настройки  /  Журнал
+          </div>
+          <div style={{ fontSize: 20, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.3 }}>
+            События прибора
+          </div>
+        </div>
+        <IconButton icon={Ico.save(16)} size={40}/>
+        <IconButton icon={Ico.clear(16)} size={40}/>
+      </div>
+      <StatusStrip orientation="portrait"/>
+
+      {/* Filters */}
+      <div style={{ padding: "12px 14px 8px", display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {["Все · 22", "Тревоги · 4", "Запись · 6", "Питание · 5"].map((c, i) => (
+          <span key={c} style={{
+            padding: "5px 10px", borderRadius: 8,
+            background: i === 0 ? "var(--bz-accent-soft)" : "var(--bz-surface-2)",
+            border: `1px solid ${i === 0 ? "var(--bz-accent)" : "var(--bz-line)"}`,
+            color: i === 0 ? "var(--bz-accent)" : "var(--bz-text-dim)",
+            fontSize: 11, fontWeight: 600,
+          }}>{c}</span>
+        ))}
+      </div>
+
+      {/* Timeline */}
+      <div style={{
+        flex: 1, overflow: "auto",
+        margin: "4px 14px 12px",
+        background: "var(--bz-surface)",
+        border: "1px solid var(--bz-line-soft)",
+        borderRadius: "var(--bz-r)",
+        padding: "4px 0",
+      }}>
+        {events.map((e, i) => (
+          <div key={i} style={{
+            display: "flex", alignItems: "center", gap: 12,
+            padding: "10px 16px",
+            borderTop: i ? "1px solid var(--bz-divider)" : "none",
+            fontFamily: "var(--bz-font-mono)",
+          }}>
+            <span style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 0.3, minWidth: 116 }}>
+              {e.t}
+            </span>
+            <span style={{
+              width: 6, height: 6, borderRadius: 4, background: colorFor(e.kind), flexShrink: 0,
+            }}/>
+            <span style={{ fontSize: 13, color: colorFor(e.kind), fontWeight: e.kind === "ok" || e.kind === "warn" ? 600 : 500 }}>
+              {e.text}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {navVariant === "bar" && <BottomNav active="settings"/>}
+      {navVariant === "fab" && <BottomNav active="settings" variant="fab"/>}
+    </div>
+  );
+}
+
+Object.assign(window, {
+   ScreenSpectrumLandscape,
+   ScreenOverload,
+     ScreenCalibration, 
+  OverloadBanner, LevelGauge, AlarmFlags, AlarmFlag, AlarmLevelRow, ColorPalette, CalRow });
+
+
+// ═══ bluz-extras.jsx ═══
+// BluZ extras — fully-featured screens preserving 100% of the legacy
+// app functionality. These override the earlier Screen* exports.
+
+// ───── DoseHistogram — 512-channel dose distribution bars ─────
+function DoseHistogram({ width = 360, height = 200, channels = 512, theme = "dark" }) {
+  const data = React.useMemo(() => {
+    const arr = new Array(channels).fill(0);
+    for (let i = 0; i < channels; i++) {
+      const x = i / channels;
+      // smooth bell + secondary lobe
+      let v = 220 * Math.exp(-Math.pow((i - 110) / 35, 2));
+      v +=    90 * Math.exp(-Math.pow((i - 250) / 40, 2));
+      v +=    35 * Math.exp(-Math.pow((i - 380) / 55, 2));
+      const seed = Math.sin(i * 9.183) * 43758.5453;
+      v += (seed - Math.floor(seed)) * v * 0.35;
+      arr[i] = Math.max(0.5, v);
+    }
+    return arr;
+  }, [channels]);
+  const max = Math.max(...data) * 1.05;
+  const pad = 8;
+  const w = width - pad * 2, h = height - pad * 2;
+  const bw = w / data.length;
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display:"block", color:"var(--bz-text-muted)" }}>
+      <g transform={`translate(${pad} ${pad})`}>
+        <g stroke="currentColor" strokeOpacity="0.18" strokeWidth="1">
+          {[0.25, 0.5, 0.75].map((p) => (
+            <line key={p} x1="0" y1={h * p} x2={w} y2={h * p}/>
+          ))}
+        </g>
+        {data.map((v, i) => {
+          const x = i * bw;
+          const bh = (v / max) * h;
+          return <rect key={i} x={x} y={h - bh} width={Math.max(0.6, bw - 0.2)} height={bh}
+            fill={theme === "light" ? "#006b54" : "#00d4aa"} fillOpacity="0.85"/>;
+        })}
+        <text x="0" y={h + 12} fill="currentColor" fontSize="10" fontWeight="600" fontFamily="JetBrains Mono, ui-monospace, monospace">ch 0</text>
+        <text x={w} y={h + 12} fill="currentColor" fontSize="10" fontWeight="600" fontFamily="JetBrains Mono, ui-monospace, monospace" textAnchor="end">ch {channels}</text>
+      </g>
+    </svg>
+  );
+}
+
+// ───── DOSE SCREEN — histogram + min/max + Clear (matches legacy) ─────
+function ScreenDose({ navVariant = "bar", theme = "dark" }) {
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+    }}>
+      <div style={{ padding: "12px 18px 8px", display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+            Дозиметр · 512 каналов
+          </div>
+          <div style={{ fontSize: 22, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.4 }}>
+            В норме
+          </div>
+        </div>
+        <IconButton icon={Ico.clear(16)} label="Clear" size={40}/>
+      </div>
+      <StatusStrip orientation="portrait"/>
+
+      {/* Hero: dose rate + level gauge */}
+      <div style={{
+        margin: "14px 16px 8px",
+        padding: "16px 16px 14px",
+        background: "var(--bz-surface)",
+        border: "1px solid var(--bz-line-soft)",
+        borderRadius: "var(--bz-r)",
+      }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+          <div>
+            <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+              Мощность дозы
+            </div>
+            <div style={{ marginTop: 4, display: "flex", alignItems: "baseline", gap: 6 }}>
+              <span className="bz-mono bz-tabular" style={{
+                fontSize: 48, lineHeight: 1, fontWeight: 600,
+                color: "var(--bz-accent)", letterSpacing: -1.2,
+              }}>12.44</span>
+              <span style={{ fontSize: 13, color: "var(--bz-text-dim)", fontFamily: "var(--bz-font-mono)" }}>мкР/ч</span>
+            </div>
+            <div style={{ fontSize: 12, color: "var(--bz-text-muted)", marginTop: 4, fontFamily: "var(--bz-font-mono)" }}>
+              Avg 13.99 · CPS 156 · AvgCPS 423.5
+            </div>
+          </div>
+          <span style={{
+            padding: "4px 10px", borderRadius: 6,
+            background: "var(--bz-accent-soft)", color: "var(--bz-accent)",
+            fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
+          }}>NORMAL</span>
+        </div>
+        <LevelGauge value={12.44} l1={40} l2={200} l3={1000}/>
+      </div>
+
+      {/* Histogram */}
+      <div style={{
+        flex: 1, margin: "0 16px 12px",
+        background: "var(--bz-surface)",
+        border: "1px solid var(--bz-line-soft)",
+        borderRadius: "var(--bz-r)",
+        padding: "12px 14px 10px",
+        display: "flex", flexDirection: "column", minHeight: 0,
+      }}>
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          marginBottom: 8,
+        }}>
+          <span style={{
+            fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 0.5,
+            fontFamily: "var(--bz-font-mono)", textTransform: "uppercase", fontWeight: 600,
+          }}>Распределение дозы · 512 ch</span>
+          <span style={{ display: "flex", gap: 12, fontSize: 11, fontFamily: "var(--bz-font-mono)" }}>
+            <span style={{ color: "var(--bz-text-muted)" }}>MIN <span style={{ color: "var(--bz-text)" }}>0.4</span></span>
+            <span style={{ color: "var(--bz-text-muted)" }}>MAX <span style={{ color: "var(--bz-text)" }}>231</span></span>
+          </span>
+        </div>
+        <div style={{ flex: 1, display: "flex", alignItems: "stretch" }}>
+          <DoseHistogram width={344} height={220} theme={theme}/>
+        </div>
+      </div>
+
+      {navVariant === "bar" && <BottomNav active="dose"/>}
+      {navVariant === "fab" && <BottomNav active="dose" variant="fab"/>}
+    </div>
+  );
+}
+
+// ───── LOG SCREEN — dual journals (device events + app log) ─────
+function ScreenLog({ navVariant = "bar" }) {
+  const [tab, setTab] = React.useState("device");
+  const deviceEvents = [
+    { t: "23-05 15:31:34", kind: "info",    text: "Start spectrometer" },
+    { t: "23-05 15:18:18", kind: "info",    text: "Stop spectrometer" },
+    { t: "18-05 16:24:12", kind: "info",    text: "Start spectrometer" },
+    { t: "18-05 14:51:59", kind: "normal",  text: "Normal" },
+    { t: "18-05 14:51:58", kind: "L1",      text: "Level 1" },
+    { t: "18-05 13:32:58", kind: "normal",  text: "Normal" },
+    { t: "18-05 13:32:57", kind: "L1",      text: "Level 1" },
+    { t: "16-05 20:39:33", kind: "flash",   text: "Write to flash" },
+    { t: "16-05 20:39:12", kind: "flash",   text: "Write to flash" },
+    { t: "15-05 21:11:35", kind: "overload",text: "Overload" },
+    { t: "15-05 20:41:27", kind: "L3",      text: "Level 3" },
+    { t: "15-05 20:31:49", kind: "L2",      text: "Level 2" },
+    { t: "15-05 20:28:29", kind: "info",    text: "Stop spectrometer" },
+    { t: "15-05 20:28:27", kind: "flash",   text: "Write to flash" },
+    { t: "15-05 20:28:25", kind: "normal",  text: "Normal" },
+    { t: "15-05 20:28:22", kind: "L1",      text: "Level 1" },
+    { t: "15-05 20:28:20", kind: "normal",  text: "Normal" },
+    { t: "15-05 20:26:20", kind: "L1",      text: "Level 1" },
+    { t: "15-05 20:26:04", kind: "normal",  text: "Normal" },
+    { t: "15-05 20:26:03", kind: "info",    text: "Dosimeter reset" },
+    { t: "15-05 20:26:03", kind: "battery", text: "Low battery" },
+    { t: "15-05 20:26:03", kind: "info",    text: "Turn on" },
+  ];
+  const appEvents = [
+    { t: "15:31:34.221", lvl: "INFO",  text: "BLE connected · BluZ·2A12" },
+    { t: "15:31:34.198", lvl: "OK",    text: "Subscribed to spectrum char" },
+    { t: "15:31:34.090", lvl: "INFO",  text: "Sending START packet" },
+    { t: "15:31:33.870", lvl: "DBG",   text: "Read cal: A=0.00012 B=1.0042" },
+    { t: "15:31:33.510", lvl: "WARN",  text: "Slow notify · 412ms" },
+    { t: "15:31:32.110", lvl: "INFO",  text: "Detector profile: SiPM-A" },
+    { t: "15:31:30.812", lvl: "ERR",   text: "GATT 0x85 retry 1/3" },
+    { t: "15:31:30.300", lvl: "DBG2",  text: "Packet=97 byte 3=0x10" },
+    { t: "15:31:30.110", lvl: "INFO",  text: "BLE scan match RSSI=-62" },
+    { t: "15:31:29.880", lvl: "OK",    text: "Permissions granted" },
+    { t: "15:31:29.605", lvl: "INFO",  text: "App started" },
+  ];
+
+  const deviceColor = (k) => ({
+    info:    "var(--bz-text)",
+    normal:  "var(--bz-accent)",
+    L1:      "var(--bz-warn)",
+    L2:      "var(--bz-danger)",
+    L3:      "#c084ff",
+    overload:"#ff4dd0",
+    battery: "#ff4dd0",
+    flash:   "var(--bz-text-muted)",
+    upgrade: "#ff4dd0",
+  }[k] || "var(--bz-text)");
+
+  const appColor = (l) => ({
+    ERR:  "var(--bz-danger)",
+    INFO: "var(--bz-info)",
+    WARN: "var(--bz-warn)",
+    OK:   "var(--bz-accent)",
+    DBG:  "var(--bz-text-muted)",
+    DBG2: "#c084ff",
+  }[l] || "var(--bz-text)");
+
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px 8px" }}>
+        <button style={{
+          width: 40, height: 40, borderRadius: 12,
+          background: "var(--bz-surface-2)", border: "1px solid var(--bz-line)",
+          color: "var(--bz-text)", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>{Ico.chevron("left", 16)}</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+            Настройки  /  Лог
+          </div>
+          <div style={{ fontSize: 20, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.3 }}>
+            Журналы событий
+          </div>
+        </div>
+        <IconButton icon={Ico.save(16)} size={40}/>
+        <IconButton icon={Ico.clear(16)} size={40}/>
+      </div>
+      <StatusStrip orientation="portrait"/>
+
+      {/* Tabs */}
+      <div style={{ padding: "12px 14px 0", display: "flex", gap: 6 }}>
+        <button onClick={() => setTab("device")}
+          style={{
+            flex: 1, padding: "10px 12px", borderRadius: 10,
+            background: tab === "device" ? "var(--bz-surface)" : "transparent",
+            border: "1px solid " + (tab === "device" ? "var(--bz-line)" : "transparent"),
+            color: tab === "device" ? "var(--bz-text)" : "var(--bz-text-muted)",
+            fontWeight: 600, fontSize: 13, letterSpacing: 0.2, cursor: "pointer",
+          }}>
+          События прибора <span style={{ marginLeft: 4, color: "var(--bz-text-muted)", fontWeight: 500 }}>· {deviceEvents.length}</span>
+        </button>
+        <button onClick={() => setTab("app")}
+          style={{
+            flex: 1, padding: "10px 12px", borderRadius: 10,
+            background: tab === "app" ? "var(--bz-surface)" : "transparent",
+            border: "1px solid " + (tab === "app" ? "var(--bz-line)" : "transparent"),
+            color: tab === "app" ? "var(--bz-text)" : "var(--bz-text-muted)",
+            fontWeight: 600, fontSize: 13, letterSpacing: 0.2, cursor: "pointer",
+          }}>
+          Лог приложения <span style={{ marginLeft: 4, color: "var(--bz-text-muted)", fontWeight: 500 }}>· {appEvents.length}</span>
+        </button>
+      </div>
+
+      <div style={{
+        flex: 1, overflow: "auto",
+        margin: "10px 14px 12px",
+        background: "var(--bz-surface)",
+        border: "1px solid var(--bz-line-soft)",
+        borderRadius: "var(--bz-r)",
+        padding: "4px 0",
+      }}>
+        {tab === "device" && deviceEvents.map((e, i) => (
+          <div key={i} style={{
+            display: "flex", alignItems: "center", gap: 12,
+            padding: "10px 16px",
+            borderTop: i ? "1px solid var(--bz-divider)" : "none",
+            fontFamily: "var(--bz-font-mono)",
+          }}>
+            <span style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 0.3, minWidth: 118 }}>{e.t}</span>
+            <span style={{ width: 6, height: 6, borderRadius: 4, background: deviceColor(e.kind), flexShrink: 0 }}/>
+            <span style={{ fontSize: 13, color: deviceColor(e.kind), fontWeight: 600 }}>{e.text}</span>
+          </div>
+        ))}
+        {tab === "app" && appEvents.map((e, i) => (
+          <div key={i} style={{
+            display: "flex", alignItems: "center", gap: 12,
+            padding: "10px 16px",
+            borderTop: i ? "1px solid var(--bz-divider)" : "none",
+            fontFamily: "var(--bz-font-mono)",
+          }}>
+            <span style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 0.3, minWidth: 88 }}>{e.t}</span>
+            <span style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+              minWidth: 36, textAlign: "center",
+              padding: "2px 5px", borderRadius: 4,
+              background: "color-mix(in srgb, " + appColor(e.lvl) + " 16%, transparent)",
+              color: appColor(e.lvl),
+            }}>{e.lvl}</span>
+            <span style={{ fontSize: 13, color: "var(--bz-text)", fontWeight: 500, flex: 1, minWidth: 0 }}>{e.text}</span>
+          </div>
+        ))}
+      </div>
+
+      {navVariant === "bar" && <BottomNav active="settings"/>}
+      {navVariant === "fab" && <BottomNav active="settings" variant="fab"/>}
+    </div>
+  );
+}
+
+// ───── Helpers for settings rows ─────
+function RowNum({ label, sub, value, unit, range, danger = false }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 12,
+      padding: "12px 16px", minHeight: 56,
+      borderTop: "1px solid var(--bz-divider)",
+    }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, color: "var(--bz-text)", fontWeight: 500 }}>{label}</div>
+        {sub && <div style={{ fontSize: 11, color: "var(--bz-text-muted)", marginTop: 2 }}>{sub}</div>}
+      </div>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6,
+        padding: "6px 10px",
+        background: "var(--bz-surface-2)",
+        border: "1px solid " + (danger ? "var(--bz-danger)" : "var(--bz-line)"),
+        borderRadius: 9,
+        minWidth: 84,
+      }}>
+        <span className="bz-mono bz-tabular" style={{
+          fontSize: 14, fontWeight: 600, color: danger ? "var(--bz-danger)" : "var(--bz-text)",
+          flex: 1, textAlign: "right",
+        }}>{value}</span>
+        {unit && <span style={{ fontSize: 10, color: "var(--bz-text-muted)", fontFamily: "var(--bz-font-mono)" }}>{unit}</span>}
+      </div>
+      {range && <span style={{
+        fontSize: 10, color: "var(--bz-text-muted)", fontFamily: "var(--bz-font-mono)",
+        whiteSpace: "nowrap",
+      }}>{range}</span>}
+    </div>
+  );
+}
+
+function RGBSlider({ label, color, value }) {
+  const fillColors = { A: "linear-gradient(90deg, transparent, var(--bz-text))",
+                       R: "linear-gradient(90deg,#001,#f33)",
+                       G: "linear-gradient(90deg,#001,#3f3)",
+                       B: "linear-gradient(90deg,#001,#36f)" };
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap: 12, padding: "10px 16px", borderTop: "1px solid var(--bz-divider)" }}>
+      <span className="bz-mono" style={{ width: 14, fontSize: 12, fontWeight: 700, color: "var(--bz-text-dim)" }}>{label}</span>
+      <div style={{ flex: 1, height: 6, borderRadius: 3, background: fillColors[label], position: "relative" }}>
+        <span style={{
+          position: "absolute", top: -5, left: `calc(${(value/255)*100}% - 8px)`,
+          width: 16, height: 16, borderRadius: 8,
+          background: "var(--bz-text)", border: "2px solid var(--bz-bg)",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+        }}/>
+      </div>
+      <span className="bz-mono bz-tabular" style={{ fontSize: 12, color: "var(--bz-text)", minWidth: 28, textAlign: "right" }}>{value}</span>
+    </div>
+  );
+}
+
+// ───── SETTINGS — complete (every legacy parameter) ─────
+function ScreenSettings({ navVariant = "bar", spectrumColor = "#00d4aa" }) {
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+    }}>
+      <div style={{ padding: "12px 18px 4px" }}>
+        <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+          BluZ · MAC 00:08:E1:2A:12:34
+        </div>
+        <div style={{ fontSize: 22, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.4 }}>
+          Настройки
+        </div>
+      </div>
+      <StatusStrip orientation="portrait"/>
+
+      <div style={{
+        flex: 1, overflow: "auto",
+        padding: "14px 14px 80px",
+        display: "flex", flexDirection: "column", gap: 12,
+      }}>
+
+        {/* Search */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "11px 14px",
+          background: "var(--bz-surface-2)",
+          border: "1px solid var(--bz-line-soft)",
+          borderRadius: 10,
+          color: "var(--bz-text-muted)",
+        }}>
+          {Ico.search(15)}
+          <span style={{ fontSize: 13 }}>Поиск по настройкам</span>
+        </div>
+
+        {/* ═══ Подключение ═══ */}
+        <Card title="Подключение">
+          <Row label="MAC прибора"
+            sub="00:08:E1:2A:12:34"
+            action={<button style={{ padding:"6px 12px", borderRadius:8, border:"1px solid var(--bz-line)", background:"var(--bz-surface-2)", color:"var(--bz-text)", fontSize:12, fontWeight:600, cursor:"pointer" }}>Изменить</button>}/>
+          <Row label="Имя устройства" value="BluZ·2A12"/>
+          <Row label="RSSI" sub="уровень сигнала BLE" value="−62 dBm"/>
+        </Card>
+
+        {/* ═══ Спектр · отображение ═══ */}
+        <Card title="Спектр · отображение" action={<TagApp/>}>
+          <Row label="Тип графика"
+            action={<Segmented options={[{label:"Линия",value:"line"},{label:"Заливка",value:"fill"},{label:"Бар",value:"gisto"}]} value="line"/>}/>
+          <Row label="Шкала Y"
+            action={<Segmented options={[{label:"Lin",value:"lin"},{label:"Lg",value:"lg"},{label:"+Фон",value:"fl"},{label:"+ФонLg",value:"flg"}]} value="lin"/>}/>
+          <Row label="Цвет линии"
+            sub="прозрачность · красный · зелёный · синий"
+            action={<span style={{ width: 28, height: 28, borderRadius: 8, background: spectrumColor, border: "1px solid var(--bz-line)" }}/>}/>
+          <RGBSlider label="A" value={255}/>
+          <RGBSlider label="R" value={0}/>
+          <RGBSlider label="G" value={212}/>
+          <RGBSlider label="B" value={170}/>
+          <RowNum label="Окно SMA-сглаживания" sub="кол-во точек" value="5" range="1–50"/>
+          <RowNum label="Отбросить каналов от нуля" sub="убирает шум на низких" value="10" range="0–100"/>
+          <RowNum label="Padding слева" value="8" unit="px"/>
+          <RowNum label="Padding справа" value="8" unit="px"/>
+          <RowNum label="Горизонтальный зум" value="1.0" range="0.5–4.0"/>
+        </Card>
+
+        {/* ═══ Единицы и форматы ═══ */}
+        <Card title="Единицы и форматы" action={<TagApp/>}>
+          <Row label="Единицы дозы"
+            action={<Segmented options={[{label:"мкР/ч",value:"urh"},{label:"мкЗв/ч",value:"usvh"}]} value="urh"/>}/>
+          <Row label="Экспорт спектра"
+            action={<Segmented options={[{label:"BqMon",value:"bqm"},{label:"CSV",value:"csv"}]} value="bqm"/>}/>
+          <Row label="Экспорт трека"
+            action={<Segmented options={[{label:"KML",value:"kml"},{label:"CSV",value:"csv"}]} value="kml"/>}/>
+        </Card>
+
+        {/* ═══ Карта и интерфейс ═══ */}
+        <Card title="Карта и интерфейс" action={<TagApp/>}>
+          <Row label="Ночной режим карты" sub="тёмная тема Yandex MapKit" action={<Toggle on/>}/>
+          <Row label="Полноэкранный режим" sub="скрывать системную строку" action={<Toggle/>}/>
+          <RowNum label="Уровень лога приложения"
+            sub="0 = отключено · 5 = детальная отладка"
+            value="2" range="0–5"/>
+        </Card>
+
+        {/* ═══ Профиль детектора ═══ */}
+        <Card title="Профиль детектора" action={<TagApp/>}>
+          <Row label="Активный профиль" value="SiPM·A · 5×5"/>
+          <Row label="Создать новый профиль" action={<span style={{ color:"var(--bz-accent)" }}>{Ico.chevron("right")}</span>}/>
+          <Row label="Загрузить из файла"  action={<span style={{ color:"var(--bz-accent)" }}>{Ico.chevron("right")}</span>}/>
+          <Row label="Выбрать из списка"    action={<span style={{ color:"var(--bz-accent)" }}>{Ico.chevron("right")}</span>}/>
+        </Card>
+
+        {/* ═══ Прибор · сигналы ═══ */}
+        <Card title="Прибор · сигналы" action={<TagDev/>}>
+          <Row label="Звук на импульс"
+            action={<Segmented options={[{label:"–",value:"none"},{label:"1/1",value:"1"},{label:"1/10",value:"10"}]} value="none"/>}/>
+          <Row label="LED на импульс"
+            action={<Segmented options={[{label:"–",value:"none"},{label:"1/1",value:"1"},{label:"1/10",value:"10"}]} value="1"/>}/>
+          <Row label="Автозапуск спектрометра" sub="при подключении прибора" action={<Toggle on/>}/>
+        </Card>
+
+        {/* ═══ Оповещения (alarms — editable) ═══ */}
+        <Card title="Прибор · тревоги" action={<TagDev/>}>
+          <AlarmLevelRow level={1} color="var(--bz-warn)"   name="Уровень 1" hint="информационный"  value={40}    s v={false}/>
+          <AlarmLevelRow level={2} color="#ff6b35"          name="Уровень 2" hint="повышенный фон"  value={200}   s v/>
+          <AlarmLevelRow level={3} color="var(--bz-danger)" name="Уровень 3" hint="критический"     value={1000}  s v/>
+        </Card>
+
+        {/* ═══ Калибровка ═══ */}
+        <Card title="Калибровка энергии" action={<TagDev/>}>
+          <Row label="Разрешение спектрометра" sub="три набора коэффициентов"
+            action={<Segmented options={[{label:"1024",value:"1"},{label:"2048",value:"2"},{label:"4096",value:"4"}]} value="2"/>}/>
+          <Row label="Полином Ax² + Bx + C"
+            sub="A: 0.00012  ·  B: 1.0042  ·  C: −0.18"
+            action={<span style={{ color: "var(--bz-accent)", display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600 }}>Открыть {Ico.chevron("right",14)}</span>}
+            onClick={()=>{}}/>
+        </Card>
+
+        {/* ═══ Аппаратные — Эксперт ═══ */}
+        <Card title="Аппаратные параметры" action={
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 4,
+            padding: "3px 8px", borderRadius: 6,
+            background: "var(--bz-warn-soft)", color: "var(--bz-warn)",
+            fontSize: 10, fontWeight: 700, letterSpacing: 0.6,
+          }}>⚠ ЭКСПЕРТ</span>
+        }>
+          <div style={{ padding: "8px 16px 0", fontSize: 11, color: "var(--bz-text-muted)" }}>
+            Изменение этих параметров может вывести детектор из строя.
+            Изменения применяются на прибор только кнопкой <span style={{ color: "var(--bz-danger)", fontWeight: 700 }}>Write</span>.
+          </div>
+          <RowNum label="Высокое напряжение HV"     value="780"   unit="ед" range="0–1023" danger/>
+          <RowNum label="Порог компаратора"         value="410"   unit="ед" range="0–1023" danger/>
+          <RowNum label="Бит на канал"              value="20"    range="16–32"/>
+          <RowNum label="Время выборки АЦП"         value="3"     range="0–7"/>
+          <RowNum label="Точность АЦП"              value="100"/>
+          <RowNum label="CPS → мкР/ч"               value="0.0660" sub="коэффициент пересчёта"/>
+        </Card>
+
+        {/* ═══ Действия ═══ */}
+        <Card title="Действия">
+          <Row label="Журнал событий"
+            sub="включения, тревоги, write to flash"
+            onClick={()=>{}}
+            action={<span style={{ color: "var(--bz-text-muted)" }}>{Ico.chevron("right")}</span>}/>
+          <Row label="Сохранить профиль настроек" sub="локально на телефоне"
+            action={<span style={{ color:"var(--bz-accent)" }}>{Ico.chevron("right")}</span>} onClick={()=>{}}/>
+          <Row label="Сбросить устройство" sub="команда reset на прибор"
+            action={<span style={{ color:"var(--bz-danger)" }}>{Ico.chevron("right")}</span>} onClick={()=>{}}/>
+        </Card>
+
+      </div>
+
+      {/* Floating action dock — Read/Write/Save/Rest/Scan/Find */}
+      <DeviceActionDock/>
+
+      {navVariant === "bar" && <BottomNav active="settings"/>}
+      {navVariant === "fab" && <BottomNav active="settings" variant="fab"/>}
+    </div>
+  );
+}
+
+function TagApp() {
+  return (
+    <span style={{
+      padding: "3px 7px", borderRadius: 5,
+      background: "var(--bz-surface-3)", color: "var(--bz-text-muted)",
+      fontSize: 10, fontWeight: 700, letterSpacing: 0.5, fontFamily: "var(--bz-font-mono)",
+    }}>ПРИЛОЖЕНИЕ</span>
+  );
+}
+function TagDev() {
+  return (
+    <span style={{
+      padding: "3px 7px", borderRadius: 5,
+      background: "var(--bz-accent-soft)", color: "var(--bz-accent)",
+      fontSize: 10, fontWeight: 700, letterSpacing: 0.5, fontFamily: "var(--bz-font-mono)",
+    }}>ПРИБОР</span>
+  );
+}
+
+function DeviceActionDock() {
+  return (
+    <div style={{
+      position: "absolute",
+      left: 14, right: 14,
+      bottom: 80,
+      display: "flex", gap: 6,
+      padding: 6,
+      background: "color-mix(in srgb, var(--bz-surface) 95%, transparent)",
+      backdropFilter: "blur(10px)",
+      border: "1px solid var(--bz-line)",
+      borderRadius: 14,
+      boxShadow: "0 8px 24px -8px rgba(0,0,0,0.4)",
+      zIndex: 10,
+    }}>
+      <DockBtn label="Scan"  icon={Ico.search(14)} tone="neutral"/>
+      <DockBtn label="Save"  icon={Ico.save(14)}   tone="neutral"/>
+      <DockBtn label="Rest"  icon={Ico.history(14)} tone="neutral"/>
+      <DockBtn label="Read"  icon={Ico.chevron("down",14)} tone="info"/>
+      <DockBtn label="Write" icon={Ico.chevron("up",14)} tone="danger"/>
+      <DockBtn label="Find"  icon={Ico.target(14)} tone="accent"/>
+    </div>
+  );
+}
+function DockBtn({ label, icon, tone = "neutral" }) {
+  const styles = {
+    neutral: { bg: "transparent", color: "var(--bz-text-dim)", border: "var(--bz-line)" },
+    info:    { bg: "color-mix(in srgb, var(--bz-info) 14%, transparent)", color: "var(--bz-info)", border: "var(--bz-info)" },
+    accent:  { bg: "var(--bz-accent-soft)", color: "var(--bz-accent)", border: "var(--bz-accent)" },
+    danger:  { bg: "var(--bz-danger)", color: "#fff", border: "var(--bz-danger)" },
+  }[tone];
+  return (
+    <button style={{
+      flex: 1, minHeight: 44,
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
+      borderRadius: 10,
+      background: styles.bg,
+      color: styles.color,
+      border: `1px solid ${styles.border}`,
+      cursor: "pointer",
+      fontSize: 11, fontWeight: 700, letterSpacing: 0.4,
+      padding: "4px 4px",
+    }}>
+      {icon}
+      <span>{label}</span>
+    </button>
+  );
+}
+
+// ───── SPECTRUM — add full button set (BqMon/Load/Clear/Calibrate/SMA/MED) ─────
+function ScreenSpectrumPortrait({ overload = false, navVariant = "bar", spectrumColor = "#00d4aa", chartStyle = "line", log = false, theme = "dark" }) {
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+      paddingBottom: navVariant === "fab" ? 0 : 0,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px 8px" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: 11, letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 700,
+            color: overload ? "var(--bz-danger)" : "var(--bz-text-muted)",
+            display: "flex", alignItems: "center", gap: 6,
+            animation: overload ? "bz-pulse 1.1s ease-in-out infinite" : undefined,
+          }}>
+            {overload && <span style={{ display:"inline-flex" }}>{Ico.warn(13)}</span>}
+            {overload ? "Перегрузка детектора · CPS > 25 000" : "Канал · 2048 · 0 – 3 МэВ"}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 22, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.4 }}>
+            <span>Гамма-спектр</span>
+            {overload && (
+              <span style={{
+                fontSize: 11, fontFamily: "var(--bz-font-mono)", fontWeight: 700, letterSpacing: 0.6,
+                padding: "2px 7px", borderRadius: 5,
+                background: "var(--bz-danger)", color: "#fff",
+              }}>L3</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <StatusStrip orientation="portrait" overload={overload} btStatus="on"/>
+
+      {/* Auxiliary status — Total / AvgCPS — compact mono row */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10,
+        padding: "5px 14px",
+        borderBottom: "1px solid var(--bz-line-soft)",
+        background: "var(--bz-surface)",
+        fontSize: 10.5, fontFamily: "var(--bz-font-mono)", color: "var(--bz-text-muted)",
+        overflow: "hidden", whiteSpace: "nowrap",
+      }}>
+        <span><span style={{ letterSpacing: 0.4 }}>Σ</span> <span style={{ color: "var(--bz-text)" }}>10 623 119</span><span style={{ color: "var(--bz-text-faint)" }}> · 85%</span></span>
+        <span>Avg <span style={{ color: "var(--bz-text)" }}>423.5</span></span>
+        <span>COMP <span style={{ color: "var(--bz-text-dim)" }}>3.4</span></span>
+        <span>MED <span style={{ color: "var(--bz-text-dim)" }}>1.2</span></span>
+      </div>
+
+      <div style={{
+        padding: "12px 18px 8px",
+        display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16,
+      }}>
+        <Readout label="МОЩНОСТЬ ДОЗЫ" value="12.44" unit="мкР/ч" accent={!overload} danger={overload} large/>
+        <Readout label="СРЕДНЯЯ" value="13.99" unit="мкР/ч" large/>
+      </div>
+
+      {/* Chart with isotope hint and SMA/MED inline */}
+      <div style={{
+        flex: 1, margin: "4px 14px 8px",
+        background: "var(--bz-surface)",
+        border: "1px solid var(--bz-line-soft)",
+        borderRadius: "var(--bz-r)",
+        padding: "10px 12px 8px",
+        display: "flex", flexDirection: "column", minHeight: 0,
+      }}>
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          fontSize: 10, color: "var(--bz-text-muted)", fontFamily: "var(--bz-font-mono)",
+          letterSpacing: 0.5, marginBottom: 6,
+        }}>
+          <span>{log ? "LOG" : "LIN"} · counts</span>
+          <span>Cs-137 photopeak · ch 658 · 662 keV</span>
+        </div>
+        <div style={{ flex: 1, position: "relative", display: "flex" }}>
+          <SpectrumChart theme={theme} width={344} height={overload ? 280 : 320}
+            log={log} style={chartStyle}
+            color={overload ? "var(--bz-danger)" : spectrumColor}
+            overload={overload} channels={2048} showPeaks={!overload}/>
+        </div>
+
+        {/* Inline filter chips */}
+        <div style={{ display: "flex", gap: 6, marginTop: 6, paddingTop: 8, borderTop: "1px solid var(--bz-divider)" }}>
+          <FilterChip label="SMA" on/>
+          <FilterChip label="MED"/>
+          <div style={{ flex: 1 }}/>
+          <IconButton icon={Ico.scale(15)} label={log ? "Log" : "Lin"} size={36}/>
+          <IconButton icon={Ico.zoom(15)} label="1×" size={36}/>
+        </div>
+      </div>
+
+      {/* Action bar — Start/Stop primary; BqMon/Load/Clear/Cal secondary */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 5,
+        padding: "0 12px 12px",
+        minWidth: 0,
+      }}>
+        <SmallAction icon={Ico.save(14)} label="BqMon"/>
+        <SmallAction icon={Ico.chevron("down",13)} label="Load"/>
+        <SmallAction icon={Ico.clear(14)} label="Clear"/>
+        <SmallAction icon={<span style={{ fontFamily:"var(--bz-font-mono)", fontSize:12, fontWeight:700 }}>1</span>} label="Cal"/>
+        <div style={{ flex: 1, minWidth: 0 }}/>
+        <CircleButton icon={Ico.stop(20)} danger/>
+      </div>
+
+      {navVariant === "bar" && <BottomNav active="spectrum"/>}
+      {navVariant === "fab" && <BottomNav active="spectrum" variant="fab"/>}
+    </div>
+  );
+}
+
+function FilterChip({ label, on = false }) {
+  return (
+    <button style={{
+      padding: "6px 11px", borderRadius: 8,
+      background: on ? "var(--bz-accent-soft)" : "transparent",
+      border: `1px solid ${on ? "var(--bz-accent)" : "var(--bz-line)"}`,
+      color: on ? "var(--bz-accent)" : "var(--bz-text-muted)",
+      fontSize: 11, fontWeight: 700, letterSpacing: 0.6,
+      fontFamily: "var(--bz-font-mono)",
+      cursor: "pointer", minHeight: 30,
+    }}>{label}</button>
+  );
+}
+function SmallAction({ icon, label }) {
+  return (
+    <button style={{
+      display: "inline-flex", alignItems: "center", gap: 4,
+      padding: "8px 9px", minHeight: 38,
+      borderRadius: 9, background: "var(--bz-surface-2)",
+      border: "1px solid var(--bz-line)",
+      color: "var(--bz-text)", cursor: "pointer",
+      fontSize: 11.5, fontWeight: 600, letterSpacing: 0.1,
+      whiteSpace: "nowrap", flexShrink: 0,
+    }}>
+      {icon}
+      <span>{label}</span>
+    </button>
+  );
+}
+
+// ───── HISTORY — add Load/BqMon/Clear ─────
+function ScreenHistory({ navVariant = "bar", theme = "dark" }) {
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+    }}>
+      <div style={{ padding: "12px 18px 8px" }}>
+        <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+          История · накопленный спектр
+        </div>
+        <div style={{ fontSize: 22, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.4 }}>
+          7ч 19м 22с
+        </div>
+      </div>
+      <StatusStrip orientation="portrait"/>
+
+      <div style={{
+        padding: "12px 18px 6px",
+        display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16,
+      }}>
+        <Readout label="ИНТЕГРАЛ" value="10 623 119" unit="имп" accent large/>
+        <Readout label="СР. CPS" value="423.5" unit="имп/с" large/>
+      </div>
+
+      <div style={{
+        flex: 1, margin: "4px 14px 8px",
+        background: "var(--bz-surface)",
+        border: "1px solid var(--bz-line-soft)",
+        borderRadius: "var(--bz-r)",
+        padding: "10px 12px 8px",
+        display: "flex", flexDirection: "column",
+      }}>
+        <div style={{
+          display: "flex", justifyContent: "space-between",
+          fontSize: 10, color: "var(--bz-text-muted)",
+          fontFamily: "var(--bz-font-mono)", letterSpacing: 0.5, marginBottom: 6,
+        }}>
+          <span>LOG · cumulative</span>
+          <span>2048 ch · с 23-05 15:31</span>
+        </div>
+        <div style={{ flex: 1, display: "flex" }}>
+          <SpectrumChart theme={theme} width={344} height={300}
+            log style="fill" color="#4ea3ff" secondary="#00d4aa"
+            channels={2048}/>
+        </div>
+        <div style={{ display: "flex", gap: 18, marginTop: 6, paddingTop: 8, borderTop: "1px solid var(--bz-divider)", fontSize: 11 }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--bz-text-dim)" }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: "#4ea3ff" }}/>
+            Накопленный
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--bz-text-dim)" }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: "#00d4aa", opacity: 0.6 }}/>
+            Фон
+          </span>
+        </div>
+      </div>
+
+      {/* Action bar */}
+      <div style={{ display: "flex", gap: 6, padding: "0 14px 14px" }}>
+        <SmallAction icon={Ico.save(15)} label="BqMon"/>
+        <SmallAction icon={Ico.chevron("down",14)} label="Load"/>
+        <SmallAction icon={Ico.clear(15)} label="Clear"/>
+        <div style={{ flex: 1 }}/>
+      </div>
+
+      {navVariant === "bar" && <BottomNav active="history"/>}
+      {navVariant === "fab" && <BottomNav active="history" variant="fab"/>}
+    </div>
+  );
+}
+
+// ───── MAP — add Tracks/New/Save/AddPoint ─────
+function ScreenMap({ navVariant = "bar", theme = "dark" }) {
+  return (
+    <div className="bz-screen" style={{
+      flex: 1, display: "flex", flexDirection: "column",
+      paddingTop: "var(--bz-inset-top)",
+      position: "relative",
+    }}>
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "var(--bz-surface-2)",
+        color: "var(--bz-text-muted)",
+      }}>
+        <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, color: "currentColor" }}>
+          <defs>
+            <pattern id="bz-mapgrid" width="32" height="32" patternUnits="userSpaceOnUse">
+              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="1" strokeOpacity="0.18"/>
+            </pattern>
+            <pattern id="bz-mapdots" width="80" height="80" patternUnits="userSpaceOnUse">
+              <circle cx="40" cy="40" r="0.8" fill="currentColor" fillOpacity="0.25"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#bz-mapgrid)"/>
+          <rect width="100%" height="100%" fill="url(#bz-mapdots)"/>
+          <path d="M -10 600 Q 200 400 412 380" stroke="currentColor" strokeOpacity="0.32" strokeWidth="14" fill="none"/>
+          <path d="M 130 -10 L 200 900" stroke="currentColor" strokeOpacity="0.28" strokeWidth="10" fill="none"/>
+          <path d="M 350 -10 Q 320 300 200 540 L 80 800" stroke="currentColor" strokeOpacity="0.22" strokeWidth="8" fill="none"/>
+
+          {/* GPS track */}
+          <path d="M 60 720 L 110 670 L 140 600 L 170 540 L 210 470 L 220 410 L 250 350 L 280 290 L 330 240 L 360 180"
+            stroke="var(--bz-accent)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.95"/>
+          <path d="M 60 720 L 110 670 L 140 600 L 170 540 L 210 470 L 220 410 L 250 350 L 280 290 L 330 240 L 360 180"
+            stroke="var(--bz-accent)" strokeWidth="10" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeOpacity="0.18"/>
+
+          {/* 32-color scale markers (sample) */}
+          {[
+            [60, 720, 0],   [110, 670, 2],
+            [140, 600, 3],  [170, 540, 5],
+            [210, 470, 10], [220, 410, 11],
+            [250, 350, 18], [280, 290, 24],
+            [330, 240, 21], [360, 180, 16],
+          ].map(([x, y, lvl]) => {
+            // Color from blue → cyan → green → yellow → red gradient
+            const hue = (200 - lvl * 6.5) % 360;
+            const c = `hsl(${hue}, 85%, 55%)`;
+            return (
+              <g key={x}>
+                <circle cx={x} cy={y} r="12" fill={c} fillOpacity="0.18"/>
+                <circle cx={x} cy={y} r="6" fill={c} stroke="var(--bz-bg)" strokeWidth="1.5"/>
+              </g>
+            );
+          })}
+          <g>
+            <circle cx="360" cy="180" r="20" fill="var(--bz-info)" fillOpacity="0.12"/>
+            <circle cx="360" cy="180" r="10" fill="var(--bz-info)" fillOpacity="0.4"/>
+            <circle cx="360" cy="180" r="5" fill="var(--bz-info)" stroke="var(--bz-bg)" strokeWidth="2"/>
+          </g>
+        </svg>
+      </div>
+
+      {/* Header */}
+      <div style={{
+        position: "relative", zIndex: 2,
+        padding: "12px 16px 10px",
+        background: "linear-gradient(180deg, color-mix(in srgb, var(--bz-bg) 92%, transparent) 0%, color-mix(in srgb, var(--bz-bg) 60%, transparent) 75%, transparent 100%)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, color: "var(--bz-text-muted)", letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 600 }}>
+              Карта · GPS трек
+            </div>
+            <div style={{ fontSize: 18, color: "var(--bz-text)", fontWeight: 600, letterSpacing: -0.3 }}>
+              Track 23-05-2026
+            </div>
+          </div>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "5px 9px 5px 8px", borderRadius: "var(--bz-r-pill)",
+            background: "rgba(255,64,64,0.16)", color: "var(--bz-danger)",
+            fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
+          }}>
+            <span style={{ width: 7, height: 7, borderRadius: 4, background: "var(--bz-danger)", animation: "bz-pulse 1s ease-in-out infinite" }}/>
+            REC
+          </span>
+        </div>
+      </div>
+
+      <div style={{ flex: 1 }}/>
+
+      {/* Track stats + actions */}
+      <div style={{
+        position: "relative", zIndex: 2,
+        margin: "0 14px 12px",
+        background: "color-mix(in srgb, var(--bz-surface) 95%, transparent)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid var(--bz-line)",
+        borderRadius: "var(--bz-r)",
+        overflow: "hidden",
+      }}>
+        <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+          <Readout label="ДОЗА" value="12.44" unit="мкР/ч" accent/>
+          <Readout label="MAX" value="210" unit="мкР/ч"/>
+          <Readout label="ПУТЬ" value="1.84" unit="км"/>
+        </div>
+        <div style={{ display: "flex", borderTop: "1px solid var(--bz-divider)" }}>
+          <MapAction icon={Ico.history(15)} label="Tracks"/>
+          <MapAction icon={Ico.plus(14)} label="New"/>
+          <MapAction icon={Ico.save(14)} label="Save"/>
+          <MapAction icon={Ico.stop(13)} label="Stop" tone="danger"/>
+        </div>
+      </div>
+
+      {/* Floating controls */}
+      <div style={{
+        position: "absolute", right: 14, bottom: 168, zIndex: 3,
+        display: "flex", flexDirection: "column", gap: 10,
+      }}>
+        <FloatBtn icon={Ico.target(22)} color="var(--bz-info)" title="GPS-локация"/>
+        <FloatBtn icon={Ico.pin(22)} color="var(--bz-accent)" title="Точка вручную"/>
+      </div>
+
+      {navVariant === "bar" && <BottomNav active="map"/>}
+      {navVariant === "fab" && <BottomNav active="map" variant="fab"/>}
+    </div>
+  );
+}
+
+function MapAction({ icon, label, tone = "neutral" }) {
+  const c = tone === "danger" ? "var(--bz-danger)" : "var(--bz-text)";
+  return (
+    <button style={{
+      flex: 1, padding: "10px 0", border: "none",
+      borderRight: "1px solid var(--bz-divider)",
+      background: "transparent",
+      color: c, cursor: "pointer",
+      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+      fontSize: 12, fontWeight: 600,
+    }}>
+      {icon}
+      <span>{label}</span>
+    </button>
+  );
+}
+function FloatBtn({ icon, color, title }) {
+  return (
+    <button title={title} style={{
+      width: 48, height: 48, borderRadius: 14,
+      background: "color-mix(in srgb, var(--bz-surface) 95%, transparent)",
+      backdropFilter: "blur(8px)",
+      border: "1px solid var(--bz-line)",
+      color: color, cursor: "pointer",
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}>{icon}</button>
+  );
+}
+
+Object.assign(window, {
+  ScreenSpectrumPortrait, ScreenHistory, ScreenDose, ScreenLog,
+  ScreenSettings, ScreenMap,
+  DoseHistogram, FilterChip, SmallAction, MapAction, FloatBtn,
+  DeviceActionDock, DockBtn, RowNum, RGBSlider, TagApp, TagDev,
+});
+

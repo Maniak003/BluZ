@@ -1,0 +1,142 @@
+/* BluZ design tokens — scientific/medical dark UI */
+:root {
+  /* Color — neutrals */
+  --bz-bg:           #0a0d12;
+  --bz-surface:      #0f141b;
+  --bz-surface-2:    #161c25;
+  --bz-surface-3:    #1c2330;
+  --bz-line:         #232b38;
+  --bz-line-soft:    #1a2029;
+  --bz-divider:      rgba(255,255,255,0.06);
+
+  /* Color — text */
+  --bz-text:         #e7ecf1;
+  --bz-text-dim:     #9aa3ad;
+  --bz-text-muted:   #5d6773;
+  --bz-text-faint:   #3b434e;
+
+  /* Color — semantic */
+  --bz-accent:       #00d4aa;     /* primary teal */
+  --bz-accent-2:     #00b390;     /* dimmer teal */
+  --bz-accent-soft:  rgba(0,212,170,0.14);
+  --bz-on-accent:    #001a14;     /* text/icon on bright accent fill */
+  --bz-warn:         #f5b400;
+  --bz-warn-soft:    rgba(245,180,0,0.14);
+  --bz-danger:       #ff4040;
+  --bz-danger-2:     #ff2020;
+  --bz-danger-soft:  rgba(255,64,64,0.16);
+  --bz-info:         #4ea3ff;
+
+  /* Bluetooth */
+  --bz-bt-on:        #00d4aa;
+  --bz-bt-warn:      #f5b400;
+  --bz-bt-off:       #ff4040;
+
+  /* Foreground on accent / danger fills */
+  --bz-on-accent:    #001a14;     /* dark text on bright teal */
+  --bz-on-danger:    #ffffff;
+
+  /* Type */
+  --bz-font-ui:      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --bz-font-mono:    "JetBrains Mono", "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Spacing */
+  --bz-pad:          16px;
+  --bz-pad-sm:       12px;
+  --bz-pad-xs:       8px;
+
+  /* Radii */
+  --bz-r:            12px;
+  --bz-r-sm:         8px;
+  --bz-r-pill:       999px;
+
+  /* Phone safe-areas (default values; can be overridden per frame) */
+  --bz-inset-top:    44px;       /* status bar */
+  --bz-inset-bottom: 28px;       /* gesture indicator */
+  --bz-inset-left:   0px;
+  --bz-inset-right:  0px;
+}
+
+/* Reset within phone screens */
+.bz-screen *,
+.bz-screen *::before,
+.bz-screen *::after { box-sizing: border-box; }
+
+.bz-screen {
+  font-family: var(--bz-font-ui);
+  color: var(--bz-text);
+  background: var(--bz-bg);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "cv11";
+  overflow: hidden;
+  min-width: 0;
+}
+.bz-screen > * { min-width: 0; }
+
+.bz-mono { font-family: var(--bz-font-mono); font-feature-settings: "tnum", "zero"; letter-spacing: -0.01em; }
+.bz-tabular { font-variant-numeric: tabular-nums; }
+
+.bz-screen button { font-family: inherit; color: inherit; }
+
+/* No scrollbars inside phones */
+.bz-screen ::-webkit-scrollbar { display: none; }
+.bz-screen * { scrollbar-width: none; }
+
+/* Slight pulse for overload */
+@keyframes bz-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+@keyframes bz-pulse-bg {
+  0%, 100% { background: rgba(255,64,64,0.10); }
+  50%      { background: rgba(255,64,64,0.22); }
+}
+@keyframes bz-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes bz-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ─── LIGHT THEME (sunlight readable, high contrast) ─── */
+.bz-screen[data-theme="light"] {
+  --bz-bg:           #ffffff;
+  --bz-surface:      #f7f8fa;
+  --bz-surface-2:    #eef0f4;
+  --bz-surface-3:    #e2e6ec;
+  --bz-line:         #c8cfd9;
+  --bz-line-soft:    #dde2ea;
+  --bz-divider:      rgba(15,20,27,0.10);
+
+  --bz-text:         #050a12;       /* near-black */
+  --bz-text-dim:     #2c3540;
+  --bz-text-muted:   #5d6773;
+  --bz-text-faint:   #94a0ad;
+
+  --bz-accent:       #006b54;       /* darker teal — AA on white */
+  --bz-accent-2:     #00513f;
+  --bz-accent-soft:  rgba(0,107,84,0.10);
+  --bz-on-accent:    #ffffff;        /* text on accent fill in light theme */
+  --bz-warn:         #a96b00;
+  --bz-warn-soft:    rgba(169,107,0,0.12);
+  --bz-danger:       #c91414;
+  --bz-danger-2:     #a30c0c;
+  --bz-danger-soft:  rgba(201,20,20,0.10);
+  --bz-info:         #1a5fb4;
+
+  --bz-bt-on:        #006b54;
+  --bz-bt-warn:      #a96b00;
+  --bz-bt-off:       #c91414;
+
+  --bz-on-accent:    #ffffff;     /* white text on dark teal in light mode */
+  --bz-on-danger:    #ffffff;
+}
+@keyframes bz-pulse-bg-light {
+  0%, 100% { background: rgba(201,20,20,0.10); }
+  50%      { background: rgba(201,20,20,0.22); }
+}
+.bz-screen[data-theme="light"] .bz-overload-banner {
+  animation-name: bz-pulse-bg-light !important;
+}

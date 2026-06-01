@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh repo *)",
+      "Bash(gh api *)",
+      "Bash(./gradlew assembleDebug)",
+      "PowerShell(Copy-Item *)",
+      "WebFetch(domain:yandex.ru)",
+      "WebFetch(domain:claude.com)",
+      "Bash(Select-Object Name)",
+      "PowerShell(New-Item *)",
+      "PowerShell(cd \"C:\\\\Bluz\\\\BluZ\\\\Android\\\\BluZ_LPM\" && .\\\\gradlew assembleDebug 2>&1 | ForEach-Object { $_ } | Where-Object { $_ -match \"error:\" -or $_ -match \"e:\" } | Select-Object -First 30)",
+      "PowerShell(cd \"C:\\\\Bluz\\\\BluZ\\\\Android\\\\BluZ_LPM\" && .\\\\gradlew assembleDebug 2>&1 | ForEach-Object { $_ } | Where-Object { $_ -match \"e: \" -or $_ -match \"BUILD SUCCESS\" -or $_ -match \"FAILED\" } | Select-Object -First 30)",
+      "PowerShell(cd \"C:\\\\Bluz\\\\BluZ\\\\Android\\\\BluZ_LPM\" && .\\\\gradlew assembleDebug 2>&1 | Where-Object { $_ -match \"e: \" -or $_ -match \"BUILD SUCCESS\" -or $_ -match \"FAILED\" } | Select-Object -First 20)",
+      "PowerShell(cd \"C:\\\\Bluz\\\\BluZ\\\\Android\\\\BluZ_LPM\" && .\\\\gradlew assembleDebug 2>&1 | Where-Object { $_ -match \"e: \" -or $_ -match \"BUILD SUCCESS\" -or $_ -match \"FAILED\" } | Select-Object -First 30)",
+      "PowerShell(cd \"C:\\\\Bluz\\\\BluZ\\\\Android\\\\BluZ_LPM\" && .\\\\gradlew assembleDebug 2>&1 | Where-Object { $_ -match \"e: \" -or $_ -match \"BUILD SUCCESS\" -or $_ -match \"FAILED\" } | Select-Object -First 10)",
+      "PowerShell(cd \"C:\\\\Bluz\\\\BluZ\\\\Android\\\\BluZ_LPM\" && .\\\\gradlew assembleDebug 2>&1 | Where-Object { $_ -match \"e: \" -or $_ -match \"w: \" -or $_ -match \"BUILD SUCCESS\" -or $_ -match \"FAILED\" } | Select-Object -First 20)",
+      "WebFetch(domain:api.anthropic.com)",
+      "PowerShell(cd \"C:\\\\Bluz\\\\BluZ\\\\Android\\\\BluZ_LPM\" && .\\\\gradlew assembleDebug 2>&1 | Where-Object { $_ -match \"e: \" -or $_ -match \"error\" -or $_ -match \"BUILD SUCCESS\" -or $_ -match \"FAILED\" } | Select-Object -First 30)",
+      "PowerShell(cd \"C:\\\\Bluz\\\\BluZ\\\\Android\\\\BluZ_LPM\" && .\\\\gradlew assembleDebug 2>&1 | Where-Object { $_ -match \"e: \" -or $_ -match \"error\" -or $_ -match \"BUILD SUCCESS\" -or $_ -match \"FAILED\" } | Select-Object -First 20)",
+      "PowerShell(head *)",
+      "Bash(unzip *)",
+      "Bash(\"C:/Users/motok/AppData/Local/Android/Sdk/platform-tools/adb.exe\" logcat *)",
+      "Bash(\"C:/Users/motok/AppData/Local/Android/Sdk/platform-tools/adb.exe\" install *)",
+      "Bash(./gradlew assembleReleaseTest)",
+      "Bash(./gradlew compileDebugKotlin)",
+      "Bash(\"C:/Users/motok/AppData/Local/Android/Sdk/platform-tools/adb.exe\" shell *)",
+      "Bash(C:/Users/motok/AppData/Local/Android/Sdk/platform-tools/adb.exe pull *)",
+      "Bash(awk '{print NR-1, $1}')",
+      "Bash(awk '$2 > 30')",
+      "Bash(awk '$1 >= 60 && $1 <= 300')",
+      "Bash(awk '$2 > 50')",
+      "Bash(awk '\\($1>=250 && $1<=280\\) || \\($1>=400 && $1<=420\\) || \\($1>=75 && $1<=80\\)')",
+      "Bash(awk 'NR<=25 || \\($1>=70 && $1<=90\\) || \\($1>=250 && $1<=280\\) || \\($1>=395 && $1<=415\\)')",
+      "Bash(awk '$1 >= 100 && $1 <= 250')",
+      "Bash(iconv -f UTF-16 -t UTF-8)",
+      "Bash(iconv -f UTF-16 -t UTF-8 \"C:/Bluz/test.log\")",
+      "Bash(grep -rn \"local.properties\" .gitignore BluZ/.gitignore)",
+      "Bash(ls -la .gitignore BluZ/.gitignore)"
+    ]
+  }
+}
