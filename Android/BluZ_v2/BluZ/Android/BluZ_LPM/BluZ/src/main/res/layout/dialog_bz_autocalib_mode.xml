@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Диалог выбора режима автокалибровки. Заголовок + 3 кнопки режимов + Отмена. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/bz_bg"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="18dp"
+    android:paddingBottom="18dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Автокалибровка по Ra-226"
+        android:textColor="@color/bz_text"
+        android:textSize="18sp"
+        android:fontFamily="@font/bz_inter_bold"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Выберите режим"
+        android:textColor="@color/bz_text_muted"
+        android:textSize="11sp" />
+
+    <Button
+        android:id="@+id/bzCalibModeFull"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:background="@drawable/bg_bz_icon_button"
+        android:text="Полная (напр. комп. суммарный набор 2.5М имп.)"
+        android:textAllCaps="false"
+        android:textColor="@color/bz_text"
+        android:textSize="13sp"
+        android:minWidth="0dp"
+        android:minHeight="48dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:gravity="start|center_vertical"
+        android:fontFamily="@font/bz_inter_bold" />
+
+    <Button
+        android:id="@+id/bzCalibModeHvComp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/bg_bz_icon_button"
+        android:text="Высокое и компаратор (набор 1М имп.)"
+        android:textAllCaps="false"
+        android:textColor="@color/bz_text"
+        android:textSize="13sp"
+        android:minWidth="0dp"
+        android:minHeight="48dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:gravity="start|center_vertical"
+        android:fontFamily="@font/bz_inter_bold" />
+
+    <Button
+        android:id="@+id/bzCalibModePolyOnly"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/bg_bz_icon_button"
+        android:text="Только полином (набор 1.5М имп.)"
+        android:textAllCaps="false"
+        android:textColor="@color/bz_text"
+        android:textSize="13sp"
+        android:minWidth="0dp"
+        android:minHeight="48dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:gravity="start|center_vertical"
+        android:fontFamily="@font/bz_inter_bold" />
+
+    <Button
+        android:id="@+id/bzCalibModeCancel"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_marginTop="14dp"
+        android:background="@drawable/bg_bz_icon_button"
+        android:text="Отмена"
+        android:textAllCaps="false"
+        android:textColor="@color/bz_text_dim"
+        android:textSize="13sp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:fontFamily="@font/bz_inter_bold" />
+</LinearLayout>

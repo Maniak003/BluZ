@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_spectrum"
+        android:icon="@drawable/ic_nav_spectrum"
+        android:title="Спектр" />
+    <item
+        android:id="@+id/nav_history"
+        android:icon="@drawable/ic_nav_history"
+        android:title="История" />
+    <item
+        android:id="@+id/nav_dose"
+        android:icon="@drawable/ic_nav_dose"
+        android:title="Доза" />
+    <item
+        android:id="@+id/nav_map"
+        android:icon="@drawable/ic_nav_map"
+        android:title="Карта" />
+    <item
+        android:id="@+id/nav_settings"
+        android:icon="@drawable/ic_nav_settings"
+        android:title="Настр." />
+</menu>

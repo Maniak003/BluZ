@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/spectrLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bz_bg">
+
+    <!-- Hero row + toolbar (compact landscape header) -->
+    <LinearLayout
+        android:id="@+id/specHero"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="14dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="6dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ДОЗА"
+                android:textColor="@color/bz_text_muted"
+                android:textSize="9sp"
+                android:letterSpacing="0.12"
+                android:fontFamily="@font/bz_inter_bold"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="bottom">
+
+                <TextView
+                    android:id="@+id/bzSpecDoseValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0.00"
+                    android:textColor="@color/bz_accent"
+                    android:textSize="22sp"
+                    android:includeFontPadding="false"
+                    android:fontFamily="@font/bz_jetbrains_mono_bold" />
+
+                <TextView
+                    android:id="@+id/bzSpecDoseUnit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginBottom="3dp"
+                    android:text="мкР/ч"
+                    android:textColor="@color/bz_text_dim"
+                    android:textSize="10sp"
+                    android:fontFamily="@font/bz_jetbrains_mono" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="14dp"
+            android:layout_marginEnd="14dp"
+            android:background="@color/bz_line" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="СРЕДНЯЯ"
+                android:textColor="@color/bz_text_muted"
+                android:textSize="9sp"
+                android:letterSpacing="0.12"
+                android:fontFamily="@font/bz_inter_bold"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="bottom">
+
+                <TextView
+                    android:id="@+id/bzSpecAvgValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0.00"
+                    android:textColor="@color/bz_text"
+                    android:textSize="22sp"
+                    android:includeFontPadding="false"
+                    android:fontFamily="@font/bz_jetbrains_mono_bold" />
+
+                <TextView
+                    android:id="@+id/bzSpecAvgUnit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginBottom="3dp"
+                    android:text="мкР/ч"
+                    android:textColor="@color/bz_text_dim"
+                    android:textSize="10sp"
+                    android:fontFamily="@font/bz_jetbrains_mono" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- spacer -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/buttonSaveBQ"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/bg_bz_icon_button"
+            android:src="@drawable/ic_bz_save"
+            app:tint="@color/bz_text"
+            android:contentDescription="Save" />
+
+        <ImageButton
+            android:id="@+id/buttonSpecterSS"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="@drawable/bg_bz_circle_accent"
+            android:contentDescription="Start/Stop"
+            android:scaleType="center"
+            android:src="@drawable/ic_bz_play"
+            app:tint="@color/bz_on_accent" />
+    </LinearLayout>
+
+    <!-- Chart card -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="@drawable/bg_bz_card"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="6dp"
+        android:padding="10dp"
+        app:layout_constraintTop_toBottomOf="@id/specHero"
+        app:layout_constraintBottom_toTopOf="@id/specBottomPager"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/specterView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <ImageView
+                android:id="@+id/historyView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/cursorView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- Информация об изотопе под курсором (только при наличии калибровки) -->
+            <TextView
+                android:id="@+id/textIsotopInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="6dp"
+                android:background="#99000000"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:fontFamily="@font/bz_jetbrains_mono_bold"
+                android:visibility="invisible" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/specToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="6dp">
+
+            <CheckBox
+                android:id="@+id/cbSMA"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-10dp"
+                android:layout_marginBottom="-10dp"
+                android:buttonTint="@color/bz_accent"
+                android:minWidth="0dp"
+                android:text="SMA"
+                android:textColor="@color/bz_text_dim"
+                android:textSize="10sp" />
+
+            <CheckBox
+                android:id="@+id/cbMED"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="-10dp"
+                android:layout_marginBottom="-10dp"
+                android:buttonTint="@color/bz_accent"
+                android:minWidth="0dp"
+                android:text="MED"
+                android:textColor="@color/bz_text_dim"
+                android:textSize="10sp" />
+
+            <CheckBox
+                android:id="@+id/cbMLEM"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="-10dp"
+                android:layout_marginBottom="-10dp"
+                android:buttonTint="@color/bz_accent"
+                android:minWidth="0dp"
+                android:text="MLEM"
+                android:textColor="@color/bz_text_dim"
+                android:textSize="10sp"
+                android:visibility="invisible" />
+
+            <ProgressBar
+                android:id="@+id/pbMLEM"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="14dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:max="25"
+                android:progress="0"
+                android:progressBackgroundTint="@color/bz_surface_2"
+                android:progressTint="@color/bz_accent"
+                android:visibility="invisible" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/buttonCalibrate"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_bz_icon_button"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:text="1"
+                android:textColor="@color/bz_text_dim"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/buttonConfirmCalibrate"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_bz_icon_button"
+                android:text="X"
+                android:textColor="@color/bz_text_dim"
+                android:textSize="11sp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
+
+            <ImageButton
+                android:id="@+id/buttonClearSpectr"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_bz_icon_button"
+                android:src="@drawable/ic_bz_clear"
+                app:tint="@color/bz_danger"
+                android:contentDescription="Clear" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom swipe pager: page 0 = measurement clock, page 1 = history readouts/controls -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/specBottomPager"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Hidden legacy IDs referenced by old code paths -->
+    <Button
+        android:id="@+id/buttonLoadSpectr"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

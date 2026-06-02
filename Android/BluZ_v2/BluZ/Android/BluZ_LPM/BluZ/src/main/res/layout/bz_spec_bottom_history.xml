@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="18dp"
+    android:paddingEnd="18dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ИСТОРИЯ · СВАЙП ВПРАВО — СПЕКТР"
+            android:textColor="@color/bz_text_muted"
+            android:textSize="10sp"
+            android:letterSpacing="0.04"
+            android:fontFamily="@font/bz_inter_bold"
+            android:textStyle="bold"
+            android:maxLines="1" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ИНТЕГРАЛ"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="9sp"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/bzHistIntegralValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/bz_accent"
+                    android:textSize="18sp"
+                    android:fontFamily="@font/bz_jetbrains_mono_bold"
+                    android:includeFontPadding="false" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="СР. CPS"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="9sp"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/bzHistAvgCpsValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0.00"
+                    android:textColor="@color/bz_text"
+                    android:textSize="18sp"
+                    android:fontFamily="@font/bz_jetbrains_mono_bold"
+                    android:includeFontPadding="false" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/buttonLoadHistory"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_bz_icon_button"
+        android:text="@string/textLoadSpectr"
+        android:textAllCaps="false"
+        android:textColor="@color/bz_accent"
+        android:textSize="11sp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:fontFamily="@font/bz_inter_bold" />
+
+    <Button
+        android:id="@+id/buttonHistorySave"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginStart="6dp"
+        android:background="@drawable/bg_bz_icon_button"
+        android:text="@string/textSaveBQ"
+        android:textAllCaps="false"
+        android:textColor="@color/bz_accent"
+        android:textSize="11sp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:fontFamily="@font/bz_inter_bold" />
+
+    <ImageButton
+        android:id="@+id/buttonClearHistory"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="6dp"
+        android:background="@drawable/bg_bz_icon_button"
+        android:src="@drawable/ic_bz_clear"
+        android:tint="@color/bz_danger"
+        android:contentDescription="Clear" />
+</LinearLayout>

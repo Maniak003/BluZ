@@ -1,0 +1,189 @@
+plugins {
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.dokka)
+    //id 'com.android.application' version '8.5.0' apply false
+    //id 'com.android.library' version '8.5.0' apply false
+    id 'kotlin-kapt'
+    //id 'com.google.devtools.ksp' //version '1.9.20-1.0.15'
+    //id("com.google.devtools.ksp") version "1.9.20-1.0.15" apply false
+}
+
+// Dokka — генерация документации из KDoc:
+//   ./gradlew :BluZ:dokkaHtml   →  BluZ/build/dokka/html/
+//   ./gradlew :BluZ:dokkaGfm    →  BluZ/build/dokka/gfm/  (markdown)
+dokkaHtml {
+    outputDirectory.set(file("$buildDir/dokka/html"))
+    dokkaSourceSets.configureEach {
+        moduleName.set("BluZ")
+        includeNonPublic.set(false)
+        skipEmptyPackages.set(true)
+        skipDeprecated.set(false)
+        reportUndocumented.set(false)
+    }
+}
+
+ext {
+    mapkitApiKey = getMapkitApiKey()
+}
+
+//configurations.all {
+ //   resolutionStrategy {
+  //      force 'org.jetbrains:annotations:23.0.0'
+   // }
+//}
+// Читает значение из local.properties (вне git). Используется для секретов:
+// MAPKIT_API_KEY и параметров подписи (KEYSTORE_*). Если файла нет — вернёт default.
+private String getLocalProperty(String key, String defaultValue) {
+    def properties = new Properties()
+    def f = project.file("local.properties")
+    if (f.exists()) {
+        f.withInputStream { properties.load(it) }
+    }
+    return properties.getProperty(key, defaultValue)
+}
+
+private String getMapkitApiKey() {
+    return getLocalProperty("MAPKIT_API_KEY", "")
+}
+
+
+android {
+    signingConfigs {
+        BluZ {
+            // Параметры подписи берутся из local.properties (вне git).
+            // Если KEYSTORE_FILE не задан — конфиг остаётся пустым; debug и
+            // releaseTest подписываются debug-ключом и не затрагиваются, а
+            // assembleRelease без этих параметров завершится ошибкой подписи.
+            def keystorePath = getLocalProperty("KEYSTORE_FILE", "")
+            if (keystorePath) {
+                storeFile file(keystorePath)
+                storePassword getLocalProperty("KEYSTORE_PASSWORD", "")
+                keyAlias getLocalProperty("KEY_ALIAS", "")
+                keyPassword getLocalProperty("KEY_PASSWORD", "")
+            }
+        }
+    }
+    packagingOptions {
+        resources {
+            excludes += ['res/**/*.arb']
+        }
+        jniLibs {
+            useLegacyPackaging false
+        }
+        exclude "dump_syms/**"
+    }
+    namespace 'ru.starline.bluz'
+    compileSdk 36
+    buildFeatures {
+        buildConfig = true
+    }
+    def mapkitApiKey = getMapkitApiKey()
+    defaultConfig {
+        applicationId "ru.starline.bluz"
+        minSdk 27
+        targetSdk 36
+        versionCode 12
+        versionName '1.12'
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "MAPKIT_API_KEY", "\"${mapkitApiKey}\""
+        resourceConfigurations += ['ru', 'en']
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.BluZ
+            debuggable false
+        }
+        releaseTest {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+            debuggable true
+        }
+        //debuggableRelease.initWith(release)
+        debug {
+            minifyEnabled false
+            debuggable true // только для отладки
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildToolsVersion '36.0.0'
+    ndkVersion '29.0.13846066 rc3'
+    //buildToolsVersion '35.0.0 rc2'
+    splits {
+        abi {
+            reset()
+            include 'arm64-v8a' // Оставь только нужные
+            //include 'arm64-v8a', 'armeabi-v7a' // Оставь только нужные
+            // exclude 'x86', 'x86_64' — не нужны для реальных устройств
+            universalApk false // не генерировать "универсальный" APK
+        }
+    }
+    configurations {
+        [
+                "implementation",
+                "api",
+                "compileOnly",
+                "runtimeOnly",
+                "debugImplementation",
+                "releaseImplementation"
+        ].each { name ->
+            getByName(name) {
+                exclude group: 'com.intellij', module: 'annotations'
+                exclude group: 'com.google.guava', module: 'listenablefuture'
+            }
+        }
+    }
+
+
+    //kapt {
+    //    arguments {
+    //        arg("room.schemaLocation", "$projectDir/schemas".toString())
+    //        arg("room.incremental", "true")
+    //        arg("room.expandProjection", "true")
+    //    }
+    //}
+}
+
+kotlin {
+    jvmToolchain(21) // Windows build: Android Studio JBR (JDK 21). Linux author uses 17.
+}
+
+dependencies {
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    implementation libs.androidx.activity
+    implementation libs.androidx.lifecycle.viewmodel.ktx
+    implementation libs.androidx.constraintlayout
+    implementation libs.play.services.maps
+    implementation libs.androidx.viewpager2
+    //implementation libs.maps.mobile
+    implementation libs.maps.mobile.v4190lite
+
+    // Room — только через libs.versions.toml
+    implementation libs.androidx.room.runtime
+    implementation libs.androidx.runtime
+    implementation libs.firebase.crashlytics.buildtools
+    implementation libs.androidx.compiler
+    //implementation libs.androidx.room.ktx
+    kapt libs.androidx.room.compiler
+    //ksp libs.androidx.room.compiler
+    kapt libs.kotlinx.metadata.jvm
+
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core}

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Универсальный стилизованный диалог с заголовком, сообщением и 1-2 кнопками.
+     Используется для: подготовки автокалибровки, UserPrompt-ов, старта подбора компаратора. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/bz_bg"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="18dp"
+    android:paddingBottom="18dp">
+
+    <TextView
+        android:id="@+id/bzMsgTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/bz_text"
+        android:textSize="18sp"
+        android:fontFamily="@font/bz_inter_bold"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/bzMsgBody"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="@color/bz_text"
+        android:textSize="13sp"
+        android:lineSpacingMultiplier="1.2" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="18dp">
+
+        <Button
+            android:id="@+id/bzMsgNegative"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_bz_icon_button"
+            android:text="Отмена"
+            android:textAllCaps="false"
+            android:textColor="@color/bz_text_dim"
+            android:textSize="13sp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:fontFamily="@font/bz_inter_bold" />
+
+        <Button
+            android:id="@+id/bzMsgPositive"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_bz_icon_button"
+            android:textAllCaps="false"
+            android:textColor="@color/bz_accent"
+            android:textSize="13sp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:fontFamily="@font/bz_inter_bold" />
+    </LinearLayout>
+</LinearLayout>

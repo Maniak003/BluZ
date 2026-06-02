@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bz_bg"
+    android:fitsSystemWindows="true"
+    tools:context=".MainActivity">
+
+    <!-- StatusStrip — top bar with compact pills/values -->
+    <LinearLayout
+        android:id="@+id/statusStrip"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/bz_surface"
+        android:paddingStart="14dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="8dp"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- BT pill: dot + bluetooth icon -->
+        <LinearLayout
+            android:id="@+id/bzBtPill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_bz_pill_bt"
+            android:paddingStart="8dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="9dp"
+            android:paddingBottom="5dp">
+
+            <View
+                android:id="@+id/bzBtDot"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_marginEnd="5dp"
+                android:backgroundTint="@color/bz_bt_off"
+                android:background="@drawable/bg_bz_dot" />
+
+            <TextView
+                android:id="@+id/bzBtRssi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:text="—"
+                android:textColor="@color/bz_text_dim"
+                android:textSize="10sp"
+                android:fontFamily="@font/bz_jetbrains_mono_bold"
+                android:includeFontPadding="false"
+                android:maxLines="1" />
+
+            <ImageView
+                android:id="@+id/bzBtIcon"
+                android:layout_width="11dp"
+                android:layout_height="11dp"
+                android:src="@drawable/ic_bz_bluetooth"
+                app:tint="@color/bz_bt_off"
+                android:contentDescription="@null" />
+        </LinearLayout>
+
+        <!-- CPS with radiation symbol -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="4dp"
+            android:text="☢"
+            android:textColor="@color/bz_text_muted"
+            android:textSize="13sp"
+            android:includeFontPadding="false" />
+
+        <TextView
+            android:id="@+id/bzCpsValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="@color/bz_accent"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/bz_jetbrains_mono_bold"
+            android:maxLines="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="cps"
+            android:textColor="@color/bz_text_muted"
+            android:textSize="11sp"
+            android:fontFamily="@font/bz_jetbrains_mono" />
+
+        <!-- Clock -->
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="5dp"
+            android:src="@drawable/ic_bz_clock"
+            app:tint="@color/bz_text_muted"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/bzClockValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00:00"
+            android:textColor="@color/bz_text"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/bz_jetbrains_mono_bold"
+            android:maxLines="1" />
+
+        <!-- Spacer -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Temperature -->
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="5dp"
+            android:src="@drawable/ic_bz_thermometer"
+            app:tint="@color/bz_text_muted"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/bzTempValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--°C"
+            android:textColor="@color/bz_text"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/bz_jetbrains_mono_bold"
+            android:maxLines="1" />
+
+        <!-- Battery -->
+        <ImageView
+            android:layout_width="13dp"
+            android:layout_height="13dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="5dp"
+            android:src="@drawable/ic_bz_battery"
+            app:tint="@color/bz_text_muted"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/bzBattValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--V"
+            android:textColor="@color/bz_text"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/bz_jetbrains_mono_bold"
+            android:maxLines="1" />
+    </LinearLayout>
+
+    <!-- Hidden legacy TextViews — code still references these IDs.
+         Will be removed once we migrate setters in Phase B/C. -->
+    <TextView
+        android:id="@+id/indicatorBT"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textStatistic1"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textStatistic2"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textStatistic3"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textCOMPMED"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <!-- Content pages -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/VPMain"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/statusStrip"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Bottom navigation — custom with top indicator -->
+    <LinearLayout
+        android:id="@+id/bottomNav"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/bz_surface"
+        android:paddingBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <include layout="@layout/item_bz_nav_tab"
+            android:id="@+id/tab_spectrum"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <include layout="@layout/item_bz_nav_tab"
+            android:id="@+id/tab_dose"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <include layout="@layout/item_bz_nav_tab"
+            android:id="@+id/tab_map"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <include layout="@layout/item_bz_nav_tab"
+            android:id="@+id/tab_settings"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <include layout="@layout/item_bz_nav_tab"
+            android:id="@+id/tab_exit"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <!-- Top thin divider above bottomNav -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/bz_line_soft"
+        app:layout_constraintStart_toStartOf="@id/bottomNav"
+        app:layout_constraintEnd_toEndOf="@id/bottomNav"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

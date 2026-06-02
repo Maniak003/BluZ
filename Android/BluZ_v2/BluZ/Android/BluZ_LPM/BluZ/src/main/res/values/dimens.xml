@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="bz_pad">16dp</dimen>
+    <dimen name="bz_pad_sm">12dp</dimen>
+    <dimen name="bz_pad_xs">8dp</dimen>
+    <dimen name="bz_r">12dp</dimen>
+    <dimen name="bz_r_sm">8dp</dimen>
+
+    <dimen name="bz_status_strip_height">36dp</dimen>
+    <dimen name="bz_bottom_nav_height">64dp</dimen>
+    <dimen name="bz_nav_rail_width">76dp</dimen>
+
+    <dimen name="bz_readout_label_size">10sp</dimen>
+    <dimen name="bz_readout_value_size">28sp</dimen>
+    <dimen name="bz_readout_unit_size">13sp</dimen>
+    <dimen name="bz_body_size">14sp</dimen>
+    <dimen name="bz_caption_size">12sp</dimen>
+</resources>

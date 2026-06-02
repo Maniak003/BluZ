@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/dozimeterView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bz_bg">
+
+    <!-- Hero row -->
+    <LinearLayout
+        android:id="@+id/doseHeroCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_bz_card"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="14dp"
+        android:padding="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="МОЩНОСТЬ ДОЗЫ"
+            android:textColor="@color/bz_text_muted"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12"
+            android:fontFamily="@font/bz_inter_bold" />
+
+        <TextView
+            android:id="@+id/bzDoseHeroValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="0.00"
+            android:textColor="@color/bz_accent"
+            android:textSize="26sp"
+            android:includeFontPadding="false"
+            android:fontFamily="@font/bz_jetbrains_mono_bold" />
+
+        <TextView
+            android:id="@+id/bzDoseHeroUnit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="мкР/ч"
+            android:textColor="@color/bz_text_dim"
+            android:textSize="11sp"
+            android:fontFamily="@font/bz_jetbrains_mono" />
+
+        <TextView
+            android:id="@+id/bzDoseAvgLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:text="Среднее: 0.00"
+            android:textColor="@color/bz_text_muted"
+            android:textSize="11sp"
+            android:fontFamily="@font/bz_jetbrains_mono" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/bzDoseStatusPill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_bz_chip_accent"
+            android:paddingStart="10dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="4dp"
+            android:text="NORMAL"
+            android:textColor="@color/bz_accent"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            android:fontFamily="@font/bz_inter_bold" />
+
+        <ImageButton
+            android:id="@+id/buttonClearDoze"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/bg_bz_icon_button"
+            android:src="@drawable/ic_bz_clear"
+            app:tint="@color/bz_danger"
+            android:contentDescription="Clear" />
+    </LinearLayout>
+
+    <!-- Histogram card -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="@drawable/bg_bz_card"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="10dp"
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/doseHeroCard"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="РАСПРЕДЕЛЕНИЕ · 512 CH"
+                android:textColor="@color/bz_text_muted"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:fontFamily="@font/bz_jetbrains_mono_bold" />
+
+            <TextView
+                android:id="@+id/txtMINDoze"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:text="MIN 0"
+                android:textColor="@color/bz_text_dim"
+                android:textSize="11sp"
+                android:fontFamily="@font/bz_jetbrains_mono" />
+
+            <TextView
+                android:id="@+id/txtMAXDoze"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MAX 0"
+                android:textColor="@color/bz_text_dim"
+                android:textSize="11sp"
+                android:fontFamily="@font/bz_jetbrains_mono" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/dozView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <!-- Hidden legacy refs -->
+    <TextView
+        android:id="@+id/bzDoseStatusTitle"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

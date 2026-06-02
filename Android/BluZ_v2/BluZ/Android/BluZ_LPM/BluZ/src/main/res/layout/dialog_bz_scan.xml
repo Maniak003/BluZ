@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/bz_bg"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="18dp"
+    android:paddingBottom="18dp">
+
+    <!-- Заголовок: "Поиск BluZ" + countdown -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Поиск BluZ"
+            android:textColor="@color/bz_text"
+            android:textSize="18sp"
+            android:fontFamily="@font/bz_inter_bold"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/bzScanCountdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(8с)"
+            android:textColor="@color/bz_accent"
+            android:textSize="14sp"
+            android:fontFamily="@font/bz_jetbrains_mono_bold" />
+    </LinearLayout>
+
+    <!-- Подсказка / прогресс -->
+    <TextView
+        android:id="@+id/bzScanHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Ожидание устройств…"
+        android:textColor="@color/bz_text_muted"
+        android:textSize="11sp" />
+
+    <!-- Список найденных устройств. Контейнер для динамического addView. -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_weight="1"
+        android:minHeight="120dp"
+        android:maxHeight="320dp"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/bzScanList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <!-- Кнопки действий: Закрыть + Повторить поиск -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="14dp">
+
+        <Button
+            android:id="@+id/bzScanClose"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_bz_icon_button"
+            android:text="Закрыть"
+            android:textAllCaps="false"
+            android:textColor="@color/bz_text_dim"
+            android:textSize="13sp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:fontFamily="@font/bz_inter_bold" />
+
+        <Button
+            android:id="@+id/bzScanRestart"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_bz_icon_button"
+            android:text="Повторить поиск"
+            android:textAllCaps="false"
+            android:textColor="@color/bz_accent"
+            android:textSize="13sp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:fontFamily="@font/bz_inter_bold" />
+    </LinearLayout>
+</LinearLayout>

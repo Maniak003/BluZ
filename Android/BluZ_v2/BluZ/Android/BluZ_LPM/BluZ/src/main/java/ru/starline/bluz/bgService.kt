@@ -1,0 +1,676 @@
+package ru.starline.bluz
+
+import android.app.*
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.bluetooth.le.*
+import android.content.Intent
+import android.os.Build
+import android.os.Handler
+import android.os.IBinder
+import android.os.Looper
+import android.util.Log
+import androidx.annotation.RequiresPermission
+import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.*
+import ru.starline.bluz.data.AppDatabase
+import ru.starline.bluz.data.entity.TrackDetail
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.CancellationTokenSource
+import androidx.core.util.size
+import androidx.core.content.edit
+import ru.starline.bluz.utils.await
+import kotlin.math.roundToLong
+import kotlin.math.sqrt
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toBitmap
+
+/**
+ * Foreground-сервис фоновой записи трека.
+ *
+ * Запускается из [MainActivity.performExit] при выходе из приложения, если активна запись
+ * трека (`GO.trackIsRecordeed == true`). Работает, пока приложение свёрнуто/закрыто.
+ *
+ * **Ключевое отличие от UI-слоя.** Сервис **не подключается к прибору через GATT** —
+ * он сканирует BLE-эфир и извлекает CPS из advertising-пакетов (manufacturer data,
+ * companyId `0x0030`, первые 4 байта — uint32 little-endian). Это:
+ *  - не конфликтует с активным GATT-соединением (которое могло остаться от UI до выхода)
+ *  - сильно экономит батарею (нет постоянного notification stream)
+ *  - надёжно при кратких перерывах связи (пакеты broadcast по дизайну fire-and-forget)
+ *
+ * **Что сохраняется в трек** ([saveToTrack]):
+ *  - CPS из advertising
+ *  - GPS-координаты (FusedLocationProviderClient — `getLastKnownLocation` или
+ *    `getCurrentLocation` с таймаутом 10 сек)
+ *  - Магнитное поле (модуль вектора, усреднённый по 20 измерениям магнитометра)
+ *  - RSSI и accuracy
+ *
+ * **Параметры из SharedPreferences `app_state`** — кладёт [MainActivity.performExit] ДО старта:
+ *  - `device_mac` (целевой MAC, фильтр сканера)
+ *  - `current_track_id` (куда писать TrackDetail)
+ *  - `cps_2_doze` (для отображения дозы в уведомлении)
+ *
+ * **Уведомление** — тихий канал `ble_monitor_silent` (`IMPORTANCE_LOW` +
+ * `setOnlyAlertOnce` + `setSilent`). До первого пакета — прочерки и
+ * «Ожидание данных от прибора…» (флаг [hasFirstPacket]). После — CPS / доза / Magnitude / RSSI.
+ *
+ * **Остановка:**
+ *  - Через action `STOP_SERVICE` (кнопка «Остановить» в уведомлении) — [createStopServiceIntent]
+ *  - При возврате в приложение ([MainActivity.onResume]) — `stopService(...)`
+ *  - Android может убить — `START_STICKY` подскажет перезапустить
+ *
+ * **Известное ограничение.** Android может троттлить background BLE scan вне foreground —
+ * сервис иногда не сразу цепляет пакеты. Это системная особенность, обходов на стороне
+ * приложения нет (см. project_state.md → known limitations).
+ */
+class BleMonitoringService : Service() {
+    private lateinit var sensorManager: SensorManager
+    private var magnetometer: Sensor? = null
+    private val magneticBuffer = mutableListOf<Double>() // буфер для значений магнитометра
+    private val BUFFER_SIZE = 20                         // усреднять по 20 измерениям магнитного поля
+    private var currentMagnitude: Double = 0.0           // текущее усреднённое значение магнитного поля
+    private var hasFirstPacket: Boolean = false          // получили ли первый BLE-пакет от прибора
+
+    // MAC-адрес BluZ
+    companion object {
+        var TARGET_DEVICE_MAC = ""
+        var cps2doze = 0f
+        private const val LOCATION_PRIORITY_HIGH_ACCURACY = 100
+        private const val LOCATION_PRIORITY_BALANCED = 102
+        private const val LOCATION_PRIORITY_LOW_POWER = 104
+    }
+
+    private lateinit var bluetoothAdapter: BluetoothAdapter
+    private lateinit var scanner: BluetoothLeScanner
+    private val handler = Handler(Looper.getMainLooper())
+    private val scope = CoroutineScope(Dispatchers.IO + Job())
+
+    private val database by lazy { AppDatabase.getDatabase(this) }
+    private val dao by lazy { database.dosimeterDao() }
+
+    private var activeTrackId: Long? = null
+
+    private val sensorListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+            if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
+                // event.values[0] = X (мкТл)
+                // event.values[1] = Y (мкТл)
+                // event.values[2] = Z (мкТл)
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
+
+                // Модуль вектора магнитного поля (интенсивность)
+                val magnitude: Float = sqrt(x * x + y * y + z * z)
+                magneticBuffer.add(magnitude.toDouble())
+                // Ограничиваем размер буфера
+                if (magneticBuffer.size > BUFFER_SIZE) {
+                    magneticBuffer.removeAt(0) // удаляем самое старое
+                }
+                // Вычисляем среднее
+                currentMagnitude = magneticBuffer.average()
+                //Log.d("BluZ-BT", "Magnitude: $magnitude")
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+            // Можно игнорировать, или обрабатывать низкую точность
+        }
+    }
+
+    private val scanCallback = object : ScanCallback() {
+        @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+        override fun onScanResult(callbackType: Int, result: ScanResult?) {
+            result?.let  { scanResult ->
+                if (scanResult.device.address == TARGET_DEVICE_MAC) {
+                    saveToTrack(scanResult)
+                }
+            }
+        }
+
+        override fun onScanFailed(errorCode: Int) {
+            Log.e("BluZ-BT", "Scan failed: $errorCode")
+        }
+    }
+
+    /**
+     * Инициализация сервиса:
+     *  1. Читает из SharedPreferences `app_state` целевой MAC, ID трека, коэффициент CPS→μR/h
+     *  2. Получает [BluetoothAdapter] и [BluetoothLeScanner]
+     *  3. Регистрирует магнитометр через [SensorManager]
+     *
+     * **Внимание:** [BluetoothInterface.bluetoothAdapter] не используется — у сервиса свой
+     * адаптер. Это сделано чтобы изолировать жизненные циклы.
+     */
+    override fun onCreate() {
+        super.onCreate()
+        Log.d("BluZ-BT", "BleMonitoringService: onCreate called")
+        val prefs = getSharedPreferences("app_state", Context.MODE_PRIVATE)
+        TARGET_DEVICE_MAC = prefs.getString("device_mac", "") ?: ""
+        activeTrackId = prefs.getLong("current_track_id", 0)
+        cps2doze = prefs.getFloat("cps_2_doze", 0f)
+        val btManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        bluetoothAdapter = btManager.adapter
+        scanner = bluetoothAdapter.bluetoothLeScanner
+
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+
+        if (magnetometer == null) {
+            // Устройство не имеет магнитометра
+            Log.w("BluZ-BT", "Magnetometer not available.")
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    /**
+     * Точка входа при `startForegroundService`. Поддерживает два сценария:
+     *  - **Normal start** (intent без action) — `startForeground` с placeholder-уведомлением,
+     *    регистрация магнитометра, запуск BLE-скана через [startBleScan]
+     *  - **Stop request** (`intent.action == "STOP_SERVICE"`) — установка флага
+     *    `is_ble_service_running = false`, `stopSelf()`. Эту action шлёт кнопка
+     *    «Остановить» в уведомлении ([createStopServiceIntent])
+     *
+     * Возвращает [START_STICKY] — Android перезапустит сервис если убил.
+     *
+     * Каждые 5 минут [restartRunnable] перезапускает скан (обход системного троттлинга).
+     */
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        /* Проверим нужно ли завершить сервис. */
+        if (intent?.action == "STOP_SERVICE") {
+            getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {
+                putBoolean("is_ble_service_running", false)
+                putString("device_mac", "")
+                putLong("current_track_id", 0)
+            }
+            Log.d("BluZ-BT", "Получена команда на остановку из уведомления")
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
+        // Создаём уведомление сразу (фоновые сервисы должны быстро показать foreground-статус)
+        createNotificationChannel()
+        updateNotification(0f, 0)
+        val initialNotification = updateNotification(0f, 0)
+        startForeground(1, initialNotification)
+        //getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {putBoolean("is_ble_service_running", true)}
+        //activeTrackId = GO.currentTrck
+        Log.d("BluZ-BT", "Using trackId: $activeTrackId")
+        /* Установим флаг в shared для индикации, что сервис запущен и сохраним текущий трек */
+        getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {
+            putBoolean("is_ble_service_running", true)
+        }
+        /* Активируем магнетометер */
+        magnetometer?.let { sensor ->
+            sensorManager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_UI)
+        }
+        // Запускаем фоновую задачу: проверка трека + разрешений + старт сканирования
+        scope.launch {
+            try {
+                // Проверяем разрешения до вызова startBleScan()
+                if (!hasPermissions()) {
+                    Log.e("BluZ-BT", "Required permissions are missing. Cannot start scan.")
+                    stopSelf()
+                    return@launch
+                }
+                // Запускаем сканирование BLE
+                startBleScan()
+                /* Таймер для перезапуска сканирования, каждые 5 минут. */
+                handler.postDelayed(restartRunnable, 300000)
+            } catch (e: SecurityException) {
+                Log.e("BluZ-BT", "Security error when starting scan", e)
+                stopSelf()
+            } catch (e: Exception) {
+                Log.e("BluZ-BT", "Unexpected error in onStartCommand", e)
+                stopSelf()
+            }
+        }
+
+        /* Запускаем сервис, так, что бы его не убила система */
+        return START_STICKY
+    }
+
+    @SuppressLint("MissingPermission")
+    private val restartRunnable = object : Runnable {
+        override fun run() {
+            restartBleScan()
+            handler.postDelayed(this, 300000) // каждые 5 минут
+        }
+    }
+
+
+    /**
+     * Обработчик одной точки скана: извлекает CPS из manufacturer data, получает GPS,
+     * вставляет [data.entity.TrackDetail] в БД и обновляет уведомление.
+     *
+     * **Что собирается:**
+     *  - CPS — [extractCpsFromScanResult] из manufacturer data (companyId 0x0030)
+     *  - GPS — [getLastKnownLocation] или [getFreshLocation] с таймаутом 10 сек
+     *  - Магнитное поле — `currentMagnitude` (усреднение по 20 измерений в [sensorListener])
+     *  - RSSI — из самого `ScanResult.rssi`
+     *
+     * Все IO операции — в [scope] (Dispatchers.IO).
+     */
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    private fun saveToTrack(result: ScanResult) {
+        val trackId = activeTrackId ?: return
+
+        scope.launch(Dispatchers.IO)  {
+            try {
+                // Получаем GPS данные.
+                val location = getLastKnownLocation() ?: getFreshLocation()
+                val latitude = location?.latitude ?: 0.0
+                val longitude = location?.longitude ?: 0.0
+                val accuracy = location?.accuracy ?: 0f
+                val altitude = location?.altitude ?: 0.0
+                val speed = location?.speed ?: 0f
+
+                // Извлекаем CPS из manufacturer data
+                val cps = extractCpsFromScanResult(result) ?: 0f
+
+                // Уровень сигнала
+                val rssi = result.rssi
+
+                // Готовим данные для сохранения в базу.
+                val detail = TrackDetail(
+                    trackId = trackId,
+                    latitude = latitude,
+                    longitude = longitude,
+                    accuracy = accuracy,
+                    altitude = altitude,
+                    speed = speed,
+                    cps = cps,
+                    magnitude = currentMagnitude, // Данные магнитометра.
+                    timestamp = System.currentTimeMillis() / 1000   // Время в секундах
+                )
+
+                // Сохраняем точку
+                dao.insertPoint(detail)
+                hasFirstPacket = true
+                updateNotification(cps, rssi)
+
+                Log.d("BluZ-BT","Saved: RSSI=$rssi, CPS=$cps, Lat=$latitude, Lon=$longitude, Accur=$accuracy, Magnitude: $currentMagnitude")
+
+            } catch (e: Exception) {
+                Log.e("BluZ-BT", "Failed to save track point", e)
+            }
+        }
+    }
+
+    /**
+     * Очистка ресурсов: отмена coroutine scope, остановка BLE-скана, dereg магнитометра,
+     * сброс foreground-уведомления, флаг `is_ble_service_running = false` в SharedPreferences.
+     */
+    override fun onDestroy() {
+        scope.cancel()
+        try {
+            if (hasPermissions() && ::scanner.isInitialized) {
+                scanner.stopScan(scanCallback)
+                Log.d("BluZ-BT", "BLE scan stopped gracefully")
+            }
+        } catch (e: SecurityException) {
+            Log.w("BluZ-BT", "Failed to stop scan due to missing permissions", e)
+            // Игнорируем — сервис всё равно завершается
+        } catch (e: Exception) {
+            Log.e("BluZ-BT", "Unexpected error while stopping scan", e)
+        }
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        /* Отметим в shared? что сервис не запущен */
+        getSharedPreferences("app_state", Context.MODE_PRIVATE).edit {putBoolean("is_ble_service_running", false)}
+        sensorManager.unregisterListener(sensorListener)
+        super.onDestroy()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    /**
+     * Создаёт тихий канал уведомлений `ble_monitor_silent` (IMPORTANCE_LOW, без звука,
+     * вибро, lights). Также удаляет старый канал `ble_monitor_channel` (с IMPORTANCE_DEFAULT)
+     * — программно изменить importance существующего канала Android не позволяет, поэтому
+     * единственный способ переключить на тихий — пересоздание под новым ID.
+     */
+    private fun createNotificationChannel() {
+        val manager = getSystemService(NotificationManager::class.java)
+        // Удаляем старый канал с IMPORTANCE_DEFAULT, если он остался у пользователя
+        // (importance существующего канала программно не меняется — единственный путь).
+        try { manager.deleteNotificationChannel("ble_monitor_channel") } catch (_: Exception) {}
+
+        val channel = NotificationChannel(
+            "ble_monitor_silent",
+            "Запись трека (тихое)",
+            NotificationManager.IMPORTANCE_LOW   // без звука и без heads-up; иконка в шторке остаётся
+        ).apply {
+            description = "BLE-сканирование и запись точек трека в фоне"
+            setSound(null, null)
+            enableVibration(false)
+            enableLights(false)
+        }
+        manager.createNotificationChannel(channel)
+    }
+
+    /**
+     * Создаёт начальное foreground-уведомление (без CPS/dose — placeholder до прихода
+     * первого пакета). Используется в [onStartCommand] для немедленного вызова
+     * `startForeground` (Android требует Notification в первые 5 сек).
+     *
+     * Реальный контент с CPS/dose устанавливается в [updateNotification] после первого
+     * пакета (флаг [hasFirstPacket]).
+     */
+    private fun createNotification(): Notification {
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, MainActivity::class.java).apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        return NotificationCompat.Builder(this, "ble_monitor_silent")
+            .setContentTitle("BLE Monitoring Active")
+            .setContentText("Tracking device: $TARGET_DEVICE_MAC")
+            //.setSmallIcon(R.drawable.ic_bluetooth_searching)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentIntent(pendingIntent)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+    }
+
+    /* Перезапуск сканирования BLE */
+    @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
+    @SuppressLint("MissingPermission")
+    /**
+     * Перезапускает BLE-скан: [stopBleScan] + [startBleScan]. Вызывается каждые 5 минут
+     * через [restartRunnable] — для обхода системного троттлинга Android (после ~30 мин
+     * непрерывного скана система может пропускать пакеты).
+     */
+    private fun restartBleScan() {
+        try {
+            stopBleScan()
+            Log.d("BluZ-BT", "BLE scan stopped for restart")
+        } catch (e: Exception) {
+            Log.e("BluZ-BT", "Failed to stop scan", e)
+        }
+
+        // Проверка разрешений и Bluetooth
+        if (!hasPermissions() || !bluetoothAdapter.isEnabled) {
+            Log.w("BluZ-BT", "Permissions or Bluetooth not available, skipping restart")
+            return
+        }
+        startBleScan()
+        Log.d("BluZ-BT", "BLE scan restarted")
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
+    @SuppressLint("MissingPermission")
+    /** Останавливает scanner с [scanCallback]. Защита от исключений — некоторые устройства
+     *  бросают NPE если скан ещё не был запущен или уже остановлен. */
+    private fun stopBleScan() {
+        try {
+            scanner.stopScan(scanCallback)
+            Log.d("BluZ-BT", "BLE scan stopped")
+        } catch (e: SecurityException) {
+            Log.e("BluZ-BT", "Failed to stop scan", e)
+        } catch (e: Exception) {
+            // На некоторых устройствах stopScan может кидать NPE, если сканирование ещё не запущено
+            Log.w("BluZ-BT", "Error stopping scan", e)
+        }
+    }
+
+    //@RequiresPermission(allOf = [
+    //    Manifest.permission.BLUETOOTH_SCAN,
+    //    Manifest.permission.ACCESS_FINE_LOCATION
+    //])
+    @SuppressLint("MissingPermission")
+    /**
+     * Стартует BLE-скан с фильтром по [TARGET_DEVICE_MAC] и режимом `SCAN_MODE_LOW_LATENCY`
+     * (агрессивный, жрёт батарею — но иначе пропускаются пакеты в background).
+     *
+     * Проверяет разрешения и BT-включённость. Если что-то не так — `stopSelf()`.
+     */
+    private fun startBleScan() {
+        val mac = TARGET_DEVICE_MAC
+            //Log.d("BluZ-BT", "Starting BLE scan for $mac")
+        if (!hasPermissions()) {
+            Log.e("BluZ-BT", "Permissions missing")
+            stopSelf()
+            return
+        }
+
+        if (!bluetoothAdapter.isEnabled) {
+            Log.w("BluZ-BT", "Bluetooth is disabled")
+            stopSelf()
+            return
+        }
+
+        val filter = ScanFilter.Builder()
+            .setDeviceAddress(mac)
+            .build()
+
+        val settings = ScanSettings.Builder()
+            //.setScanMode(ScanSettings.SCAN_MODE_LOW_POWER) // Экономный режим, но много пропусков.
+            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+            .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+            .setReportDelay(0)
+            .build()
+
+        try {
+            scanner.startScan(listOf(filter), settings, scanCallback)
+            Log.d("BluZ-BT", "BLE scan started for MAC: $mac")
+        } catch (e: SecurityException) {
+            Log.e("BluZ-BT", "Failed to start scan due to permission", e)
+            stopSelf()
+        }
+    }
+
+    /**
+     * Проверяет BLE-разрешения, нужные для скана. Android 12+ — `BLUETOOTH_SCAN` +
+     * `BLUETOOTH_CONNECT`; до Android 12 — `ACCESS_FINE_LOCATION` (исторически BLE-скан
+     * требовал геолокацию для приватности).
+     */
+    private fun hasPermissions(): Boolean {
+        val permissionList = mutableListOf<String>()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12+
+            permissionList.add(Manifest.permission.BLUETOOTH_SCAN)
+            permissionList.add(Manifest.permission.BLUETOOTH_CONNECT) // тоже нужно на API 31+
+        }
+
+        // На всех версиях ниже API 31 и для совместимости — нужна геолокация
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION)
+            // или ACCESS_COARSE_LOCATION, если хватает точности
+        }
+
+        return permissionList.all { permission ->
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private val fusedLocationClient by lazy {
+        LocationServices.getFusedLocationProviderClient(this)
+    }
+
+    @SuppressLint("MissingPermission")
+    /** Получает кэшированную локацию через `fusedLocationClient.lastLocation`. Может вернуть
+     *  устаревшие данные. Используется как первый и быстрый способ; при null/устаревшем
+     *  fallback на [getFreshLocation]. */
+    private suspend fun getLastKnownLocation(): android.location.Location? = withContext(Dispatchers.IO) {
+        try {
+            fusedLocationClient.lastLocation.await()
+        } catch (e: Exception) {
+            Log.w("BluZ-BT", "Failed to get last location", e)
+            null
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    /** Запрашивает свежую локацию через `fusedLocationClient.getCurrentLocation`
+     *  (PRIORITY_HIGH_ACCURACY) с таймаутом 10 сек через `CancellationTokenSource`.
+     *  Может вернуть null если GPS не дал fix за это время. */
+    private suspend fun getFreshLocation(): android.location.Location? = withContext(Dispatchers.IO) {
+        return@withContext try {
+            // Создаём CancellationToken для отмены запроса
+            val cancellationTokenSource = CancellationTokenSource()
+
+            // Устанавливаем таймаут в 10 секунд
+            coroutineScope {
+                launch {
+                    delay(10000)
+                    cancellationTokenSource.cancel()
+                }
+
+                // Запрашиваем свежее местоположение с высокой точностью
+                fusedLocationClient.getCurrentLocation(LOCATION_PRIORITY_HIGH_ACCURACY,cancellationTokenSource.token).await()
+            }
+        } catch (e: Exception) {
+            Log.e("BluZ-BT", "Failed to get fresh location", e)
+            null
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    /**
+     * Извлекает текущее CPS прибора из manufacturer-specific data в advertising-пакете.
+     *
+     * Прибор кладёт CPS как 4-байтное uint32 (little-endian) под идентификатором производителя
+     * `0x0030`. Декодируется через [bytesToUInt].
+     *
+     * @return CPS как Float или null если manufacturer data отсутствует / некорректна.
+     */
+    private fun extractCpsFromScanResult(result: ScanResult): Float? {
+        val scanRecord = result.scanRecord ?: return null
+        val manufacturerData = scanRecord.manufacturerSpecificData
+
+        for (i in 0 until manufacturerData.size) {
+            val companyId = manufacturerData.keyAt(i)
+            if (companyId == 0x0030) {
+                val userData = manufacturerData.valueAt(i) // 4 ,байта - CPS
+
+                // Ожидаются минимум 4 байта для CPS
+                if (userData.size >= 4) {
+                    try {
+                        val cpsValue = bytesToUInt(userData[0], userData[1], userData[2], userData[3])
+                        return cpsValue.toFloat()
+                    } catch (e: IndexOutOfBoundsException) {
+                        Log.w("BluZ-BT", "Error convert CPS data to float", e)
+                    }
+                } else {
+                    Log.w("BluZ-BT", "User data too short: ${userData.size} bytes")
+                }
+            }
+        }
+        return null
+    }
+
+    // Помогает собрать 4 байта в int (little-endian)
+    /** Объединяет 4 байта в `UInt` little-endian (b0 — младший). */
+    private fun bytesToUInt(b0: Byte, b1: Byte, b2: Byte, b3: Byte): UInt {
+        return (b0.toUInt() and 0xFFu) or
+                ((b1.toUInt() and 0xFFu) shl 8) or
+                ((b2.toUInt() and 0xFFu) shl 16) or
+                ((b3.toUInt() and 0xFFu) shl 24)
+    }
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    /**
+     * Перерисовывает уведомление с актуальными значениями.
+     *
+     * **Три варианта контента:**
+     *  - `!hasFirstPacket` — прочерки и «Ожидание данных от прибора…»
+     *  - `!hasCoef` (`cps2doze <= 0`) — только CPS, без дозы (см. UX-итерация 0.24)
+     *  - есть и пакеты и коэф — полный формат CPS / доза (uR/h или uSv/h) / Magnitude / RSSI
+     *
+     * **Тихий показ** — `setOnlyAlertOnce(true)` + `setSilent(true)`. Канал [createNotificationChannel]
+     * IMPORTANCE_LOW.
+     *
+     * **Кнопка «Остановить»** — action [createStopServiceIntent].
+     */
+    private fun updateNotification(cps: Float, rssi: Int): Notification {
+        val hasCoef = cps2doze > 0f
+        val magnitudeLine = if (currentMagnitude > 0) "\nMagnitude: %.2f uT".format(currentMagnitude) else ""
+
+        val formattedCps: String = if (!hasFirstPacket) {
+            // До первого пакета — прочерки, чтобы не показывать ложные нули.
+            val unit = if (hasCoef) (if (GO.unitsMess == 1) "uSv/h" else "uR/h") else "cps"
+            val dosePart = if (hasCoef) " / — $unit" else ""
+            "CPS: —$dosePart$magnitudeLine\nRSSI: — dBm\nОжидание данных от прибора…"
+        } else if (!hasCoef) {
+            // Коэффициент CPS→μR/h не настроен — показываем только CPS.
+            "CPS: %.0f$magnitudeLine\nRSSI: %d dBm".format(cps, rssi)
+        } else when (GO.unitsMess) {
+            1 -> "CPS: %.0f / %.3f uSv/h$magnitudeLine\nRSSI: %d dBm".format(cps, cps * cps2doze * 0.01, rssi)
+            else -> "CPS: %.0f / %.2f uR/h$magnitudeLine\nRSSI: %d dBm".format(cps, cps * cps2doze, rssi)
+        }
+
+        val stopIntent = createStopServiceIntent()
+        //val largeIcon = ContextCompat.getDrawable(this, R.drawable.ic_radiation_192)
+        //    ?.toBitmap(
+        //        resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width),
+        //        resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)
+        //    )
+        val notification = NotificationCompat.Builder(this, "ble_monitor_silent")
+            .setSmallIcon(R.drawable.ic_radiation_24)
+            //.setLargeIcon(largeIcon)
+            .setContentTitle("Track is recorded.")
+            .setContentText(formattedCps)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(formattedCps)) // Для крупного текста
+            .setContentIntent(createPendingIntent())
+            .setPriority(NotificationCompat.PRIORITY_LOW)   // тишина на pre-O
+            .setOnlyAlertOnce(true)                          // даже если канал DEFAULT — звук только один раз
+            .setSilent(true)                                 // явный запрет звука/вибро на этом уведомлении
+            .setNumber(cps.toInt())
+            .addAction(
+                R.drawable.ic_stop, // иконка
+                "Остановить",
+                stopIntent
+            )
+            .build()
+
+        // Обновляем уведомление с тем же ID
+        NotificationManagerCompat.from(this).notify(1, notification)
+        return notification
+    }
+
+    /** PendingIntent для запуска [MainActivity] по тапу на уведомление. */
+    private fun createPendingIntent(): PendingIntent {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        return PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    /**
+     * PendingIntent для кнопки «Остановить» в уведомлении. Шлёт `Intent` с
+     * `action="STOP_SERVICE"` на сам сервис. [onStartCommand] перехватит и вызовет `stopSelf()`.
+     */
+    private fun createStopServiceIntent(): PendingIntent {
+        val intent = Intent(this, BleMonitoringService::class.java)
+        intent.action = "STOP_SERVICE"
+        return PendingIntent.getService(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+}

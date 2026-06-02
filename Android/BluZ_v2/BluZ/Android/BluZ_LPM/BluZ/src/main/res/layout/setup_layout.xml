@@ -1,0 +1,1828 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/setupLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bz_bg">
+
+    <!-- Title -->
+    <LinearLayout
+        android:id="@+id/settingsTitleRow"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="18dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="КОНФИГУРАЦИЯ ПРИБОРА"
+            android:textColor="@color/bz_text_muted"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12"
+            android:fontFamily="@font/bz_inter_bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Настройки"
+            android:textColor="@color/bz_text"
+            android:textSize="22sp"
+            android:fontFamily="@font/bz_inter_bold" />
+    </LinearLayout>
+
+    <!-- Scrollable content -->
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:scrollbarStyle="outsideOverlay"
+        android:paddingBottom="80dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/settingsTitleRow"
+        app:layout_constraintBottom_toTopOf="@id/settingsActionBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="14dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="14dp">
+
+            <!-- ───── Card: Connection ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_bz_card"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ПОДКЛЮЧЕНИЕ"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="8dp">
+
+                    <TextView
+                        android:id="@+id/labMAC"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MAC"
+                        android:textColor="@color/bz_text_dim"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/bz_jetbrains_mono" />
+
+                    <EditText
+                        android:id="@+id/textMACADDR"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:text="XX:XX:XX:XX:XX:XX"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:inputType="text"
+                        android:maxLength="17" />
+
+                    <Button
+                        android:id="@+id/buttonScanBT"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_bz_icon_button"
+                        android:text="@string/textScan"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="11sp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:fontFamily="@font/bz_inter_bold" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchAutoLoadDeviceCfg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Загружать настройки с BluZ"
+                    android:textColor="@color/bz_text"
+                    android:textSize="13sp"
+                    android:thumbTint="@color/bz_switch_thumb"
+                    android:trackTint="@color/bz_switch_track" />
+            </LinearLayout>
+
+            <!-- ───── Card: Detector profile ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_bz_card"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ПРОФИЛЬ ДЕТЕКТОРА"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <TextView
+                    android:id="@+id/textDetectorName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text=""
+                    android:textColor="@color/bz_accent"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp">
+
+                    <Button
+                        android:id="@+id/buttonNewDetector"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_bz_icon_button"
+                        android:text="Создать"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="11sp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:fontFamily="@font/bz_inter_bold" />
+
+                    <Button
+                        android:id="@+id/buttonLoadDetector"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_bz_icon_button"
+                        android:text="Загрузить"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="11sp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:fontFamily="@font/bz_inter_bold" />
+
+                    <Button
+                        android:id="@+id/buttonSelectDetector"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_bz_icon_button"
+                        android:text="Выбрать"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="11sp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:fontFamily="@font/bz_inter_bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ───── Card: Indication ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_bz_card"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ИНДИКАЦИЯ ИМПУЛЬСОВ"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <!-- Click row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="10dp">
+
+                    <TextView
+                        android:id="@+id/textView30"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Звук"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rbClickNone"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:buttonTint="@color/bz_accent"
+                            android:text="нет"
+                            android:textColor="@color/bz_text_dim"
+                            android:textSize="11sp" />
+
+                        <RadioButton
+                            android:id="@+id/rbClick1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:buttonTint="@color/bz_accent"
+                            android:text="1/1"
+                            android:textColor="@color/bz_text_dim"
+                            android:textSize="11sp" />
+
+                        <RadioButton
+                            android:id="@+id/rbClick10"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:buttonTint="@color/bz_accent"
+                            android:text="1/10"
+                            android:textColor="@color/bz_text_dim"
+                            android:textSize="11sp" />
+                    </RadioGroup>
+                </LinearLayout>
+
+                <!-- LED row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="4dp">
+
+                    <TextView
+                        android:id="@+id/textView31"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="LED"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rbLedNone"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:buttonTint="@color/bz_accent"
+                            android:text="нет"
+                            android:textColor="@color/bz_text_dim"
+                            android:textSize="11sp" />
+
+                        <RadioButton
+                            android:id="@+id/rbLed1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:buttonTint="@color/bz_accent"
+                            android:text="1/1"
+                            android:textColor="@color/bz_text_dim"
+                            android:textSize="11sp" />
+
+                        <RadioButton
+                            android:id="@+id/rbLed10"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:buttonTint="@color/bz_accent"
+                            android:text="1/10"
+                            android:textColor="@color/bz_text_dim"
+                            android:textSize="11sp" />
+                    </RadioGroup>
+                </LinearLayout>
+
+                <!-- Auto-start spectrometer -->
+                <CheckBox
+                    android:id="@+id/CBSpectrometer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:buttonTint="@color/bz_accent"
+                    android:text="Автозапуск спектрометра"
+                    android:textColor="@color/bz_text"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- ───── Card: Alarms ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_bz_card"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="УРОВНИ ТРЕВОГИ"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <!-- Header for columns -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp">
+                    <View
+                        android:layout_width="40dp"
+                        android:layout_height="1dp" />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Порог"
+                        android:textColor="@color/bz_text_muted"
+                        android:textSize="10sp"
+                        android:letterSpacing="0.08"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/textView23"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="12dp"
+                        android:text="ЗВУК"
+                        android:textColor="@color/bz_text_muted"
+                        android:textSize="10sp"
+                        android:letterSpacing="0.08"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/textView24"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ВИБРО"
+                        android:textColor="@color/bz_text_muted"
+                        android:textSize="10sp"
+                        android:letterSpacing="0.08"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Level 1 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="8dp">
+                    <TextView
+                        android:id="@+id/textView13"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:gravity="center"
+                        android:background="@drawable/bg_bz_chip_accent"
+                        android:text="L1"
+                        android:textColor="@color/bz_warn"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:textStyle="bold" />
+                    <EditText
+                        android:id="@+id/editLevel1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:inputType="number"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="cps"
+                        android:textColor="@color/bz_text_dim"
+                        android:textSize="11sp"
+                        android:fontFamily="@font/bz_jetbrains_mono" />
+                    <CheckBox
+                        android:id="@+id/CBSoudLevel1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:buttonTint="@color/bz_accent" />
+                    <CheckBox
+                        android:id="@+id/CBVibroLevel1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:buttonTint="@color/bz_accent" />
+                </LinearLayout>
+
+                <!-- Level 2 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="6dp">
+                    <TextView
+                        android:id="@+id/textView9"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:gravity="center"
+                        android:background="@drawable/bg_bz_chip_accent"
+                        android:text="L2"
+                        android:textColor="#FF6B35"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:textStyle="bold" />
+                    <EditText
+                        android:id="@+id/editLevel2"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:inputType="number"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="cps"
+                        android:textColor="@color/bz_text_dim"
+                        android:textSize="11sp"
+                        android:fontFamily="@font/bz_jetbrains_mono" />
+                    <CheckBox
+                        android:id="@+id/CBSoudLevel2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:buttonTint="@color/bz_accent" />
+                    <CheckBox
+                        android:id="@+id/CBVibroLevel2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:buttonTint="@color/bz_accent" />
+                </LinearLayout>
+
+                <!-- Level 3 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="6dp">
+                    <TextView
+                        android:id="@+id/textView10"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:gravity="center"
+                        android:background="@drawable/bg_bz_chip_danger"
+                        android:text="L3"
+                        android:textColor="@color/bz_on_danger"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:textStyle="bold" />
+                    <EditText
+                        android:id="@+id/editLevel3"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:inputType="number"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="cps"
+                        android:textColor="@color/bz_text_dim"
+                        android:textSize="11sp"
+                        android:fontFamily="@font/bz_jetbrains_mono" />
+                    <CheckBox
+                        android:id="@+id/CBSoudLevel3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:buttonTint="@color/bz_accent" />
+                    <CheckBox
+                        android:id="@+id/CBVibroLevel3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:buttonTint="@color/bz_accent" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ───── Card: Spectrum display ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_bz_card"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:id="@+id/textView38"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ОТОБРАЖЕНИЕ СПЕКТРА"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <!-- Type: line / histogram -->
+
+                <TableLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/textView6"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:text="Тип графика"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+
+                        <RadioGroup
+                            android:id="@+id/rgTypeSpectr"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="right|left"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:id="@+id/rbLine"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:buttonTint="@color/bz_accent"
+                                android:text="Линия"
+                                android:textColor="@color/bz_text_dim"
+                                android:textSize="11sp" />
+
+                            <RadioButton
+                                android:id="@+id/rbGistogram"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:buttonTint="@color/bz_accent"
+                                android:text="Бар"
+                                android:textColor="@color/bz_text_dim"
+                                android:textSize="11sp" />
+                        </RadioGroup>
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/textView32"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:text="Формат сохранения"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+
+                        <RadioGroup
+                            android:id="@+id/rbSpctType"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="right|left"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:id="@+id/rbBqMon"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:buttonTint="@color/bz_accent"
+                                android:text="BqMon"
+                                android:textColor="@color/bz_text_dim"
+                                android:textSize="11sp" />
+
+                            <RadioButton
+                                android:id="@+id/rbSPE"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:buttonTint="@color/bz_accent"
+                                android:text="SPE"
+                                android:textColor="@color/bz_text_dim"
+                                android:textSize="11sp" />
+                        </RadioGroup>
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/textView39"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:text="Единицы измерения"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+
+                        <RadioGroup
+                            android:id="@+id/RGUnits"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="left"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:id="@+id/rbURH"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:buttonTint="@color/bz_accent"
+                                android:text="мкР/ч"
+                                android:textColor="@color/bz_text_dim"
+                                android:textSize="11sp" />
+
+                            <RadioButton
+                                android:id="@+id/rbUSVH"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:buttonTint="@color/bz_accent"
+                                android:text="мкЗв/ч"
+                                android:textColor="@color/bz_text_dim"
+                                android:textSize="11sp" />
+                        </RadioGroup>
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:id="@+id/textView11"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_weight="1"
+                            android:text="SMA-окно"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+
+                        <EditText
+                            android:id="@+id/editTextSMAWindow"
+                            android:layout_width="64dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_bz_button_surface"
+                            android:fontFamily="@font/bz_jetbrains_mono_bold"
+                            android:gravity="center"
+                            android:inputType="number"
+                            android:padding="8dp"
+                            android:text="3"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:id="@+id/textView12"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_weight="1"
+                            android:text="Отбрасывать каналов от начала"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+
+                        <EditText
+                            android:id="@+id/editTextRejectCann"
+                            android:layout_width="64dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_bz_button_surface"
+                            android:fontFamily="@font/bz_jetbrains_mono_bold"
+                            android:gravity="center"
+                            android:inputType="number"
+                            android:padding="8dp"
+                            android:text="0"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+                    </TableRow>
+
+                </TableLayout>
+
+                <!-- Save format -->
+
+                <!-- Units -->
+
+                <!-- SMA window + Reject channels -->
+
+            </LinearLayout>
+
+            <!-- ───── Card: Spectrum colors ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_bz_card"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ЦВЕТ СПЕКТРА"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <ImageView
+                    android:id="@+id/tvColor"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_bz_button_surface" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp">
+                    <RadioButton
+                        android:id="@+id/RBLin"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/bz_accent"
+                        android:text="Lin"
+                        android:textColor="@color/bz_text_dim"
+                        android:textSize="11sp" />
+                    <RadioButton
+                        android:id="@+id/RBLg"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/bz_accent"
+                        android:text="Log"
+                        android:textColor="@color/bz_text_dim"
+                        android:textSize="11sp" />
+                    <RadioButton
+                        android:id="@+id/RBFoneLin"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/bz_accent"
+                        android:text="Фон Lin"
+                        android:textColor="@color/bz_text_dim"
+                        android:textSize="11sp" />
+                    <RadioButton
+                        android:id="@+id/RBFoneLg"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/bz_accent"
+                        android:text="Фон Log"
+                        android:textColor="@color/bz_text_dim"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="A"
+                    android:textColor="@color/bz_text_dim"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/bz_jetbrains_mono" />
+                <SeekBar
+                    android:id="@+id/seekBarA"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="255"
+                    android:progressTint="@color/bz_accent"
+                    android:thumbTint="@color/bz_accent" />
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="R"
+                    android:textColor="@color/bz_text_dim"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/bz_jetbrains_mono" />
+                <SeekBar
+                    android:id="@+id/seekBarR"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="255"
+                    android:progressTint="@color/bz_danger"
+                    android:thumbTint="@color/bz_danger" />
+
+                <TextView
+                    android:id="@+id/textView7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="G"
+                    android:textColor="@color/bz_text_dim"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/bz_jetbrains_mono" />
+                <SeekBar
+                    android:id="@+id/seekBarG"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="255"
+                    android:progressTint="@color/bz_accent"
+                    android:thumbTint="@color/bz_accent" />
+
+                <TextView
+                    android:id="@+id/textView8"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="B"
+                    android:textColor="@color/bz_text_dim"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/bz_jetbrains_mono" />
+                <SeekBar
+                    android:id="@+id/seekBarB"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="255"
+                    android:progressTint="@color/bz_info"
+                    android:thumbTint="@color/bz_info" />
+            </LinearLayout>
+
+            <!-- ───── Card: Calibration ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_bz_card"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:id="@+id/textView15"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="КАЛИБРОВКА"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <TextView
+                    android:id="@+id/textView37"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Разрешение спектра"
+                    android:textColor="@color/bz_text_dim"
+                    android:textSize="12sp" />
+
+                <RadioGroup
+                    android:id="@+id/RGResolution"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+                    <RadioButton
+                        android:id="@+id/RBResol1024"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/bz_accent"
+                        android:text="1024"
+                        android:textColor="@color/bz_text_dim"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/bz_jetbrains_mono" />
+                    <RadioButton
+                        android:id="@+id/RBResol2048"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/bz_accent"
+                        android:text="2048"
+                        android:textColor="@color/bz_text_dim"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/bz_jetbrains_mono" />
+                    <RadioButton
+                        android:id="@+id/RBResol4096"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/bz_accent"
+                        android:text="4096"
+                        android:textColor="@color/bz_text_dim"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/bz_jetbrains_mono" />
+                </RadioGroup>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/Polinom_text"
+                    android:textColor="@color/bz_text_dim"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/bz_jetbrains_mono" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:id="@+id/textView16"
+                        android:layout_width="14dp"
+                        android:layout_height="wrap_content"
+                        android:text="A"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="13sp"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                    <EditText
+                        android:id="@+id/editPolA"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:inputType="numberDecimal|numberSigned"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:id="@+id/textView17"
+                        android:layout_width="14dp"
+                        android:layout_height="wrap_content"
+                        android:text="B"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="13sp"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                    <EditText
+                        android:id="@+id/editPolB"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:inputType="numberDecimal|numberSigned"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:id="@+id/textView18"
+                        android:layout_width="14dp"
+                        android:layout_height="wrap_content"
+                        android:text="C"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="13sp"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                    <EditText
+                        android:id="@+id/editPolC"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:inputType="numberDecimal|numberSigned"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/buttonAutoCalibrate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_bz_button_accent"
+                    android:text="Автокалибровка по Ra-226"
+                    android:textColor="@color/bz_on_accent"
+                    android:textSize="13sp"
+                    android:textAllCaps="false"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Подбирает напряжение детектора, уровень компаратора и полином"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/textView20"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="CPS → мкР/ч"
+                    android:textColor="@color/bz_text_dim"
+                    android:textSize="12sp" />
+                <EditText
+                    android:id="@+id/editCPS2RH"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_bz_button_surface"
+                    android:padding="8dp"
+                    android:text="0"
+                    android:textColor="@color/bz_text"
+                    android:textSize="13sp"
+                    android:inputType="numberDecimal"
+                    android:fontFamily="@font/bz_jetbrains_mono_bold" />
+
+                <TextView
+                    android:id="@+id/textView25"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Точность дозиметра (имп)"
+                    android:textColor="@color/bz_text_dim"
+                    android:textSize="12sp" />
+                <EditText
+                    android:id="@+id/editAquracy"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_bz_button_surface"
+                    android:padding="8dp"
+                    android:text="0"
+                    android:textColor="@color/bz_text"
+                    android:textSize="13sp"
+                    android:inputType="number"
+                    android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- ───── Card: Hardware (Expert) ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_bz_card"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="АППАРАТНЫЕ ПАРАМЕТРЫ"
+                        android:textColor="@color/bz_text_muted"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.12"
+                        android:fontFamily="@font/bz_inter_bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_bz_chip_danger"
+                        android:paddingStart="8dp"
+                        android:paddingTop="2dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="2dp"
+                        android:text="ЭКСПЕРТ"
+                        android:textColor="@color/bz_on_danger"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp">
+                    <TextView
+                        android:id="@+id/textView21"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Высокое напряжение"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
+                    <EditText
+                        android:id="@+id/editHvoltage"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_danger"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:id="@+id/textView22"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Компаратор"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
+                    <EditText
+                        android:id="@+id/editComparator"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_danger"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/buttonTuneComparator"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_bz_button_surface"
+                    android:text="Подобрать компаратор"
+                    android:textColor="@color/bz_text"
+                    android:textSize="13sp"
+                    android:textAllCaps="false"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Подбирается при естественном фоне (без источника)"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Бит канала (16–32)"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
+                    <EditText
+                        android:id="@+id/editBitsChannel"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="20"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Время выборки (0–7)"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
+                    <EditText
+                        android:id="@+id/editSampleTime"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ───── Card: Appearance ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_bz_card"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ВНЕШНИЙ ВИД"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="8dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Дневная тема"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="для использования на ярком солнце"
+                            android:textColor="@color/bz_text_muted"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/bzSwitchDayTheme"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/bz_switch_thumb"
+                        android:trackTint="@color/bz_switch_track" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="10dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="АКБ в процентах"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="заряд вместо напряжения, точность ±5%"
+                            android:textColor="@color/bz_text_muted"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/bzSwitchBatteryPercent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/bz_switch_thumb"
+                        android:trackTint="@color/bz_switch_track" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ───── Card: Map & Interface ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_bz_card"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:id="@+id/textView33"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="КАРТА И ИНТЕРФЕЙС"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <CheckBox
+                    android:id="@+id/CBFullScreen"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:buttonTint="@color/bz_accent"
+                    android:text="Полноэкранный режим"
+                    android:textColor="@color/bz_text"
+                    android:textSize="13sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="6dp">
+                    <TextView
+                        android:id="@+id/textView34"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Формат трека"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+                    <RadioGroup
+                        android:id="@+id/RGTrackFormat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <RadioButton
+                            android:id="@+id/rbKML"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:buttonTint="@color/bz_accent"
+                            android:text="KML"
+                            android:textColor="@color/bz_text_dim"
+                            android:textSize="11sp" />
+                        <RadioButton
+                            android:id="@+id/rbGPX"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:buttonTint="@color/bz_accent"
+                            android:text="CSV"
+                            android:textColor="@color/bz_text_dim"
+                            android:textSize="11sp" />
+                    </RadioGroup>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="8dp">
+                    <TextView
+                        android:id="@+id/textView27"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Отступ слева"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+                    <EditText
+                        android:id="@+id/editTextPaddingLeft"
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:id="@+id/textView28"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Отступ справа"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+                    <EditText
+                        android:id="@+id/editTextPaddingRight"
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:id="@+id/textView36"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Масштаб X"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+                    <EditText
+                        android:id="@+id/editTextXZoom"
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="1"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:inputType="numberDecimal"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:id="@+id/textView26"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Уровень логирования (0–5)"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+                    <EditText
+                        android:id="@+id/editTextApplucationLog"
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ───── Card: Actions ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_bz_card"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ДЕЙСТВИЯ"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:fontFamily="@font/bz_inter_bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp">
+                    <Button
+                        android:id="@+id/buttonLogs"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_bz_icon_button"
+                        android:text="Журнал событий"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="12sp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:fontFamily="@font/bz_inter_bold" />
+
+                    <Button
+                        android:id="@+id/buttonFind"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_bz_icon_button"
+                        android:text="@string/textFind"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_warn"
+                        android:textSize="12sp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:fontFamily="@font/bz_inter_bold" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/buttonCalibrateBatt"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_bz_icon_button"
+                    android:text="Калибровка АКБ"
+                    android:textAllCaps="false"
+                    android:textColor="@color/bz_accent"
+                    android:textSize="12sp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:fontFamily="@font/bz_inter_bold" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Floating BLE action bar -->
+    <LinearLayout
+        android:id="@+id/settingsActionBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/bz_surface"
+        android:paddingStart="14dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/buttonRestoreSetup"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_bz_icon_button"
+            android:text="@string/textRestoreSetup"
+            android:textAllCaps="false"
+            android:textColor="@color/bz_accent"
+            android:textSize="11sp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:fontFamily="@font/bz_inter_bold" />
+
+        <Button
+            android:id="@+id/buttonSaveSetup"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_bz_icon_button"
+            android:text="@string/textSaveSetup"
+            android:textAllCaps="false"
+            android:textColor="@color/bz_accent"
+            android:textSize="11sp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:fontFamily="@font/bz_inter_bold" />
+
+        <Button
+            android:id="@+id/buttonReadFromDevice"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_bz_icon_button"
+            android:text="@string/readFromDevice"
+            android:textAllCaps="false"
+            android:textColor="@color/bz_info"
+            android:textSize="11sp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:fontFamily="@font/bz_inter_bold" />
+
+        <Button
+            android:id="@+id/buttonWriteToDevice"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_bz_button_danger"
+            android:text="@string/writeToDevice"
+            android:textAllCaps="false"
+            android:textColor="@color/bz_on_danger"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:fontFamily="@font/bz_inter_bold" />
+    </LinearLayout>
+
+    <!-- Hidden legacy IDs used by code (not visible to user) -->
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+    <TextView
+        android:id="@+id/textView14"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+    <TextView
+        android:id="@+id/textView35"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+    <TextView
+        android:id="@+id/textView40"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

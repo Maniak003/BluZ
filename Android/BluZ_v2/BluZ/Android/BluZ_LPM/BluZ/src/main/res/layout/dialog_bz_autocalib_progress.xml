@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Стилизованный прогресс-диалог для автокалибровки и подбора компаратора. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/bz_bg"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="18dp"
+    android:paddingBottom="18dp">
+
+    <TextView
+        android:id="@+id/bzCalibProgTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/bz_text"
+        android:textSize="18sp"
+        android:fontFamily="@font/bz_inter_bold"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/bzCalibProgPhase"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textColor="@color/bz_accent"
+        android:textSize="11sp"
+        android:letterSpacing="0.08"
+        android:textAllCaps="true"
+        android:fontFamily="@font/bz_inter_bold" />
+
+    <TextView
+        android:id="@+id/bzCalibProgMsg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="@color/bz_text"
+        android:textSize="13sp"
+        android:lineSpacingMultiplier="1.2" />
+
+    <ProgressBar
+        android:id="@+id/bzCalibProgBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="14dp"
+        android:max="100"
+        android:progressTint="@color/bz_accent"
+        android:progressBackgroundTint="@color/bz_text_faint"
+        android:indeterminateTint="@color/bz_accent" />
+
+    <TextView
+        android:id="@+id/bzCalibProgParams"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="@color/bz_text_muted"
+        android:textSize="11sp"
+        android:fontFamily="@font/bz_jetbrains_mono" />
+
+    <Button
+        android:id="@+id/bzCalibProgCancel"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_bz_icon_button"
+        android:text="Отмена"
+        android:textAllCaps="false"
+        android:textColor="@color/bz_text_dim"
+        android:textSize="13sp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:fontFamily="@font/bz_inter_bold" />
+</LinearLayout>

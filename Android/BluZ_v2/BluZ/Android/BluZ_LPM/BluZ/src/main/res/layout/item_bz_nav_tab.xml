@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <View
+            android:id="@+id/bz_tab_indicator"
+            android:layout_width="32dp"
+            android:layout_height="3dp"
+            android:background="@color/bz_accent"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/bz_tab_icon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginTop="4dp"
+            android:duplicateParentState="true"
+            android:tint="@color/bz_nav_icon"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/bz_tab_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:duplicateParentState="true"
+            android:textColor="@color/bz_nav_text"
+            android:textSize="11sp"
+            android:letterSpacing="0.02"
+            android:maxLines="1" />
+    </LinearLayout>
+</FrameLayout>

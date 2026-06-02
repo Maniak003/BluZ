@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="preloaded_fonts" translatable="false">
+        <item>@font/bz_inter</item>
+        <item>@font/bz_inter_bold</item>
+        <item>@font/bz_jetbrains_mono</item>
+        <item>@font/bz_jetbrains_mono_bold</item>
+    </array>
+</resources>

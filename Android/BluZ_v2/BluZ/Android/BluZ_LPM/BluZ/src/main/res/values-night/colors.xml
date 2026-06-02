@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ─── BluZ design tokens — DARK theme (default) ─── -->
+    <color name="bz_bg">#0A0D12</color>
+    <color name="bz_surface">#0F141B</color>
+    <color name="bz_surface_2">#161C25</color>
+    <color name="bz_surface_3">#1C2330</color>
+    <color name="bz_line">#232B38</color>
+    <color name="bz_line_soft">#1A2029</color>
+    <color name="bz_divider">#0FFFFFFF</color>
+
+    <color name="bz_text">#E7ECF1</color>
+    <color name="bz_text_dim">#9AA3AD</color>
+    <color name="bz_text_muted">#5D6773</color>
+    <color name="bz_text_faint">#3B434E</color>
+
+    <color name="bz_accent">#00D4AA</color>
+    <color name="bz_accent_2">#00B390</color>
+    <color name="bz_accent_soft">#2400D4AA</color>
+    <color name="bz_on_accent">#001A14</color>
+
+    <color name="bz_warn">#F5B400</color>
+    <color name="bz_warn_soft">#24F5B400</color>
+    <color name="bz_alert_l2">#FF8650</color>
+
+    <color name="bz_danger">#FF4040</color>
+    <color name="bz_danger_2">#FF2020</color>
+    <color name="bz_danger_soft">#29FF4040</color>
+
+    <color name="bz_info">#4EA3FF</color>
+    <color name="bz_on_danger">#FFFFFF</color>
+
+    <color name="bz_bt_on">#00D4AA</color>
+    <color name="bz_bt_warn">#F5B400</color>
+    <color name="bz_bt_off">#FF4040</color>
+</resources>
