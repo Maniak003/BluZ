@@ -14,6 +14,7 @@ import java.nio.ByteBuffer
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 /**
@@ -170,7 +171,7 @@ class AutoCalibrationController(
     data class PendingResult(
         val oldHv: Int, val newHv: Int,
         val oldComparator: Int, val newComparator: Int,
-        val cA: Float, val cB: Float, val cC: Float,
+        val cA: Float, val cB: Float, val cC: Float, val cD: Float,  val cE: Float,
         val peaks: List<AutoCalibrator.IdentifiedPeak>,
         val residualKev: Float,
         /** Энергия последнего канала спектра (channel = N-1) по итоговому полиному.
@@ -377,7 +378,12 @@ class AutoCalibrationController(
             _state.value = _state.value.copy(phase = Phase.APPLYING, message = "Запись в прибор…")
             GO.propHVoltage = pending.newHv.toUShort()
             GO.propComparator = pending.newComparator.toUShort()
-            writeCurrentResolutionCoefs(pending.cA, pending.cB, pending.cC)
+            //writeCurrentResolutionCoefs(pending.cA, pending.cB, pending.cC)
+            GO.propCoef4096A = pending.cA
+            GO.propCoef4096B = pending.cB
+            GO.propCoef4096C = pending.cC
+            GO.propCoef4096D = pending.cD
+            GO.propCoef4096E = pending.cE
             GO.compNoiseLevel = pending.newComparator
             GO.writeConfigParameters()
             sendFullConfigToDevice()
@@ -432,8 +438,16 @@ class AutoCalibrationController(
                 val newComp = tuneComparatorAtCurrentHv(channels)
                 // pendingResult с теми же значениями HV и полинома — applyPending запишет
                 // только новый компаратор, остальное останется как было.
-                val (cA, cB, cC) = currentResolutionCoefs()
-                val eLast = cA * (channels - 1) * (channels - 1) + cB * (channels - 1) + cC
+                val powVal = when (GO.spectrResolution) {
+                    1 -> 2.0    // 2048
+                    2 -> 1.0    // 4096
+                    else -> 4.0 // 1024
+                }
+                val eLast = (GO.propCoef4096A * (channels * powVal - 1).toDouble().pow(4.0)
+                    + GO.propCoef4096B * (channels * powVal - 1).toDouble().pow(3.0)
+                    + GO.propCoef4096C *(channels * powVal - 1).toDouble().pow(2.0)
+                    + GO.propCoef4096D *(channels * powVal - 1).toDouble()
+                    + GO.propCoef4096E).toFloat()
                 _state.value = _state.value.copy(
                     phase = Phase.AWAITING_APPLY,
                     message = "Готово. Нажмите «Применить» чтобы записать новый компаратор.",
@@ -442,7 +456,7 @@ class AutoCalibrationController(
                     pendingResult = PendingResult(
                         oldHv = initialHv, newHv = initialHv,
                         oldComparator = initialComp, newComparator = newComp,
-                        cA = cA, cB = cB, cC = cC,
+                        cA = GO.propCoef4096A, cB = GO.propCoef4096B, cC = GO.propCoef4096C, cD = GO.propCoef4096D, cE =GO.propCoef4096E,
                         peaks = emptyList(), residualKev = 0f,
                         eAtLastChannel = eLast,
                     ),
@@ -460,11 +474,12 @@ class AutoCalibrationController(
     }
 
     /** Текущие коэффициенты полинома для активного разрешения. */
+    /*
     private fun currentResolutionCoefs(): Triple<Float, Float, Float> = when (GO.spectrResolution) {
         1 -> Triple(GO.propCoef2048A, GO.propCoef2048B, GO.propCoef2048C)
         2 -> Triple(GO.propCoef4096A, GO.propCoef4096B, GO.propCoef4096C)
         else -> Triple(GO.propCoef1024A, GO.propCoef1024B, GO.propCoef1024C)
-    }
+    }*/
 
     // ───────────────────────────── Procedure ─────────────────────────────
 
@@ -513,7 +528,12 @@ class AutoCalibrationController(
         // Сохраняем исходные коэффициенты полинома — пригодятся для HV_AND_COMPARATOR
         // (там полином не перезаписывается, итоговый pendingResult должен вернуть
         // именно исходные коэффициенты).
-        val (initCA, initCB, initCC) = currentResolutionCoefs()
+        //val (initCA, initCB, initCC) = currentResolutionCoefs()
+        val initCA = GO.propCoef4096A
+        val initCB = GO.propCoef4096B
+        val initCC = GO.propCoef4096C
+        val initCD = GO.propCoef4096D
+        val initCE = GO.propCoef4096E
         Log.i("BluZ-AutoCalib", "=== START procedure mode=$mode channels=$channels initialHv=$initialHv initialComp=$initialComp ===")
 
         // Убедиться что спектрометр запущен. cmd_startup_spectrometer (2u) — toggle,
@@ -529,7 +549,13 @@ class AutoCalibrationController(
         // Сброс полинома к 1:1 — только для режимов где мы его пересчитываем.
         // В HV_AND_COMPARATOR полином остаётся как был.
         if (mode != Mode.HV_AND_COMPARATOR) {
-            writeCurrentResolutionCoefs(0.0f, 1.0f, 0.0f)
+            //writeCurrentResolutionCoefs(0.0f, 1.0f, 0.0f)
+            GO.propCoef4096A = 0.0f
+            GO.propCoef4096B = 0.0f
+            GO.propCoef4096C = 0.0f
+            GO.propCoef4096D = 1.0f
+            GO.propCoef4096E = 0.0f
+
             Log.i("BluZ-AutoCalib", "Polynom reset to 1:1 (A=0 B=1 C=0)")
         }
 
@@ -593,7 +619,13 @@ class AutoCalibrationController(
             when (result) {
                 is AutoCalibrator.Result.Ok -> {
                     analysis = result
-                    writeCurrentResolutionCoefs(result.cA, result.cB, result.cC)
+                    //writeCurrentResolutionCoefs(result.cA, result.cB, result.cC)
+                    GO.propCoef4096A = result.cA
+                    GO.propCoef4096B = result.cB
+                    GO.propCoef4096C = result.cC
+                    GO.propCoef4096D = result.cD
+                    GO.propCoef4096E = result.cE
+
                     val eLast = result.cA * (channels - 1) * (channels - 1) +
                                 result.cB * (channels - 1) + result.cC
                     Log.i("BluZ-AutoCalib",
@@ -691,15 +723,15 @@ class AutoCalibrationController(
 
         // Полином для финала: новый из analysis (PRIMARY/POLYNOMIAL_ONLY) или исходный
         // (HV_AND_COMPARATOR — там полином не пересчитывался).
-        val finalCA: Float; val finalCB: Float; val finalCC: Float
+        val finalCA: Float; val finalCB: Float; val finalCC: Float; val finalCD: Float; val finalCE: Float
         val finalPeaks: List<AutoCalibrator.IdentifiedPeak>; val finalResidual: Float
         if (analysis != null) {
-            finalCA = analysis.cA; finalCB = analysis.cB; finalCC = analysis.cC
+            finalCA = analysis.cA; finalCB = analysis.cB; finalCC = analysis.cC; finalCD = analysis.cD; finalCE = analysis.cE
             finalPeaks = analysis.peaks; finalResidual = analysis.residualKev
         } else {
             // HV_AND_COMPARATOR — возвращаем исходные коэффициенты, чтобы applyPending
             // записал ровно тот полином что был в начале.
-            finalCA = initCA; finalCB = initCB; finalCC = initCC
+            finalCA = initCA; finalCB = initCB; finalCC = initCC; finalCD = initCD; finalCE = initCE
             finalPeaks = emptyList(); finalResidual = 0f
         }
         val finalELast = finalCA * (channels - 1) * (channels - 1) + finalCB * (channels - 1) + finalCC
@@ -711,7 +743,7 @@ class AutoCalibrationController(
             pendingResult = PendingResult(
                 oldHv = initialHv, newHv = finalHv,
                 oldComparator = initialComp, newComparator = finalComp,
-                cA = finalCA, cB = finalCB, cC = finalCC,
+                cA = finalCA, cB = finalCB, cC = finalCC, cD = finalCD, cE = finalCE,
                 peaks = finalPeaks, residualKev = finalResidual,
                 eAtLastChannel = finalELast,
             ),
@@ -1207,13 +1239,14 @@ class AutoCalibrationController(
      * @param cB коэффициент при ch (типично 1..5).
      * @param cC свободный член (типично от -200 до +50 кэВ).
      */
+    /*
     private fun writeCurrentResolutionCoefs(cA: Float, cB: Float, cC: Float) {
         when (GO.spectrResolution) {
             0 -> { GO.propCoef1024A = cA; GO.propCoef1024B = cB; GO.propCoef1024C = cC }
             1 -> { GO.propCoef2048A = cA; GO.propCoef2048B = cB; GO.propCoef2048C = cC }
             2 -> { GO.propCoef4096A = cA; GO.propCoef4096B = cB; GO.propCoef4096C = cC }
         }
-    }
+    }*/
 
     /**
      * Заполняет [BluetoothInterface.sendBuffer] полным набором конфигурационных полей
@@ -1267,9 +1300,9 @@ class AutoCalibrationController(
         buf[20] = bits
 
         // Полиномы 1024/2048/4096 — по 3 float'а каждый.
-        ByteBuffer.allocate(4).putFloat(GO.propCoef1024A).array().also { putBytes(buf, 21, it) }
-        ByteBuffer.allocate(4).putFloat(GO.propCoef1024B).array().also { putBytes(buf, 25, it) }
-        ByteBuffer.allocate(4).putFloat(GO.propCoef1024C).array().also { putBytes(buf, 29, it) }
+        //ByteBuffer.allocate(4).putFloat(GO.propCoef1024A).array().also { putBytes(buf, 21, it) }
+        //ByteBuffer.allocate(4).putFloat(GO.propCoef1024B).array().also { putBytes(buf, 25, it) }
+        //ByteBuffer.allocate(4).putFloat(GO.propCoef1024C).array().also { putBytes(buf, 29, it) }
 
         // propHVoltage / propComparator — uint16 little-endian
         buf[33] = (GO.propHVoltage and 255u).toUByte()
@@ -1286,12 +1319,14 @@ class AutoCalibrationController(
         if (GO.propSoundKvant == 2) b38 = b38 or 32u  // delitel ×10
         buf[38] = b38
 
-        ByteBuffer.allocate(4).putFloat(GO.propCoef2048A).array().also { putBytes(buf, 39, it) }
-        ByteBuffer.allocate(4).putFloat(GO.propCoef2048B).array().also { putBytes(buf, 43, it) }
-        ByteBuffer.allocate(4).putFloat(GO.propCoef2048C).array().also { putBytes(buf, 47, it) }
+        //ByteBuffer.allocate(4).putFloat(GO.propCoef2048A).array().also { putBytes(buf, 39, it) }
+        //ByteBuffer.allocate(4).putFloat(GO.propCoef2048B).array().also { putBytes(buf, 43, it) }
+        //ByteBuffer.allocate(4).putFloat(GO.propCoef2048C).array().also { putBytes(buf, 47, it) }
         ByteBuffer.allocate(4).putFloat(GO.propCoef4096A).array().also { putBytes(buf, 51, it) }
         ByteBuffer.allocate(4).putFloat(GO.propCoef4096B).array().also { putBytes(buf, 55, it) }
         ByteBuffer.allocate(4).putFloat(GO.propCoef4096C).array().also { putBytes(buf, 59, it) }
+        ByteBuffer.allocate(4).putFloat(GO.propCoef4096D).array().also { putBytes(buf, 43, it) }
+        ByteBuffer.allocate(4).putFloat(GO.propCoef4096E).array().also { putBytes(buf, 47, it) }
 
         // aqure (uint16 LE через .toShort() truncate — допускает значения >32767)
         val aqureBytes = ByteBuffer.allocate(2).putShort(GO.aqureValue.toInt().toShort()).array()

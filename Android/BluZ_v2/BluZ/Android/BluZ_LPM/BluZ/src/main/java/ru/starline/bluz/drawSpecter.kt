@@ -281,7 +281,7 @@ class drawSpecter {
         val needCalcH10D = when (GO.specterType) {
             /* 2048 */
             1 -> {
-                GO.propCoef2048A > 0
+                GO.propCoef4096A > 0
             }
             /* 4096 */
             2 -> {
@@ -289,20 +289,20 @@ class drawSpecter {
             }
             /* 1024 */
             else -> {
-                GO.propCoef1024A > 0
+                GO.propCoef4096A > 0
             }
         }
 
         /* Определим максимальную отображаемую энергию */
         val maxEnergy = when(GO.specterType) {
             1 -> {
-                Math.pow(2048.0, 2.0) * GO.propCoef2048A + 2048.0 * GO.propCoef2048B + GO.propCoef2048C
+                Math.pow(4096.0, 2.0) * GO.propCoef4096A + 2048.0 * GO.propCoef4096B + GO.propCoef4096C
             }
             2 -> {
                 Math.pow(4096.0, 2.0) * GO.propCoef4096A + 2048.0 * GO.propCoef4096B + GO.propCoef4096C
             }
             else -> {
-                Math.pow(1024.0, 2.0) * GO.propCoef1024A + 1024.0 * GO.propCoef1024B + GO.propCoef1024C
+                Math.pow(4096.0, 2.0) * GO.propCoef4096A + 2048.0 * GO.propCoef4096B + GO.propCoef4096C
             }
         }
         /* Расчет энергокомпенсированный МЕД */

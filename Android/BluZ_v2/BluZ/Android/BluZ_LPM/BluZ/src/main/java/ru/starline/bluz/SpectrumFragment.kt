@@ -197,6 +197,7 @@ class SpectrumFragment : Fragment() {
         btnCalibrate.setOnClickListener {
             btnConfirmCalibrate.text = "X"
             if (GO.drawCURSOR.drawCursorInit) {
+                var mtrxArray: Array<DoubleArray> = Array(5) { DoubleArray(2) }
                 val builder: AlertDialog.Builder = AlertDialog.Builder(it.context)
                 builder.setTitle("Enter energy for channel " + GO.drawCURSOR.curChan.toString() + ", point: " + (calState + 1).toString())
                 val inEnergy = EditText(context)
@@ -208,10 +209,10 @@ class SpectrumFragment : Fragment() {
                         matrx.sysArray[calState][1] = inEnergy.text.toString().toDouble()
                         matrx.sysArray[calState][0] = GO.drawCURSOR.curChan.toDouble()
                         calState++
-                        if (calState > 2) {
-                            calState = 0
+                        if (calState > 2 && calState < 6) {
+                            //calState = 0
                             btnConfirmCalibrate.text = "V"
-                            btnCalibrate.text = "1"
+                            btnCalibrate.text = (calState + 1).toString()
                             matrx.sysEq()
                             // Mtrx больше не пишет в GO сам — проверяем solved и пишем только при валидном решении.
                             // Вырожденная система (3 точки на одной линии) — оставляем старые коэффициенты,
@@ -219,14 +220,14 @@ class SpectrumFragment : Fragment() {
                             if (matrx.solved) {
                                 when (GO.specterType) {
                                     0 -> {
-                                        GO.propCoef1024A = matrx.cA
-                                        GO.propCoef1024B = matrx.cB
-                                        GO.propCoef1024C = matrx.cC
+                                        //GO.propCoef1024A = matrx.cA
+                                        //GO.propCoef1024B = matrx.cB
+                                        //GO.propCoef1024C = matrx.cC
                                     }
                                     1 -> {
-                                        GO.propCoef2048A = matrx.cA
-                                        GO.propCoef2048B = matrx.cB
-                                        GO.propCoef2048C = matrx.cC
+                                        //GO.propCoef2048A = matrx.cA
+                                        //GO.propCoef2048B = matrx.cB
+                                        //GO.propCoef2048C = matrx.cC
                                     }
                                     2 -> {
                                         GO.propCoef4096A = matrx.cA

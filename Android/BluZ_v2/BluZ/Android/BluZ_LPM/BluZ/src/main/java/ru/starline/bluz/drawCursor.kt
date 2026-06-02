@@ -147,14 +147,14 @@ class drawCursor {
             }
             when (GO.specterType) {
                 0 -> {  // 1024
-                    cfA = GO.propCoef1024A
-                    cfB = GO.propCoef1024B
-                    cfC = GO.propCoef1024C
+                    //cfA = GO.propCoef1024A
+                    //cfB = GO.propCoef1024B
+                    //cfC = GO.propCoef1024C
                 }
                 1 -> {  // 2048
-                    cfA = GO.propCoef2048A
-                    cfB = GO.propCoef2048B
-                    cfC = GO.propCoef2048C
+                    //cfA = GO.propCoef2048A
+                    //cfB = GO.propCoef2048B
+                    //cfC = GO.propCoef2048C
                 }
                 2 -> {  // 4096
                     cfA = GO.propCoef4096A

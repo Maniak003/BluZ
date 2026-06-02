@@ -41,6 +41,7 @@ import com.yandex.runtime.image.ImageProvider
 import ru.starline.bluz.data.AppDatabase
 import ru.starline.bluz.data.dao.DosimeterDao
 import ru.starline.bluz.data.entity.TrackDetail
+import kotlin.math.pow
 
 /**
  * Глобальный объект состояния приложения (псевдоним `GO`).
@@ -104,6 +105,8 @@ class globalObj {
     public val propCfgCoef4096A: String = "Coeff4096A"
     public val propCfgCoef4096B: String = "Coeff4096B"
     public val propCfgCoef4096C: String = "Coeff4096C"
+    public val propCfgCoef4096D: String = "Coeff4096D"
+    public val propCfgCoef4096E: String = "Coeff4096E"
     public val propCfgHV: String = "HVoltage"
     public val propCfgComparator: String = "Comparator"
     public val propCfgSoundKvant: String = "SoundKvantN"
@@ -346,6 +349,8 @@ class globalObj {
     lateinit var editPolinomA: EditText
     lateinit var editPolinomB: EditText
     lateinit var editPolinomC: EditText
+    lateinit var editPolinomD: EditText
+    lateinit var editPolinomE: EditText
     lateinit var editLevel1: EditText
     lateinit var editLevel2: EditText
     lateinit var editLevel3: EditText
@@ -437,15 +442,17 @@ class globalObj {
     public var propCPSLevel1: Float = 0.0f
     public var propCPSLevel2: Float = 0.0f
     public var propCPSLevel3: Float = 0.0f
-    public var propCoef1024A: Float = 0.0f          // Коэффициенты полинома преобразования канала в энергию
-    public var propCoef1024B: Float = 0.0f
-    public var propCoef1024C: Float = 0.0f
-    public var propCoef2048A: Float = 0.0f
-    public var propCoef2048B: Float = 0.0f
-    public var propCoef2048C: Float = 0.0f
+    //public var propCoef1024A: Float = 0.0f          // Коэффициенты полинома преобразования канала в энергию
+    //public var propCoef1024B: Float = 0.0f
+    //public var propCoef1024C: Float = 0.0f
+    //public var propCoef2048A: Float = 0.0f
+    //public var propCoef2048B: Float = 0.0f
+    //public var propCoef2048C: Float = 0.0f
     public var propCoef4096A: Float = 0.0f
     public var propCoef4096B: Float = 0.0f
     public var propCoef4096C: Float = 0.0f
+    public var propCoef4096D: Float = 0.0f
+    public var propCoef4096E: Float = 0.0f
     public var propComparator: UShort = 0u          // Уровень компаратора
     public var propHVoltage: UShort = 0u            // Уровень высокого напряжения
     public var windowSMA: Int = 5
@@ -485,9 +492,9 @@ class globalObj {
                            * 11, 12 - Среднее количество имльсов в секунду. float
                            * 13, 14 - Температура в гр. цельсия
                            * 15, 16 - Напряжение батареи в вольтах
-                           * 17, 18 - Коэффициент полинома A для 1024 каналов
-                           * 19, 20 - Коэффициент полинома B для 1024 каналов
-                           * 21, 22 - Коэффициент полинома C для 1024 каналов
+                           * 17, 18 - Reserved
+                           * 19, 20 - Reserved
+                           * 21, 22 - Reserved
                            * 23, 24 - Коэффициент пересчета uRh/cps
                            * 25     - Значение высокого напряжения
                            * 26     - Значение порога компаратора
@@ -504,9 +511,9 @@ class globalObj {
                            *     6 - Вибро второго уровня
                            *     7 - Вибро третьего уровня
                            *     8 - Автозапуск спектрометра при включении
-                           * 31, 32 - Коэффициент полинома A для 2048 каналов
-                           * 33, 34 - Коэффициент полинома B для 2048 каналов
-                           * 35, 36 - Коэффициент полинома C для 2048 каналов
+                           * 31, 32 - Reserved
+                           * 33, 34 - Коэффициент полинома D для 4096 каналов
+                           * 35, 36 - Коэффициент полинома E для 4096 каналов
                            * 37, 38 - Коэффициент полинома A для 4096 каналов
                            * 39, 40 - Коэффициент полинома B для 4096 каналов
                            * 41, 42 - Коэффициент полинома C для 4096 каналов
@@ -549,17 +556,19 @@ class globalObj {
 
     public var HWpropAutoStartSpectrometr: Boolean = false
 
-    public var HWCoef1024A: Float = 0.0f
-    public var HWCoef1024B: Float = 0.0f
-    public var HWCoef1024C: Float = 0.0f
+    //public var HWCoef1024A: Float = 0.0f
+    //public var HWCoef1024B: Float = 0.0f
+    //public var HWCoef1024C: Float = 0.0f
 
-    public var HWCoef2048A: Float = 0.0f
-    public var HWCoef2048B: Float = 0.0f
-    public var HWCoef2048C: Float = 0.0f
+    //public var HWCoef2048A: Float = 0.0f
+    //public var HWCoef2048B: Float = 0.0f
+    //public var HWCoef2048C: Float = 0.0f
 
     public var HWCoef4096A: Float = 0.0f
     public var HWCoef4096B: Float = 0.0f
     public var HWCoef4096C: Float = 0.0f
+    public var HWCoef4096D: Float = 0.0f
+    public var HWCoef4096E: Float = 0.0f
     public var HWAqureValue: UShort = 0u
     public var HWBitsChan: UByte = 0u
     public var HWSampleTime: UByte = 0u
@@ -575,14 +584,19 @@ class globalObj {
             1 -> 2048
             2 -> 4096
             else -> 1024
-        }
-        val a: Float; val b: Float; val c: Float
+        };
+        /*
         when (GO.spectrResolution) {
             1 -> { a = GO.propCoef2048A; b = GO.propCoef2048B; c = GO.propCoef2048C }
             2 -> { a = GO.propCoef4096A; b = GO.propCoef4096B; c = GO.propCoef4096C }
             else -> { a = GO.propCoef1024A; b = GO.propCoef1024B; c = GO.propCoef1024C }
+        }*/
+        val powVal = when (GO.spectrResolution) {
+            1 -> 2.0f
+            2 -> 1.0f
+            else -> 4.0f
         }
-        if (a == 0f) {
+        if (GO.propCoef4096A == 0f && GO.propCoef4096B == 0f  && GO.propCoef4096C == 0f ) {
             // Калибровка не выставлена или 1:1 — диапазон не показываем.
             tv.text = "КАНАЛОВ · $channels"
             return
@@ -592,8 +606,16 @@ class globalObj {
         val bitsCh = if (GO.bitsChannel in 1..64) GO.bitsChannel else 20
         val firstCh = (GO.propComparator.toInt() / bitsCh).coerceIn(0, channels - 1)
         val lastCh = channels - 1
-        val eFirst = (a * firstCh * firstCh + b * firstCh + c).toInt().coerceAtLeast(0)
-        val eLast = (a * lastCh * lastCh + b * lastCh + c).toInt().coerceAtLeast(0)
+        val eFirst = (GO.propCoef4096A * (firstCh * powVal).toDouble().pow(4.0)
+                + GO.propCoef4096B * (firstCh * powVal).toDouble().pow(3.0)
+                + GO.propCoef4096C * (firstCh * powVal).toDouble().pow(2.0)
+                + GO.propCoef4096D * (firstCh * powVal).toDouble()
+                + GO.propCoef4096E).toInt().coerceAtLeast(0)
+        val eLast = (GO.propCoef4096A * (lastCh * powVal).toDouble().pow(4.0)
+                + GO.propCoef4096B * (lastCh * powVal).toDouble().pow(3.0)
+                + GO.propCoef4096C * (lastCh * powVal).toDouble().pow(2.0)
+                + GO.propCoef4096D * (lastCh * powVal).toDouble()
+                + GO.propCoef4096E).toInt().coerceAtLeast(0)
         tv.text = "КАНАЛОВ · $channels · $eFirst – $eLast кэВ"
     }
 
@@ -819,24 +841,28 @@ class globalObj {
         var cA = 0.0f
         var cB = 0.0f
         var cC = 0.0f
+        var cD = 0.0f
+        var cE = 0.0f
         var DD = 0.0f
         for (ii in 0 until isotopSize) {
             if (isotopList[ii].Activity != 0) {         // Активность не нулевая, требуется получить номер канала для правильного выделения пика
                 when (GO.spectrResolution) {
                     0 -> {  // Разрешение 1024
-                        cA = GO.propCoef1024A
-                        cB = GO.propCoef1024B
-                        cC = GO.propCoef1024C
+                        //cA = GO.propCoef1024A
+                        //cB = GO.propCoef1024B
+                        //cC = GO.propCoef1024C
                     }
                     1 -> {  // Разрешение 2048
-                        cA = GO.propCoef2048A
-                        cB = GO.propCoef2048B
-                        cC = GO.propCoef2048C
+                        //cA = GO.propCoef2048A
+                        //cB = GO.propCoef2048B
+                        //cC = GO.propCoef2048C
                     }
                     2 -> {  // Разрешение 4096
                         cA = GO.propCoef4096A
                         cB = GO.propCoef4096B
                         cC = GO.propCoef4096C
+                        cD = GO.propCoef4096C
+                        cE = GO.propCoef4096C
                     }
                 }
                 if ((cA != 0.0f) and (cB != 0.0f)) {
@@ -887,15 +913,19 @@ class globalObj {
         } else {
             GO.propSoundKvant = 0
         }
+        /*
         GO.propCoef1024A = GO.HWCoef1024A
         GO.propCoef1024B = GO.HWCoef1024B
         GO.propCoef1024C = GO.HWCoef1024C
         GO.propCoef2048A = GO.HWCoef2048A
         GO.propCoef2048B = GO.HWCoef2048B
         GO.propCoef2048C = GO.HWCoef2048C
+         */
         GO.propCoef4096A = GO.HWCoef4096A
         GO.propCoef4096B = GO.HWCoef4096B
         GO.propCoef4096C = GO.HWCoef4096C
+        GO.propCoef4096D = GO.HWCoef4096D
+        GO.propCoef4096E = GO.HWCoef4096E
 
         GO.propLevel1 = GO.HWpropLevel1
         GO.propLevel2 = GO.HWpropLevel2
@@ -970,15 +1000,17 @@ class globalObj {
         GO.PP.setPropInt(propCfgComparator, GO.propComparator.toInt())     // Уровень Компаратора
         GO.PP.setPropInt(propCfgHV, GO.propHVoltage.toInt())               // Уровень высокого напряжения
         GO.PP.setPropInt(propCfgSMAWindow, GO.windowSMA)
-        GO.PP.setPropFloat(propCfgCoef1024A, GO.propCoef1024A)             // A - полинома пересчета канала в энергию
-        GO.PP.setPropFloat(propCfgCoef1024B, GO.propCoef1024B)             // B - полинома пересчета канала в энергию
-        GO.PP.setPropFloat(propCfgCoef1024C, GO.propCoef1024C)             // C - полинома пересчета канала в энергию
-        GO.PP.setPropFloat(propCfgCoef2048A, GO.propCoef2048A)             // A - полинома пересчета канала в энергию
-        GO.PP.setPropFloat(propCfgCoef2048B, GO.propCoef2048B)             // B - полинома пересчета канала в энергию
-        GO.PP.setPropFloat(propCfgCoef2048C, GO.propCoef2048C)             // C - полинома пересчета канала в энергию
+        //GO.PP.setPropFloat(propCfgCoef1024A, GO.propCoef1024A)             // A - полинома пересчета канала в энергию
+        //GO.PP.setPropFloat(propCfgCoef1024B, GO.propCoef1024B)             // B - полинома пересчета канала в энергию
+        //GO.PP.setPropFloat(propCfgCoef1024C, GO.propCoef1024C)             // C - полинома пересчета канала в энергию
+        //GO.PP.setPropFloat(propCfgCoef2048A, GO.propCoef2048A)             // A - полинома пересчета канала в энергию
+        //GO.PP.setPropFloat(propCfgCoef2048B, GO.propCoef2048B)             // B - полинома пересчета канала в энергию
+        //GO.PP.setPropFloat(propCfgCoef2048C, GO.propCoef2048C)             // C - полинома пересчета канала в энергию
         GO.PP.setPropFloat(propCfgCoef4096A, GO.propCoef4096A)             // A - полинома пересчета канала в энергию
         GO.PP.setPropFloat(propCfgCoef4096B, GO.propCoef4096B)             // B - полинома пересчета канала в энергию
         GO.PP.setPropFloat(propCfgCoef4096C, GO.propCoef4096C)             // C - полинома пересчета канала в энергию
+        GO.PP.setPropFloat(propCfgCoef4096D, GO.propCoef4096D)             // D - полинома пересчета канала в энергию
+        GO.PP.setPropFloat(propCfgCoef4096E, GO.propCoef4096E)             // E - полинома пересчета канала в энергию
         GO.PP.setPropFloat(propCfgCPS2UR, GO.propCPS2UR)                   // Коэффициент пересчета cps в uRh
         GO.PP.setPropBoolean(propCfgVibroLevel1, GO.propVibroLevel1)       // Вибро первого порога
         GO.PP.setPropBoolean(propCfgVibroLevel2, GO.propVibroLevel2)       // Вибро второго порога
@@ -1065,15 +1097,17 @@ class globalObj {
         GO.propLevel1 = GO.PP.getPropInt(propCfgLevel1)
         GO.propLevel2 = GO.PP.getPropInt(propCfgLevel2)
         GO.propLevel3 = GO.PP.getPropInt(propCfgLevel3)
-        GO.propCoef1024A = GO.PP.getPropFloat(propCfgCoef1024A)
-        GO.propCoef1024B = GO.PP.getPropFloat(propCfgCoef1024B)
-        GO.propCoef1024C = GO.PP.getPropFloat(propCfgCoef1024C)
-        GO.propCoef2048A = GO.PP.getPropFloat(propCfgCoef2048A)
-        GO.propCoef2048B = GO.PP.getPropFloat(propCfgCoef2048B)
-        GO.propCoef2048C = GO.PP.getPropFloat(propCfgCoef2048C)
+        //GO.propCoef1024A = GO.PP.getPropFloat(propCfgCoef1024A)
+        //GO.propCoef1024B = GO.PP.getPropFloat(propCfgCoef1024B)
+        //GO.propCoef1024C = GO.PP.getPropFloat(propCfgCoef1024C)
+        //GO.propCoef2048A = GO.PP.getPropFloat(propCfgCoef2048A)
+        //GO.propCoef2048B = GO.PP.getPropFloat(propCfgCoef2048B)
+        //GO.propCoef2048C = GO.PP.getPropFloat(propCfgCoef2048C)
         GO.propCoef4096A = GO.PP.getPropFloat(propCfgCoef4096A)
         GO.propCoef4096B = GO.PP.getPropFloat(propCfgCoef4096B)
         GO.propCoef4096C = GO.PP.getPropFloat(propCfgCoef4096C)
+        GO.propCoef4096D = GO.PP.getPropFloat(propCfgCoef4096D)
+        GO.propCoef4096E = GO.PP.getPropFloat(propCfgCoef4096E)
         GO.propCPS2UR = GO.PP.getPropFloat(propCfgCPS2UR)
         GO.propHVoltage = GO.PP.getPropInt(propCfgHV).toUShort()
         GO.propComparator = GO.PP.getPropInt(propCfgComparator).toUShort()

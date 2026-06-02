@@ -101,6 +101,8 @@ object AutoCalibrator {
             val cA: Float,
             val cB: Float,
             val cC: Float,
+            val cD: Float,
+            val cE: Float,
             val peaks: List<IdentifiedPeak>,
             /** RMS-невязка предсказанных vs ожидаемых энергий в кэВ. <2 кэВ — отлично. */
             val residualKev: Float,
@@ -227,6 +229,12 @@ object AutoCalibrator {
 
         // Шаг 7. Финальное решение по уточнённым центроидам.
         // Для тройки — квадратичный полином, для пары — линейный (через две точки, A=0).
+        val finalA = 0f
+        val finalB = 0f
+        val finalC = 0f
+        val finalD = 0f
+        val finalE = 0f
+        /*
         val (finalA, finalB, finalC) = if (refined.size == 3) {
             val mtrx = Mtrx()
             mtrx.sysArray[0][0] = refined[0].channel.toDouble()
@@ -245,10 +253,10 @@ object AutoCalibrator {
             val b = ((e2 - e1) / (ch2 - ch1)).toFloat()
             val c = (e1 - b * ch1).toFloat()
             Triple(0.0f, b, c)
-        }
+        }*/
 
         // Sanity финального полинома.
-        val sanity = checkPolynomialSanity(finalA, finalB, finalC, channels)
+        val sanity = checkPolynomialSanity(finalA, finalB, finalC, finalD, finalE, channels)
         if (sanity != null) return Result.UnreasonableFit(sanity)
 
         // RMS-невязка предсказанных энергий vs ожидаемых.
@@ -258,7 +266,7 @@ object AutoCalibrator {
             (diff * diff).toDouble()
         } / refined.size).toFloat()
 
-        return Result.Ok(finalA, finalB, finalC, refined, residualKev)
+        return Result.Ok(finalA, finalB, finalC, finalD, finalE, refined, residualKev)
     }
 
     /**
@@ -306,9 +314,11 @@ object AutoCalibrator {
         val e2 = fallbackAnchorPair[1].toFloat()  // 609
         val b = (e2 - e1) / (rightAnchor.channel - leftAnchor.channel)
         val c = e1 - b * leftAnchor.channel
+        val d = 0f
+        val e = 0f
         android.util.Log.i("BluZ-AutoCalib",
             "Pair fit: left=${leftAnchor.channel} (prom=${leftAnchor.prominence.toInt()}) right=${rightAnchor.channel} (prom=${rightAnchor.prominence.toInt()}) → B=$b C=$c")
-        if (checkPolynomialSanity(0.0f, b, c, channels) != null) {
+        if (checkPolynomialSanity(0.0f, b, c, d, e, channels) != null) {
             android.util.Log.w("BluZ-AutoCalib", "Pair fit fails sanity: B=$b C=$c")
             return null
         }
@@ -441,7 +451,7 @@ object AutoCalibrator {
                     mtrx.sysArray[2][0] = ck.toDouble(); mtrx.sysArray[2][1] = anchorEnergiesKev[2].toDouble()
                     mtrx.sysEq()
                     if (!mtrx.solved) continue
-                    val sanityReason = checkPolynomialSanity(mtrx.cA, mtrx.cB, mtrx.cC, channels)
+                    val sanityReason = checkPolynomialSanity(mtrx.cA, mtrx.cB, mtrx.cC, 0.0f, 0.0f ,channels)
                     if (sanityReason != null) {
                         android.util.Log.d("BluZ-AutoCalib", "Triplet rejected ($ci,$cj,$ck): $sanityReason")
                         continue
@@ -560,7 +570,7 @@ object AutoCalibrator {
      * иначе — строку с описанием проблемы. Пороги подобраны эмпирически для прибора
      * с диапазоном 0–3500 кэВ на 1024/2048/4096 каналов.
      */
-    private fun checkPolynomialSanity(cA: Float, cB: Float, cC: Float, channels: Int): String? {
+    private fun checkPolynomialSanity(cA: Float, cB: Float, cC: Float, cD: Float, cE: Float, channels: Int): String? {
         // **Монотонность.** Энергия должна расти с номером канала на всём диапазоне.
         // Производная E'(ch) = 2·A·ch + B; минимум на конце шкалы ch=channels-1.
         // Если в каком-то канале E'(ch) ≤ 0, полином немонотонный — нефизично,

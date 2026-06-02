@@ -283,6 +283,7 @@ class SettingsFragment : Fragment() {
                     if (isChecked) WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
                     else WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
             }
+
             // Status/nav bar colors are set by the theme (Theme.BluZ → bz_bg).
             // Don't override them here — that breaks day/night theme switching.
         }
@@ -295,9 +296,9 @@ class SettingsFragment : Fragment() {
                     if (GO.editPolinomA.text.isNotEmpty()) {
                         try {
                             if (GO.rbResolution1024.isChecked) {
-                                GO.propCoef1024A = GO.editPolinomA.text.toString().toFloat()
+                                //GO.propCoef1024A = GO.editPolinomA.text.toString().toFloat()
                             } else if (GO.rbResolution2048.isChecked) {
-                                GO.propCoef2048A = GO.editPolinomA.text.toString().toFloat()
+                                //GO.propCoef2048A = GO.editPolinomA.text.toString().toFloat()
                             } else if (GO.rbResolution4096.isChecked) {
                                 GO.propCoef4096A = GO.editPolinomA.text.toString().toFloat()
                             }
@@ -315,9 +316,9 @@ class SettingsFragment : Fragment() {
                     if (GO.editPolinomB.text.isNotEmpty()) {
                         try {
                             if (GO.rbResolution1024.isChecked) {
-                                GO.propCoef1024B = GO.editPolinomB.text.toString().toFloat()
+                                //GO.propCoef1024B = GO.editPolinomB.text.toString().toFloat()
                             } else if (GO.rbResolution2048.isChecked) {
-                                GO.propCoef2048B = GO.editPolinomB.text.toString().toFloat()
+                                //GO.propCoef2048B = GO.editPolinomB.text.toString().toFloat()
                             } else if (GO.rbResolution4096.isChecked) {
                                 GO.propCoef4096B = GO.editPolinomB.text.toString().toFloat()
                             }
@@ -335,11 +336,51 @@ class SettingsFragment : Fragment() {
                     if (GO.editPolinomC.text.isNotEmpty()) {
                         try {
                             if (GO.rbResolution1024.isChecked) {
-                                GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
+                                //GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
                             } else if (GO.rbResolution2048.isChecked) {
-                                GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
+                                //GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
                             } else if (GO.rbResolution4096.isChecked) {
                                 GO.propCoef4096C = GO.editPolinomC.text.toString().toFloat()
+                            }
+                        } catch (e: NumberFormatException) {}
+                    }
+                }
+            }
+        })
+
+        GO.editPolinomD.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (noChange) {
+                    if (GO.editPolinomD.text.isNotEmpty()) {
+                        try {
+                            if (GO.rbResolution1024.isChecked) {
+                                //GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
+                            } else if (GO.rbResolution2048.isChecked) {
+                                //GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
+                            } else if (GO.rbResolution4096.isChecked) {
+                                GO.propCoef4096D = GO.editPolinomD.text.toString().toFloat()
+                            }
+                        } catch (e: NumberFormatException) {}
+                    }
+                }
+            }
+        })
+
+        GO.editPolinomE.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (noChange) {
+                    if (GO.editPolinomE.text.isNotEmpty()) {
+                        try {
+                            if (GO.rbResolution1024.isChecked) {
+                                //GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
+                            } else if (GO.rbResolution2048.isChecked) {
+                                //GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
+                            } else if (GO.rbResolution4096.isChecked) {
+                                GO.propCoef4096E = GO.editPolinomE.text.toString().toFloat()
                             }
                         } catch (e: NumberFormatException) {}
                     }
@@ -553,7 +594,7 @@ class SettingsFragment : Fragment() {
             if (GO.cbVibroLevel3.isChecked) {
                 GO.BTT.sendBuffer[20] = GO.BTT.sendBuffer[20] or 0b10000000u
             }
-
+            /*
             convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef1024A).array()
             GO.BTT.sendBuffer[21] = convVal[0].toUByte()
             GO.BTT.sendBuffer[22] = convVal[1].toUByte()
@@ -589,7 +630,7 @@ class SettingsFragment : Fragment() {
             GO.BTT.sendBuffer[48] = convVal[1].toUByte()
             GO.BTT.sendBuffer[49] = convVal[2].toUByte()
             GO.BTT.sendBuffer[50] = convVal[3].toUByte()
-
+*/
             convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef4096A).array()
             GO.BTT.sendBuffer[51] = convVal[0].toUByte()
             GO.BTT.sendBuffer[52] = convVal[1].toUByte()
@@ -607,6 +648,18 @@ class SettingsFragment : Fragment() {
             GO.BTT.sendBuffer[60] = convVal[1].toUByte()
             GO.BTT.sendBuffer[61] = convVal[2].toUByte()
             GO.BTT.sendBuffer[62] = convVal[3].toUByte()
+
+            convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef4096D).array()
+            GO.BTT.sendBuffer[43] = convVal[0].toUByte()
+            GO.BTT.sendBuffer[44] = convVal[1].toUByte()
+            GO.BTT.sendBuffer[45] = convVal[2].toUByte()
+            GO.BTT.sendBuffer[46] = convVal[3].toUByte()
+
+            convVal = ByteBuffer.allocate(4).putFloat(GO.propCoef4096E).array()
+            GO.BTT.sendBuffer[47] = convVal[0].toUByte()
+            GO.BTT.sendBuffer[48] = convVal[1].toUByte()
+            GO.BTT.sendBuffer[49] = convVal[2].toUByte()
+            GO.BTT.sendBuffer[50] = convVal[3].toUByte()
 
             // aqureEdit может содержать значения 0..65535 (unsigned 16-bit). Парсим как Int
             // и затем .toShort() — это truncate без NumberFormatException (Short.parseShort падает на >32767).
@@ -730,26 +783,32 @@ class SettingsFragment : Fragment() {
                 var tmpA = ""
                 var tmpB = ""
                 var tmpC = ""
+                var tmpD = ""
+                var tmpE = ""
                 when (checkedId) {
                     GO.rbResolution1024.id -> {
-                        tmpA = df.format(GO.propCoef1024A)
-                        tmpB = df.format(GO.propCoef1024B)
-                        tmpC = df.format(GO.propCoef1024C)
+                        //tmpA = df.format(GO.propCoef1024A)
+                        //tmpB = df.format(GO.propCoef1024B)
+                        //tmpC = df.format(GO.propCoef1024C)
                     }
                     GO.rbResolution2048.id -> {
-                        tmpA = df.format(GO.propCoef2048A)
-                        tmpB = df.format(GO.propCoef2048B)
-                        tmpC = df.format(GO.propCoef2048C)
+                        //tmpA = df.format(GO.propCoef2048A)
+                        //tmpB = df.format(GO.propCoef2048B)
+                        //tmpC = df.format(GO.propCoef2048C)
                     }
                     GO.rbResolution4096.id -> {
                         tmpA = df.format(GO.propCoef4096A)
                         tmpB = df.format(GO.propCoef4096B)
                         tmpC = df.format(GO.propCoef4096C)
+                        tmpD = df.format(GO.propCoef4096D)
+                        tmpE = df.format(GO.propCoef4096E)
                     }
                 }
                 GO.editPolinomA.setText(tmpA)
                 GO.editPolinomB.setText(tmpB)
                 GO.editPolinomC.setText(tmpC)
+                GO.editPolinomD.setText(tmpD)
+                GO.editPolinomE.setText(tmpE)
                 noChange = true
             }
         }
@@ -1748,21 +1807,25 @@ class SettingsFragment : Fragment() {
         var tmpA = ""
         var tmpB = ""
         var tmpC = ""
+        var tmpD = ""
+        var tmpE = ""
         when (GO.spectrResolution) {
             0 -> {
-                tmpA = df.format(GO.propCoef1024A)
-                tmpB = df.format(GO.propCoef1024B)
-                tmpC = df.format(GO.propCoef1024C)
+                //tmpA = df.format(GO.propCoef1024A)
+                //tmpB = df.format(GO.propCoef1024B)
+                //tmpC = df.format(GO.propCoef1024C)
             }
             1 -> {
-                tmpA = df.format(GO.propCoef2048A)
-                tmpB = df.format(GO.propCoef2048B)
-                tmpC = df.format(GO.propCoef2048C)
+                //tmpA = df.format(GO.propCoef2048A)
+                //tmpB = df.format(GO.propCoef2048B)
+                //tmpC = df.format(GO.propCoef2048C)
             }
             2 -> {
                 tmpA = df.format(GO.propCoef4096A)
                 tmpB = df.format(GO.propCoef4096B)
                 tmpC = df.format(GO.propCoef4096C)
+                tmpD = df.format(GO.propCoef4096D)
+                tmpE = df.format(GO.propCoef4096E)
             }
         }
         GO.editPolinomA.setText(tmpA)

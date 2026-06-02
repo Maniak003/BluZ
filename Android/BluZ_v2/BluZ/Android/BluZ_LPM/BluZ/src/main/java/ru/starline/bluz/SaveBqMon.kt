@@ -218,10 +218,10 @@ class SaveBqMon {
             var resolutionStr : String = ""
             when (GO.spectrResolution) {
                 0 -> {
-                    resolutionStr = "<Coefficient>" + GO.propCoef1024C.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef1024B.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef1024A.toString() + "</Coefficient>\n"
+                    //resolutionStr = "<Coefficient>" + GO.propCoef1024C.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef1024B.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef1024A.toString() + "</Coefficient>\n"
                 }
                 1 -> {
-                    resolutionStr = "<Coefficient>" + GO.propCoef2048C.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef2048B.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef2048A.toString() + "</Coefficient>\n"
+                    //resolutionStr = "<Coefficient>" + GO.propCoef2048C.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef2048B.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef2048A.toString() + "</Coefficient>\n"
                 }
                 2 -> {
                     resolutionStr = "<Coefficient>" + GO.propCoef4096C.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef4096B.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef4096A.toString() + "</Coefficient>\n"

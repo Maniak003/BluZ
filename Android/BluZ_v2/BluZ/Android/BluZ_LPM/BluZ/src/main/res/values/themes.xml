@@ -12,8 +12,8 @@
         <item name="android:colorBackground">@color/bz_bg</item>
         <item name="android:statusBarColor">@color/bz_bg</item>
         <item name="android:navigationBarColor">@color/bz_bg</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <item name="android:windowLightStatusBar" >true</item>
+        <item name="android:windowLightNavigationBar" >true</item>
     </style>
 
     <style name="Theme.BluZ" parent="Base.Theme.BluZ" />
