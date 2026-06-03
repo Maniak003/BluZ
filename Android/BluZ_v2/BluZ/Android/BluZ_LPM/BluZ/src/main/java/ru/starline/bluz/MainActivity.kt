@@ -437,6 +437,8 @@ public class MainActivity : FragmentActivity() {
         GO.startBluetoothTimer()
         deviceViewModel.observeBle(GO.BTT)
 
+        GO.enrgCalc = energyCalculator()
+        GO.enrgCalc.init(GO.propCoef4096A, GO.propCoef4096B, GO.propCoef4096C, GO.propCoef4096D, GO.propCoef4096E, GO.specterType)
         /* Subscribe to BLE status and device data streams */
         observeBleStatus()
         observeDeviceFrames()

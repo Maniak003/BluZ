@@ -188,6 +188,7 @@ class globalObj {
     public lateinit var txtStat3: TextView
     public lateinit var txtCompMED: TextView
     public var txtIsotopInfo: TextView? = null         // Текст для вывода данных об изотопе (внутри chart card на Spectrum tab)
+    public lateinit var  enrgCalc: energyCalculator
 
     // Phase B StatusStrip — discrete values with icons
     public lateinit var bzCpsValue: TextView

@@ -177,27 +177,28 @@ class SpectrumFragment : Fragment() {
         var calState: Int = 0
         val matrx = Mtrx()
 
+        /* Событие окончания калибровки и расчета СЛАУ */
         btnConfirmCalibrate = view.findViewById(R.id.buttonConfirmCalibrate)
         btnConfirmCalibrate.setOnClickListener {
             if (btnConfirmCalibrate.text == "V") {
+                /* Данные приняты выполняем расчет и переходим на страницу настроек */
                 GO.needCalibrate = true
                 GO.txtStat1.visibility = View.INVISIBLE
                 GO.txtStat2.visibility = View.INVISIBLE
                 GO.txtStat3.visibility = View.INVISIBLE
                 GO.txtCompMED.visibility = View.INVISIBLE
                 GO.viewPager.setCurrentItem(4, false)
-            } else {
-                calState = 0
             }
             btnConfirmCalibrate.text = "X"
             btnCalibrate.text = "1"
+            calState = 0
         }
 
+        /* Ввод данных для калибровки, от 3, до 5 значений */
         btnCalibrate = view.findViewById(R.id.buttonCalibrate)
         btnCalibrate.setOnClickListener {
             btnConfirmCalibrate.text = "X"
             if (GO.drawCURSOR.drawCursorInit) {
-                var mtrxArray: Array<DoubleArray> = Array(5) { DoubleArray(2) }
                 val builder: AlertDialog.Builder = AlertDialog.Builder(it.context)
                 builder.setTitle("Enter energy for channel " + GO.drawCURSOR.curChan.toString() + ", point: " + (calState + 1).toString())
                 val inEnergy = EditText(context)
@@ -206,40 +207,15 @@ class SpectrumFragment : Fragment() {
                 builder.setView(inEnergy)
                 builder.setPositiveButton("Add") { _, _ ->
                     if (inEnergy.text.isNotEmpty()) {
-                        matrx.sysArray[calState][1] = inEnergy.text.toString().toDouble()
-                        matrx.sysArray[calState][0] = GO.drawCURSOR.curChan.toDouble()
+                        GO.enrgCalc.mtrxArray[calState][1] = inEnergy.text.toString().toDouble()
+                        GO.enrgCalc.mtrxArray[calState][0] = GO.drawCURSOR.curChan.toDouble()
                         calState++
-                        if (calState > 2 && calState < 6) {
-                            //calState = 0
+                        if (calState > 2 && calState < 5) {         // Если 3 и более значения, можно начинать расчитывать коэффициенты
                             btnConfirmCalibrate.text = "V"
                             btnCalibrate.text = (calState + 1).toString()
-                            matrx.sysEq()
-                            // Mtrx больше не пишет в GO сам — проверяем solved и пишем только при валидном решении.
-                            // Вырожденная система (3 точки на одной линии) — оставляем старые коэффициенты,
-                            // чтобы случайно не затереть рабочую калибровку нулями.
-                            if (matrx.solved) {
-                                when (GO.specterType) {
-                                    0 -> {
-                                        //GO.propCoef1024A = matrx.cA
-                                        //GO.propCoef1024B = matrx.cB
-                                        //GO.propCoef1024C = matrx.cC
-                                    }
-                                    1 -> {
-                                        //GO.propCoef2048A = matrx.cA
-                                        //GO.propCoef2048B = matrx.cB
-                                        //GO.propCoef2048C = matrx.cC
-                                    }
-                                    2 -> {
-                                        GO.propCoef4096A = matrx.cA
-                                        GO.propCoef4096B = matrx.cB
-                                        GO.propCoef4096C = matrx.cC
-                                    }
-                                }
-                            } else {
-                                Toast.makeText(GO.mainContext,
-                                    "Калибровка не сошлась: точки коллинеарны. Старые коэффициенты сохранены.",
-                                    Toast.LENGTH_LONG).show()
-                            }
+                        } else if (calState >= 4) {
+                            btnConfirmCalibrate.text = "V"
+                            btnCalibrate.text = "1"
                         } else {
                             btnCalibrate.text = (calState + 1).toString()
                         }

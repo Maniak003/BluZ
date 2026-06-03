@@ -96,6 +96,8 @@ class SettingsFragment : Fragment() {
         GO.editPolinomA = view.findViewById(R.id.editPolA)
         GO.editPolinomB = view.findViewById(R.id.editPolB)
         GO.editPolinomC = view.findViewById(R.id.editPolC)
+        GO.editPolinomD = view.findViewById(R.id.editPolD)
+        GO.editPolinomE = view.findViewById(R.id.editPolE)
         GO.editLevel1 = view.findViewById(R.id.editLevel1)
         GO.editLevel2 = view.findViewById(R.id.editLevel2)
         GO.editLevel3 = view.findViewById(R.id.editLevel3)
@@ -151,6 +153,7 @@ class SettingsFragment : Fragment() {
             }
         }
 
+        /* Диалог для редактирования детектора */
         textDetectName.setOnClickListener {
             if (textDetectName.text.isNotEmpty()) {
                 val context = requireContext()
@@ -195,6 +198,7 @@ class SettingsFragment : Fragment() {
             }
         }
 
+        /* Выбор детектора из базы */
         buttonSelectDetect.setOnClickListener {
             lifecycleScope.launch {
                 val detect = GO.dao.getAllDetector()
@@ -232,6 +236,7 @@ class SettingsFragment : Fragment() {
             }
         }
 
+        /* Создание нового детектора */
         buttonNewDetect.setOnClickListener {
             val context = requireContext()
             val input = EditText(context)
@@ -295,13 +300,13 @@ class SettingsFragment : Fragment() {
                 if (noChange) {
                     if (GO.editPolinomA.text.isNotEmpty()) {
                         try {
-                            if (GO.rbResolution1024.isChecked) {
+                            //if (GO.rbResolution1024.isChecked) {
                                 //GO.propCoef1024A = GO.editPolinomA.text.toString().toFloat()
-                            } else if (GO.rbResolution2048.isChecked) {
+                            //} else if (GO.rbResolution2048.isChecked) {
                                 //GO.propCoef2048A = GO.editPolinomA.text.toString().toFloat()
-                            } else if (GO.rbResolution4096.isChecked) {
+                            //} else if (GO.rbResolution4096.isChecked) {
                                 GO.propCoef4096A = GO.editPolinomA.text.toString().toFloat()
-                            }
+                            //}
                         } catch (e: NumberFormatException) {}
                     }
                 }
@@ -315,13 +320,13 @@ class SettingsFragment : Fragment() {
                 if (noChange) {
                     if (GO.editPolinomB.text.isNotEmpty()) {
                         try {
-                            if (GO.rbResolution1024.isChecked) {
+                            //if (GO.rbResolution1024.isChecked) {
                                 //GO.propCoef1024B = GO.editPolinomB.text.toString().toFloat()
-                            } else if (GO.rbResolution2048.isChecked) {
+                            //} else if (GO.rbResolution2048.isChecked) {
                                 //GO.propCoef2048B = GO.editPolinomB.text.toString().toFloat()
-                            } else if (GO.rbResolution4096.isChecked) {
+                            //} else if (GO.rbResolution4096.isChecked) {
                                 GO.propCoef4096B = GO.editPolinomB.text.toString().toFloat()
-                            }
+                            //}
                         } catch (e: NumberFormatException) {}
                     }
                 }
@@ -335,13 +340,13 @@ class SettingsFragment : Fragment() {
                 if (noChange) {
                     if (GO.editPolinomC.text.isNotEmpty()) {
                         try {
-                            if (GO.rbResolution1024.isChecked) {
+                            //if (GO.rbResolution1024.isChecked) {
                                 //GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
-                            } else if (GO.rbResolution2048.isChecked) {
+                            //} else if (GO.rbResolution2048.isChecked) {
                                 //GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
-                            } else if (GO.rbResolution4096.isChecked) {
+                            //} else if (GO.rbResolution4096.isChecked) {
                                 GO.propCoef4096C = GO.editPolinomC.text.toString().toFloat()
-                            }
+                            //}
                         } catch (e: NumberFormatException) {}
                     }
                 }
@@ -355,13 +360,13 @@ class SettingsFragment : Fragment() {
                 if (noChange) {
                     if (GO.editPolinomD.text.isNotEmpty()) {
                         try {
-                            if (GO.rbResolution1024.isChecked) {
+                            //if (GO.rbResolution1024.isChecked) {
                                 //GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
-                            } else if (GO.rbResolution2048.isChecked) {
+                            //} else if (GO.rbResolution2048.isChecked) {
                                 //GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
-                            } else if (GO.rbResolution4096.isChecked) {
+                            //} else if (GO.rbResolution4096.isChecked) {
                                 GO.propCoef4096D = GO.editPolinomD.text.toString().toFloat()
-                            }
+                            //}
                         } catch (e: NumberFormatException) {}
                     }
                 }
@@ -375,13 +380,13 @@ class SettingsFragment : Fragment() {
                 if (noChange) {
                     if (GO.editPolinomE.text.isNotEmpty()) {
                         try {
-                            if (GO.rbResolution1024.isChecked) {
+                            //if (GO.rbResolution1024.isChecked) {
                                 //GO.propCoef1024C = GO.editPolinomC.text.toString().toFloat()
-                            } else if (GO.rbResolution2048.isChecked) {
+                            //} else if (GO.rbResolution2048.isChecked) {
                                 //GO.propCoef2048C = GO.editPolinomC.text.toString().toFloat()
-                            } else if (GO.rbResolution4096.isChecked) {
+                            //} else if (GO.rbResolution4096.isChecked) {
                                 GO.propCoef4096E = GO.editPolinomE.text.toString().toFloat()
-                            }
+                            //}
                         } catch (e: NumberFormatException) {}
                     }
                 }
@@ -780,35 +785,11 @@ class SettingsFragment : Fragment() {
             view.findViewById<RadioButton>(checkedId)?.apply {
                 noChange = false
                 val df = DecimalFormat(GO.acuricyPatern, DecimalFormatSymbols(Locale.US))
-                var tmpA = ""
-                var tmpB = ""
-                var tmpC = ""
-                var tmpD = ""
-                var tmpE = ""
-                when (checkedId) {
-                    GO.rbResolution1024.id -> {
-                        //tmpA = df.format(GO.propCoef1024A)
-                        //tmpB = df.format(GO.propCoef1024B)
-                        //tmpC = df.format(GO.propCoef1024C)
-                    }
-                    GO.rbResolution2048.id -> {
-                        //tmpA = df.format(GO.propCoef2048A)
-                        //tmpB = df.format(GO.propCoef2048B)
-                        //tmpC = df.format(GO.propCoef2048C)
-                    }
-                    GO.rbResolution4096.id -> {
-                        tmpA = df.format(GO.propCoef4096A)
-                        tmpB = df.format(GO.propCoef4096B)
-                        tmpC = df.format(GO.propCoef4096C)
-                        tmpD = df.format(GO.propCoef4096D)
-                        tmpE = df.format(GO.propCoef4096E)
-                    }
-                }
-                GO.editPolinomA.setText(tmpA)
-                GO.editPolinomB.setText(tmpB)
-                GO.editPolinomC.setText(tmpC)
-                GO.editPolinomD.setText(tmpD)
-                GO.editPolinomE.setText(tmpE)
+                GO.editPolinomA.setText(df.format(GO.propCoef4096A))
+                GO.editPolinomB.setText(df.format(GO.propCoef4096B))
+                GO.editPolinomC.setText(df.format(GO.propCoef4096C))
+                GO.editPolinomD.setText(df.format(GO.propCoef4096D))
+                GO.editPolinomE.setText(df.format(GO.propCoef4096E))
                 noChange = true
             }
         }
@@ -1804,33 +1785,11 @@ class SettingsFragment : Fragment() {
         GO.cbVibroLevel2.isChecked = GO.propVibroLevel2
         GO.cbVibroLevel3.isChecked = GO.propVibroLevel3
         val df = DecimalFormat(GO.acuricyPatern, DecimalFormatSymbols(Locale.US))
-        var tmpA = ""
-        var tmpB = ""
-        var tmpC = ""
-        var tmpD = ""
-        var tmpE = ""
-        when (GO.spectrResolution) {
-            0 -> {
-                //tmpA = df.format(GO.propCoef1024A)
-                //tmpB = df.format(GO.propCoef1024B)
-                //tmpC = df.format(GO.propCoef1024C)
-            }
-            1 -> {
-                //tmpA = df.format(GO.propCoef2048A)
-                //tmpB = df.format(GO.propCoef2048B)
-                //tmpC = df.format(GO.propCoef2048C)
-            }
-            2 -> {
-                tmpA = df.format(GO.propCoef4096A)
-                tmpB = df.format(GO.propCoef4096B)
-                tmpC = df.format(GO.propCoef4096C)
-                tmpD = df.format(GO.propCoef4096D)
-                tmpE = df.format(GO.propCoef4096E)
-            }
-        }
-        GO.editPolinomA.setText(tmpA)
-        GO.editPolinomB.setText(tmpB)
-        GO.editPolinomC.setText(tmpC)
+        GO.editPolinomA.setText(df.format(GO.propCoef4096A))
+        GO.editPolinomB.setText(df.format(GO.propCoef4096B))
+        GO.editPolinomC.setText(df.format(GO.propCoef4096C))
+        GO.editPolinomD.setText(df.format(GO.propCoef4096D))
+        GO.editPolinomE.setText(df.format(GO.propCoef4096E))
         GO.editCPS2Rh.setText(GO.propCPS2UR.toString())
         GO.editHVoltage.setText(GO.propHVoltage.toString())
         GO.editComparator.setText(GO.propComparator.toString())
