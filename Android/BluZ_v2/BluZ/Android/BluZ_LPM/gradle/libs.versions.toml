@@ -1,5 +1,6 @@
 [versions]
 agp = "8.12.3"
+commonsMath3 = "3.6.1"
 kotlin = "2.2.21"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -21,11 +22,13 @@ runtime = "1.0.0-alpha05"
 firebaseCrashlyticsBuildtools = "3.0.6"
 compiler = "3.2.0-alpha11"
 dokka = "1.9.20"
+remoteCreationCompose = "1.0.0-alpha12"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomCompiler"  }
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
+commons-math3 = { module = "org.apache.commons:commons-math3", version.ref = "commonsMath3" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -45,6 +48,7 @@ firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "fireb
 #firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version.ref = "firebaseCrashlytics" }
 #firebase-crashlytics-ndk = { module = "com.google.firebase:firebase-crashlytics-ndk", version.ref = "firebaseCrashlytics" }
 androidx-compiler = { group = "androidx.databinding", name = "compiler", version.ref = "compiler" }
+androidx-remote-creation-compose = { group = "androidx.compose.remote", name = "remote-creation-compose", version.ref = "remoteCreationCompose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

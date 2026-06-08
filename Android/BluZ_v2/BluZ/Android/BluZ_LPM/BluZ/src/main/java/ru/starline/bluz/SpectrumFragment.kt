@@ -180,6 +180,21 @@ class SpectrumFragment : Fragment() {
         /* Событие окончания калибровки и расчета СЛАУ */
         btnConfirmCalibrate = view.findViewById(R.id.buttonConfirmCalibrate)
         btnConfirmCalibrate.setOnClickListener {
+            /* Тест */
+            GO.enrgCalc.addCalibrationPoint(21.0, 37.0)
+            GO.enrgCalc.addCalibrationPoint(61.0, 100.0)
+            GO.enrgCalc.addCalibrationPoint(95.0, 200.0)
+            GO.enrgCalc.addCalibrationPoint(199.0, 500.0)
+            GO.enrgCalc.addCalibrationPoint(278.0, 662.0)
+            val points = GO.enrgCalc.getCalibrationPoints()  // Получаем список
+            val result = GO.enrgCalc.fitCalibration(points, GO.enrgCalc.pointCount - 1)
+            if (result.isValid) {
+                Log.d("BluZ-BT", "Коэффициенты: ${result.coefficients.contentToString()}")
+                Log.d("BluZ-BT", "RMS ошибка: ${result.rmsError}%.3f кэВ")
+            } else {
+                Log.e("BluZ-BT", "Калибровка не удалась: плохая сходимость или мало точек")
+            }
+
             if (btnConfirmCalibrate.text == "V") {
                 /* Данные приняты выполняем расчет и переходим на страницу настроек */
                 GO.needCalibrate = true
@@ -192,6 +207,7 @@ class SpectrumFragment : Fragment() {
             btnConfirmCalibrate.text = "X"
             btnCalibrate.text = "1"
             calState = 0
+            GO.enrgCalc.clearCalibration()
         }
 
         /* Ввод данных для калибровки, от 3, до 5 значений */
@@ -207,8 +223,9 @@ class SpectrumFragment : Fragment() {
                 builder.setView(inEnergy)
                 builder.setPositiveButton("Add") { _, _ ->
                     if (inEnergy.text.isNotEmpty()) {
-                        GO.enrgCalc.mtrxArray[calState][1] = inEnergy.text.toString().toDouble()
-                        GO.enrgCalc.mtrxArray[calState][0] = GO.drawCURSOR.curChan.toDouble()
+                        val channel = GO.drawCURSOR.curChan.toDouble()
+                        val energy = inEnergy.text.toString().toDouble()
+                        GO.enrgCalc.addCalibrationPoint(channel, energy)
                         calState++
                         if (calState > 2 && calState < 5) {         // Если 3 и более значения, можно начинать расчитывать коэффициенты
                             btnConfirmCalibrate.text = "V"
