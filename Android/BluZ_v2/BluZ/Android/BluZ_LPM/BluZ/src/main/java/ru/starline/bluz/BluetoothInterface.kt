@@ -272,7 +272,7 @@ class BluetoothInterface {
         }
         Log.i("BluZ-BT", "Try gatt connect.")
         GO.drawLOG.appendAppLogs("Try gatt connect.", 1)
-        //_status.tryEmit(BleStatus.Connecting)
+        _status.tryEmit(BleStatus.InitBLE)
         gatt = device!!.connectGatt(GO.mainContext, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
         if (gatt == null) {
             Log.i("BluZ-BT", "Error: Gatt create failed.")

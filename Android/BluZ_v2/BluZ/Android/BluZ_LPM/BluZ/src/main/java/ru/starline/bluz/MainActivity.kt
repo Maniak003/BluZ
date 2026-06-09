@@ -62,6 +62,7 @@ import java.nio.ByteBuffer
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigationrail.NavigationRailView
+import ru.starline.bluz.GO
 
 public val GO: globalObj = globalObj()
 
@@ -264,9 +265,7 @@ public class MainActivity : FragmentActivity() {
         //enableEdgeToEdge(statusBarStyle = SystemBarStyle.auto(Color. TRANSPARENT, Color. TRANSPARENT), navigationBarStyle = SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim))
 
         /* Phase D2: system bars visible. fitsSystemWindows on root inserts padding under status/nav bars. */
-        WindowInsetsControllerCompat(window, window.decorView.findViewById(android.R.id.content)).let { controller ->
-            controller.show(WindowInsetsCompat.Type.systemBars())
-        }
+        WindowInsetsControllerCompat(window, window.decorView.findViewById(android.R.id.content)).show(WindowInsetsCompat.Type.systemBars())
         GO.adapter = NumberAdapter(this)
         GO.indicatorBT = findViewById(R.id.indicatorBT)
         GO.viewPager = findViewById(R.id.VPMain)
@@ -348,7 +347,8 @@ public class MainActivity : FragmentActivity() {
             val radius = size / 2f
             canvas.drawCircle(radius, radius, radius, paint)
             GO.impArr[ind] = ImageProvider.fromBitmap(bitmap)
-        }        /*
+        }
+        /*
         val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
         var bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
         var canvas = Canvas(bitmap)
@@ -410,6 +410,10 @@ public class MainActivity : FragmentActivity() {
         if (GO.fullScrn) {
             enableEdgeToEdge()
         }
+        GO.enrgCalc = energyCalculator()
+        GO.enrgCalc.init(GO.propCoef4096A, GO.propCoef4096B, GO.propCoef4096C, GO.propCoef4096D, GO.propCoef4096E, GO.spectrResolution)
+        //val eLast = GO.enrgCalc.channelToEnergy(4095)
+        //Log.d("BluZ-BT", "rS: ${GO.enrgCalc.rS}, eLast: $eLast")
 
         /* Тип детектора */
         lifecycleScope.launch {
@@ -437,8 +441,6 @@ public class MainActivity : FragmentActivity() {
         GO.startBluetoothTimer()
         deviceViewModel.observeBle(GO.BTT)
 
-        GO.enrgCalc = energyCalculator()
-        GO.enrgCalc.init(GO.propCoef4096A, GO.propCoef4096B, GO.propCoef4096C, GO.propCoef4096D, GO.propCoef4096E, GO.specterType)
         /* Subscribe to BLE status and device data streams */
         observeBleStatus()
         observeDeviceFrames()
@@ -462,6 +464,7 @@ public class MainActivity : FragmentActivity() {
                     is BleStatus.Connected    -> R.color.bz_bt_on
                     is BleStatus.Connecting   -> R.color.bz_bt_warn
                     is BleStatus.Disconnected -> R.color.bz_bt_off
+                    is BleStatus.InitBLE      -> R.color.bz_bt_init
                     is BleStatus.Error        -> R.color.bz_bt_off
                 }
                 val tint = ContextCompat.getColor(GO.mainContext, tintRes)

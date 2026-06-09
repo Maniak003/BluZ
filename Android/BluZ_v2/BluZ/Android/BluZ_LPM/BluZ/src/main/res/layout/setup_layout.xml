@@ -1125,7 +1125,7 @@
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_text"
-                        android:textSize="13dp" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -1155,7 +1155,7 @@
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_text"
-                        android:textSize="13dp" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <Button

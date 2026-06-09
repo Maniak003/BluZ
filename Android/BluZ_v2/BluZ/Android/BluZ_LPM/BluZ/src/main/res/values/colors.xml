@@ -56,6 +56,7 @@
     <color name="bz_on_danger">#FFFFFF</color>
 
     <color name="bz_bt_on">#006B54</color>
+    <color name="bz_bt_init">#238CF4</color>
     <color name="bz_bt_warn">#A96B00</color>
     <color name="bz_bt_off">#C91414</color>
 

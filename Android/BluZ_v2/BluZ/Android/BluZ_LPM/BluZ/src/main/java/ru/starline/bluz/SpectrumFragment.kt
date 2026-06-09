@@ -21,6 +21,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import kotlin.math.abs
 
 /**
  * Главная вкладка с гамма-спектром и накопленным историческим спектром.
@@ -171,8 +172,6 @@ class SpectrumFragment : Fragment() {
 
         val CBSMA: CheckBox = view.findViewById(R.id.cbSMA)
         val CBMEDIAN: CheckBox = view.findViewById(R.id.cbMED)
-        val CBMLEM: CheckBox = view.findViewById(R.id.cbMLEM)
-        val pbMLEM: ProgressBar = view.findViewById(R.id.pbMLEM)
 
         var calState: Int = 0
         val matrx = Mtrx()
@@ -181,22 +180,51 @@ class SpectrumFragment : Fragment() {
         btnConfirmCalibrate = view.findViewById(R.id.buttonConfirmCalibrate)
         btnConfirmCalibrate.setOnClickListener {
             /* Тест */
-            GO.enrgCalc.addCalibrationPoint(21.0, 37.0)
-            GO.enrgCalc.addCalibrationPoint(61.0, 100.0)
-            GO.enrgCalc.addCalibrationPoint(95.0, 200.0)
-            GO.enrgCalc.addCalibrationPoint(199.0, 500.0)
-            GO.enrgCalc.addCalibrationPoint(278.0, 662.0)
-            val points = GO.enrgCalc.getCalibrationPoints()  // Получаем список
-            val result = GO.enrgCalc.fitCalibration(points, GO.enrgCalc.pointCount - 1)
-            if (result.isValid) {
-                Log.d("BluZ-BT", "Коэффициенты: ${result.coefficients.contentToString()}")
-                Log.d("BluZ-BT", "RMS ошибка: ${result.rmsError}%.3f кэВ")
-            } else {
-                Log.e("BluZ-BT", "Калибровка не удалась: плохая сходимость или мало точек")
-            }
+            //GO.enrgCalc.addCalibrationPoint(21.0, 37.0)
+            //GO.enrgCalc.addCalibrationPoint(61.0, 100.0)
+            //GO.enrgCalc.addCalibrationPoint(95.0, 200.0)
+            //GO.enrgCalc.addCalibrationPoint(199.0, 500.0)
+            //GO.enrgCalc.addCalibrationPoint(278.0, 662.0)
 
             if (btnConfirmCalibrate.text == "V") {
                 /* Данные приняты выполняем расчет и переходим на страницу настроек */
+                val points = GO.enrgCalc.getCalibrationPoints()  // Получаем список
+                val result = GO.enrgCalc.fitCalibration(points, calState - 1)
+                if (result.isValid) {
+                    GO.propCoef4096A = 0f
+                    GO.propCoef4096B = 0f
+                    when (calState) {
+                        3 -> {
+                            GO.propCoef4096C = result.coefficients[2].toFloat()
+                            GO.propCoef4096D = result.coefficients[1].toFloat()
+                            GO.propCoef4096E = result.coefficients[0].toFloat()
+                        }
+                        4 -> {
+                            GO.propCoef4096B = result.coefficients[3].toFloat()
+                            GO.propCoef4096C = result.coefficients[2].toFloat()
+                            GO.propCoef4096D = result.coefficients[1].toFloat()
+                            GO.propCoef4096E = result.coefficients[0].toFloat()
+                        }
+                        5 -> {
+                            GO.propCoef4096A = result.coefficients[4].toFloat()
+                            GO.propCoef4096B = result.coefficients[3].toFloat()
+                            GO.propCoef4096C = result.coefficients[2].toFloat()
+                            GO.propCoef4096D = result.coefficients[1].toFloat()
+                            GO.propCoef4096E = result.coefficients[0].toFloat()
+                        }
+                    }
+                    GO.enrgCalc.init(GO.propCoef4096A, GO.propCoef4096B, GO.propCoef4096C, GO.propCoef4096D, GO.propCoef4096E, GO.specterType)
+                    if (result.isValid) {
+                        Log.d("BluZ-BT", "=== ПРОВЕРКА КАЛИБРОВКИ ===")
+                        for ((ch, enExpected) in points) {
+                            val enCalc = GO.enrgCalc.channelToEnergy(ch.toInt())
+                            val err = abs(enCalc - enExpected.toFloat())
+                            Log.d("BluZ-BT", "Канал ${ch.toInt()}: ожидаемо=${enExpected}%.1f, получено=${enCalc}%.1f, ошибка=${err}%.3f кэВ")
+                        }
+                        Log.d("BluZ-BT", "RMS ошибка: ${result.rmsError}%.3f кэВ")
+                    }                } else {
+                    Log.e("BluZ-BT", "Калибровка не удалась: плохая сходимость или мало точек")
+                }
                 GO.needCalibrate = true
                 GO.txtStat1.visibility = View.INVISIBLE
                 GO.txtStat2.visibility = View.INVISIBLE
@@ -223,6 +251,9 @@ class SpectrumFragment : Fragment() {
                 builder.setView(inEnergy)
                 builder.setPositiveButton("Add") { _, _ ->
                     if (inEnergy.text.isNotEmpty()) {
+                        if (calState == 0) {
+                            GO.enrgCalc.clearCalibration()
+                        }
                         val channel = GO.drawCURSOR.curChan.toDouble()
                         val energy = inEnergy.text.toString().toDouble()
                         GO.enrgCalc.addCalibrationPoint(channel, energy)
@@ -247,7 +278,6 @@ class SpectrumFragment : Fragment() {
         GO.propButtonInit = false
         CBSMA.isChecked = GO.drawSPECTER.flagSMA
         CBMEDIAN.isChecked = GO.drawSPECTER.flagMEDIAN
-        CBMLEM.isChecked = GO.drawSPECTER.flagMLEM
         GO.propButtonInit = true
 
         CBSMA.setOnCheckedChangeListener { _, isChecked ->

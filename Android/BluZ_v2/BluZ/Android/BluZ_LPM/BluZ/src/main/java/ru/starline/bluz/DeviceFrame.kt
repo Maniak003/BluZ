@@ -129,6 +129,8 @@ data class HardwareConfig(
  * UI-слой подписывается и обновляет иконку BT в StatusStrip.
  */
 sealed class BleStatus {
+    /* Начата инициализация соединения */
+    object InitBLE : BleStatus()
     /** Идёт попытка подключения (после [BluetoothInterface.initLeDevice]). */
     object Connecting : BleStatus()
     /** Соединение установлено, MTU согласован, сервисы дискаверены, notify подписан. */

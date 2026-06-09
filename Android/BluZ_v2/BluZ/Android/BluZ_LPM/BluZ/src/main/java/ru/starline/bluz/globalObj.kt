@@ -116,7 +116,8 @@ class globalObj {
     public val propCfgSMAWindow: String = "SMAWindow"
     public val propCfgRejectCann: String = "RejectConn"
     public val propCfgSaveSpecterType: String = "saveSpecterType"
-    public val acuricyPatern : String = "###0.#######"
+                                          //0.013870353993599009
+    public val acuricyPatern : String = "###0.##################"
     public val propAquracy : String = "AquracyDozimeter"
     public val propBitsChan: String = "BitsOfChannel"
     public val propFullScrn: String = "FullScreen"
@@ -592,32 +593,41 @@ class globalObj {
             2 -> { a = GO.propCoef4096A; b = GO.propCoef4096B; c = GO.propCoef4096C }
             else -> { a = GO.propCoef1024A; b = GO.propCoef1024B; c = GO.propCoef1024C }
         }*/
+        /*
         val powVal = when (GO.spectrResolution) {
             1 -> 2.0f
             2 -> 1.0f
             else -> 4.0f
-        }
+        }*/
         if (GO.propCoef4096A == 0f && GO.propCoef4096B == 0f  && GO.propCoef4096C == 0f ) {
             // Калибровка не выставлена или 1:1 — диапазон не показываем.
             tv.text = "КАНАЛОВ · $channels"
             return
-        }
-        // Первый "живой" канал ограничен аппаратным порогом компаратора.
-        // propComparator — отсчёты АЦП, bitsChannel — отсчётов АЦП на 1 канал спектра.
-        val bitsCh = if (GO.bitsChannel in 1..64) GO.bitsChannel else 20
-        val firstCh = (GO.propComparator.toInt() / bitsCh).coerceIn(0, channels - 1)
-        val lastCh = channels - 1
-        val eFirst = (GO.propCoef4096A * (firstCh * powVal).toDouble().pow(4.0)
+        } else {
+            // Первый "живой" канал ограничен аппаратным порогом компаратора.
+            // propComparator — отсчёты АЦП, bitsChannel — отсчётов АЦП на 1 канал спектра.
+            //val bitsCh = if (GO.bitsChannel in 1..64) GO.bitsChannel else 20
+            //val firstCh = (GO.propComparator.toInt() / bitsCh).coerceIn(0, channels - 1)
+            //val firstCh = 0
+            val lastCh = channels - 1
+            val eFirst = 0f
+            /*(GO.propCoef4096A * (firstCh * powVal).toDouble().pow(4.0)
                 + GO.propCoef4096B * (firstCh * powVal).toDouble().pow(3.0)
                 + GO.propCoef4096C * (firstCh * powVal).toDouble().pow(2.0)
                 + GO.propCoef4096D * (firstCh * powVal).toDouble()
-                + GO.propCoef4096E).toInt().coerceAtLeast(0)
-        val eLast = (GO.propCoef4096A * (lastCh * powVal).toDouble().pow(4.0)
+                + GO.propCoef4096E).toInt().coerceAtLeast(0)*/
+            val eLast = GO.enrgCalc.channelToEnergy(lastCh)
+            /*(GO.propCoef4096A * (lastCh * powVal).toDouble().pow(4.0)
                 + GO.propCoef4096B * (lastCh * powVal).toDouble().pow(3.0)
                 + GO.propCoef4096C * (lastCh * powVal).toDouble().pow(2.0)
                 + GO.propCoef4096D * (lastCh * powVal).toDouble()
-                + GO.propCoef4096E).toInt().coerceAtLeast(0)
-        tv.text = "КАНАЛОВ · $channels · $eFirst – $eLast кэВ"
+                + GO.propCoef4096E).toInt().coerceAtLeast(0)*/
+            if (eLast < 0f || eLast > 10000f) {
+                tv.text = "КАНАЛОВ · $channels"
+            } else {
+                tv.text = "КАНАЛОВ · $channels · $eFirst – $eLast кэВ"
+            }
+        }
     }
 
     /* Форматирование длительности: секунды или hh:mm:ss (с dd: префиксом при >= 1 дня) */

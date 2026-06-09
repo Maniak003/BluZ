@@ -21,7 +21,7 @@ import androidx.core.graphics.createBitmap
  * **Отдельный bitmap** [cursorBitmap] над [drawSpecter.specBitmap] — позволяет стирать
  * курсор без перерисовки спектра. Стирание — `PorterDuff.Mode.CLEAR` в [hideCursor].
  *
- * **Поиск изотопа.** При наличии калибровки ([showCorsor] видит `cfA != 0`):
+ * **Поиск изотопа.** При наличии калибровки ([showCorsor] видит `GO.enrgCalc.pA != 0.0f && GO.enrgCalc.pB != 0f && GO.enrgCalc.pC != 0f`):
  *  1. Канал курсора → энергия по полиному `A·ch² + B·ch + C`
  *  2. [globalObj.findIsotop] ищет ближайший по энергии в справочнике 47 изотопов
  *  3. Если найден — заполняет [globalObj.txtIsotopInfo] подсказкой
@@ -49,9 +49,6 @@ class drawCursor {
     private var tmpCounts: Int = 0
     private var tmpEnergy: Int = 0
     private var tmpChann: Int = 0
-    private var cfA : Float = 0.0f
-    private var cfB : Float = 0.0f
-    private var cfC : Float = 0.0f
 
     /** Создаёт (или пересоздаёт при `GO.drawCursorObjectInit == true`) [cursorBitmap].
      *  При успешной инициализации сбрасывает [oldX] / [oldY] — иначе `hideCursor` в новой
@@ -102,7 +99,7 @@ class drawCursor {
             cursorCanvas.drawText(tmpCounts.toString(), oldX + 10, Ylog + 4, hCursor) //Erase counts text
             cursorCanvas.save()
             cursorCanvas.rotate(90f, oldX + 3, Ylog + 10 /*HSize - textVShift*/)
-            if(cfA == 0.0f) {
+            if(GO.enrgCalc.pA == 0f && GO.enrgCalc.pB == 0f && GO.enrgCalc.pC == 0f) {
                 cursorCanvas.drawText(tmpEnergy.toString(),oldX + 3,Ylog + 10,  /*HSize - textVShift*/ hCursor)
             } else {
                 cursorCanvas.drawText(tmpEnergy.toString() + "keV/" + tmpChann.toString(),oldX + 3,Ylog + 10,  /*HSize - textVShift*/ hCursor)
@@ -118,7 +115,7 @@ class drawCursor {
      *  1. Стирает старый ([hideCursor])
      *  2. Рисует вертикаль от Y=0 до Y=[VSize]
      *  3. Вычисляет номер канала: `(x / drawSPECTER.xSize + xPosition).toInt()`
-     *  4. По полиному `cfA·ch² + cfB·ch + cfC` → энергия в кэВ (если калибровка задана)
+     *  4. По полиному channelToEnergy (chan: Int) энергия в кэВ (если калибровка задана)
      *  5. Рисует кружок на пересечении с логарифмическим графиком + подписи
      *  6. Ищет изотоп в справочнике через [globalObj.findIsotop] → подсказка в [globalObj.txtIsotopInfo]
      *
@@ -145,29 +142,12 @@ class drawCursor {
             if (curChan < 0) {
                 curChan = 0
             }
-            when (GO.specterType) {
-                0 -> {  // 1024
-                    //cfA = GO.propCoef1024A
-                    //cfB = GO.propCoef1024B
-                    //cfC = GO.propCoef1024C
-                }
-                1 -> {  // 2048
-                    //cfA = GO.propCoef2048A
-                    //cfB = GO.propCoef2048B
-                    //cfC = GO.propCoef2048C
-                }
-                2 -> {  // 4096
-                    cfA = GO.propCoef4096A
-                    cfB = GO.propCoef4096B
-                    cfC = GO.propCoef4096C
-                }
-            }
             tmpChann = curChan
-            if (cfA == 0.0f) {
+            if (GO.enrgCalc.pA == 0.0f && GO.enrgCalc.pB == 0f && GO.enrgCalc.pC == 0f) {
                 tmpEnergy = curChan
             } else {
                 /* Пересчет канала в энергию */
-                tmpEnergy = (cfA * curChan * curChan + cfB * curChan + cfC).toInt()
+                tmpEnergy = GO.enrgCalc.channelToEnergy(curChan).toInt()
             }
             tmpCounts = GO.drawSPECTER.tmpSpecterData[curChan].toInt()
             if (GO.drawSPECTER.tmpSpecterData[curChan] != 0.0) {
@@ -185,19 +165,19 @@ class drawCursor {
             aCursor.style = Paint.Style.FILL;
             cursorCanvas.drawText(tmpCounts.toString(), x + 10, Ylog + 4, aCursor) // Counts
             cursorCanvas.withRotation(90f, x + 3, Ylog + 10 /*HSize - textVShift*/) {
-                if (cfA == 0.0f) {
+                if (GO.enrgCalc.pA == 0f && GO.enrgCalc.pB == 0f && GO.enrgCalc.pC == 0f) {
                     drawText(tmpEnergy.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
                 } else {
                     drawText(tmpEnergy.toString() + "keV/" + tmpChann.toString(), x + 3, Ylog + 10 /*HSize - textVShift*/, aCursor); // Energy
                 }
-            };
+            }
 
             oldX = x
             oldY = y
             cursorView.setImageBitmap(cursorBitmap)
 
             /* Вывод данных из справочника изотопов */
-            if(cfA != 0.0f) {      // Имеет смысл только при наличии коэффициентов полинома
+            if(GO.enrgCalc.pA != 0f || GO.enrgCalc.pA != 0f || GO.enrgCalc.pC != 0f) {      // Имеет смысл только при наличии коэффициентов полинома
                 var isotop: globalObj.IsotopsCls = GO.findIsotop(tmpEnergy)
                 if (isotop.Energy == 0) {   // Изотоп в справочнике не найден
                     GO.txtIsotopInfo?.visibility = android.view.View.INVISIBLE

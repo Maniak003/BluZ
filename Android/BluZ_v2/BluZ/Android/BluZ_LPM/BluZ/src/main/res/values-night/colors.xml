@@ -31,6 +31,7 @@
     <color name="bz_on_danger">#FFFFFF</color>
 
     <color name="bz_bt_on">#00D4AA</color>
+    <color name="bz_bt_init">#238CF4</color>
     <color name="bz_bt_warn">#F5B400</color>
     <color name="bz_bt_off">#FF4040</color>
 </resources>

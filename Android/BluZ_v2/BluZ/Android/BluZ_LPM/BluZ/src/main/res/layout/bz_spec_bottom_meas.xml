@@ -2,33 +2,42 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:layout_gravity="center_vertical"
     android:gravity="center_vertical"
+    android:orientation="horizontal"
     android:paddingStart="18dp"
-    android:paddingEnd="18dp"
     android:paddingTop="10dp"
+    android:paddingEnd="18dp"
     android:paddingBottom="10dp">
-
-    <TextView
-        android:id="@+id/bzRecLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ИДЁТ ИЗМЕРЕНИЕ · СВАЙП ВЛЕВО — ПРОСМОТР ИСТОРИИ"
-        android:textColor="@color/bz_text_muted"
-        android:textSize="10sp"
-        android:letterSpacing="0.04"
-        android:fontFamily="@font/bz_inter_bold"
-        android:textStyle="bold"
-        android:maxLines="1" />
 
     <TextView
         android:id="@+id/bzRecClock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="0dp"
+        android:fontFamily="@font/bz_jetbrains_mono_bold"
+        android:includeFontPadding="false"
         android:text="00:00:00"
         android:textColor="@color/bz_text"
-        android:textSize="22sp"
-        android:fontFamily="@font/bz_jetbrains_mono_bold"
-        android:includeFontPadding="false" />
+        android:textSize="22sp" />
+
+    <Space
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/bzRecLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:fontFamily="@font/bz_inter_bold"
+        android:letterSpacing="0.04"
+        android:maxLines="1"
+        android:text=" СВАЙП ВЛЕВО — ПРОСМОТР ИСТОРИИ"
+        android:textColor="@color/bz_text_muted"
+        android:textSize="10sp"
+        android:textStyle="bold" />
+
 </LinearLayout>
