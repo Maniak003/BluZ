@@ -75,9 +75,11 @@ class drawCursor {
                 // стереть пиксели по координатам прошлой ориентации экрана.
                 oldX = 0.0f
                 oldY = 0.0f
+                cursorView.setImageBitmap(cursorBitmap)
             }
         }
-        cursorView.setImageBitmap(cursorBitmap)
+
+        //cursorView.setImageBitmap(cursorBitmap)
     }
 
     /** Стирает старый курсор (вертикаль + круг + подписи) с canvas через

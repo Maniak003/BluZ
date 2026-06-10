@@ -2,10 +2,10 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="64dp"
-    android:layout_height="58dp"
+    android:layout_height="50dp"
     android:layout_marginStart="6dp"
-    android:layout_marginEnd="6dp"
     android:layout_marginTop="2dp"
+    android:layout_marginEnd="6dp"
     android:background="@drawable/bg_bz_rail_tab"
     android:clickable="true"
     android:focusable="true">
@@ -21,9 +21,9 @@
             android:id="@+id/bz_tab_icon"
             android:layout_width="20dp"
             android:layout_height="20dp"
+            android:contentDescription="@null"
             android:duplicateParentState="true"
-            android:tint="@color/bz_nav_icon"
-            android:contentDescription="@null" />
+            android:tint="@color/bz_nav_icon" />
 
         <TextView
             android:id="@+id/bz_tab_label"
@@ -31,8 +31,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="3dp"
             android:duplicateParentState="true"
+            android:maxLines="1"
             android:textColor="@color/bz_nav_text"
-            android:textSize="10sp"
-            android:maxLines="1" />
+            android:textSize="10sp" />
     </LinearLayout>
 </FrameLayout>

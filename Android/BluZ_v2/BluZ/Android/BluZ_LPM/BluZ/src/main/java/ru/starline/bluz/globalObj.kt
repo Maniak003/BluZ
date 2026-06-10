@@ -611,17 +611,8 @@ class globalObj {
             //val firstCh = 0
             val lastCh = channels - 1
             val eFirst = 0f
-            /*(GO.propCoef4096A * (firstCh * powVal).toDouble().pow(4.0)
-                + GO.propCoef4096B * (firstCh * powVal).toDouble().pow(3.0)
-                + GO.propCoef4096C * (firstCh * powVal).toDouble().pow(2.0)
-                + GO.propCoef4096D * (firstCh * powVal).toDouble()
-                + GO.propCoef4096E).toInt().coerceAtLeast(0)*/
             val eLast = GO.enrgCalc.channelToEnergy(lastCh)
-            /*(GO.propCoef4096A * (lastCh * powVal).toDouble().pow(4.0)
-                + GO.propCoef4096B * (lastCh * powVal).toDouble().pow(3.0)
-                + GO.propCoef4096C * (lastCh * powVal).toDouble().pow(2.0)
-                + GO.propCoef4096D * (lastCh * powVal).toDouble()
-                + GO.propCoef4096E).toInt().coerceAtLeast(0)*/
+            /* Проверка корректности калибровки */
             if (eLast < 0f || eLast > 10000f) {
                 tv.text = "КАНАЛОВ · $channels"
             } else {

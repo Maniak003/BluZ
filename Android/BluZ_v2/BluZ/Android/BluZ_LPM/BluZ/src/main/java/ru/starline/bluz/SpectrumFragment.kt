@@ -16,6 +16,7 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -348,9 +349,10 @@ class SpectrumFragment : Fragment() {
         GO.bzSpecAvgUnit?.setOnClickListener(toggleUnits)
         applySpecUnitLabels()
 
+
         // Bottom swipe pager: страница 0 — таймер измерения, страница 1 — данные истории
-        val pager = view.findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.specBottomPager)
-        pager.adapter = BottomSwipeAdapter()
+        //val pager = view.findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.specBottomPager)
+        //pager.adapter = BottomSwipeAdapter()
 
         // При свайпе нижнего pager переключаем верхний chart card: спектр <-> история
         val specToolbar = view.findViewById<View>(R.id.specToolbar)
@@ -362,7 +364,9 @@ class SpectrumFragment : Fragment() {
         // используем safe-call ниже, иначе при повороте NPE в onPageSelected.
         val subtitleTv: TextView? = view.findViewById(R.id.bzSpecSubtitle)
         val titleTv: TextView? = view.findViewById(R.id.bzSpecTitle)
-
+        GO.drawSPECTER.clearSpecter()
+        GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
+        /*
         pager.registerOnPageChangeCallback(
             object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
@@ -410,7 +414,7 @@ class SpectrumFragment : Fragment() {
                     }
                 }
             }
-        )
+        )*/
     }
 
     override fun onDestroyView() {
@@ -497,6 +501,40 @@ class SpectrumFragment : Fragment() {
                     GO.drawHISTORY.clearHistory()
                     GO.drawHISTORY.redrawSpecter(GO.specterType)
                 }
+
+                v.post {
+                    Log.d("BluZ-Layout", "=== HISTORY PAGE DIAGNOSTICS ===")
+
+                    // 1. Печатаем всё дерево view для этой страницы
+                    fun printTree(view: View?, indent: String = "") {
+                        if (view == null) return
+                        val idName = try { view.resources.getResourceEntryName(view.id) } catch (e: Exception) { "unknown" }
+                        Log.d("BluZ-Layout", "${indent}${view::class.simpleName}#$idName " +
+                                "[${view.width}x${view.height}] vis=${view.visibility} alpha=${view.alpha}")
+                        if (view is ViewGroup) {
+                            for (i in 0 until view.childCount) {
+                                printTree(view.getChildAt(i), indent + "  ")
+                            }
+                        }
+                    }
+                    printTree(v)
+
+                    // 2. Конкретные проверки
+                    val histHero = v.findViewById<LinearLayout>(R.id.histHero)
+                    Log.d("BluZ-Layout", "histHero: found=${histHero != null}, height=${histHero?.height}, vis=${histHero?.visibility}")
+
+                    val btnSave = v.findViewById<Button>(R.id.buttonHistorySave)
+                    Log.d("BluZ-Layout", "buttonHistorySave: found=${btnSave != null}, vis=${btnSave?.visibility}, isShown=${btnSave?.isShown}")
+
+                    // 3. Принудительно показываем для теста
+                    btnSave?.apply {
+                        visibility = View.VISIBLE
+                        alpha = 1f
+                        bringToFront()
+                    }
+                    v.invalidate()
+                }
+
                 GO.showStatistics()
             }
         }

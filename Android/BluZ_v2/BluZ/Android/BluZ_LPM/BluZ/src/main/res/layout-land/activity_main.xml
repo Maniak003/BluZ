@@ -229,6 +229,11 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <include layout="@layout/item_bz_nav_rail" android:id="@+id/rail_spectrum" />
+
+        <include
+            android:id="@+id/rail_history"
+            layout="@layout/item_bz_nav_rail" />
+
         <include layout="@layout/item_bz_nav_rail" android:id="@+id/rail_dose" />
         <include layout="@layout/item_bz_nav_rail" android:id="@+id/rail_map" />
         <include layout="@layout/item_bz_nav_rail" android:id="@+id/rail_settings" />
