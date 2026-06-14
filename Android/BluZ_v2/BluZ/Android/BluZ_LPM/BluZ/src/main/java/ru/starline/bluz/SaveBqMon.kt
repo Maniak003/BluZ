@@ -216,17 +216,20 @@ class SaveBqMon {
             val endTime = simpleDateFormat.format(now)
             pulseSumm = GO.PCounter.toDouble()
             var resolutionStr : String = ""
-            when (GO.spectrResolution) {
-                0 -> {
-                    //resolutionStr = "<Coefficient>" + GO.propCoef1024C.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef1024B.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef1024A.toString() + "</Coefficient>\n"
-                }
+            val kRes = when (GO.spectrResolution) {
                 1 -> {
-                    //resolutionStr = "<Coefficient>" + GO.propCoef2048C.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef2048B.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef2048A.toString() + "</Coefficient>\n"
+                    2.0
                 }
                 2 -> {
-                    resolutionStr = "<Coefficient>" + GO.propCoef4096C.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef4096B.toString() + "</Coefficient>\n" + "<Coefficient>" + GO.propCoef4096A.toString() + "</Coefficient>\n"
+                    4.0
                 }
+                else -> 1.0
             }
+            resolutionStr = "<Coefficient>" + (GO.propCoef4096E * kRes).toString() + "</Coefficient>\n"
+                    + "<Coefficient>" + (GO.propCoef4096D * kRes).toString() + "</Coefficient>\n"
+                    + "<Coefficient>" + (GO.propCoef4096C * kRes).toString() + "</Coefficient>\n"
+                    + "<Coefficient>" + (GO.propCoef4096B * kRes).toString() + "</Coefficient>\n"
+                    + "<Coefficient>" + (GO.propCoef4096A * kRes).toString() + "</Coefficient>\n"
 
             dataStr = "<?xml version=\"1.0\"?>\n" +
                 "<ResultDataFile xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
