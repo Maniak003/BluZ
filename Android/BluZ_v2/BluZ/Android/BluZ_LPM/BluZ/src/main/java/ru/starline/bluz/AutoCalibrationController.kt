@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import ru.starline.bluz.GO
 import java.nio.ByteBuffer
 import kotlin.math.abs
 import kotlin.math.max
@@ -626,10 +627,11 @@ class AutoCalibrationController(
                     GO.propCoef4096D = result.cD
                     GO.propCoef4096E = result.cE
 
-                    val eLast = result.cA * (channels - 1) * (channels - 1) +
-                                result.cB * (channels - 1) + result.cC
+                    val eLast = GO.enrgCalc.channelToEnergy(channels - 1)
+                    /*val eLast = result.cA * (channels - 1) * (channels - 1) +
+                                result.cB * (channels - 1) + result.cC*/
                     Log.i("BluZ-AutoCalib",
-                        "Refine $i: A=${result.cA} B=${result.cB} C=${result.cC}, E_last=${"%.0f".format(eLast)}")
+                        "Refine $i: A=${result.cA} B=${result.cB} C=${result.cC} D=${result.cD} E=${result.cE}, E_last=${"%.0f".format(eLast)}")
 
                     if (mode == Mode.POLYNOMIAL_ONLY) break
                     if (i == refineIters) break
@@ -639,15 +641,15 @@ class AutoCalibrationController(
                     // Без учёта C формула 609×N/3500 правильна только когда C=0; при
                     // реальном C=-120 (компаратор отсекает первые каналы) пик 609 должен
                     // оказаться в канале (609-C)×(N-1)/(target-C).
-                    val targetCh = if (kotlin.math.abs(result.cC) < 5.0f) {
+                    val targetCh = if (kotlin.math.abs(result.cE) < 5.0f) {
                         AutoCalibrator.targetChannelFor(609, channels)
                     } else {
-                        val raw = (609.0 - result.cC) * (channels - 1) /
-                                  (AutoCalibrator.TARGET_FULL_RANGE_KEV - result.cC)
+                        val raw = (609.0 - result.cE) * (channels - 1) /
+                                  (AutoCalibrator.TARGET_FULL_RANGE_KEV - result.cE)
                         raw.toInt().coerceIn(1, channels - 1)
                     }
                     Log.i("BluZ-AutoCalib", "Refine $i: effective target ch for 609 keV with C=${result.cC} → $targetCh")
-                    val curCh609 = AutoCalibrator.predictChannel(609, result.cA, result.cB, result.cC)
+                    val curCh609 = AutoCalibrator.predictChannel(609, result.cA, result.cB, result.cC, result.cD, result.cE)
                     if (curCh609 == null) {
                         Log.w("BluZ-AutoCalib", "Refine $i: cannot predict ch_609, skipping")
                         prevV = finalHv; prevCh609 = null

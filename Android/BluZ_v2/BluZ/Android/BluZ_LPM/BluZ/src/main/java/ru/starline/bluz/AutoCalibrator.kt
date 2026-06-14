@@ -461,7 +461,7 @@ object AutoCalibrator {
                     // в предсказанной по полиному позиции, в окне ±1·FWHM.
                     var score = 0.0
                     for (auxE in auxEnergiesKev) {
-                        val predCh = predictChannel(auxE, mtrx.cA, mtrx.cB, mtrx.cC) ?: continue
+                        val predCh = predictChannel(auxE, 0.0f, 0.0f, mtrx.cA, mtrx.cB, mtrx.cC) ?: continue
                         val fwhmCh = expectedFwhmChannels(auxE, mtrx.cA, mtrx.cB, mtrx.cC, channels)
                         val nearest = candidates.minByOrNull { abs(it.channel - predCh) } ?: continue
                         if (abs(nearest.channel - predCh) <= fwhmCh) score += 1.0
@@ -517,7 +517,7 @@ object AutoCalibrator {
     }
 
     /**
-     * Для известной калибровки [cA, cB, cC] решает обратное уравнение `ch(E)` — возвращает
+     * Для известной калибровки [cA, cB, cC, cD, cE] решает обратное уравнение `ch(E)` — возвращает
      * канал, в котором ожидается пик энергии [energyKev]. Используется для:
      *  - верификации тройки через вспомогательные линии Ra-226 ([auxEnergiesKev])
      *  - расчёта канала компаратора по минимальной полезной энергии
@@ -525,7 +525,9 @@ object AutoCalibrator {
      * Решение: `A·ch² + B·ch + (C − E) = 0`. При A ≈ 0 — линейное приближение `ch = (E − C)/B`.
      * @return канал или `null` если дискриминант отрицательный или решение вне разумных пределов.
      */
-    fun predictChannel(energyKev: Int, cA: Float, cB: Float, cC: Float): Double? {
+    fun predictChannel(energyKev: Int, cA: Float, cB: Float, cC: Float, cD: Float, cE: Float): Double? {
+        return GO.enrgCalc.energyToChannelPolynom(energyKev.toFloat(), cA, cB, cC, cD, cE).toDouble()
+        /*
         // Линейный путь — самый частый случай для нашего прибора (A в районе 1e-6).
         if (abs(cA) < 1e-9f) {
             if (cB == 0.0f) return null
@@ -545,7 +547,7 @@ object AutoCalibrator {
             r1 >= 0 -> r1
             r2 >= 0 -> r2
             else -> null
-        }
+        }*/
     }
 
     /**
@@ -559,7 +561,7 @@ object AutoCalibrator {
         val relFwhm = 0.08 * sqrt(662.0 / energyKev.coerceAtLeast(1))
         val fwhmKev = energyKev * relFwhm
         // dE/dch = 2·A·ch + B. Для канала пика 609 кэВ это примерно B.
-        val chAt = predictChannel(energyKev, cA, cB, cC) ?: (channels / 2.0)
+        val chAt = predictChannel(energyKev, 0f, 0f, cA, cB, cC) ?: (channels / 2.0)
         val dE_dCh = 2.0 * cA * chAt + cB
         if (dE_dCh <= 0) return (channels * 0.02)  // fallback: 2% от полного диапазона
         return fwhmKev / dE_dCh

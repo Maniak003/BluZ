@@ -840,42 +840,10 @@ class globalObj {
         isotopList[idxIst++] = IsotopsCls(2614, "Th-232, Pb-212, Ac-228, Tl-208", 0, 0) // 46
 
         /* Пересчитать канал для изотопов с активностью */
-        var cA = 0.0f
-        var cB = 0.0f
-        var cC = 0.0f
-        var cD = 0.0f
-        var cE = 0.0f
-        var DD = 0.0f
         for (ii in 0 until isotopSize) {
             if (isotopList[ii].Activity != 0) {         // Активность не нулевая, требуется получить номер канала для правильного выделения пика
-                when (GO.spectrResolution) {
-                    0 -> {  // Разрешение 1024
-                        //cA = GO.propCoef1024A
-                        //cB = GO.propCoef1024B
-                        //cC = GO.propCoef1024C
-                    }
-                    1 -> {  // Разрешение 2048
-                        //cA = GO.propCoef2048A
-                        //cB = GO.propCoef2048B
-                        //cC = GO.propCoef2048C
-                    }
-                    2 -> {  // Разрешение 4096
-                        cA = GO.propCoef4096A
-                        cB = GO.propCoef4096B
-                        cC = GO.propCoef4096C
-                        cD = GO.propCoef4096C
-                        cE = GO.propCoef4096C
-                    }
-                }
-                if ((cA != 0.0f) and (cB != 0.0f)) {
-                    /* Дискриминант */
-                    DD = cB.pow(2.0f) - 4 * cA * (cC - isotopList[ii].Energy)
-                    /* Если имеются реальные корни, выбираем наибольшее значение */
-                    if (DD > 0) {
-                        var x1 = (-cB + sqrt(DD)) / (2 * cA)
-                        var x2 = (-cB - sqrt(DD)) / (2 * cA)
-                        isotopList[ii].Channel = max(x1.toInt(), x2.toInt())
-                    }
+                if ((GO.propCoef4096A != 0.0f) || (GO.propCoef4096B != 0.0f) || (GO.propCoef4096C != 0f)) {
+                    isotopList[ii].Channel = GO.enrgCalc.energyToChannel(isotopList[ii].Energy.toFloat())
                 }
             }
         }
