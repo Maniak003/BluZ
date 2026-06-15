@@ -36,7 +36,7 @@ ext {
 // MAPKIT_API_KEY и параметров подписи (KEYSTORE_*). Если файла нет — вернёт default.
 private String getLocalProperty(String key, String defaultValue) {
     def properties = new Properties()
-    def f = project.file("local.properties")
+    def f = rootProject.file("local.properties")
     if (f.exists()) {
         f.withInputStream { properties.load(it) }
     }
@@ -51,11 +51,14 @@ private String getMapkitApiKey() {
 android {
     signingConfigs {
         BluZ {
-            // Параметры подписи берутся из local.properties (вне git).
-            // Если KEYSTORE_FILE не задан — конфиг остаётся пустым; debug и
-            // releaseTest подписываются debug-ключом и не затрагиваются, а
-            // assembleRelease без этих параметров завершится ошибкой подписи.
             def keystorePath = getLocalProperty("KEYSTORE_FILE", "")
+
+            // ⬇️ ДОБАВЬТЕ ЭТИ СТРОКИ ДЛЯ ОТЛАДКИ ⬇️
+            println "=== DEBUG SIGNING CONFIG ==="
+            println "KEYSTORE_FILE from local.properties: '${keystorePath}'"
+            println "File exists? ${keystorePath ? file(keystorePath).exists() : 'path is empty'}"
+            // ⬆️ КОНЕЦ ОТЛАДКИ ⬆️
+
             if (keystorePath) {
                 storeFile file(keystorePath)
                 storePassword getLocalProperty("KEYSTORE_PASSWORD", "")
@@ -112,12 +115,12 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = '21'
     }
 
     buildToolsVersion '36.0.0'

@@ -215,7 +215,6 @@ class SaveBqMon {
             val startTime = simpleDateFormat.format(sTime)
             val endTime = simpleDateFormat.format(now)
             pulseSumm = GO.PCounter.toDouble()
-            var resolutionStr : String = ""
             val kRes = when (GO.spectrResolution) {
                 1 -> {
                     2.0
@@ -225,11 +224,13 @@ class SaveBqMon {
                 }
                 else -> 1.0
             }
-            resolutionStr = "<Coefficient>" + (GO.propCoef4096E * kRes).toString() + "</Coefficient>\n"
-                    + "<Coefficient>" + (GO.propCoef4096D * kRes).toString() + "</Coefficient>\n"
-                    + "<Coefficient>" + (GO.propCoef4096C * kRes).toString() + "</Coefficient>\n"
-                    + "<Coefficient>" + (GO.propCoef4096B * kRes).toString() + "</Coefficient>\n"
-                    + "<Coefficient>" + (GO.propCoef4096A * kRes).toString() + "</Coefficient>\n"
+            val resolutionStr = """
+                <Coefficient>${GO.propCoef4096E * kRes}</Coefficient>
+                <Coefficient>${GO.propCoef4096D * kRes}</Coefficient>
+                <Coefficient>${GO.propCoef4096C * kRes}</Coefficient>
+                <Coefficient>${GO.propCoef4096B * kRes}</Coefficient>
+                <Coefficient>${GO.propCoef4096A * kRes}</Coefficient>
+                """.trimIndent()
 
             dataStr = "<?xml version=\"1.0\"?>\n" +
                 "<ResultDataFile xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
