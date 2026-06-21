@@ -269,6 +269,7 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 
 #define SOUND_TIME_NOTIFY 4096
 #define SOUND_NOTIFY 	1
+//#define SOUND_TEST
 #define VIBRO_NOTIFY 	2
 #define LED_NOTIFY   	4
 #define TEST_LED		1
