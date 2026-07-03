@@ -658,25 +658,38 @@ class globalObj {
         /*
         *  Перевод в дни, часы, минуты, секунды
         */
-        var dd: Int = GO.messTm.toInt() / 86400
-        var hh: Int = (GO.messTm.toInt() - dd * 86400) /  3600
-        var mm: Int = GO.messTm.toInt() / 60 % 60
-        var ss: Int = GO.messTm.toInt() / 1 % 60
+        //var dd: Int = GO.messTm.toInt() / 86400
+        //var hh: Int = (GO.messTm.toInt() - dd * 86400) /  3600
+        //var mm: Int = GO.messTm.toInt() / 60 % 60
+        //var ss: Int = GO.messTm.toInt() / 1 % 60
 
-        var ddS: Int = GO.spectrometerTime.toInt() / 86400
-        var hhS: Int = (GO.spectrometerTime.toInt() - ddS * 86400) /  3600
-        var mmS: Int = GO.spectrometerTime.toInt() / 60 % 60
-        var ssS: Int = GO.spectrometerTime.toInt() / 1 % 60
+        //var ddS: Int = GO.spectrometerTime.toInt() / 86400
+        //var hhS: Int = (GO.spectrometerTime.toInt() - ddS * 86400) /  3600
+        //var mmS: Int = GO.spectrometerTime.toInt() / 60 % 60
+        //var ssS: Int = GO.spectrometerTime.toInt() / 1 % 60
 
         // Статусбар сверху — всегда общий аптайм прибора (GO.messTm).
         // bzRecClock (нижний таймер на вкладке Спектр) — отдельно время работы спектрометра.
-        val tmpStr: String = if (GO.viewPager.currentItem == 0) {
-            String.format("Time:%02d:%02d:%02d:%02d", ddS, hhS, mmS, ssS)
-        } else {
-            String.format("Time:%02d:%02d:%02d:%02d", dd, hh, mm, ss)
-        }
+        //val tmpStr: String = if (GO.viewPager.currentItem == 0) {
+        //    String.format("Time:%02d:%02d:%02d:%02d", ddS, hhS, mmS, ssS)
+        //} else {
+        //    String.format("Time:%02d:%02d:%02d:%02d", dd, hh, mm, ss)
+        //}
         if (::bzClockValue.isInitialized) {
-            bzClockValue.text = formatClock(GO.messTm.toInt(), GO.clockShowSecondsHist)
+            when (GO.viewPager.currentItem) {
+                /* Закладка спектрометра */
+                0 -> {
+                    bzClockValue.text = formatClock(GO.spectrometerTime.toInt(), GO.clockShowSecondsHist)
+                }
+                /* Закладка исторического спектра */
+                1 -> {
+
+                }
+                /* Закладка настроек */
+                else -> {
+                    bzClockValue.text = formatClock(GO.messTm.toInt(), GO.clockShowSecondsHist)
+                }
+            }
         }
         bzRecClock?.text = formatClock(GO.spectrometerTime.toInt(), GO.clockShowSecondsSpec)
         bzHistDuration?.text = formatClock(GO.messTm.toInt(), GO.clockShowSecondsHist)
@@ -685,40 +698,40 @@ class globalObj {
         *   Вывод первой строки статистики
         */
         /* Уровень сигнала */
-        var str_rssi = ""
-        if (GO.Current_RSSI > -400) {
-            str_rssi = String.format(" %sdBm ", GO.Current_RSSI.toString())
-        }
+        //var str_rssi = ""
+        //if (GO.Current_RSSI > -400) {
+        //    str_rssi = String.format(" %sdBm ", GO.Current_RSSI.toString())
+        //}
 
         /* Напряжение батареи */
-        if (GO.battLevel < 3.0f) {  // Уровень батареи низкий
-            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C ${str_rssi}<font color=#C80000> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
-        } else if (GO.battLevel < 3.5f) { // Уровнь батареи ниже 50%
-            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C ${str_rssi}<font color=#ffff00> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
-        } else {
-            GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C ${str_rssi}<font color=#00ff00> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
-        }
+        //if (GO.battLevel < 3.0f) {  // Уровень батареи низкий
+        //    GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C ${str_rssi}<font color=#C80000> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
+        //} else if (GO.battLevel < 3.5f) { // Уровнь батареи ниже 50%
+        //    GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C ${str_rssi}<font color=#ffff00> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
+        //} else {
+        //    GO.txtStat1.setText(Html.fromHtml("${GO.tempMC.toInt()}&#176C ${str_rssi}<font color=#00ff00> ${GO.battLevel} v </font>$tmpStr", HtmlCompat.FROM_HTML_MODE_LEGACY))
+        //}
 
         /*
         *   Вывод второй строки статистики
         */
-        var aquracy3S: Double
-        var cpsS: Float
-        var pulseS: Int
+        //var aquracy3S: Double
+        //var cpsS: Float
+        //var pulseS: Int
 
-        if (GO.viewPager.currentItem == 0) {        // Статистика для спектрометра
+        //if (GO.viewPager.currentItem == 0) {        // Статистика для спектрометра
             /* Расчет погрешности по трем сигмам для спектрометра */
-            aquracy3S = 300.0 / kotlin.math.sqrt(GO.spectrometerPulse.toDouble())
-            cpsS = GO.spectrometerPulse.toFloat() / GO.spectrometerTime.toFloat()
-            pulseS = GO.spectrometerPulse.toInt()
-        } else { // Статистика для дозиметра
+        //    aquracy3S = 300.0 / kotlin.math.sqrt(GO.spectrometerPulse.toDouble())
+        //    cpsS = GO.spectrometerPulse.toFloat() / GO.spectrometerTime.toFloat()
+        //    pulseS = GO.spectrometerPulse.toInt()
+        //} else { // Статистика для дозиметра
             /* Расчет погрешности по трем сигмам для дозиметра */
-            aquracy3S = 300.0 / kotlin.math.sqrt(GO.PCounter.toDouble())
-            cpsS = GO.cps
-            pulseS = GO.PCounter.toInt()
-        }
+        //    aquracy3S = 300.0 / kotlin.math.sqrt(GO.PCounter.toDouble())
+        //    cpsS = GO.cps
+        //    pulseS = GO.PCounter.toInt()
+        //}
 
-        GO.txtStat2.text = String.format("Total:%d(%.2f%%) Avg:%.2f", pulseS, aquracy3S, cpsS)
+        //GO.txtStat2.text = String.format("Total:%d(%.2f%%) Avg:%.2f", pulseS, aquracy3S, cpsS)
 
         /* Вывод энергокомпенсированной дозы */
         if (GO.drawSPECTER.flagMLEM) {

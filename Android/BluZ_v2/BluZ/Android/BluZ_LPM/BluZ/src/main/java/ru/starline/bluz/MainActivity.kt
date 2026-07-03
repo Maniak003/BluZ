@@ -742,10 +742,14 @@ public class MainActivity : FragmentActivity() {
             doseUnit = "cps"
             avgUnit  = "cps"
         }
-
+        val accurDose = if (GO.viewPager.currentItem == 0) {
+            "(%.1f%%)".format(300.0 / kotlin.math.sqrt(GO.spectrometerPulse.toDouble()))
+        } else {
+            "(%.1f%%)".format(300.0 / kotlin.math.sqrt(GO.PCounter.toDouble()))
+        }
         /* Spectrum hero */
         GO.bzSpecDoseValue?.text = doseText
-        GO.bzSpecAvgValue?.text  = avgText
+        GO.bzSpecAvgValue?.text  = avgText + accurDose
         GO.bzSpecDoseUnit?.text  = doseUnit
         GO.bzSpecAvgUnit?.text   = avgUnit
         GO.bzSpecDoseValue?.setTextColor(
@@ -758,7 +762,7 @@ public class MainActivity : FragmentActivity() {
         /* Dose hero */
         GO.bzDoseHeroValue?.text = doseText
         GO.bzDoseHeroUnit?.text  = doseUnit
-        GO.bzDoseAvgLabel?.text  = "Среднее: $avgText $avgUnit"
+        GO.bzDoseAvgLabel?.text  = "Среднее: $avgText $accurDose $avgUnit"
         GO.bzDoseHeroValue?.setTextColor(
             ContextCompat.getColor(
                 this,

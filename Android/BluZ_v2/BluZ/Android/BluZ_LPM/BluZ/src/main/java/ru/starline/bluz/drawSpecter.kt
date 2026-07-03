@@ -266,7 +266,7 @@ class drawSpecter {
                 oldX = idx.toDouble()
             //}
         }
-        /* Тестовая диния */
+        /* Тестовая линия */
         //specCanvas.drawLine(0.0f, VSize.toFloat(), HSize.toFloat(),VSize.toFloat(), paintLin )
 
         imgView.setImageBitmap(specBitmap)
@@ -278,33 +278,10 @@ class drawSpecter {
         //debugDoseCalculation(DoseCalculator.chiVectorOrg, spectrData, GO.spectrometerTime.toDouble())
 
         /* Проверим наличие калибровки */
-        val needCalcH10D = when (GO.specterType) {
-            /* 2048 */
-            1 -> {
-                GO.propCoef4096A > 0
-            }
-            /* 4096 */
-            2 -> {
-                GO.propCoef4096A > 0
-            }
-            /* 1024 */
-            else -> {
-                GO.propCoef4096A > 0
-            }
-        }
+        val needCalcH10D = ((GO.propCoef4096A != 0f) || (GO.propCoef4096B != 0f) || (GO.propCoef4096C != 0f))
 
         /* Определим максимальную отображаемую энергию */
-        val maxEnergy = when(GO.specterType) {
-            1 -> {
-                Math.pow(4096.0, 2.0) * GO.propCoef4096A + 2048.0 * GO.propCoef4096B + GO.propCoef4096C
-            }
-            2 -> {
-                Math.pow(4096.0, 2.0) * GO.propCoef4096A + 2048.0 * GO.propCoef4096B + GO.propCoef4096C
-            }
-            else -> {
-                Math.pow(4096.0, 2.0) * GO.propCoef4096A + 2048.0 * GO.propCoef4096B + GO.propCoef4096C
-            }
-        }
+        val maxEnergy = GO.enrgCalc.channelToEnergy(4095)
         /* Расчет энергокомпенсированный МЕД */
         if (needCalcH10D && maxEnergy > 0) {
             GO.compMED = DoseCalculator.calculateH10DoseSafe(
