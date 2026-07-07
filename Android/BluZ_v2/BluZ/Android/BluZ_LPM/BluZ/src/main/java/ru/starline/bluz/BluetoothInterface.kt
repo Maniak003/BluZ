@@ -524,6 +524,7 @@ class BluetoothInterface {
 
             /* Decode hardware config from receiveData */
             val hw = decodeHardwareConfig(receiveData)
+            Log.i("BluZ-BT", "Accuracy: ${hw.acquireValue}")
 
             /* Decode dosimeter histogram (512 uint16 values, offset 100 bytes) */
             val dosimeterData = DoubleArray(512) { i ->
@@ -634,7 +635,7 @@ class BluetoothInterface {
                 coef4096A = ByteBuffer.wrap(d.asByteArray(), 74, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 coef4096B = ByteBuffer.wrap(d.asByteArray(), 78, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 coef4096C = ByteBuffer.wrap(d.asByteArray(), 82, 4).order(ByteOrder.LITTLE_ENDIAN).float,
-                acquireValue = ((d[95].toUInt() shl 8) or d[94].toUInt()).toUShort(),
+                acquireValue = ((d[94].toUInt() shl 8) or d[95].toUInt()).toUShort(),
                 bitsChan = bitsChan,
                 sampleTime = sampleTime,
                 spectrometerTime = specTime,

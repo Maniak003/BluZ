@@ -453,19 +453,21 @@
                         android:textSize="12sp"
                         android:fontFamily="@font/bz_jetbrains_mono_bold"
                         android:textStyle="bold" />
+
                     <EditText
                         android:id="@+id/editLevel1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_marginStart="10dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_text"
-                        android:textSize="13sp"
-                        android:inputType="number"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -506,19 +508,21 @@
                         android:textSize="12sp"
                         android:fontFamily="@font/bz_jetbrains_mono_bold"
                         android:textStyle="bold" />
+
                     <EditText
                         android:id="@+id/editLevel2"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_marginStart="10dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_text"
-                        android:textSize="13sp"
-                        android:inputType="number"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -559,19 +563,21 @@
                         android:textSize="12sp"
                         android:fontFamily="@font/bz_jetbrains_mono_bold"
                         android:textStyle="bold" />
+
                     <EditText
                         android:id="@+id/editLevel3"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_marginStart="10dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_text"
-                        android:textSize="13sp"
-                        android:inputType="number"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -763,6 +769,7 @@
                             android:background="@drawable/bg_bz_button_surface"
                             android:fontFamily="@font/bz_jetbrains_mono_bold"
                             android:gravity="center"
+                            android:imeOptions="actionDone"
                             android:inputType="number"
                             android:padding="8dp"
                             android:text="3"
@@ -789,6 +796,7 @@
                             android:background="@drawable/bg_bz_button_surface"
                             android:fontFamily="@font/bz_jetbrains_mono_bold"
                             android:gravity="center"
+                            android:imeOptions="actionDone"
                             android:inputType="number"
                             android:padding="8dp"
                             android:text="0"
@@ -1030,18 +1038,20 @@
                         android:textColor="@color/bz_accent"
                         android:textSize="13sp"
                         android:fontFamily="@font/bz_jetbrains_mono_bold" />
+
                     <EditText
                         android:id="@+id/editPolA"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:imeOptions="actionDone"
+                        android:inputType="numberDecimal|numberSigned"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_text"
-                        android:textSize="13sp"
-                        android:inputType="numberDecimal|numberSigned"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -1057,18 +1067,20 @@
                         android:textColor="@color/bz_accent"
                         android:textSize="13sp"
                         android:fontFamily="@font/bz_jetbrains_mono_bold" />
+
                     <EditText
                         android:id="@+id/editPolB"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:imeOptions="actionDone"
+                        android:inputType="numberDecimal|numberSigned"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_text"
-                        android:textSize="13sp"
-                        android:inputType="numberDecimal|numberSigned"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -1092,6 +1104,7 @@
                         android:layout_weight="1"
                         android:background="@drawable/bg_bz_button_surface"
                         android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:imeOptions="actionDone"
                         android:inputType="numberDecimal|numberSigned"
                         android:padding="8dp"
                         android:text="0"
@@ -1121,6 +1134,7 @@
                         android:layout_weight="1"
                         android:background="@drawable/bg_bz_button_surface"
                         android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:imeOptions="actionDone"
                         android:inputType="numberDecimal|numberSigned"
                         android:padding="8dp"
                         android:text="0"
@@ -1151,6 +1165,7 @@
                         android:background="@drawable/bg_bz_button_surface"
                         android:ems="10"
                         android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:imeOptions="actionDone"
                         android:inputType="numberDecimal|numberSigned"
                         android:padding="8dp"
                         android:text="0"
@@ -1186,17 +1201,19 @@
                     android:text="CPS → мкР/ч"
                     android:textColor="@color/bz_text_dim"
                     android:textSize="12sp" />
+
                 <EditText
                     android:id="@+id/editCPS2RH"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_bz_button_surface"
+                    android:fontFamily="@font/bz_jetbrains_mono_bold"
+                    android:imeOptions="actionDone"
+                    android:inputType="numberDecimal"
                     android:padding="8dp"
                     android:text="0"
                     android:textColor="@color/bz_text"
-                    android:textSize="13sp"
-                    android:inputType="numberDecimal"
-                    android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                    android:textSize="13sp" />
 
                 <TextView
                     android:id="@+id/textView25"
@@ -1206,17 +1223,19 @@
                     android:text="Точность дозиметра (имп)"
                     android:textColor="@color/bz_text_dim"
                     android:textSize="12sp" />
+
                 <EditText
                     android:id="@+id/editAquracy"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_bz_button_surface"
+                    android:fontFamily="@font/bz_jetbrains_mono_bold"
+                    android:imeOptions="actionDone"
+                    android:inputType="number"
                     android:padding="8dp"
                     android:text="0"
                     android:textColor="@color/bz_text"
-                    android:textSize="13sp"
-                    android:inputType="number"
-                    android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                    android:textSize="13sp" />
                 <TextView
                     android:id="@+id/textView"
                     android:layout_width="0dp"
@@ -1276,18 +1295,20 @@
                         android:text="Высокое напряжение"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <EditText
                         android:id="@+id/editHvoltage"
                         android:layout_width="80dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_danger"
-                        android:textSize="13sp"
-                        android:gravity="center"
-                        android:inputType="number"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -1303,18 +1324,20 @@
                         android:text="Компаратор"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <EditText
                         android:id="@+id/editComparator"
                         android:layout_width="80dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_danger"
-                        android:textSize="13sp"
-                        android:gravity="center"
-                        android:inputType="number"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <Button
@@ -1349,18 +1372,20 @@
                         android:text="Бит канала (16–32)"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <EditText
                         android:id="@+id/editBitsChannel"
                         android:layout_width="80dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
                         android:padding="8dp"
                         android:text="20"
                         android:textColor="@color/bz_text"
-                        android:textSize="13sp"
-                        android:gravity="center"
-                        android:inputType="number"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -1375,18 +1400,20 @@
                         android:text="Время выборки (0–7)"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <EditText
                         android:id="@+id/editSampleTime"
                         android:layout_width="80dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_text"
-                        android:textSize="13sp"
-                        android:gravity="center"
-                        android:inputType="number"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -1571,18 +1598,20 @@
                         android:layout_width="0dp"
                         android:layout_height="0dp"
                         android:layout_weight="1" />
+
                     <EditText
                         android:id="@+id/editTextPaddingLeft"
                         android:layout_width="64dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_text"
-                        android:textSize="13sp"
-                        android:gravity="center"
-                        android:inputType="number"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -1602,18 +1631,20 @@
                         android:layout_width="0dp"
                         android:layout_height="0dp"
                         android:layout_weight="1" />
+
                     <EditText
                         android:id="@+id/editTextPaddingRight"
                         android:layout_width="64dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_text"
-                        android:textSize="13sp"
-                        android:gravity="center"
-                        android:inputType="number"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -1633,18 +1664,20 @@
                         android:layout_width="0dp"
                         android:layout_height="0dp"
                         android:layout_weight="1" />
+
                     <EditText
                         android:id="@+id/editTextXZoom"
                         android:layout_width="64dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:inputType="numberDecimal"
                         android:padding="8dp"
                         android:text="1"
                         android:textColor="@color/bz_text"
-                        android:textSize="13sp"
-                        android:gravity="center"
-                        android:inputType="numberDecimal"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -1664,18 +1697,20 @@
                         android:layout_width="0dp"
                         android:layout_height="0dp"
                         android:layout_weight="1" />
+
                     <EditText
                         android:id="@+id/editTextApplucationLog"
                         android:layout_width="64dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_text"
-                        android:textSize="13sp"
-                        android:gravity="center"
-                        android:inputType="number"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
                 </LinearLayout>
             </LinearLayout>
 
