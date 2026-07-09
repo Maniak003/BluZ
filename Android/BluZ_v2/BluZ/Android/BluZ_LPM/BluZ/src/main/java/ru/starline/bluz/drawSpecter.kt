@@ -104,7 +104,7 @@ class drawSpecter {
      *  логируется для отладки. Реальное разрешение — [ResolutionSpectr].
      * @param offSetX Резерв на будущее, не используется в текущей реализации.
      */
-    fun redrawSpecter(spType: Int, offSetX: Float) {
+    fun redrawSpecter(spType: Int) {
         if (!this::specBitmap.isInitialized) {
             Log.w("BluZ-BT", "specBitmap not initialized, call init() first")
             return

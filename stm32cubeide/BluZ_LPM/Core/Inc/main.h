@@ -264,7 +264,7 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define INTERVAL3 1
 #define INTERVAL4 120
 #define INTERVAL5 60									// Интервал звукового оповещения о низком заряде аккумулятора
-#define DIVCOUNTER 10									// Делитель событий для озвучки.
+#define DIVCOUNTER 5									// Делитель событий для озвучки.
 #define DIVCOUNTERLED 10								// Делитель событий для светодиода.
 
 #define SOUND_TIME_NOTIFY 4096

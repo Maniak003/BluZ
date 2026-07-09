@@ -107,7 +107,8 @@ class drawHistory {
             }
         }
 
-        xSize = HSize.toDouble() / ResolutionHistory
+        //xSize = HSize.toDouble() / ResolutionHistory
+        xSize = HSize.toDouble() / ResolutionHistory * GO.xZoomHistory
         paintLin.strokeWidth = xSize.toFloat()
         paintLog.strokeWidth = xSize.toFloat()
 
@@ -138,16 +139,20 @@ class drawHistory {
         var Ylin: Float
         var Ylog: Float
         for (idx in 0 until ResolutionHistory) {
-            Ylin = (VSize - tmpHistoryData[idx] * koefLin).toFloat()
+            var idx1 = (idx + GO.xPositionHistory).toInt()
+            if (idx1 >= ResolutionHistory) {
+                idx1 = ResolutionHistory - 1
+            }
+            Ylin = (VSize - tmpHistoryData[idx1] * koefLin).toFloat()
             if (tmpHistoryData[idx] != 0.0) {
-                Ylog = (VSize - ln(tmpHistoryData[idx]) * koefLog).toFloat()
+                Ylog = (VSize - ln(tmpHistoryData[idx1]) * koefLog).toFloat()
             } else {
                 Ylog = VSize.toFloat()
             }
             if (GO.specterGraphType == 0) {         // Стиль графика - линия
                 /* Прорисовка линейного графика */
 
-                if ( ! (oldYlin == VSize.toDouble() && tmpHistoryData[idx] == 0.0)) {
+                if ( ! (oldYlin == VSize.toDouble() && tmpHistoryData[idx1] == 0.0)) {
                     histCanvas.drawLine(
                         (oldX * xSize).toFloat(),   // Начальный X
                         oldYlin.toFloat(),          // Начальный Y

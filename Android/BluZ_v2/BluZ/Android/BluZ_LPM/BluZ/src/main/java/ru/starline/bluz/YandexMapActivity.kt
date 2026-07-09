@@ -40,6 +40,7 @@ class App : Application() {
         GO.drawHISTORY = drawHistory()
         GO.drawLOG = drawLogs()
         GO.drawCURSOR = drawCursor()
+        GO.drawHistoryCURSOR = drawHistoryCursor()
         GO.drawExamp = drawExmple()
     }
 }

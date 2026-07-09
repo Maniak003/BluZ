@@ -331,7 +331,7 @@ public class MainActivity : FragmentActivity() {
         /* Янидекс карта */
         //MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)
         //MapKitFactory.initialize(this)
-        /* Создание массива для разноцветных поинтов для отображения на карте */
+        /* Создание массива разноцветных поинтов для отображения на карте */
         val size = 32 // размер иконки в пикселях
         for (ind in 0..31) {
             val bitmap = createBitmap(size, size)
@@ -931,7 +931,7 @@ public class MainActivity : FragmentActivity() {
             GO.drawSPECTER.init()
             if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                 GO.drawSPECTER.clearSpecter()
-                GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
+                GO.drawSPECTER.redrawSpecter(GO.specterType)
             }
         } ?: run {
             if (frame.frameType == 0) {

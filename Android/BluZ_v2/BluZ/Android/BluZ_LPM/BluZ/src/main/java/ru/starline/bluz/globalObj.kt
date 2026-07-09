@@ -151,19 +151,23 @@ class globalObj {
     public lateinit var drawHISTORY: drawHistory
     public lateinit var drawDOZIMETER: drawDozimeter
     public lateinit var drawCURSOR: drawCursor
+    public lateinit var drawHistoryCURSOR:drawHistoryCursor
     public lateinit var drawLOG: drawLogs
     public var appLogBuffer: String = ""
     public var appLogLevel: Int = 0
     public var paddingLeft: Int = 0
     public var paddingRight: Int = 0
     public var xZoom: Float = 1.0f
+    public var xZoomHistory: Float = 1.0f
     public var xPosition: Float = 0.0f
+    public var xPositionHistory: Float = 0.0f
     public var unitsMess: Int = 0
     public lateinit var drawExamp: drawExmple
     public var drawObjectInit: Boolean = true
     public var drawObjectInitHistory: Boolean = true
     public var drawDozObjectInit: Boolean = true
     public var drawCursorObjectInit: Boolean = true
+    public var drawHistoryCursorObjectInit: Boolean = true
     public var exampleObjectInit: Boolean = true
     public var pagerFrame: Int = 1
     public lateinit var BTT:  BluetoothInterface
@@ -189,6 +193,7 @@ class globalObj {
     public lateinit var txtStat3: TextView
     public lateinit var txtCompMED: TextView
     public var txtIsotopInfo: TextView? = null         // Текст для вывода данных об изотопе (внутри chart card на Spectrum tab)
+    public var txtHistoryIsotop: TextView? = null       // Название изотопа для закладки истории
     public lateinit var  enrgCalc: energyCalculator
 
     // Phase B StatusStrip — discrete values with icons
@@ -210,6 +215,7 @@ class globalObj {
     public var bzRecLabel: TextView? = null
     public var bzSpecSubtitle: TextView? = null    // "КАНАЛОВ · 2048 · 12 – 3014 кэВ" над "Гамма-спектр"
     public var bzSpecPageIsHistory: Boolean = false // true когда нижний pager на странице "История"
+    public var bzTotalSpectrPulses: TextView? = null
 
     // Phase D History hero — nullable
     public var bzHistDuration: TextView? = null
@@ -419,6 +425,7 @@ class globalObj {
     public var cpsIntervalCount: Int = 0            // Количество интервалов для усреднения CPS
     public var messTm:UInt = 0u                     // Время измерения
     public var spectrometerTime:UInt = 0u           // Время работы спектрометра
+    public var historyTime: UInt = 0u               // Время набора истории
     public var spectrometerPulse: UInt = 0u         // Количество импульсов от спектрометра
     public var battLevel: Float = 0.0f              // Уровень батареии
     public var compMED: Float = 0.0f                // Компенсированный МЭД
@@ -1124,6 +1131,7 @@ class globalObj {
         if (GO.xZoom <= 0.0f) {
             GO.xZoom = 1.0f
         }
+        GO.xZoomHistory = GO.xZoom
         GO.unitsMess = GO.PP.getPropInt(propUnits)
         GO.autoLoadDeviceCfg = GO.PP.getPropBoolean(propAutoLoadDeviceCfg)
         GO.showBatteryPercent = GO.PP.getPropBoolean(propShowBatteryPercent)

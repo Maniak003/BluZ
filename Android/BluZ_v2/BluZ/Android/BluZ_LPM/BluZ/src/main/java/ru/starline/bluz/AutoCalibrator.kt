@@ -445,33 +445,33 @@ object AutoCalibrator {
                     val ck = top[k].channel
                     if (cj - ci < 5 || ck - cj < 5) continue  // дубликаты/слишком близко
 
-                    val mtrx = Mtrx()
-                    mtrx.sysArray[0][0] = ci.toDouble(); mtrx.sysArray[0][1] = anchorEnergiesKev[0].toDouble()
-                    mtrx.sysArray[1][0] = cj.toDouble(); mtrx.sysArray[1][1] = anchorEnergiesKev[1].toDouble()
-                    mtrx.sysArray[2][0] = ck.toDouble(); mtrx.sysArray[2][1] = anchorEnergiesKev[2].toDouble()
-                    mtrx.sysEq()
-                    if (!mtrx.solved) continue
-                    val sanityReason = checkPolynomialSanity(mtrx.cA, mtrx.cB, mtrx.cC, 0.0f, 0.0f ,channels)
-                    if (sanityReason != null) {
-                        android.util.Log.d("BluZ-AutoCalib", "Triplet rejected ($ci,$cj,$ck): $sanityReason")
-                        continue
-                    }
+                    //val mtrx = Mtrx()
+                    //mtrx.sysArray[0][0] = ci.toDouble(); mtrx.sysArray[0][1] = anchorEnergiesKev[0].toDouble()
+                    //mtrx.sysArray[1][0] = cj.toDouble(); mtrx.sysArray[1][1] = anchorEnergiesKev[1].toDouble()
+                    //mtrx.sysArray[2][0] = ck.toDouble(); mtrx.sysArray[2][1] = anchorEnergiesKev[2].toDouble()
+                    //mtrx.sysEq()
+                    //if (!mtrx.solved) continue
+                    //val sanityReason = checkPolynomialSanity(mtrx.cA, mtrx.cB, mtrx.cC, 0.0f, 0.0f ,channels)
+                    //if (sanityReason != null) {
+                    //    android.util.Log.d("BluZ-AutoCalib", "Triplet rejected ($ci,$cj,$ck): $sanityReason")
+                    //    continue
+                    //}
 
                     // Score: сколько вспомогательных линий Ra-226 находят пик-кандидата
                     // в предсказанной по полиному позиции, в окне ±1·FWHM.
                     var score = 0.0
                     for (auxE in auxEnergiesKev) {
-                        val predCh = predictChannel(auxE, 0.0f, 0.0f, mtrx.cA, mtrx.cB, mtrx.cC) ?: continue
-                        val fwhmCh = expectedFwhmChannels(auxE, mtrx.cA, mtrx.cB, mtrx.cC, channels)
-                        val nearest = candidates.minByOrNull { abs(it.channel - predCh) } ?: continue
-                        if (abs(nearest.channel - predCh) <= fwhmCh) score += 1.0
+                    //    val predCh = predictChannel(auxE, 0.0f, 0.0f, mtrx.cA, mtrx.cB, mtrx.cC) ?: continue
+                    //    val fwhmCh = expectedFwhmChannels(auxE, mtrx.cA, mtrx.cB, mtrx.cC, channels)
+                    //    val nearest = candidates.minByOrNull { abs(it.channel - predCh) } ?: continue
+                    //    if (abs(nearest.channel - predCh) <= fwhmCh) score += 1.0
                     }
                     // Бонус за высокую суммарную prominence самой тройки — отсеивает варианты,
                     // где якорные пики слабее вспомогательных шумов.
                     score += (top[i].prominence + top[j].prominence + top[k].prominence) * 1e-6
 
                     if (best == null || score > best.score) {
-                        best = TripletMatch(listOf(ci, cj, ck), mtrx.cA, mtrx.cB, mtrx.cC, score)
+                    //    best = TripletMatch(listOf(ci, cj, ck), mtrx.cA, mtrx.cB, mtrx.cC, score)
                     }
                 }
             }

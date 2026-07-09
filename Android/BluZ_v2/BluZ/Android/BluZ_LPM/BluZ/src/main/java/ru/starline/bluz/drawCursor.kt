@@ -21,8 +21,9 @@ import androidx.core.graphics.createBitmap
  * **Отдельный bitmap** [cursorBitmap] над [drawSpecter.specBitmap] — позволяет стирать
  * курсор без перерисовки спектра. Стирание — `PorterDuff.Mode.CLEAR` в [hideCursor].
  *
- * **Поиск изотопа.** При наличии калибровки ([showCorsor] видит `GO.enrgCalc.pA != 0.0f && GO.enrgCalc.pB != 0f && GO.enrgCalc.pC != 0f`):
- *  1. Канал курсора → энергия по полиному `A·ch² + B·ch + C`
+ * **Поиск изотопа.** При наличии калибровки ([showCorsor]
+ * видит `GO.enrgCalc.pA != 0.0f && GO.enrgCalc.pB != 0f && GO.enrgCalc.pC != 0f`):
+ *  1. Канал курсора → энергия по полиному channelToEnergy(chan: Int)
  *  2. [globalObj.findIsotop] ищет ближайший по энергии в справочнике 47 изотопов
  *  3. Если найден — заполняет [globalObj.txtIsotopInfo] подсказкой
  *  4. Если в справочнике указана `Activity > 0` и канал не у края массива → расчёт активности

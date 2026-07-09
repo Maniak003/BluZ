@@ -78,13 +78,12 @@ class SpectrumFragment : Fragment() {
 
         GO.drawCURSOR.cursorView = view.findViewById(R.id.cursorView)
         GO.drawSPECTER.imgView = view.findViewById(R.id.specterView)
-        GO.drawHISTORY.imgView = view.findViewById(R.id.historyView)
 
-        GO.drawSPECTER.imgView.apply {
-            scaleType = ImageView.ScaleType.MATRIX
-            imageMatrix = Matrix()
-            isClickable = false
-        }
+        //GO.drawSPECTER.imgView.apply {
+        //    scaleType = ImageView.ScaleType.MATRIX
+        //    imageMatrix = Matrix()
+        //    isClickable = false
+        //}
 
         GO.drawSPECTER.imgView.viewTreeObserver.addOnGlobalLayoutListener(
             object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
@@ -93,14 +92,10 @@ class SpectrumFragment : Fragment() {
                     GO.drawObjectInit = true
                     GO.drawSPECTER.init()
                     GO.drawSPECTER.clearSpecter()
-                    GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
+                    GO.drawSPECTER.redrawSpecter(GO.specterType)
                 }
             }
         )
-
-        // historyView по умолчанию visibility=GONE → у него width=height=0 и инициализировать
-        // bitmap прямо сейчас бессмысленно. Bitmap создаётся при первом переходе на страницу
-        // истории (см. callback ниже), когда view получает реальные размеры.
 
         GO.drawCURSOR.cursorView.apply {
             isClickable = true
@@ -146,11 +141,11 @@ class SpectrumFragment : Fragment() {
                             GO.xZoom = 5.0f
                         }
                         GO.drawSPECTER.clearSpecter()
-                        GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
+                        GO.drawSPECTER.redrawSpecter(GO.specterType)
                     }
                     lastDist = dist
                     xPos = x1
-                    Log.i("BluZ-BT", "X1: $x1, Resol: ${GO.drawSPECTER.ResolutionSpectr}, HSize: ${GO.drawSPECTER.HSize}, xSize: ${GO.drawSPECTER.xSize}, Xpos: ${GO.xPosition}, Scale: ${GO.xZoom}")
+                    //Log.i("BluZ-BT", "X1: $x1, Resol: ${GO.drawSPECTER.ResolutionSpectr}, HSize: ${GO.drawSPECTER.HSize}, xSize: ${GO.drawSPECTER.xSize}, Xpos: ${GO.xPosition}, Scale: ${GO.xZoom}")
                     true
                 }
                 event.pointerCount == 1 -> {
@@ -175,7 +170,7 @@ class SpectrumFragment : Fragment() {
         val CBMEDIAN: CheckBox = view.findViewById(R.id.cbMED)
 
         var calState: Int = 0
-        val matrx = Mtrx()
+        //val matrx = Mtrx()
 
         /* Событие окончания калибровки и расчета СЛАУ */
         btnConfirmCalibrate = view.findViewById(R.id.buttonConfirmCalibrate)
@@ -286,7 +281,7 @@ class SpectrumFragment : Fragment() {
                 GO.drawSPECTER.flagSMA = isChecked
                 if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                     GO.drawSPECTER.clearSpecter()
-                    GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
+                    GO.drawSPECTER.redrawSpecter(GO.specterType)
                 } else {
                     Log.e("BluZ-BT", "drawSPEC is null")
                 }
@@ -298,7 +293,7 @@ class SpectrumFragment : Fragment() {
                 GO.drawSPECTER.flagMEDIAN = isChecked
                 if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                     GO.drawSPECTER.clearSpecter()
-                    GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
+                    GO.drawSPECTER.redrawSpecter(GO.specterType)
                 } else {
                     Log.e("BluZ-BT", "drawSPEC is null")
                 }
@@ -340,6 +335,7 @@ class SpectrumFragment : Fragment() {
         GO.bzSpecAvgValue = view.findViewById(R.id.bzSpecAvgValue)
         GO.bzSpecDoseUnit = view.findViewById(R.id.bzSpecDoseUnit)
         GO.bzSpecAvgUnit = view.findViewById(R.id.bzSpecAvgUnit)
+        GO.bzTotalSpectrPulses = view.findViewById(R.id.textTotalCounter)
         val toggleUnits = View.OnClickListener {
             (activity as? MainActivity)?.toggleDoseUnits()
         }
@@ -358,63 +354,14 @@ class SpectrumFragment : Fragment() {
         val specToolbar = view.findViewById<View>(R.id.specToolbar)
         val cursorView = GO.drawCURSOR.cursorView
         val specterView = GO.drawSPECTER.imgView
-        val historyView = GO.drawHISTORY.imgView
+        //val historyView = GO.drawHISTORY.imgView
         val btnSS = GO.btnSpecterSS
         // В landscape-варианте title/subtitle нет (компактный header), findViewById вернёт null —
         // используем safe-call ниже, иначе при повороте NPE в onPageSelected.
         val subtitleTv: TextView? = view.findViewById(R.id.bzSpecSubtitle)
         val titleTv: TextView? = view.findViewById(R.id.bzSpecTitle)
         GO.drawSPECTER.clearSpecter()
-        GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
-        /*
-        pager.registerOnPageChangeCallback(
-            object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
-                override fun onPageSelected(position: Int) {
-                    val showHistory = position == 1
-                    specterView.visibility = if (showHistory) View.GONE else View.VISIBLE
-                    historyView.visibility = if (showHistory) View.VISIBLE else View.GONE
-                    cursorView.visibility = if (showHistory) View.GONE else View.VISIBLE
-                    specToolbar.visibility = if (showHistory) View.GONE else View.VISIBLE
-                    btnSS.visibility = if (showHistory) View.GONE else View.VISIBLE
-                    GO.bzSpecPageIsHistory = showHistory
-                    if (showHistory) {
-                        subtitleTv?.text = "ИСТОРИЯ · НАКОПЛЕННЫЙ СПЕКТР"
-                    } else {
-                        GO.updateSpecSubtitle()
-                    }
-                    titleTv?.text = if (showHistory) "История" else "Гамма-спектр"
-                    if (showHistory) {
-                        // Если view только что стал visible — ждём layout
-                        val v = GO.drawHISTORY.imgView
-                        if (v.width > 0 && v.height > 0) {
-                            GO.drawObjectInitHistory = true
-                            GO.drawHISTORY.init()
-                            GO.drawHISTORY.clearHistory()
-                            GO.drawHISTORY.redrawSpecter(GO.specterType)
-                        } else {
-                            v.viewTreeObserver.addOnGlobalLayoutListener(
-                                object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
-                                    override fun onGlobalLayout() {
-                                        if (v.width > 0 && v.height > 0) {
-                                            v.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                                            GO.drawObjectInitHistory = true
-                                            GO.drawHISTORY.init()
-                                            GO.drawHISTORY.clearHistory()
-                                            GO.drawHISTORY.redrawSpecter(GO.specterType)
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    } else {
-                        GO.drawSPECTER.imgView.post {
-                            GO.drawSPECTER.clearSpecter()
-                            GO.drawSPECTER.redrawSpecter(GO.specterType, GO.xPosition)
-                        }
-                    }
-                }
-            }
-        )*/
+        GO.drawSPECTER.redrawSpecter(GO.specterType)
     }
 
     override fun onDestroyView() {
@@ -422,6 +369,7 @@ class SpectrumFragment : Fragment() {
         GO.bzSpecAvgValue = null
         GO.bzSpecDoseUnit = null
         GO.bzSpecAvgUnit = null
+        GO.bzTotalSpectrPulses = null
         GO.bzRecClock = null
         GO.bzRecLabel = null
         GO.bzHistDuration = null
@@ -552,5 +500,6 @@ class SpectrumFragment : Fragment() {
         val unit = if (GO.unitsMess == 1) "мкЗв/ч" else "мкР/ч"
         GO.bzSpecDoseUnit?.text = unit
         GO.bzSpecAvgUnit?.text = unit
+        GO.bzTotalSpectrPulses?.text = GO.spectrometerPulse.toString()
     }
 }

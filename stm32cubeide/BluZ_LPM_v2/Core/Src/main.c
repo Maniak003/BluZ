@@ -1727,6 +1727,9 @@ M2:
 			  SOUND_GPIO_Port->BSRR = (uint32_t) SOUND_Pin;
 			  UTIL_TIMER_Stop(&timerTick);
 			  UTIL_TIMER_Start(&timerTick);
+		  } else {
+			  SOUND_GPIO_Port->BRR = (uint32_t) SOUND_Pin;
+			  tickActiveFlag = true;
 		  }
 	  }
 M1:

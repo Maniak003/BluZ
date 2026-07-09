@@ -524,7 +524,7 @@ class BluetoothInterface {
 
             /* Decode hardware config from receiveData */
             val hw = decodeHardwareConfig(receiveData)
-            Log.i("BluZ-BT", "Accuracy: ${hw.acquireValue}")
+            //Log.i("BluZ-BT", "Accuracy: ${hw.acquireValue}")
 
             /* Decode dosimeter histogram (512 uint16 values, offset 100 bytes) */
             val dosimeterData = DoubleArray(512) { i ->

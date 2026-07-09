@@ -125,12 +125,28 @@
                         android:textColor="@color/bz_text_dim"
                         android:textSize="10sp" />
                 </LinearLayout>
+
             </LinearLayout>
 
             <!-- spacer -->
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/textTotalCounter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/bz_jetbrains_mono_bold"
+                android:text="0"
+                android:textColor="@color/bz_text"
+                android:textSize="14sp" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
             <ImageButton
@@ -169,12 +185,6 @@
                 android:id="@+id/specterView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
-
-            <ImageView
-                android:id="@+id/historyView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone" />
 
             <ImageView
                 android:id="@+id/cursorView"
