@@ -31,12 +31,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ДОЗИМЕТР · 512 КАНАЛОВ"
+                android:fontFamily="@font/bz_inter_bold"
+                android:letterSpacing="0.12"
+                android:text="Дозиметр · 512 измерений"
+                android:textAllCaps="false"
                 android:textColor="@color/bz_text_muted"
                 android:textSize="11sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.12"
-                android:fontFamily="@font/bz_inter_bold" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/bzDoseStatusTitle"

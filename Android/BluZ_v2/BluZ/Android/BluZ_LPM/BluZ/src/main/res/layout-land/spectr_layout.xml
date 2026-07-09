@@ -131,18 +131,34 @@
             <!-- spacer -->
 
             <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_width="1dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="14dp" />
 
-            <TextView
-                android:id="@+id/textTotalCounter"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/bz_jetbrains_mono_bold"
-                android:text="0"
-                android:textColor="@color/bz_text"
-                android:textSize="14sp" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView41"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="СЧЕТЧИК"
+                    android:textColor="@color/bz_text_muted"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textTotalCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_jetbrains_mono_bold"
+                    android:includeFontPadding="false"
+                    android:text="0"
+                    android:textColor="@color/bz_accent"
+                    android:textSize="22sp" />
+            </LinearLayout>
 
             <Space
                 android:layout_width="wrap_content"

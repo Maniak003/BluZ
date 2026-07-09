@@ -343,7 +343,9 @@ class SpectrumFragment : Fragment() {
         GO.bzSpecAvgValue?.setOnClickListener(toggleUnits)
         GO.bzSpecDoseUnit?.setOnClickListener(toggleUnits)
         GO.bzSpecAvgUnit?.setOnClickListener(toggleUnits)
+        GO.bzTotalSpectrPulses?.text = "Counts: " + GO.spectrometerPulse.toString()
         applySpecUnitLabels()
+        GO.applyDoseReadouts()
 
 
         // Bottom swipe pager: страница 0 — таймер измерения, страница 1 — данные истории
@@ -359,7 +361,7 @@ class SpectrumFragment : Fragment() {
         // В landscape-варианте title/subtitle нет (компактный header), findViewById вернёт null —
         // используем safe-call ниже, иначе при повороте NPE в onPageSelected.
         val subtitleTv: TextView? = view.findViewById(R.id.bzSpecSubtitle)
-        val titleTv: TextView? = view.findViewById(R.id.bzSpecTitle)
+        //val titleTv: TextView? = view.findViewById(R.id.bzSpecTitle)
         GO.drawSPECTER.clearSpecter()
         GO.drawSPECTER.redrawSpecter(GO.specterType)
     }
@@ -500,6 +502,6 @@ class SpectrumFragment : Fragment() {
         val unit = if (GO.unitsMess == 1) "мкЗв/ч" else "мкР/ч"
         GO.bzSpecDoseUnit?.text = unit
         GO.bzSpecAvgUnit?.text = unit
-        GO.bzTotalSpectrPulses?.text = GO.spectrometerPulse.toString()
+        //GO.bzTotalSpectrPulses?.text = GO.spectrometerPulse.toString()
     }
 }

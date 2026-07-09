@@ -40,7 +40,7 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/bz_inter_bold"
                     android:letterSpacing="0.12"
-                    android:text="ИНТЕГРАЛ"
+                    android:text="Статисктика"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="9sp"
                     android:textStyle="bold" />

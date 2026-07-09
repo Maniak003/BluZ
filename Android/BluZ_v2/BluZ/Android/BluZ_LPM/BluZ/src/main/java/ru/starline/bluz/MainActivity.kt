@@ -654,176 +654,7 @@ public class MainActivity : FragmentActivity() {
         GO.showStatistics()  // updates bzClockValue
     }
 
-    /** Auto-scale dose-rate from base micro-unit (мкР/ч or мкЗв/ч) up to milli and base.
-     *  Returns formatted value text + unit label. */
-    /**
-     * Авто-скейл единиц измерения дозы: μ → м → база.
-     *
-     * Берёт значение в **базовой микро-единице** (мкР/ч) и при больших полях переключает
-     * на читаемую кратную: 1000 → м, 1_000_000 → база (Р/ч или Зв/ч).
-     *
-     * | microR | useSievert=false | useSievert=true (×0.01) |
-     * |---|---|---|
-     * | 425 | `"425.00 мкР/ч"` | `"4.250 мкЗв/ч"` |
-     * | 1 500 | `"1.500 мР/ч"` | `"15.000 мкЗв/ч"` |
-     * | 250 000 | `"250.000 мР/ч"` | `"2.500 мЗв/ч"` |
-     * | 2 500 000 | `"2.500 Р/ч"` | `"25.000 мЗв/ч"` |
-     *
-     * @param microR Значение в мкР/ч (даже если `useSievert == true` — конвертация ×0.01 внутри).
-     * @param useSievert true → семейство мкЗв/ч/мЗв/ч/Зв/ч, false → мкР/ч/мР/ч/Р/ч.
-     * @return Пара `(formattedValue, unitLabel)`.
-     */
-    private fun formatDoseScaled(microR: Float, useSievert: Boolean): Pair<String, String> {
-        // Convert from мкР/ч → мкЗв/ч if requested (factor 0.01 used elsewhere in the app)
-        var value: Float = if (useSievert) microR * 0.01f else microR
-        val units: Array<String> = if (useSievert)
-            arrayOf("мкЗв/ч", "мЗв/ч", "Зв/ч")
-        else
-            arrayOf("мкР/ч", "мР/ч", "Р/ч")
 
-        val label: String
-        val fmt: String
-        when {
-            value >= 1_000_000f -> {
-                value /= 1_000_000f
-                label = units[2]
-                fmt = "%.3f"
-            }
-            value >= 1_000f -> {
-                value /= 1_000f
-                label = units[1]
-                fmt = "%.3f"
-            }
-            else -> {
-                label = units[0]
-                fmt = if (useSievert) "%.3f" else "%.2f"
-            }
-        }
-        return Pair(fmt.format(value), label)
-    }
-
-    /**
-     * Рендерит все dose-readouts (Spectrum hero, Dose hero, legacy `txtStat3`, status pill
-     * NORMAL/L1/L2/L3/OVERLOAD) из кэшированного состояния в [globalObj].
-     *
-     * **Не зависит от пришедшего фрейма** — берёт значения из `GO.pulsePerSec`, `GO.cps`,
-     * `GO.overloadFlag`, `GO.unitsMess`, `GO.propCPS2UR`, `GO.propLevel1/2/3`. Поэтому
-     * безопасно вызывать в любой момент (например, после клика на dose-readout —
-     * мгновенная перерисовка без ожидания следующего BLE-фрейма).
-     *
-     * **Логика по `propCPS2UR`:**
-     *  - `> 0` → расчёт дозы через [formatDoseScaled], с учётом единиц `unitsMess` (мкР/ч / мкЗв/ч)
-     *    и авто-скейла μ → м → база
-     *  - `<= 0` → показываем CPS как есть (`"425"`, `"412.34 cps"`), чтобы пользователь не
-     *    думал, что прибор сломан, видя `"0.00 мкР/ч"`
-     *
-     * **Уровень тревоги** (`alarmLvl`):
-     *  - 4 (OVERLOAD) → pill `bg_bz_chip_danger` / `bz_on_danger`, title "Перегрузка"
-     *  - 3 (L3) → то же + title "Превышение порога 3"
-     *  - 2 (L2) → pill `bg_bz_chip_accent` / `bz_alert_l2`, title "Превышение порога 2"
-     *  - 1 (L1) → то же + `bz_warn`, title "Превышение порога 1"
-     *  - 0 (NORMAL) → `bz_accent`, title "В норме"
-     */
-    fun applyDoseReadouts() {
-        val hasCoef = GO.propCPS2UR > 0f
-
-        val doseText: String; val doseUnit: String
-        val avgText:  String; val avgUnit:  String
-        if (hasCoef) {
-            val doze    = round(GO.pulsePerSec.toFloat() * GO.propCPS2UR * 100f) / 100f
-            val avgDoze = round(GO.cps * GO.propCPS2UR * 100f) / 100f
-            val useSievert = GO.unitsMess == 1
-            val (d, du) = formatDoseScaled(doze, useSievert)
-            val (a, au) = formatDoseScaled(avgDoze, useSievert)
-            doseText = d; doseUnit = du; avgText = a; avgUnit = au
-        } else {
-            doseText = "%d".format(GO.pulsePerSec.toLong())
-            avgText  = "%.2f".format(GO.cps)
-            doseUnit = "cps"
-            avgUnit  = "cps"
-        }
-        val accurDose = if (GO.viewPager.currentItem == 0) {
-            "(%.1f%%)".format(300.0 / kotlin.math.sqrt(GO.spectrometerPulse.toDouble()))
-        } else {
-            "(%.1f%%)".format(300.0 / kotlin.math.sqrt(GO.PCounter.toDouble()))
-        }
-        /* Spectrum hero */
-        GO.bzSpecDoseValue?.text = doseText
-        GO.bzSpecAvgValue?.text  = avgText + accurDose
-        GO.bzSpecDoseUnit?.text  = doseUnit
-        GO.bzSpecAvgUnit?.text   = avgUnit
-        GO.bzSpecDoseValue?.setTextColor(
-            ContextCompat.getColor(
-                this,
-                if (GO.overloadFlag) R.color.bz_danger else R.color.bz_accent
-            )
-        )
-
-        /* Dose hero */
-        GO.bzDoseHeroValue?.text = doseText
-        GO.bzDoseHeroUnit?.text  = doseUnit
-        GO.bzDoseAvgLabel?.text  = "Среднее: $avgText $accurDose $avgUnit"
-        GO.bzDoseHeroValue?.setTextColor(
-            ContextCompat.getColor(
-                this,
-                if (GO.overloadFlag) R.color.bz_danger else R.color.bz_accent
-            )
-        )
-        // Состояние тревоги: 0=норма, 1/2/3=превышение порога L1/L2/L3, 4=перегрузка.
-        // Пороги в CPS (propLevel1/2/3); если порог == 0, он не учитывается.
-        val cpsNow = GO.pulsePerSec.toInt()
-        val alarmLvl = when {
-            GO.overloadFlag -> 4
-            GO.propLevel3 > 0 && cpsNow >= GO.propLevel3 -> 3
-            GO.propLevel2 > 0 && cpsNow >= GO.propLevel2 -> 2
-            GO.propLevel1 > 0 && cpsNow >= GO.propLevel1 -> 1
-            else -> 0
-        }
-        when (alarmLvl) {
-            4 -> {
-                GO.bzDoseStatusPill?.text = "OVERLOAD"
-                GO.bzDoseStatusPill?.setBackgroundResource(R.drawable.bg_bz_chip_danger)
-                GO.bzDoseStatusPill?.setTextColor(ContextCompat.getColor(this, R.color.bz_on_danger))
-                GO.bzDoseStatusTitle?.text = "Перегрузка"
-            }
-            3 -> {
-                GO.bzDoseStatusPill?.text = "L3"
-                GO.bzDoseStatusPill?.setBackgroundResource(R.drawable.bg_bz_chip_danger)
-                GO.bzDoseStatusPill?.setTextColor(ContextCompat.getColor(this, R.color.bz_on_danger))
-                GO.bzDoseStatusTitle?.text = "Превышение порога 3"
-            }
-            2 -> {
-                GO.bzDoseStatusPill?.text = "L2"
-                GO.bzDoseStatusPill?.setBackgroundResource(R.drawable.bg_bz_chip_accent)
-                GO.bzDoseStatusPill?.setTextColor(ContextCompat.getColor(this, R.color.bz_alert_l2))
-                GO.bzDoseStatusTitle?.text = "Превышение порога 2"
-            }
-            1 -> {
-                GO.bzDoseStatusPill?.text = "L1"
-                GO.bzDoseStatusPill?.setBackgroundResource(R.drawable.bg_bz_chip_accent)
-                GO.bzDoseStatusPill?.setTextColor(ContextCompat.getColor(this, R.color.bz_warn))
-                GO.bzDoseStatusTitle?.text = "Превышение порога 1"
-            }
-            else -> {
-                GO.bzDoseStatusPill?.text = "NORMAL"
-                GO.bzDoseStatusPill?.setBackgroundResource(R.drawable.bg_bz_chip_accent)
-                GO.bzDoseStatusPill?.setTextColor(ContextCompat.getColor(this, R.color.bz_accent))
-                GO.bzDoseStatusTitle?.text = "В норме"
-            }
-        }
-
-        /* Legacy CPS / dose line */
-        if (GO.overloadFlag) {
-            @Suppress("DEPRECATION")
-            GO.txtStat3.setText(Html.fromHtml("<font color=#FF2EE8>Overload"))
-        } else if (hasCoef) {
-            GO.txtStat3.text = "CPS:%d (%s %s) Avg:%s %s".format(
-                GO.pulsePerSec.toLong(), doseText, doseUnit, avgText, avgUnit
-            )
-        } else {
-            GO.txtStat3.text = "CPS:%d Avg:%.2f cps".format(GO.pulsePerSec.toLong(), GO.cps)
-        }
-    }
 
     /**
      * Переключает единицы измерения дозы (мкР/ч ↔ мкЗв/ч), сохраняет выбор в SharedPreferences
@@ -835,7 +666,7 @@ public class MainActivity : FragmentActivity() {
     fun toggleDoseUnits() {
         GO.unitsMess = if (GO.unitsMess == 1) 0 else 1
         GO.PP.setPropInt(GO.propUnits, GO.unitsMess)
-        applyDoseReadouts()
+        GO.applyDoseReadouts()
     }
 
     /**
@@ -887,7 +718,7 @@ public class MainActivity : FragmentActivity() {
         GO.bzHistIntegralValue?.text = String.format("%,d", frame.totalPulses.toLong()).replace(',', ' ')
         GO.bzHistAvgCpsValue?.text = "%.2f".format(frame.avgCps)
 
-        applyDoseReadouts()
+        GO.applyDoseReadouts()
 
         /* Track recording */
         if (GO.trackIsRecordeed && GO.currentTrck > 0) {
