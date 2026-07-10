@@ -671,8 +671,8 @@ class SettingsFragment : Fragment() {
             // и затем .toShort() — это truncate без NumberFormatException (Short.parseShort падает на >32767).
             val aqureRaw = GO.aqureEdit.text.toString().trim().toIntOrNull() ?: 0
             val convVal2 = ByteBuffer.allocate(2).putShort(aqureRaw.toShort()).array()
-            GO.BTT.sendBuffer[63] = convVal2[0].toUByte()
-            GO.BTT.sendBuffer[64] = convVal2[1].toUByte()
+            GO.BTT.sendBuffer[64] = convVal2[0].toUByte()
+            GO.BTT.sendBuffer[63] = convVal2[1].toUByte()
 
             GO.BTT.sendBuffer[65] = GO.bitsChannelEdit.text.toString().toUByte()
 

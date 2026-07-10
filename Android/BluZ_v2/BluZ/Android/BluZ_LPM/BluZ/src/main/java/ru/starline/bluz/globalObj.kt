@@ -226,6 +226,7 @@ class globalObj {
     // Phase D2 Dose hero — nullable
     public var bzDoseHeroValue: TextView? = null
     public var bzDoseHeroUnit: TextView? = null
+    public var bzDoseHeroUnit1: TextView? = null
     public var bzDoseAvgLabel: TextView? = null
     public var bzDoseStatusPill: TextView? = null
     public var bzDoseStatusTitle: TextView? = null
@@ -644,7 +645,8 @@ class globalObj {
         /* Dose hero */
         GO.bzDoseHeroValue?.text = doseText
         GO.bzDoseHeroUnit?.text  = doseUnit
-        GO.bzDoseAvgLabel?.text  = "Среднее: $avgText $accurDose $avgUnit"
+        GO.bzDoseAvgLabel?.text  = "$avgText $accurDose"
+        GO.bzDoseHeroUnit1?.text = avgUnit
         GO.bzDoseHeroValue?.setTextColor(
             ContextCompat.getColor(
                 GO.mainContext,

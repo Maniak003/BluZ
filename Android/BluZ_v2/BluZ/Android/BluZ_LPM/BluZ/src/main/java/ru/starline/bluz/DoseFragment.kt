@@ -44,6 +44,7 @@ class DoseFragment : Fragment() {
         // Phase D2: dose hero refs (nullable)
         GO.bzDoseHeroValue = view.findViewById(R.id.bzDoseHeroValue)
         GO.bzDoseHeroUnit = view.findViewById(R.id.bzDoseHeroUnit)
+        GO.bzDoseHeroUnit1 = view.findViewById(R.id.bzDoseHeroUnit1)
         GO.bzDoseAvgLabel = view.findViewById(R.id.bzDoseAvgLabel)
         GO.bzDoseStatusPill = view.findViewById(R.id.bzDoseStatusPill)
         GO.bzDoseStatusTitle = view.findViewById(R.id.bzDoseStatusTitle)
@@ -53,6 +54,7 @@ class DoseFragment : Fragment() {
         }
         GO.bzDoseHeroValue?.setOnClickListener(toggleUnits)
         GO.bzDoseHeroUnit?.setOnClickListener(toggleUnits)
+        GO.bzDoseHeroUnit1?.setOnClickListener(toggleUnits)
         GO.bzDoseAvgLabel?.setOnClickListener(toggleUnits)
 
         if (!GO.initDOZ) {
