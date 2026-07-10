@@ -19,10 +19,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
@@ -195,14 +197,26 @@ class BluZMapFragment : Fragment() {
             textSize = 12f
             setTextColor(Color.BLACK)
             visibility = View.GONE
+            outlineProvider = ViewOutlineProvider.BACKGROUND
         }
 
         mapViewPlan = view.findViewById<MapView>(R.id.mapview)
+
+        val rootLayout = view.findViewById<ViewGroup>(R.id.map_Layout)
+        rootLayout.addView(
+            hintView,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+
+        /*
         mapViewPlan.addView(
             hintView,
             ViewGroup.LayoutParams.WRAP_CONTENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
-        )
+        )*/
 
         GO.buttonSaveTrack = view.findViewById(R.id.buttonSaveTrack)
         GO.buttonSaveTrack.setOnClickListener {
@@ -694,9 +708,11 @@ class BluZMapFragment : Fragment() {
                         append("Accuracy: ${"%.1f".format(closestPoint.accuracy)} m\n")
                         append("Time: $timeStr")
                     }
+
+
                     hintView.post {
                         val params = hintView.layoutParams as ViewGroup.MarginLayoutParams
-                        params.setMargins(10, 10, 0, 0)
+                        params.setMargins(10, 50, 0, 0)
                         hintView.layoutParams = params
                         hintView.visibility = View.VISIBLE
                         val newRunnable = Runnable {

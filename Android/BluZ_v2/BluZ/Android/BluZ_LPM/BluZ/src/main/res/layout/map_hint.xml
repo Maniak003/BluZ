@@ -4,7 +4,9 @@
     android:padding="12dp"
     android:orientation="vertical"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:translationZ="99dp"
+    android:elevation="99dp">
 
     <TextView
         android:id="@+id/tvContent"

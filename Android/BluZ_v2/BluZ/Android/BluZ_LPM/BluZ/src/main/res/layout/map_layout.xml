@@ -18,48 +18,47 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Header overlay -->
+
     <LinearLayout
         android:id="@+id/mapHeader"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
         android:background="@drawable/bg_bz_map_header_scrim"
+        android:gravity="center_vertical|end"
+        android:orientation="horizontal"
         android:paddingStart="14dp"
-        android:paddingTop="10dp"
+        android:paddingTop="1dp"
         android:paddingEnd="14dp"
-        android:paddingBottom="14dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:paddingBottom="1dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
-            android:layout_width="0dp"
+        <Space
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:layout_weight="1" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="КАРТА · GPS ТРЕК"
-                android:textColor="@color/bz_text_muted"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.12"
-                android:fontFamily="@font/bz_inter_bold" />
+        <TextView
+            android:id="@+id/textView43"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:fontFamily="@font/bz_inter_bold"
+            android:text="GPS ТРЕК:"
+            android:textSize="18sp" />
 
-            <TextView
-                android:id="@+id/textCurrentTrack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Трек не выбран"
-                android:textColor="@color/bz_text"
-                android:textSize="18sp"
-                android:fontFamily="@font/bz_inter_bold"
-                android:maxLines="1"
-                android:ellipsize="end" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/textCurrentTrack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/bz_inter_bold"
+            android:maxLines="1"
+            android:text="Трек не выбран"
+            android:textColor="@color/bz_text"
+            android:textSize="18sp" />
+
     </LinearLayout>
 
     <!-- Floating action buttons (right side) -->
