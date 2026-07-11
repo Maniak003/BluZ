@@ -65,6 +65,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import ru.starline.bluz.data.entity.Track
 import ru.starline.bluz.data.entity.TrackDetail
+import java.text.DecimalFormatSymbols
 
 /**
  * Вкладка карты с GPS-трекингом радиационного фона.
@@ -221,13 +222,17 @@ class BluZMapFragment : Fragment() {
         GO.buttonSaveTrack = view.findViewById(R.id.buttonSaveTrack)
         GO.buttonSaveTrack.setOnClickListener {
             val sdf = SimpleDateFormat("dd.MM.yy HH:mm:ss", Locale.getDefault())
-            val df = DecimalFormat("#.##").apply { roundingMode = RoundingMode.HALF_UP }
+            val symbols = DecimalFormatSymbols().apply {
+                decimalSeparator = '.' // Жестко задаем точку
+            }
+            val df = DecimalFormat("#.##", symbols).apply { roundingMode = RoundingMode.HALF_UP }
             val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
             val bluzDir = File("$documentsDir/BluZ")
             if (!bluzDir.exists()) {
                 bluzDir.mkdirs()
             }
             when (GO.saveTrackType) {
+                /* Сохранение трека в формате KML */
                 0 -> {
                     if (GO.curretnTrcName.isNotEmpty()) {
                         val fileKML = File("$documentsDir/BluZ/${GO.curretnTrcName}.kml")
@@ -320,6 +325,7 @@ class BluZMapFragment : Fragment() {
                         Toast.makeText(context, "Track not selected.", Toast.LENGTH_SHORT).show()
                     }
                 }
+                /* Сохранение трека в формате CSV */
                 1 -> {
                     if (GO.curretnTrcName.isNotEmpty()) {
                         val fileCSV = File("$documentsDir/BluZ/${GO.curretnTrcName}.csv")
