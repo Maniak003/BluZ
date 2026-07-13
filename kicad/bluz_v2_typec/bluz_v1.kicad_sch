@@ -8422,7 +8422,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "510k"
+		(property "Value" "1.3M"
 			(at 53.975 113.03 0)
 			(effects
 				(font

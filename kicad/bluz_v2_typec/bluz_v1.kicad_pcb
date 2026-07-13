@@ -5991,7 +5991,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" "510k"
+		(property "Value" "1.3M"
 			(at 0 -1.17 0)
 			(layer "B.Fab")
 			(uuid "e48d62c2-6bd9-4c20-8f90-c174c44286fa")
