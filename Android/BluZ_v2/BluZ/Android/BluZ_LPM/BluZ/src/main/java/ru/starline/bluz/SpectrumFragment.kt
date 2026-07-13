@@ -324,10 +324,22 @@ class SpectrumFragment : Fragment() {
             Toast.makeText(GO.mainContext, R.string.saveComplete, Toast.LENGTH_SHORT).show()
         }
 
+        /* Очистка спектра */
         val btnClearSpecter: ImageButton = view.findViewById(R.id.buttonClearSpectr)
         btnClearSpecter.setOnClickListener {
-            GO.BTT.sendCommand(1u)
-            GO.drawSPECTER.resetSpecter()
+            //GO.BTT.sendCommand(1u)
+            //GO.drawSPECTER.resetSpecter()
+            AlertDialog.Builder(view.context)
+                .setTitle("Удаление набранного спектра.")
+                .setMessage("Вы действительно хотите очистить данные?\nЭто действие нельзя отменить.")
+                .setPositiveButton("Очистить") { dialog, _ ->
+                    // Выполняем очистку только после подтверждения
+                    GO.BTT.sendCommand(1u)
+                    GO.drawSPECTER.resetSpecter()
+                }
+                .setNegativeButton("Отмена", null) // null автоматически закрывает диалог
+                .setCancelable(true)               // позволяет закрыть по нажатию вне окна или кнопке Back
+                .show()
         }
 
         // Phase C: register hero readouts so MainActivity.applyFrameToUi can update them

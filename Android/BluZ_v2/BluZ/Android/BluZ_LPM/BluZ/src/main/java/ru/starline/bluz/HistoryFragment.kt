@@ -12,6 +12,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 
 class HistoryFragment : Fragment() {
@@ -68,12 +69,20 @@ class HistoryFragment : Fragment() {
 
         val btnHistoryClear: ImageButton = view.findViewById(R.id.buttonClearHistory)
         btnHistoryClear.setOnClickListener {
-            GO.BTT.sendCommand(8u)
-            for (iii in 0 until GO.drawHISTORY.ResolutionHistory) {
-                GO.drawHISTORY.historyData[iii] = 0.0
-            }
-            GO.drawHISTORY.clearHistory()
-            GO.drawHISTORY.redrawSpecter(GO.specterType)
+            AlertDialog.Builder(view.context)
+                .setTitle("Удаление спектра событий.")
+                .setMessage("Вы действительно хотите очистить данные?\nЭто действие нельзя отменить.")
+                .setPositiveButton("Очистить") { dialog, _ ->
+                    GO.BTT.sendCommand(8u)
+                    for (iii in 0 until GO.drawHISTORY.ResolutionHistory) {
+                        GO.drawHISTORY.historyData[iii] = 0.0
+                    }
+                    GO.drawHISTORY.clearHistory()
+                    GO.drawHISTORY.redrawSpecter(GO.specterType)
+                }
+                .setNegativeButton("Отмена", null) // null автоматически закрывает диалог
+                .setCancelable(true)               // позволяет закрыть по нажатию вне окна или кнопке Back
+                .show()
         }
 
         /* Курсор для гистограммы истории */
