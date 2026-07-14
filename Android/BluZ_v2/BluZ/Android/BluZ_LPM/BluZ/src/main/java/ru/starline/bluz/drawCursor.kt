@@ -150,7 +150,7 @@ class drawCursor {
                 tmpEnergy = curChan
             } else {
                 /* Пересчет канала в энергию */
-                tmpEnergy = GO.enrgCalc.channelToEnergy(curChan).toInt()
+                tmpEnergy = GO.enrgCalc.channelToEnergy(curChan, GO.specterType).toInt()
             }
             tmpCounts = GO.drawSPECTER.tmpSpecterData[curChan].toInt()
             if (GO.drawSPECTER.tmpSpecterData[curChan] != 0.0) {

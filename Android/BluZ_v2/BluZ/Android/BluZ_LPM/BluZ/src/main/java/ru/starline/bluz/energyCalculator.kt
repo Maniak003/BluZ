@@ -47,7 +47,6 @@ class energyCalculator {
     public var maxChan = 1023
 
     /* Разрешение спектра */
-    public var rS: Int = 0
 
     public fun init (polA: Float, polB: Float, polC: Float, polD: Float, polE: Float, resol: Int) {
         pA = polA
@@ -55,7 +54,6 @@ class energyCalculator {
         pC = polC
         pD = polD
         pE = polE
-        rS = resol
         maxChan = when(resol) {
             1 -> 2047
             2 -> 4095
@@ -155,11 +153,11 @@ class energyCalculator {
     }
 
     /* Проверка монотонности полинома */
-    fun isMonotonic(steps: Int = 1000): Boolean {
-        var prev = channelToEnergy(0)
+    fun isMonotonic(steps: Int = 1000, resol:Int): Boolean {
+        var prev = channelToEnergy(0, resol)
         for (i in 1..steps) {
             val ch = i * maxChan / steps
-            val curr = channelToEnergy(ch)
+            val curr = channelToEnergy(ch, resol)
             if ((curr - prev) < -1e-8)
                 return false // убывание — подозрительно
             prev = curr
@@ -170,8 +168,8 @@ class energyCalculator {
     /* Перевод канала в энергию  (схема Горнера)
         E = pA * ch⁴ + pB * ch³ + pC * ch² + pD * ch + pE
     */
-    public fun channelToEnergy(chan: Int): Float {
-        val x = when (rS) {
+    public fun channelToEnergy(chan: Int, resol: Int): Float {
+        val x = when (resol) {
             1 -> 2 * chan       // 2048 каналов
             2 -> chan           // 4096 каналов
             else -> 4 * chan    // 1024 канала
@@ -183,8 +181,8 @@ class energyCalculator {
         return result.toFloat()
     }
 
-    public fun channelToEnergyPolynom(chan: Int, ppA: Float, ppB: Float, ppC: Float, ppD: Float, ppE: Float): Float {
-        val x = when (rS) {
+    public fun channelToEnergyPolynom(chan: Int, ppA: Float, ppB: Float, ppC: Float, ppD: Float, ppE: Float, resol: Int): Float {
+        val x = when (resol) {
             1 -> 2 * chan       // 2048 каналов
             2 -> chan           // 4096 каналов
             else -> 4 * chan    // 1024 канала
@@ -197,14 +195,14 @@ class energyCalculator {
     }
 
     /* Пересчет энергии в канал на основе коэффициентов полинома */
-    public fun energyToChannelPolynom(energy: Float, ppA: Float, ppB: Float, ppC: Float, ppD: Float, ppE: Float) : Int {
+    public fun energyToChannelPolynom(energy: Float, ppA: Float, ppB: Float, ppC: Float, ppD: Float, ppE: Float, resol:Int) : Int {
         val target = energy.toDouble()
         val minCh = 0
         val maxCh = maxChan
 
         // Проверка границ
-        val eMin = channelToEnergyPolynom(minCh, ppA, ppB, ppC, ppD, ppE).toDouble()
-        val eMax = channelToEnergyPolynom(maxCh, ppA, ppB, ppC, ppD, ppE).toDouble()
+        val eMin = channelToEnergyPolynom(minCh, ppA, ppB, ppC, ppD, ppE, resol).toDouble()
+        val eMax = channelToEnergyPolynom(maxCh, ppA, ppB, ppC, ppD, ppE, resol).toDouble()
         if (target < minOf(eMin, eMax) || target > maxOf(eMin, eMax)) {
             return -1  // вне диапазона
         }
@@ -214,7 +212,7 @@ class energyCalculator {
         var high = maxCh
         repeat(30) {  // 2^30 > 1e9, достаточно для любой разрядности
             val mid = (low + high) / 2
-            val eMid = channelToEnergyPolynom(mid, ppA, ppB, ppC, ppD, ppE).toDouble()
+            val eMid = channelToEnergyPolynom(mid, ppA, ppB, ppC, ppD, ppE, resol).toDouble()
             if (abs(eMid - target) < 0.01) return mid  // точность 0.01 кэВ
             if ((eMid < target) == (eMin < eMax)) {
                 low = mid + 1
@@ -226,14 +224,14 @@ class energyCalculator {
     }
 
     /* Перевод энергии в канал */
-    public fun energyToChannel(energy: Float): Int {
+    public fun energyToChannel(energy: Float, resol:Int): Int {
         val target = energy.toDouble()
         val minCh = 0
         val maxCh = maxChan
 
         // Проверка границ
-        val eMin = channelToEnergy(minCh).toDouble()
-        val eMax = channelToEnergy(maxCh).toDouble()
+        val eMin = channelToEnergy(minCh, resol).toDouble()
+        val eMax = channelToEnergy(maxCh, resol).toDouble()
         if (target < minOf(eMin, eMax) || target > maxOf(eMin, eMax)) {
             return -1  // вне диапазона
         }
@@ -243,7 +241,7 @@ class energyCalculator {
         var high = maxCh
         repeat(30) {  // 2^30 > 1e9, достаточно для любой разрядности
             val mid = (low + high) / 2
-            val eMid = channelToEnergy(mid).toDouble()
+            val eMid = channelToEnergy(mid, resol).toDouble()
             if (abs(eMid - target) < 0.01) return mid  // точность 0.01 кэВ
             if ((eMid < target) == (eMin < eMax)) {
                 low = mid + 1

@@ -469,7 +469,6 @@ class SettingsFragment : Fragment() {
             } else {
                 GO.spectrResolution = 0
             }
-            GO.enrgCalc.rS = GO.spectrResolution        // Данные для пересчета в энергию.
             GO.aqureValue = GO.aqureEdit.text.toString().trim().toIntOrNull() ?: 0
             GO.bitsChannel = GO.bitsChannelEdit.text.toString().trim().toIntOrNull() ?: 20
             if (GO.bitsChannel < 16 || GO.bitsChannel > 32) {
@@ -1776,7 +1775,6 @@ class SettingsFragment : Fragment() {
             2 -> GO.rbResolution4096.isChecked = true
             else -> GO.rbResolution1024.isChecked = true
         }
-        GO.enrgCalc.rS = GO.spectrResolution
         GO.editLevel1.setText(GO.propLevel1.toString())
         GO.editLevel2.setText(GO.propLevel2.toString())
         GO.editLevel3.setText(GO.propLevel3.toString())

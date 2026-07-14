@@ -526,7 +526,7 @@ object AutoCalibrator {
      * @return канал или `null` если дискриминант отрицательный или решение вне разумных пределов.
      */
     fun predictChannel(energyKev: Int, cA: Float, cB: Float, cC: Float, cD: Float, cE: Float): Double? {
-        return GO.enrgCalc.energyToChannelPolynom(energyKev.toFloat(), cA, cB, cC, cD, cE).toDouble()
+        return GO.enrgCalc.energyToChannelPolynom(energyKev.toFloat(), cA, cB, cC, cD, cE, GO.spectrResolution).toDouble()
         /*
         // Линейный путь — самый частый случай для нашего прибора (A в районе 1e-6).
         if (abs(cA) < 1e-9f) {

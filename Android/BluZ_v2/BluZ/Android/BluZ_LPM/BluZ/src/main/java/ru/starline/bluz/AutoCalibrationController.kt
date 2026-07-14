@@ -627,7 +627,7 @@ class AutoCalibrationController(
                     GO.propCoef4096D = result.cD
                     GO.propCoef4096E = result.cE
 
-                    val eLast = GO.enrgCalc.channelToEnergy(channels - 1)
+                    val eLast = GO.enrgCalc.channelToEnergy(channels - 1, GO.spectrResolution)
                     /*val eLast = result.cA * (channels - 1) * (channels - 1) +
                                 result.cB * (channels - 1) + result.cC*/
                     Log.i("BluZ-AutoCalib",

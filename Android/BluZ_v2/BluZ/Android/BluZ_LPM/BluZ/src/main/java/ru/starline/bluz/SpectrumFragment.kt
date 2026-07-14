@@ -213,7 +213,7 @@ class SpectrumFragment : Fragment() {
                     if (result.isValid) {
                         Log.d("BluZ-BT", "=== ПРОВЕРКА КАЛИБРОВКИ ===")
                         for ((ch, enExpected) in points) {
-                            val enCalc = GO.enrgCalc.channelToEnergy(ch.toInt())
+                            val enCalc = GO.enrgCalc.channelToEnergy(ch.toInt(),GO.spectrResolution)
                             val err = abs(enCalc - enExpected.toFloat())
                             Log.d("BluZ-BT", "Канал ${ch.toInt()}: ожидаемо=${enExpected}%.1f, получено=${enCalc}%.1f, ошибка=${err}%.3f кэВ")
                         }

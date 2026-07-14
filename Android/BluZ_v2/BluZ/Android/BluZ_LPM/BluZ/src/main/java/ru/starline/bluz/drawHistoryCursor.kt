@@ -129,7 +129,7 @@ class drawHistoryCursor {
                 tmpEnergy = curChan
             } else {
                 /* Пересчет канала в энергию */
-                tmpEnergy = GO.enrgCalc.channelToEnergy(curChan).toInt()
+                tmpEnergy = GO.enrgCalc.channelToEnergy(curChan, GO.spectrResolution).toInt()
             }
             tmpCounts = GO.drawHISTORY.tmpHistoryData[curChan].toInt()
             if (GO.drawHISTORY.tmpHistoryData[curChan] != 0.0) {

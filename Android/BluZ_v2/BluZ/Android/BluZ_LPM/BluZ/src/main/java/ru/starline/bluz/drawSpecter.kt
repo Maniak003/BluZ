@@ -281,7 +281,7 @@ class drawSpecter {
         val needCalcH10D = ((GO.propCoef4096A != 0f) || (GO.propCoef4096B != 0f) || (GO.propCoef4096C != 0f))
 
         /* Определим максимальную отображаемую энергию */
-        val maxEnergy = GO.enrgCalc.channelToEnergy(4095)
+        val maxEnergy = GO.enrgCalc.channelToEnergy(4095, 2)
         /* Расчет энергокомпенсированный МЕД */
         if (needCalcH10D && maxEnergy > 0) {
             GO.compMED = DoseCalculator.calculateH10DoseSafe(

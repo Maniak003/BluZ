@@ -611,28 +611,39 @@ class globalObj {
 
         val doseText: String; val doseUnit: String
         val avgText:  String; val avgUnit:  String
+        val avgSpectrText: String;
         if (hasCoef) {
             val doze    = round(GO.pulsePerSec.toFloat() * GO.propCPS2UR * 100f) / 100f
             val avgDoze = round(GO.cps * GO.propCPS2UR * 100f) / 100f
+            var avgSpectrDoze = 0f
+            if (GO.spectrometerTime > 0u) {
+                avgSpectrDoze = round(GO.spectrometerPulse.toFloat() / GO.spectrometerTime.toFloat() * GO.propCPS2UR * 100f) / 100f
+            }
             val useSievert = GO.unitsMess == 1
             val (d, du) = formatDoseScaled(doze, useSievert)
             val (a, au) = formatDoseScaled(avgDoze, useSievert)
-            doseText = d; doseUnit = du; avgText = a; avgUnit = au
+            val (s, su) = formatDoseScaled(avgSpectrDoze, useSievert)
+            doseText = d; doseUnit = du; avgText = a; avgUnit = au; avgSpectrText = s
         } else {
-            doseText = "%d".format(GO.pulsePerSec.toLong())
+            doseText = "%d".format((GO.spectrometerPulse.toFloat() / GO.pulsePerSec.toFloat()).toLong())
+            avgSpectrText = "%d".format(GO.pulsePerSec.toLong())
             avgText  = "%.2f".format(GO.cps)
             doseUnit = "cps"
             avgUnit  = "cps"
         }
         val accurDose = if (GO.viewPager.currentItem == 0) {
-            "(%.1f%%)".format(300.0 / kotlin.math.sqrt(GO.spectrometerPulse.toDouble()))
+            if (GO.spectrometerPulse == 0u) {
+                ""
+            } else {
+                "(%.1f%%)".format(300.0 / kotlin.math.sqrt(GO.spectrometerPulse.toDouble()))
+            }
         } else {
             "(%.1f%%)".format(300.0 / kotlin.math.sqrt(GO.PCounter.toDouble()))
         }
         /* Spectrum hero */
         GO.bzTotalSpectrPulses?.text = GO.spectrometerPulse.toString()
         GO.bzSpecDoseValue?.text = doseText
-        GO.bzSpecAvgValue?.text  = avgText + accurDose
+        GO.bzSpecAvgValue?.text  = avgSpectrText + accurDose
         GO.bzSpecDoseUnit?.text  = doseUnit
         GO.bzSpecAvgUnit?.text   = avgUnit
         GO.bzSpecDoseValue?.setTextColor(
@@ -794,7 +805,7 @@ class globalObj {
             //val firstCh = 0
             val lastCh = channels - 1
             val eFirst = 0
-            val eLast = GO.enrgCalc.channelToEnergy(lastCh).toInt()
+            val eLast = GO.enrgCalc.channelToEnergy(lastCh, GO.spectrResolution).toInt()
             /* Проверка корректности калибровки */
             if (eLast < 0f || eLast > 10000f) {
                 tv.text = "КАНАЛОВ · $channels"
@@ -1039,7 +1050,7 @@ class globalObj {
         for (ii in 0 until isotopSize) {
             if (isotopList[ii].Activity != 0) {         // Активность не нулевая, требуется получить номер канала для правильного выделения пика
                 if ((GO.propCoef4096A != 0.0f) || (GO.propCoef4096B != 0.0f) || (GO.propCoef4096C != 0f)) {
-                    isotopList[ii].Channel = GO.enrgCalc.energyToChannel(isotopList[ii].Energy.toFloat())
+                    isotopList[ii].Channel = GO.enrgCalc.energyToChannel(isotopList[ii].Energy.toFloat(), GO.spectrResolution)
                 }
             }
         }
