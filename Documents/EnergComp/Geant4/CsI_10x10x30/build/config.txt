@@ -15,5 +15,5 @@ OUTPUT_FILE=chi_vector_CsI_10x10x40
 
 # Диапазон гистограммы (МэВ) и число бинов
 ENERGY_MIN=0
-ENERGY_MAX=3.5
+ENERGY_MAX=8
 N_BINS=1024

@@ -7,6 +7,9 @@ import android.location.LocationManager
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -45,35 +48,10 @@ class SaveBqMon {
      * [saveHistogramSPE] с соответствующим количеством каналов.
      */
     fun saveSpecter() {
-        when (GO.HWspectrResolution) {
-            0 -> {  /* Разрешение 1024 */
-                if (GO.saveSpecterType == 0) {
-                    saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
-                } else {
-                    saveHistogramSPE(GO.mainContext, GO.drawSPECTER.spectrData,  1024)
-                }
-            }
-            1 -> {  /* Разрешение 2048 */
-                if (GO.saveSpecterType == 0) {
-                    saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 2048)
-                } else {
-                    saveHistogramSPE(GO.mainContext, GO.drawSPECTER.spectrData,  2048)
-                }
-            }
-            2 -> {  /* Разрешение 4096 */
-                if (GO.saveSpecterType == 0) {
-                    saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 4096)
-                } else {
-                    saveHistogramSPE(GO.mainContext, GO.drawSPECTER.spectrData,  4096)
-                }
-            }
-            else -> {
-                if (GO.saveSpecterType == 0) {
-                    saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData, 1024)
-                } else {
-                    saveHistogramSPE(GO.mainContext, GO.drawSPECTER.spectrData,  1024)
-                }
-            }
+        if (GO.saveSpecterType == 0) {
+            saveHistogramXML(GO.mainContext, GO.drawSPECTER.spectrData)
+        } else {
+            saveHistogramSPE(GO.mainContext, GO.drawSPECTER.spectrData)
         }
     }
 
@@ -85,9 +63,14 @@ class SaveBqMon {
      * Перед сохранением проверяет, что сумма по каналам > 0 — иначе Toast «The spectrum
      * does not contain data» и сохранение отменяется.
      */
-    fun saveHistogramSPE(context: Context, spectrData: DoubleArray, resolution: Int) {
+    fun saveHistogramSPE(context: Context, spectrData: DoubleArray) {
         var sm: Double = 0.0
-        for (i in 0 until resolution) {
+        val curResolution = when (GO.specterType) {
+            1 -> 2048
+            2 -> 4096
+            else -> 1024
+        }
+        for (i in 0 until curResolution) {
             sm += spectrData.get(i)
         }
         if (sm == 0.0) {
@@ -130,7 +113,7 @@ class SaveBqMon {
             /*
             *   Выгрузка данных в файл
             */
-            for (i in 0 until resolution) {
+            for (i in 0 until curResolution) {
                 dataStr = java.lang.String.format("%d", i) + "," + java.lang.String.format("%.0f", spectrData.get(i)) + "\n"
 
                 outputStream.write(dataStr.toByteArray()) // Write to file
@@ -152,12 +135,17 @@ class SaveBqMon {
      *
      * Имя файла: `yyyyMMdd_HHmmss.xml` в `/Documents/BluZ/`.
      */
-    fun saveHistogramXML(context: Context, spectrData: DoubleArray, resolution: Int) {
+    fun saveHistogramXML(context: Context, spectrData: DoubleArray) {
         var dataStr: String
         val calendar = Calendar.getInstance()
         val now = calendar.time
         var simpleDateFormat = SimpleDateFormat("yyyyMMdd'_'HHmmss", Locale.getDefault())
         val fileName = simpleDateFormat.format(now)
+        val curResolition = when (GO.specterType) {
+            1 -> 2048
+            2 -> 4096
+            else -> 1024
+        }
         Toast.makeText(context, "Saved " + GO.saveSpecterType1, Toast.LENGTH_SHORT).show()
 
         // Check mount devices
@@ -168,6 +156,14 @@ class SaveBqMon {
         }
 
         try {
+            /* Определение типа детектора */
+            if(GO.curretnDetectorName.isEmpty()) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val detect = GO.dao.getActiveDetector()
+                    GO.curretnDetectorName = detect.firstOrNull()?.name ?: "Unknown."
+                }
+            }
+
             val SDPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath
             val direct = File("$SDPath/BluZ")
             Log.d("BluZ-BT", "SD Path: $SDPath/BluZ")
@@ -210,27 +206,39 @@ class SaveBqMon {
                 Toast.makeText(context, "GPS write error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
 
+
             simpleDateFormat = SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'SZZZZZ");
             val sTime = System.currentTimeMillis() - GO.messTm.toFloat() * 1000.0f
             val startTime = simpleDateFormat.format(sTime)
             val endTime = simpleDateFormat.format(now)
             pulseSumm = GO.PCounter.toDouble()
-            val kRes = when (GO.spectrResolution) {
+            val kRes = when (GO.specterType) {
                 1 -> {
                     2.0
                 }
                 2 -> {
-                    4.0
+                    1.0
                 }
-                else -> 1.0
+                else -> 4.0
             }
-            val resolutionStr = """
-                <Coefficient>${GO.propCoef4096E * kRes}</Coefficient>
-                <Coefficient>${GO.propCoef4096D * kRes}</Coefficient>
-                <Coefficient>${GO.propCoef4096C * kRes}</Coefficient>
-                <Coefficient>${GO.propCoef4096B * kRes}</Coefficient>
-                <Coefficient>${GO.propCoef4096A * kRes}</Coefficient>
-                """.trimIndent()
+            var polynomialOrder = 2
+            val resolutionStr =
+                "<Coefficient>${GO.propCoef4096E * kRes}</Coefficient>\n" +
+                "<Coefficient>${GO.propCoef4096D * kRes}</Coefficient>\n" +
+                "<Coefficient>${GO.propCoef4096C * kRes}</Coefficient>\n" +
+                if (GO.propCoef4096B != 0f) {
+                    polynomialOrder++
+                    "<Coefficient>${GO.propCoef4096B * kRes}</Coefficient>\n"
+                } else {
+                    ""
+                } +
+                if (GO.propCoef4096A != 0f) {
+                    polynomialOrder++
+                    "<Coefficient>${GO.propCoef4096A * kRes}</Coefficient>"
+                } else {
+                    ""
+                }
+                .trimIndent()
 
             dataStr = "<?xml version=\"1.0\"?>\n" +
                 "<ResultDataFile xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
@@ -250,7 +258,7 @@ class SaveBqMon {
                 "<Guid>fb3c0393-034b-495b-8ab1-f3011c558a4d</Guid>\n" +
                 "</DeviceConfigReference>\n" +
                 "<ROIConfigReference>\n" +
-                "<Name>10x40NaI(Tl)_Sensl</Name>\n" +
+                "<Name>${GO.curretnDetectorName}</Name>\n" +
                 "<Guid>63afa7cf-0dc5-44d7-8933-535c84c4c18c</Guid>\n" +
                 "</ROIConfigReference>\n" +
                 "<BackgroundSpectrumFile />\n" +
@@ -259,15 +267,15 @@ class SaveBqMon {
                 "<PresetTime>" + GO.spectrometerTime.toString() + "</PresetTime>\n" +
                 "<EnergySpectrum>\n" +
                 "<NumberOfChannels>" +
-                resolution.toString() +
+                "$curResolition" +
                 "</NumberOfChannels>\n" +
                 /* Correct by Am6er */
                 /*"<ChannelPitch>0.0221</ChannelPitch>\n" +*/
                 "<ChannelPitch>1</ChannelPitch>\n" +
                 "<EnergyCalibration>\n" +
-                "<PolynomialOrder>2</PolynomialOrder>\n" +
+                "<PolynomialOrder>$polynomialOrder</PolynomialOrder>\n" +
                 "<Coefficients>\n" +
-                resolutionStr +
+                "$resolutionStr\n" +
                 "</Coefficients>\n" +
                 "</EnergyCalibration>\n" +
                 "<ValidPulseCount>" + GO.spectrometerPulse.toInt() + "</ValidPulseCount>\n" +
@@ -277,7 +285,7 @@ class SaveBqMon {
                 "<Spectrum>\n"
             outputStream.write(dataStr.toByteArray())
 
-            for (i in 0 until resolution) {
+            for (i in 0 until curResolition) {
                 dataStr = "<DataPoint>" + java.lang.String.format("%.0f", spectrData.get(i)) + "</DataPoint>\n"
                 outputStream.write(dataStr.toByteArray()) // Write to file
             }

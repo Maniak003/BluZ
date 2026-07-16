@@ -114,6 +114,10 @@ interface DosimeterDao {
     @Query("SELECT id, name, changeAt, curActive FROM detectors ORDER BY name")
     suspend fun getAllDetector(): List<DetectorSummary>
 
+    /* Выдор текущего детерктора */
+    @Query("SELECT id, name, changeAt, curActive FROM detectors WHERE curActive = 1")
+    suspend fun getActiveDetector(): List<DetectorSummary>
+
     /** Активировать один детектор (с CASE-выражением — все остальные деактивируются за один запрос).
      *  После активации [ru.starline.bluz.DoseCalculator.chiVectorOrg] должен быть перезагружен
      *  отдельным `getByIdDetector` + копированием. */

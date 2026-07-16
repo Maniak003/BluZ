@@ -42,16 +42,17 @@
 
     <!-- Scrollable content -->
     <ScrollView
+        android:id="@+id/setupScrolView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:fillViewport="true"
-        android:scrollbarStyle="outsideOverlay"
-        android:paddingBottom="80dp"
         android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/settingsTitleRow"
+        android:fillViewport="true"
+        android:paddingBottom="80dp"
+        android:scrollbarStyle="outsideOverlay"
         app:layout_constraintBottom_toTopOf="@id/settingsActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/settingsTitleRow">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -65,36 +66,36 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_bz_card"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:letterSpacing="0.12"
                     android:text="ПОДКЛЮЧЕНИЕ"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.12"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textStyle="bold" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="8dp">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/labMAC"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/bz_jetbrains_mono"
                         android:text="MAC"
                         android:textColor="@color/bz_text_dim"
-                        android:textSize="12sp"
-                        android:fontFamily="@font/bz_jetbrains_mono" />
+                        android:textSize="12sp" />
 
                     <EditText
                         android:id="@+id/textMACADDR"
@@ -103,29 +104,29 @@
                         android:layout_marginStart="10dp"
                         android:layout_weight="1"
                         android:background="@null"
-                        android:text="XX:XX:XX:XX:XX:XX"
-                        android:textColor="@color/bz_text"
-                        android:textSize="13sp"
                         android:fontFamily="@font/bz_jetbrains_mono_bold"
                         android:inputType="text"
-                        android:maxLength="17" />
+                        android:maxLength="17"
+                        android:text="XX:XX:XX:XX:XX:XX"
+                        android:textColor="@color/bz_text"
+                        android:textSize="13sp" />
 
                     <Button
                         android:id="@+id/buttonScanBT"
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
                         android:background="@drawable/bg_bz_icon_button"
-                        android:text="@string/textScan"
-                        android:textAllCaps="false"
-                        android:textColor="@color/bz_accent"
-                        android:textSize="11sp"
+                        android:fontFamily="@font/bz_inter_bold"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
                         android:paddingStart="12dp"
                         android:paddingEnd="12dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:fontFamily="@font/bz_inter_bold" />
+                        android:text="@string/textScan"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="11sp" />
                 </LinearLayout>
 
                 <androidx.appcompat.widget.SwitchCompat
@@ -144,38 +145,38 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_bz_card"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:letterSpacing="0.12"
                     android:text="ПРОФИЛЬ ДЕТЕКТОРА"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.12"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/textDetectorName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:fontFamily="@font/bz_inter_bold"
                     android:text=""
                     android:textColor="@color/bz_accent"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/bz_inter_bold"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:textSize="14sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="10dp">
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
 
                     <Button
                         android:id="@+id/buttonNewDetector"
@@ -183,52 +184,52 @@
                         android:layout_height="38dp"
                         android:layout_weight="1"
                         android:background="@drawable/bg_bz_icon_button"
-                        android:text="Создать"
-                        android:textAllCaps="false"
-                        android:textColor="@color/bz_accent"
-                        android:textSize="11sp"
+                        android:fontFamily="@font/bz_inter_bold"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
                         android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:fontFamily="@font/bz_inter_bold" />
+                        android:text="Создать"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="11sp" />
 
                     <Button
                         android:id="@+id/buttonLoadDetector"
                         android:layout_width="0dp"
                         android:layout_height="38dp"
-                        android:layout_weight="1"
                         android:layout_marginStart="6dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_bz_icon_button"
-                        android:text="Загрузить"
-                        android:textAllCaps="false"
-                        android:textColor="@color/bz_accent"
-                        android:textSize="11sp"
+                        android:fontFamily="@font/bz_inter_bold"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
                         android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:fontFamily="@font/bz_inter_bold" />
+                        android:text="Загрузить"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="11sp" />
 
                     <Button
                         android:id="@+id/buttonSelectDetector"
                         android:layout_width="0dp"
                         android:layout_height="38dp"
-                        android:layout_weight="1"
                         android:layout_marginStart="6dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_bz_icon_button"
-                        android:text="Выбрать"
-                        android:textAllCaps="false"
-                        android:textColor="@color/bz_accent"
-                        android:textSize="11sp"
+                        android:fontFamily="@font/bz_inter_bold"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
                         android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:fontFamily="@font/bz_inter_bold" />
+                        android:text="Выбрать"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="11sp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -236,28 +237,28 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_bz_card"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:letterSpacing="0.12"
                     android:text="ИНДИКАЦИЯ ИМПУЛЬСОВ"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.12"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textStyle="bold" />
 
                 <!-- Click row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="10dp">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/textView30"
@@ -312,9 +313,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="4dp">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/textView31"
@@ -381,57 +382,61 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_bz_card"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:letterSpacing="0.12"
                     android:text="УРОВНИ ТРЕВОГИ"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.12"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textStyle="bold" />
 
                 <!-- Header for columns -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="10dp">
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
                     <View
                         android:layout_width="40dp"
                         android:layout_height="1dp" />
+
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:letterSpacing="0.08"
                         android:text="Порог"
                         android:textColor="@color/bz_text_muted"
                         android:textSize="10sp"
-                        android:letterSpacing="0.08"
                         android:textStyle="bold" />
+
                     <TextView
                         android:id="@+id/textView23"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="12dp"
+                        android:letterSpacing="0.08"
                         android:text="ЗВУК"
                         android:textColor="@color/bz_text_muted"
                         android:textSize="10sp"
-                        android:letterSpacing="0.08"
                         android:textStyle="bold" />
+
                     <TextView
                         android:id="@+id/textView24"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:letterSpacing="0.08"
                         android:text="ВИБРО"
                         android:textColor="@color/bz_text_muted"
                         android:textSize="10sp"
-                        android:letterSpacing="0.08"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -439,19 +444,20 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="8dp">
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView13"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:gravity="center"
                         android:background="@drawable/bg_bz_chip_accent"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
                         android:text="L1"
                         android:textColor="@color/bz_warn"
                         android:textSize="12sp"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold"
                         android:textStyle="bold" />
 
                     <EditText
@@ -468,20 +474,23 @@
                         android:text="0"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+                        android:fontFamily="@font/bz_jetbrains_mono"
                         android:text="cps"
                         android:textColor="@color/bz_text_dim"
-                        android:textSize="11sp"
-                        android:fontFamily="@font/bz_jetbrains_mono" />
+                        android:textSize="11sp" />
+
                     <CheckBox
                         android:id="@+id/CBSoudLevel1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:buttonTint="@color/bz_accent" />
+
                     <CheckBox
                         android:id="@+id/CBVibroLevel1"
                         android:layout_width="wrap_content"
@@ -494,19 +503,20 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="6dp">
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView9"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:gravity="center"
                         android:background="@drawable/bg_bz_chip_accent"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
                         android:text="L2"
                         android:textColor="#FF6B35"
                         android:textSize="12sp"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold"
                         android:textStyle="bold" />
 
                     <EditText
@@ -523,20 +533,23 @@
                         android:text="0"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+                        android:fontFamily="@font/bz_jetbrains_mono"
                         android:text="cps"
                         android:textColor="@color/bz_text_dim"
-                        android:textSize="11sp"
-                        android:fontFamily="@font/bz_jetbrains_mono" />
+                        android:textSize="11sp" />
+
                     <CheckBox
                         android:id="@+id/CBSoudLevel2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:buttonTint="@color/bz_accent" />
+
                     <CheckBox
                         android:id="@+id/CBVibroLevel2"
                         android:layout_width="wrap_content"
@@ -549,19 +562,20 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="6dp">
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView10"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:gravity="center"
                         android:background="@drawable/bg_bz_chip_danger"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
                         android:text="L3"
                         android:textColor="@color/bz_on_danger"
                         android:textSize="12sp"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold"
                         android:textStyle="bold" />
 
                     <EditText
@@ -578,20 +592,23 @@
                         android:text="0"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
+                        android:fontFamily="@font/bz_jetbrains_mono"
                         android:text="cps"
                         android:textColor="@color/bz_text_dim"
-                        android:textSize="11sp"
-                        android:fontFamily="@font/bz_jetbrains_mono" />
+                        android:textSize="11sp" />
+
                     <CheckBox
                         android:id="@+id/CBSoudLevel3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:buttonTint="@color/bz_accent" />
+
                     <CheckBox
                         android:id="@+id/CBVibroLevel3"
                         android:layout_width="wrap_content"
@@ -605,21 +622,21 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_bz_card"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <TextView
                     android:id="@+id/textView38"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:letterSpacing="0.12"
                     android:text="ОТОБРАЖЕНИЕ СПЕКТРА"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.12"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textStyle="bold" />
 
                 <!-- Type: line / histogram -->
 
@@ -818,20 +835,20 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_bz_card"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:letterSpacing="0.12"
                     android:text="ЦВЕТ СПЕКТРА"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.12"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textStyle="bold" />
 
                 <ImageView
                     android:id="@+id/tvColor"
@@ -843,8 +860,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="8dp">
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
                     <RadioButton
                         android:id="@+id/RBLin"
                         android:layout_width="0dp"
@@ -854,6 +872,7 @@
                         android:text="Lin"
                         android:textColor="@color/bz_text_dim"
                         android:textSize="11sp" />
+
                     <RadioButton
                         android:id="@+id/RBLg"
                         android:layout_width="0dp"
@@ -863,6 +882,7 @@
                         android:text="Log"
                         android:textColor="@color/bz_text_dim"
                         android:textSize="11sp" />
+
                     <RadioButton
                         android:id="@+id/RBFoneLin"
                         android:layout_width="0dp"
@@ -872,6 +892,7 @@
                         android:text="Фон Lin"
                         android:textColor="@color/bz_text_dim"
                         android:textSize="11sp" />
+
                     <RadioButton
                         android:id="@+id/RBFoneLg"
                         android:layout_width="0dp"
@@ -888,10 +909,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:fontFamily="@font/bz_jetbrains_mono"
                     android:text="A"
                     android:textColor="@color/bz_text_dim"
-                    android:textSize="11sp"
-                    android:fontFamily="@font/bz_jetbrains_mono" />
+                    android:textSize="11sp" />
+
                 <SeekBar
                     android:id="@+id/seekBarA"
                     android:layout_width="match_parent"
@@ -904,10 +926,11 @@
                     android:id="@+id/textView3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_jetbrains_mono"
                     android:text="R"
                     android:textColor="@color/bz_text_dim"
-                    android:textSize="11sp"
-                    android:fontFamily="@font/bz_jetbrains_mono" />
+                    android:textSize="11sp" />
+
                 <SeekBar
                     android:id="@+id/seekBarR"
                     android:layout_width="match_parent"
@@ -920,10 +943,11 @@
                     android:id="@+id/textView7"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_jetbrains_mono"
                     android:text="G"
                     android:textColor="@color/bz_text_dim"
-                    android:textSize="11sp"
-                    android:fontFamily="@font/bz_jetbrains_mono" />
+                    android:textSize="11sp" />
+
                 <SeekBar
                     android:id="@+id/seekBarG"
                     android:layout_width="match_parent"
@@ -936,10 +960,11 @@
                     android:id="@+id/textView8"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_jetbrains_mono"
                     android:text="B"
                     android:textColor="@color/bz_text_dim"
-                    android:textSize="11sp"
-                    android:fontFamily="@font/bz_jetbrains_mono" />
+                    android:textSize="11sp" />
+
                 <SeekBar
                     android:id="@+id/seekBarB"
                     android:layout_width="match_parent"
@@ -953,21 +978,21 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_bz_card"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <TextView
                     android:id="@+id/textView15"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:letterSpacing="0.12"
                     android:text="КАЛИБРОВКА"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.12"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/textView37"
@@ -982,62 +1007,66 @@
                     android:id="@+id/RGResolution"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
                     <RadioButton
                         android:id="@+id/RBResol1024"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:buttonTint="@color/bz_accent"
+                        android:fontFamily="@font/bz_jetbrains_mono"
                         android:text="1024"
                         android:textColor="@color/bz_text_dim"
-                        android:textSize="12sp"
-                        android:fontFamily="@font/bz_jetbrains_mono" />
+                        android:textSize="12sp" />
+
                     <RadioButton
                         android:id="@+id/RBResol2048"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:buttonTint="@color/bz_accent"
+                        android:fontFamily="@font/bz_jetbrains_mono"
                         android:text="2048"
                         android:textColor="@color/bz_text_dim"
-                        android:textSize="12sp"
-                        android:fontFamily="@font/bz_jetbrains_mono" />
+                        android:textSize="12sp" />
+
                     <RadioButton
                         android:id="@+id/RBResol4096"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:buttonTint="@color/bz_accent"
+                        android:fontFamily="@font/bz_jetbrains_mono"
                         android:text="4096"
                         android:textColor="@color/bz_text_dim"
-                        android:textSize="12sp"
-                        android:fontFamily="@font/bz_jetbrains_mono" />
+                        android:textSize="12sp" />
                 </RadioGroup>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
+                    android:fontFamily="@font/bz_jetbrains_mono"
                     android:text="@string/Polinom_text"
                     android:textColor="@color/bz_text_dim"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/bz_jetbrains_mono" />
+                    android:textSize="12sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView16"
                         android:layout_width="14dp"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
                         android:text="A"
                         android:textColor="@color/bz_accent"
-                        android:textSize="13sp"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
 
                     <EditText
                         android:id="@+id/editPolA"
@@ -1057,16 +1086,17 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView17"
                         android:layout_width="14dp"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
                         android:text="B"
                         android:textColor="@color/bz_accent"
-                        android:textSize="13sp"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
 
                     <EditText
                         android:id="@+id/editPolB"
@@ -1086,16 +1116,17 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView18"
                         android:layout_width="14dp"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
                         android:text="C"
                         android:textColor="@color/bz_accent"
-                        android:textSize="13sp"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold" />
+                        android:textSize="13sp" />
 
                     <EditText
                         android:id="@+id/editPolC"
@@ -1179,11 +1210,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/bg_bz_button_accent"
+                    android:fontFamily="@font/bz_inter_bold"
                     android:text="Автокалибровка по Ra-226"
-                    android:textColor="@color/bz_on_accent"
-                    android:textSize="13sp"
                     android:textAllCaps="false"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textColor="@color/bz_on_accent"
+                    android:textSize="13sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -1236,6 +1267,7 @@
                     android:text="0"
                     android:textColor="@color/bz_text"
                     android:textSize="13sp" />
+
                 <TextView
                     android:id="@+id/textView"
                     android:layout_width="0dp"
@@ -1247,30 +1279,33 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_bz_card"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:fontFamily="@font/bz_inter_bold"
+                        android:letterSpacing="0.12"
                         android:text="АППАРАТНЫЕ ПАРАМЕТРЫ"
                         android:textColor="@color/bz_text_muted"
                         android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.12"
-                        android:fontFamily="@font/bz_inter_bold" />
+                        android:textStyle="bold" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_bz_chip_danger"
+                        android:letterSpacing="0.1"
                         android:paddingStart="8dp"
                         android:paddingTop="2dp"
                         android:paddingEnd="8dp"
@@ -1278,15 +1313,15 @@
                         android:text="ЭКСПЕРТ"
                         android:textColor="@color/bz_on_danger"
                         android:textSize="9sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.1" />
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="8dp">
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView21"
                         android:layout_width="0dp"
@@ -1314,8 +1349,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView22"
                         android:layout_width="0dp"
@@ -1346,11 +1382,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:background="@drawable/bg_bz_button_surface"
+                    android:fontFamily="@font/bz_inter_bold"
                     android:text="Подобрать компаратор"
-                    android:textColor="@color/bz_text"
-                    android:textSize="13sp"
                     android:textAllCaps="false"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textColor="@color/bz_text"
+                    android:textSize="13sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -1363,8 +1399,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -1391,8 +1428,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -1421,27 +1459,27 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_bz_card"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:letterSpacing="0.12"
                     android:text="ВНЕШНИЙ ВИД"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.12"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textStyle="bold" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="8dp">
+                    android:orientation="horizontal">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -1475,9 +1513,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="10dp">
+                    android:orientation="horizontal">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -1513,21 +1551,21 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_bz_card"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <TextView
                     android:id="@+id/textView33"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:letterSpacing="0.12"
                     android:text="КАРТА И ИНТЕРФЕЙС"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.12"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textStyle="bold" />
 
                 <CheckBox
                     android:id="@+id/CBFullScreen"
@@ -1542,9 +1580,10 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="6dp">
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView34"
                         android:layout_width="wrap_content"
@@ -1552,15 +1591,18 @@
                         android:text="Формат трека"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <View
                         android:layout_width="0dp"
                         android:layout_height="0dp"
                         android:layout_weight="1" />
+
                     <RadioGroup
                         android:id="@+id/RGTrackFormat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
+
                         <RadioButton
                             android:id="@+id/rbKML"
                             android:layout_width="wrap_content"
@@ -1569,6 +1611,7 @@
                             android:text="KML"
                             android:textColor="@color/bz_text_dim"
                             android:textSize="11sp" />
+
                         <RadioButton
                             android:id="@+id/rbGPX"
                             android:layout_width="wrap_content"
@@ -1584,9 +1627,10 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="8dp">
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView27"
                         android:layout_width="wrap_content"
@@ -1594,6 +1638,7 @@
                         android:text="Отступ слева"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <View
                         android:layout_width="0dp"
                         android:layout_height="0dp"
@@ -1617,9 +1662,10 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="4dp">
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView28"
                         android:layout_width="wrap_content"
@@ -1627,6 +1673,7 @@
                         android:text="Отступ справа"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <View
                         android:layout_width="0dp"
                         android:layout_height="0dp"
@@ -1650,9 +1697,10 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="4dp">
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView36"
                         android:layout_width="wrap_content"
@@ -1660,6 +1708,7 @@
                         android:text="Масштаб X"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <View
                         android:layout_width="0dp"
                         android:layout_height="0dp"
@@ -1683,9 +1732,10 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="4dp">
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView26"
                         android:layout_width="wrap_content"
@@ -1693,6 +1743,7 @@
                         android:text="Уровень логирования (0–5)"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+
                     <View
                         android:layout_width="0dp"
                         android:layout_height="0dp"
@@ -1718,60 +1769,61 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_bz_card"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp">
+                android:orientation="vertical"
+                android:padding="14dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:letterSpacing="0.12"
                     android:text="ДЕЙСТВИЯ"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.12"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:textStyle="bold" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="8dp">
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
                     <Button
                         android:id="@+id/buttonLogs"
                         android:layout_width="0dp"
                         android:layout_height="40dp"
                         android:layout_weight="1"
                         android:background="@drawable/bg_bz_icon_button"
-                        android:text="Журнал событий"
-                        android:textAllCaps="false"
-                        android:textColor="@color/bz_accent"
-                        android:textSize="12sp"
+                        android:fontFamily="@font/bz_inter_bold"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
                         android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:fontFamily="@font/bz_inter_bold" />
+                        android:text="Журнал событий"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_accent"
+                        android:textSize="12sp" />
 
                     <Button
                         android:id="@+id/buttonFind"
                         android:layout_width="0dp"
                         android:layout_height="40dp"
-                        android:layout_weight="1"
                         android:layout_marginStart="8dp"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_bz_icon_button"
-                        android:text="@string/textFind"
-                        android:textAllCaps="false"
-                        android:textColor="@color/bz_warn"
-                        android:textSize="12sp"
+                        android:fontFamily="@font/bz_inter_bold"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
                         android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:fontFamily="@font/bz_inter_bold" />
+                        android:text="@string/textFind"
+                        android:textAllCaps="false"
+                        android:textColor="@color/bz_warn"
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <Button
@@ -1780,16 +1832,16 @@
                     android:layout_height="40dp"
                     android:layout_marginTop="8dp"
                     android:background="@drawable/bg_bz_icon_button"
-                    android:text="Калибровка АКБ"
-                    android:textAllCaps="false"
-                    android:textColor="@color/bz_accent"
-                    android:textSize="12sp"
+                    android:fontFamily="@font/bz_inter_bold"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
                     android:minWidth="0dp"
                     android:minHeight="0dp"
                     android:padding="0dp"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:fontFamily="@font/bz_inter_bold" />
+                    android:text="Калибровка АКБ"
+                    android:textAllCaps="false"
+                    android:textColor="@color/bz_accent"
+                    android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

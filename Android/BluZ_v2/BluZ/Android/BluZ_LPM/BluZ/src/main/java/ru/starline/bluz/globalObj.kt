@@ -196,6 +196,7 @@ class globalObj {
     public var txtIsotopInfo: TextView? = null         // Текст для вывода данных об изотопе (внутри chart card на Spectrum tab)
     public var txtHistoryIsotop: TextView? = null       // Название изотопа для закладки истории
     public lateinit var  enrgCalc: energyCalculator
+    public var focusSetVw: Int = 0                      // Выбор элемента в закладке настроек.
 
     // Phase B StatusStrip — discrete values with icons
     public lateinit var bzCpsValue: TextView

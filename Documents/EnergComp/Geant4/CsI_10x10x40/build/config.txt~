@@ -11,7 +11,7 @@ N_EVENTS=1000000
 LAMBDA=1e-1
 
 # Имя выходного файла (без расширения)
-OUTPUT_FILE=chi_vector_NaI_10x10
+OUTPUT_FILE=chi_vector_CsI_10x10x40
 
 # Диапазон гистограммы (МэВ) и число бинов
 ENERGY_MIN=0

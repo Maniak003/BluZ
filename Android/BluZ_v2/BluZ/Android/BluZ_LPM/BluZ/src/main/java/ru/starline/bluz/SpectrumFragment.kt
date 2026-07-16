@@ -218,7 +218,8 @@ class SpectrumFragment : Fragment() {
                             Log.d("BluZ-BT", "Канал ${ch.toInt()}: ожидаемо=${enExpected}%.1f, получено=${enCalc}%.1f, ошибка=${err}%.3f кэВ")
                         }
                         Log.d("BluZ-BT", "RMS ошибка: ${result.rmsError}%.3f кэВ")
-                    }                } else {
+                    }
+                } else {
                     Log.e("BluZ-BT", "Калибровка не удалась: плохая сходимость или мало точек")
                 }
                 GO.needCalibrate = true
@@ -226,6 +227,12 @@ class SpectrumFragment : Fragment() {
                 GO.txtStat2.visibility = View.INVISIBLE
                 GO.txtStat3.visibility = View.INVISIBLE
                 GO.txtCompMED.visibility = View.INVISIBLE
+                //val fragment = parentFragmentManager.findFragmentByTag("android:switcher:${GO.viewPager.id}:4") as? SettingsFragment
+                //val fragment = requireActivity().supportFragmentManager.findFragmentByTag("android:switcher:${GO.viewPager.id}:4") as? SettingsFragment
+
+                //val fragment = supportFragmentManager.findFragmentByTag("android:switcher:${GO.viewPager.id}:4") as? SettingsFragment
+                //fragment?.updateData()
+                GO.focusSetVw = 1   // Выбираем первую строку коэффициентов полинома.
                 GO.viewPager.setCurrentItem(4, false)
             }
             btnConfirmCalibrate.text = "X"

@@ -27,6 +27,7 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
@@ -69,6 +70,46 @@ class SettingsFragment : Fragment() {
     private lateinit var rbuRh: RadioButton
     private lateinit var rbuSvh: RadioButton
     private lateinit var textDetectName: TextView
+
+    override fun onResume() {
+        super.onResume()
+
+        val df = DecimalFormat(GO.acuricyPatern, DecimalFormatSymbols(Locale.US))
+        view?.findViewById<EditText>(R.id.editPolA)?.setText(df.format(GO.propCoef4096A))
+        view?.findViewById<EditText>(R.id.editPolB)?.setText(df.format(GO.propCoef4096B))
+        view?.findViewById<EditText>(R.id.editPolC)?.setText(df.format(GO.propCoef4096C))
+        view?.findViewById<EditText>(R.id.editPolD)?.setText(df.format(GO.propCoef4096D))
+        view?.findViewById<EditText>(R.id.editPolE)?.setText(df.format(GO.propCoef4096E))
+
+        when(GO.focusSetVw) {
+            1 -> {
+                GO.focusSetVw = 0
+                val scrollView = view?.findViewById<ScrollView>(R.id.setupScrolView)
+                val targetEdit = view?.findViewById<EditText>(R.id.editPolE)
+                scrollView!!.postDelayed({
+                    scrollView.clearFocus()
+                    targetEdit!!.requestFocus()
+                    //val rect = android.graphics.Rect(0, 0, GO.editPolinomA.width, GO.editPolinomA.height)
+                    //scrollView.requestChildRectangleOnScreen(GO.editPolinomA, rect, false)
+
+                }, 150) // 150 миллисекунд задержки                //val rect = android.graphics.Rect(0, 0, GO.editPolinomA.width, GO.editPolinomA.height)
+            }
+        }
+        GO.focusSetVw = 0
+
+        /*
+        val editA = view?.findViewById<EditText>(R.id.editPolA)
+        val editB = view?.findViewById<EditText>(R.id.editPolB)
+        val editC = view?.findViewById<EditText>(R.id.editPolC)
+        val editD = view?.findViewById<EditText>(R.id.editPolD)
+        val editE = view?.findViewById<EditText>(R.id.editPolE)
+
+        editA?.setText(GO.propCoef4096A.toString())
+        editB?.setText(GO.propCoef4096B.toString())
+        editC?.setText(GO.propCoef4096C.toString())
+        editD?.setText(GO.propCoef4096D.toString())
+        editE?.setText(GO.propCoef4096E.toString())*/
+    }
 
     private val chiFileLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -137,6 +178,15 @@ class SettingsFragment : Fragment() {
         val buttomLoadDetect: Button = view.findViewById(R.id.buttonLoadDetector)
         val buttonSelectDetect: Button = view.findViewById(R.id.buttonSelectDetector)
         textDetectName = view.findViewById(R.id.textDetectorName)
+
+        //GO.editPolinomA.post {
+        //    if (GO.focusSetVw == 1) {
+        //        val rect =
+        //            android.graphics.Rect(0, 0, GO.editPolinomA.width, GO.editPolinomA.height)
+        //        GO.editPolinomA.requestRectangleOnScreen(rect, true)
+        //        GO.focusSetVw = 0
+        //    }
+        //}
 
         buttomLoadDetect.setOnClickListener {
             val bluZDir = File(

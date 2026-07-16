@@ -50,7 +50,7 @@ RunAction::RunAction()
   analysis->SetDefaultFileType("csv");
   analysis->SetFileName("NaI_response");
   
-  // Гистограмма: 1024 бина, 0–3 МэВ
+  // Гистограмма: 1024 бина, 0–8 МэВ
   analysis->CreateH1("Edep", "Deposited Energy (MeV)", 1024, 0., 8.0*MeV);
   
   analysis->OpenFile();
