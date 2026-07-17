@@ -863,8 +863,8 @@ class globalObj {
         //var mmS: Int = GO.spectrometerTime.toInt() / 60 % 60
         //var ssS: Int = GO.spectrometerTime.toInt() / 1 % 60
 
-        // Статусбар сверху — всегда общий аптайм прибора (GO.messTm).
-        // bzRecClock (нижний таймер на вкладке Спектр) — отдельно время работы спектрометра.
+        // Статусбар сверху — показания времени в зависимости от режима.
+        //
         //val tmpStr: String = if (GO.viewPager.currentItem == 0) {
         //    String.format("Time:%02d:%02d:%02d:%02d", ddS, hhS, mmS, ssS)
         //} else {
@@ -879,6 +879,10 @@ class globalObj {
                 /* Закладка исторического спектра */
                 1 -> {
 
+                }
+                /* Закладка дозиметра */
+                2 -> {
+                    bzClockValue.text = formatClock(GO.messTm.toInt(), GO.clockShowSecondsHist)
                 }
                 /* Закладка настроек */
                 else -> {

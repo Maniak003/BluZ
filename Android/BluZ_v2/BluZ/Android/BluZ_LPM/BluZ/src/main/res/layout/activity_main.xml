@@ -129,12 +129,12 @@
         <!-- Temperature -->
         <ImageView
             android:layout_width="12dp"
-            android:layout_height="12dp"
+            android:layout_height="14dp"
             android:layout_marginStart="6dp"
             android:layout_marginEnd="5dp"
+            android:contentDescription="@null"
             android:src="@drawable/ic_bz_thermometer"
-            app:tint="@color/bz_text_muted"
-            android:contentDescription="@null" />
+            app:tint="@color/bz_text_muted" />
 
         <TextView
             android:id="@+id/bzTempValue"
