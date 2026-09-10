@@ -56,7 +56,7 @@ RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN PV */
 volatile bool connectFlag = false;
-bool historyRequest = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false, firstInital = true/*, findDevice = false*/;
+bool historyRequest = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false, firstInital = true/*, findDevice = false*/, inhibitAlarm = false;;
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
 uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
@@ -501,7 +501,7 @@ int main(void)
 
 	  transmitBuffer[0] = ((uint16_t) '<' & 0xFF) | (((uint16_t)'B' << 8) & 0xFF00);
 	  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((dataType << 8) & 0xFF00);
-	  transmitBuffer[2] = 0;
+	  transmitBuffer[2] = ((uint16_t) inhibitAlarm & 1);	// Состояние флага отключения тревоги.
 	  transmitBuffer[3] = 0;
 
 	  uint16_t idxCS = 0 ;
@@ -1404,7 +1404,7 @@ void updateMesurment(void) {
 			/* Тревога если превышение. */
 			if (tmp_level > 0) {
 				history_active = true;
-				if (tmpNotify > 0) {
+				if (tmpNotify > 0 && ! inhibitAlarm) {
 					NotifyAct(tmpNotify, tmp_level);
 				}
 			} else {

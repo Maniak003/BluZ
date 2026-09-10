@@ -152,7 +152,11 @@ public class MainActivity : FragmentActivity() {
             }
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
                 // Обработка события "-"
-                Toast.makeText(this, "Кнопка -", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this, "Кнопка -", Toast.LENGTH_SHORT).show()
+                if (GO.BTT.connected) {
+                    GO.BTT.sendCommand(9u)
+                }
+
                 true
             }
             else -> super.onKeyUp(keyCode, event)

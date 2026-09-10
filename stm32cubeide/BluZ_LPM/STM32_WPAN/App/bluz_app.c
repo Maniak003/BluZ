@@ -164,6 +164,10 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     *                   3 - Очистка буфера дозиметра
                     *                   4 - Очистка лога
                     *                   5 - Запрос на передачу спектра истории превышений
+                    *                   6 - Поиск устройства
+                    *                   7 - Калибровка батареи
+                    *                   8 - Очистка истории
+                    *                   9 - Отключение тревог
                     *
                     * 4,5,6,7       - Первый порог в uR
                     * 8,9,10,11     - Второй порог в uR
@@ -435,6 +439,10 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 					/* Включение звука и вибро, для поиска прибора */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_find_device) {
 						NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 5);
+					/* Отключение тревоги */
+					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_infibit_alarm) {
+						inhibitAlarm = ! inhibitAlarm;
+						logUpdate(inhibitAlarms);
 					/* Калибровка напряжения аккумулятора */
 					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_calibrate_batt) {
 						if (currVoltage == 0) {

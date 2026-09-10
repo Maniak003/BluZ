@@ -497,6 +497,13 @@ class BluetoothInterface {
                     ByteBuffer.wrap(data, 26, 4).order(ByteOrder.LITTLE_ENDIAN).int))
                 batteryVoltage = round(java.lang.Float.intBitsToFloat(
                     ByteBuffer.wrap(data, 30, 4).order(ByteOrder.LITTLE_ENDIAN).int) * 100) / 100
+                /* Бит запрета тревоги */
+                GO.inhibitAlarm = (data[4].toUInt() and 1u) == 1u
+                if (GO.inhibitAlarm) {
+                    Log.d("BluZ-BT", "Alarm disable")
+                } else {
+                    Log.d("BluZ-BT", "Alarm enable")
+                }
                 Log.d("BluZ-BT", "Frame start: type=$dataType mtu=$numberMTU pulses=$totalPulses")
             }
 
@@ -521,7 +528,6 @@ class BluetoothInterface {
             }
             GO.drawLOG.appendAppLogs("CS correct: $checkSum", 3)
             gatt.readRemoteRssi()
-
             /* Decode hardware config from receiveData */
             val hw = decodeHardwareConfig(receiveData)
             //Log.i("BluZ-BT", "Accuracy: ${hw.acquireValue}")
@@ -719,6 +725,9 @@ class BluetoothInterface {
      *  - 4 — Очистить логи, 5 — Запрос истории, 6 — Найти прибор (звук+вибро)
      *  - 7 — Передать реальное напряжение АКБ (параметр: float в `sendBuffer[4..7]`)
      *  - 8 — Очистить историю
+     *  - 9 — Отключить тревогу временно
+     *  - 10- Вернуть настройки тревоги по умолчанию.
+     *
      */
     fun sendCommand(cmd: UByte) {
         sendBuffer[0] = '<'.code.toUByte()

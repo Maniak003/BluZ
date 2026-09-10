@@ -185,6 +185,7 @@ class globalObj {
     public var btnSpecterSSisInit: Boolean = false
     public var specterRunning: Boolean = false        // true = идёт запись спектра (иконка стоп, фон red)
     public lateinit var btnReadFromDevice: Button
+    public lateinit var buttonAlarmOff: Button          // Кнопка включения/выключения тревоги.
     public lateinit var btnWriteToDevice: Button
     public lateinit var mapView: MapView
     public var needTerminate: Boolean = false
@@ -197,6 +198,7 @@ class globalObj {
     public var txtHistoryIsotop: TextView? = null       // Название изотопа для закладки истории
     public lateinit var  enrgCalc: energyCalculator
     public var focusSetVw: Int = 0                      // Выбор элемента в закладке настроек.
+    public var inhibitAlarm : Boolean = false           // Флаг состояния запрета тревоги
 
     // Phase B StatusStrip — discrete values with icons
     public lateinit var bzCpsValue: TextView
@@ -494,7 +496,9 @@ class globalObj {
                            *    4	 - Данные дозиметра, лог и исторический спектр 1024
                            *    5	 - Данные дозиметра, лог и исторический спектр 2048
                            *    6	 - Данные дозиметра, лог и исторический спектр 4096
-                           * 4,5,6,7 - Зарезервировано
+                           * 4 -  Дополнительные параметры
+                           *    0   - Отключение/включение тревоги
+                           *    5,6,7 - Зарезервировано
                            *
                            * Статистика и когфигурация uint16_t
                            *

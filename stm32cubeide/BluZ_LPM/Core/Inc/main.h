@@ -118,6 +118,7 @@ extern bool levelVibro1, levelVibro2, levelVibro3;
 extern bool flagTemperatureMess, autoStartSpecrometr;
 extern bool history_active, historyRequest/*, findDevice*/;
 extern bool divide10sound, divide10led;
+extern bool inhibitAlarm;
 extern uint16_t HVoltage, comparatorLevel;
 extern LPTIM_HandleTypeDef hlptim2;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -139,7 +140,8 @@ typedef enum commandTx {
 	cmd_history_request,		// 5
 	cmd_find_device,			// 6
 	cmd_calibrate_batt,			// 7
-	cmd_clear_history			// 8
+	cmd_clear_history,			// 8
+	cmd_infibit_alarm			// 9
 } commantTx_t;
 
 typedef enum logTypes {
@@ -161,7 +163,8 @@ typedef enum logTypes {
 	calibrateBatt,				// 15
 	lowBatt,					// 16
 	clearHistory,				// 17
-	unknownCommand				// 18
+	inhibitAlarms,				// 18
+	unknownCommand				// 19
 } logTypes_t;
 
 struct LG {
@@ -286,7 +289,8 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 /*
  * TODO -- Нужно получить реальное напряжение питания
  */
-#define ADC_VREF 1.8f									// Напряжение питания.
+#define ADC_VREF 2.8f									// Напряжение питания.
+//#define ADC_VREF 1.8f									// Напряжение питания.
 //#define ADC_VREF_COEF 4.2f / 4080.0f
 static const float ADC_VREF_COEF = 4.2f / 4055.68f;		// Коэффициент завист от делителя напряжения. Нужно подбирать на полностью заряженном аккумуляторе.
 

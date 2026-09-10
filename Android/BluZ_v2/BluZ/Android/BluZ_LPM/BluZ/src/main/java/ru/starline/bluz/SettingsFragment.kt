@@ -22,6 +22,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -170,6 +171,7 @@ class SettingsFragment : Fragment() {
         GO.sampleTimeEdit = view.findViewById(R.id.editSampleTime)
         GO.textAppLogLevel = view.findViewById(R.id.editTextApplucationLog)
         GO.textXZoom = view.findViewById(R.id.editTextXZoom)
+        GO.buttonAlarmOff = view.findViewById(R.id.buttonAlarmOff)
 
         paddingTextLeft = view.findViewById(R.id.editTextPaddingLeft)
         paddingTextRight = view.findViewById(R.id.editTextPaddingRight)
@@ -179,6 +181,17 @@ class SettingsFragment : Fragment() {
         val buttonSelectDetect: Button = view.findViewById(R.id.buttonSelectDetector)
         textDetectName = view.findViewById(R.id.textDetectorName)
 
+        /* Включение/выключение тревоги */
+        GO.buttonAlarmOff.setOnClickListener {
+            if (GO.BTT.connected) {
+                if (GO.inhibitAlarm) {
+                    GO.buttonAlarmOff.setText("Отключить")
+                } else {
+                    GO.buttonAlarmOff.setText("Включить")
+                }
+                GO.BTT.sendCommand(9u)
+            }
+        }
         //GO.editPolinomA.post {
         //    if (GO.focusSetVw == 1) {
         //        val rect =
@@ -328,6 +341,7 @@ class SettingsFragment : Fragment() {
         rbuSvh = view.findViewById(R.id.rbUSVH)
 
         reloadConfigParameters()
+
 
         GO.cbFullScrn.setOnCheckedChangeListener { _, isChecked ->
             GO.fullScrn = isChecked
@@ -1825,6 +1839,7 @@ class SettingsFragment : Fragment() {
             2 -> GO.rbResolution4096.isChecked = true
             else -> GO.rbResolution1024.isChecked = true
         }
+
         GO.editLevel1.setText(GO.propLevel1.toString())
         GO.editLevel2.setText(GO.propLevel2.toString())
         GO.editLevel3.setText(GO.propLevel3.toString())
