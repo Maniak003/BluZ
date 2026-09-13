@@ -799,10 +799,14 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
+  /** Set LSE Trimming Value
+  */
+  HAL_RCCEx_LSESetTrimming(RCC_LSETRIMMING_1_2_R);
+
   /** Configure LSE Drive Capability
   */
   HAL_PWR_EnableBkUpAccess();
-  __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_MEDIUMLOW);
+  __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_HIGH);
 
   /** Initializes the CPU, AHB and APB busses clocks
   */
