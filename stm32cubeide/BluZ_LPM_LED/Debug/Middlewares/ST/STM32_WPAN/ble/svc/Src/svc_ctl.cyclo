@@ -1,0 +1,5 @@
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c:64:6:SVCCTL_Init	1
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c:82:6:SVCCTL_RegisterSvcHandler	1
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c:99:6:SVCCTL_RegisterCltHandler	1
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c:116:6:SVCCTL_RegisterHandler	1
+../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c:128:28:SVCCTL_UserEvtRx	9

@@ -1,0 +1,8 @@
+../System/Modules/MemoryManager/advanced_memory_manager.c:127:22:AMM_Init	32	static
+../System/Modules/MemoryManager/advanced_memory_manager.c:290:22:AMM_DeInit	16	static
+../System/Modules/MemoryManager/advanced_memory_manager.c:324:22:AMM_Alloc	64	static,ignoring_inline_asm
+../System/Modules/MemoryManager/advanced_memory_manager.c:475:22:AMM_Free	56	static,ignoring_inline_asm
+../System/Modules/MemoryManager/advanced_memory_manager.c:581:6:AMM_BackgroundProcess	16	static
+../System/Modules/MemoryManager/advanced_memory_manager.c:600:6:pushPending	16	static
+../System/Modules/MemoryManager/advanced_memory_manager.c:609:6:passPendingToActive	16	static
+../System/Modules/MemoryManager/advanced_memory_manager.c:622:39:popActive	16	static

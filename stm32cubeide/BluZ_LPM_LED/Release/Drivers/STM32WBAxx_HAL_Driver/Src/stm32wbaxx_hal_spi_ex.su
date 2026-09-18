@@ -1,0 +1,6 @@
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_spi_ex.c:75:19:HAL_SPIEx_FlushRxFifo	16	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_spi_ex.c:114:19:HAL_SPIEx_EnableLockConfiguration	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_spi_ex.c:163:19:HAL_SPIEx_ConfigureUnderrun	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_spi_ex.c:220:19:HAL_SPIEx_SetConfigAutonomousMode	12	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_spi_ex.c:263:19:HAL_SPIEx_GetConfigAutonomousMode	0	static
+../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_spi_ex.c:297:19:HAL_SPIEx_ClearConfigAutonomousMode	8	static
