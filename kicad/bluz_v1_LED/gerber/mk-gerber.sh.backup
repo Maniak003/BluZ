@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ -f BluZ.zip ]; then
+	rm BluZ.zip
+fi
+mv bluz_v1-B_Cu.gbr Bottom.gbr
+mv bluz_v1-B_Mask.gbr MaskBottom.gbr
+if [ -f bluz_v1-PTH.drl ]; then
+	mv bluz_v1.drl NCData.drl
+else
+	mv bluz_v1.drl NCData.drl
+fi
+mv bluz_v1-F_Cu.gbr Top.gbr
+mv bluz_v1-F_Mask.gbr MaskTop.gbr
+mv bluz_v1-Edge_Cuts.gbr Border.gbr
+zip BluZ.zip Border.gbr Bottom.gbr MaskBottom.gbr MaskTop.gbr NCData.drl Top.gbr
+rm *.gbr *.drl *.gbrjob

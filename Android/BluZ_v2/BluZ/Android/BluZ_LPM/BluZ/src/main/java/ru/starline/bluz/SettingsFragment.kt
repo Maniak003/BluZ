@@ -564,6 +564,7 @@ class SettingsFragment : Fragment() {
             GO.PP.setPropBoolean(GO.propAutoLoadDeviceCfg, checked)
         }
 
+        /* Обновление интерфейса параметрами из прибора */
         GO.btnReadFromDevice = view.findViewById(R.id.buttonReadFromDevice)
         GO.btnReadFromDevice.setOnClickListener {
             if (GO.configDataReady) {
@@ -754,6 +755,7 @@ class SettingsFragment : Fragment() {
             } else {
                 GO.BTT.sendBuffer[37] = 0u
             }
+            Log.i("BluZ-BT", "GO.BTT.sendBuffer[37]: ${GO.BTT.sendBuffer[37]}")
 
             if (GO.cbSpectrometr.isChecked) {
                 GO.BTT.sendBuffer[38] = 1u
@@ -1833,6 +1835,7 @@ class SettingsFragment : Fragment() {
         }
         GO.cbSpectrometr.isChecked = GO.propAutoStartSpectrometr
         GO.editRejectChann.setText(GO.rejectChann.toString())
+        Log.d("BluZ-BT", "spectrResolution: ${GO.spectrResolution}, HWspectrResolution: ${GO.HWspectrResolution}")
         when (GO.spectrResolution) {
             0 -> GO.rbResolution1024.isChecked = true
             1 -> GO.rbResolution2048.isChecked = true
