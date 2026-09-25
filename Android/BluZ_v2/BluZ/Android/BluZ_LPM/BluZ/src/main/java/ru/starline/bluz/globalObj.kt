@@ -209,6 +209,7 @@ class globalObj {
     public lateinit var bzBtIcon: android.widget.ImageView
     public lateinit var bzBtRssi: TextView
     public lateinit var bzStatusStrip: View
+    public lateinit var imageAlarmActive: android.widget.ImageView
 
     // Phase C Spectrum hero — set by SpectrumFragment, nullable
     public var bzSpecDoseValue: TextView? = null

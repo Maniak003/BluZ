@@ -58,6 +58,7 @@ import kotlin.math.round
 import kotlin.system.exitProcess
 import androidx.core.content.edit
 import android.view.ViewGroup.LayoutParams
+import androidx.core.view.isVisible
 import java.nio.ByteBuffer
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -287,6 +288,7 @@ public class MainActivity : FragmentActivity() {
         GO.bzBtDot = findViewById(R.id.bzBtDot)
         GO.bzBtIcon = findViewById(R.id.bzBtIcon)
         GO.bzBtRssi = findViewById(R.id.bzBtRssi)
+        GO.imageAlarmActive = findViewById(R.id.ivAlarmActive)
 
         /* Обработка сенсора ориентации */
         orientationListener = object : OrientationEventListener(this, SensorManager.SENSOR_DELAY_UI) {
@@ -636,6 +638,7 @@ public class MainActivity : FragmentActivity() {
      * placeholder остаётся.
      */
     private fun restoreStatusStripFromState() {
+        Log.i("BluZ-BT", "Update ststus.")
         if (GO.battLevel <= 0f) return  // No frame received yet — leave placeholders
 
         GO.bzCpsValue.text = GO.pulsePerSec.toString()
@@ -656,6 +659,9 @@ public class MainActivity : FragmentActivity() {
         applyBtRssi()
 
         GO.showStatistics()  // updates bzClockValue
+
+        /* Индикация активности Аларма */
+        GO.imageAlarmActive.isVisible = GO.inhibitAlarm
     }
 
 
@@ -695,6 +701,10 @@ public class MainActivity : FragmentActivity() {
         val tint = ContextCompat.getColor(this, R.color.bz_bt_on)
         GO.bzBtDot.backgroundTintList = ColorStateList.valueOf(tint)
         ImageViewCompat.setImageTintList(GO.bzBtIcon, ColorStateList.valueOf(tint))
+
+        /* Индикация активности Аларма */
+        GO.imageAlarmActive.isVisible = GO.inhibitAlarm
+        ImageViewCompat.setImageTintList(GO.imageAlarmActive, ColorStateList.valueOf(Color.RED))
 
         applySystemBarsForTheme()
 

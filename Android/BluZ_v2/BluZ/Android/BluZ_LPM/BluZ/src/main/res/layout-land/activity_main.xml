@@ -98,6 +98,16 @@
             android:fontFamily="@font/bz_jetbrains_mono" />
 
         <ImageView
+            android:id="@+id/ivAlarmActive"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginStart="10dp"
+            android:contentDescription="@null"
+            android:src="@android:drawable/ic_lock_silent_mode"
+            android:visibility="invisible"
+            app:tint="@color/Red" />
+
+        <ImageView
             android:layout_width="12dp"
             android:layout_height="12dp"
             android:layout_marginStart="10dp"

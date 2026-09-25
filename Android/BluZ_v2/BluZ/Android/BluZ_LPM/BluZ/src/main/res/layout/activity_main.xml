@@ -101,6 +101,16 @@
 
         <!-- Clock -->
         <ImageView
+            android:id="@+id/ivAlarmActive"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginStart="10dp"
+            android:layout_weight="0"
+            android:src="@android:drawable/ic_lock_silent_mode"
+            android:visibility="invisible"
+            app:tint="@color/Red" />
+
+        <ImageView
             android:layout_width="12dp"
             android:layout_height="12dp"
             android:layout_marginStart="10dp"
