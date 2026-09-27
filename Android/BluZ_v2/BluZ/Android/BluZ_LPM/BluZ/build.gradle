@@ -69,12 +69,12 @@ android {
     }
     packagingOptions {
         resources {
-            excludes += ['res/**/*.arb']
+            excludes += ['res/**/*.arb', 'dump_syms/**']
         }
         jniLibs {
             useLegacyPackaging false
+            excludes += ['dump_syms/**']
         }
-        exclude "dump_syms/**"
     }
     namespace 'ru.starline.bluz'
     compileSdk 36

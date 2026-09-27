@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.3"
+agp = "9.2.1"
 commonsMath3 = "3.6.1"
 kotlin = "2.2.21"
 coreKtx = "1.17.0"

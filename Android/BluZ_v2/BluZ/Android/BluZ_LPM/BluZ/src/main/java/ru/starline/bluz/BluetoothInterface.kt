@@ -504,7 +504,7 @@ class BluetoothInterface {
                 } else {
                     Log.d("BluZ-BT", "Alarm enable")
                 }
-                Log.d("BluZ-BT", "Frame start: type=$dataType mtu=$numberMTU pulses=$totalPulses")
+                Log.d("BluZ-BT", "Frame start: type=$dataType mtu=$numberMTU pulses=$totalPulses voltage=$batteryVoltage")
             }
 
             numberMTU--
