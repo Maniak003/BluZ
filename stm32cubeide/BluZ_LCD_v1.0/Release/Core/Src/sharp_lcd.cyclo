@@ -1,0 +1,15 @@
+../Core/Src/sharp_lcd.c:33:6:SharpLCD_Select	1
+../Core/Src/sharp_lcd.c:37:6:SharpLCD_Enable	1
+../Core/Src/sharp_lcd.c:13:6:SharpLCD_Init	1
+../Core/Src/sharp_lcd.c:26:6:SharpLCD_Disable	1
+../Core/Src/sharp_lcd.c:41:6:SharpLCD_SetStatic	1
+../Core/Src/sharp_lcd.c:85:6:SharpLCD_DrawBuffer	3
+../Core/Src/sharp_lcd.c:106:6:SharpLCD_DrawLine	1
+../Core/Src/sharp_lcd.c:117:6:SharpLCD_ClearAll	1
+../Core/Src/sharp_lcd.c:199:6:SharpLCD_DrawPixel	3
+../Core/Src/sharp_lcd.c:51:6:SharpLCD_DrawIcon	5
+../Core/Src/sharp_lcd.c:73:6:SharpLCD_ClearIcon	3
+../Core/Src/sharp_lcd.c:130:6:SharpLCD_DrawVLine	2
+../Core/Src/sharp_lcd.c:158:6:SharpLCD_WriteChar	10
+../Core/Src/sharp_lcd.c:137:6:SharpLCD_WriteString	5
+../Core/Src/sharp_lcd.c:207:6:SharpLCD_FillRect	3

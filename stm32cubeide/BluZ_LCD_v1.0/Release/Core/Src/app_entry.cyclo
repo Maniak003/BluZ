@@ -1,0 +1,16 @@
+../Core/Src/app_entry.c:519:13:AMM_WrapperFree	1
+../Core/Src/app_entry.c:514:19:AMM_WrapperAllocate	1
+../Core/Src/app_entry.c:509:13:AMM_WrapperInit	1
+../Core/Src/app_entry.c:148:6:MX_APPE_Config	2
+../Core/Src/app_entry.c:157:10:MX_APPE_Init	4
+../Core/Src/app_entry.c:212:6:MX_APPE_Process	1
+../Core/Src/app_entry.c:415:6:UTIL_SEQ_Idle	1
+../Core/Src/app_entry.c:430:6:UTIL_SEQ_PreIdle	3
+../Core/Src/app_entry.c:466:6:UTIL_SEQ_PostIdle	1
+../Core/Src/app_entry.c:482:6:BPKACB_Process	1
+../Core/Src/app_entry.c:490:6:HWCB_RNG_Process	1
+../Core/Src/app_entry.c:495:6:AMM_RegisterBasicMemoryManager	1
+../Core/Src/app_entry.c:503:6:AMM_ProcessRequest	1
+../Core/Src/app_entry.c:524:6:FM_ProcessRequest	1
+../Core/Src/app_entry.c:532:6:RNG_KERNEL_CLK_OFF	1
+../Core/Src/app_entry.c:545:6:SCM_HSI_CLK_OFF	1

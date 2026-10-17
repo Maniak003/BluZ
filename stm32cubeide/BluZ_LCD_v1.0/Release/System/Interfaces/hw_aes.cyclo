@@ -1,0 +1,7 @@
+../System/Interfaces/hw_aes.c:46:5:HW_AES_Enable	2
+../System/Interfaces/hw_aes.c:70:6:HW_AES_SetKey	7
+../System/Interfaces/hw_aes.c:135:6:HW_AES_Crypt	2
+../System/Interfaces/hw_aes.c:159:6:HW_AES_Disable	2
+../System/Interfaces/hw_aes.c:181:6:HW_AES_InitCcm	4
+../System/Interfaces/hw_aes.c:238:6:HW_AES_EndCcm	2
+../System/Interfaces/hw_aes.c:263:6:HW_AES_SetLast	1

@@ -1,0 +1,7 @@
+../System/Modules/crc_ctrl.c:71:29:CRCCTRL_Init	16	static
+../System/Modules/crc_ctrl.c:93:29:CRCCTRL_RegisterHandle	24	static
+../System/Modules/crc_ctrl.c:129:29:CRCCTRL_Calculate	32	static
+../System/Modules/crc_ctrl.c:187:29:CRCCTRL_Accumulate	32	static
+../System/Modules/crc_ctrl.c:254:19:CrcConfigure	24	static
+../System/Modules/crc_ctrl.c:301:29:CRCCTRL_MutexTake	4	static
+../System/Modules/crc_ctrl.c:306:29:CRCCTRL_MutexRelease	4	static

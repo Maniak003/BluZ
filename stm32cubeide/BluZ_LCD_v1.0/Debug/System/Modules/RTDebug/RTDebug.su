@@ -1,0 +1,6 @@
+../System/Modules/RTDebug/RTDebug.c:35:6:SYSTEM_DEBUG_SIGNAL_SET	16	static
+../System/Modules/RTDebug/RTDebug.c:42:6:SYSTEM_DEBUG_SIGNAL_RESET	16	static
+../System/Modules/RTDebug/RTDebug.c:49:6:SYSTEM_DEBUG_SIGNAL_TOGGLE	16	static
+../System/Modules/RTDebug/RTDebug.c:61:6:LINKLAYER_DEBUG_SIGNAL_SET	16	static
+../System/Modules/RTDebug/RTDebug.c:68:6:LINKLAYER_DEBUG_SIGNAL_RESET	16	static
+../System/Modules/RTDebug/RTDebug.c:75:6:LINKLAYER_DEBUG_SIGNAL_TOGGLE	16	static

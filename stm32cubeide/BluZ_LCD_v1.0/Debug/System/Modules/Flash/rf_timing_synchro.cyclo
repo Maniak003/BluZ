@@ -1,0 +1,5 @@
+../System/Modules/Flash/rf_timing_synchro.c:74:19:RFTS_ReqWindow	5
+../System/Modules/Flash/rf_timing_synchro.c:143:19:RFTS_RelWindow	2
+../System/Modules/Flash/rf_timing_synchro.c:181:13:RFTS_WindowAllowed_Callback	1
+../System/Modules/Flash/rf_timing_synchro.c:199:13:RFTS_Timeout_Callback	1
+../System/Modules/Flash/rf_timing_synchro.c:209:17:event_started_callback	1

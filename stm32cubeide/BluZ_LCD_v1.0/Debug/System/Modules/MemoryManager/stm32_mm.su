@@ -1,0 +1,4 @@
+../System/Modules/MemoryManager/stm32_mm.c:183:8:UTIL_MM_GetBuffer	32	static
+../System/Modules/MemoryManager/stm32_mm.c:340:6:UTIL_MM_ReleaseBuffer	24	static
+../System/Modules/MemoryManager/stm32_mm.c:411:6:UTIL_MM_Init	32	static
+../System/Modules/MemoryManager/stm32_mm.c:465:13:prvInsertBlockIntoFreeList	24	static

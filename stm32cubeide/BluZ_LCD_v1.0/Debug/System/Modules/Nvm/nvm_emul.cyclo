@@ -1,0 +1,6 @@
+../System/Modules/Nvm/nvm_emul.c:66:6:NVM_Init	1
+../System/Modules/Nvm/nvm_emul.c:89:5:NVM_Add	13
+../System/Modules/Nvm/nvm_emul.c:203:5:NVM_Get	16
+../System/Modules/Nvm/nvm_emul.c:304:5:NVM_Compare	5
+../System/Modules/Nvm/nvm_emul.c:335:6:NVM_Discard	9
+../System/Modules/Nvm/nvm_emul.c:417:13:NVMCB_Store	1
