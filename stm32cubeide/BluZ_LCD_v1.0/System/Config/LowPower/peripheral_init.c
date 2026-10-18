@@ -82,6 +82,7 @@ void MX_StandbyExit_PeripheralInit(void)
   MX_RAMCFG_Init();
   MX_RNG_Init();
   MX_LPTIM2_Init();
+  MX_SPI1_Init();
   MX_TIM1_Init();
   CRCCTRL_Init();
 

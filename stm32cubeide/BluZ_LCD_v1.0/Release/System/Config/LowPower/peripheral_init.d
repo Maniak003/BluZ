@@ -85,10 +85,10 @@ System/Config/LowPower/peripheral_init.o: \
  ../Utilities/tim_serv/stm32_timer.h ../Utilities/sequencer/stm32_seq.h \
  ../Utilities/lpm/tiny_lpm/stm32_lpm.h ../Core/Inc/LTC1662.h \
  ../Core/Inc/sharp_lcd.h ../Core/Inc/font_5x8.h ../Core/Inc/Arial_18x27.h \
- ../Core/Inc/bluetooth_icon.h ../Core/Inc/Battary-AC_icon.h \
- ../Core/Inc/airplane_icon.h ../Core/Inc/settings_icon.h \
- ../Core/Inc/Dinamic_icon.h ../System/Modules/crc_ctrl.h \
- ../System/Modules/utilities_common.h
+ ../Core/Inc/main_display.h ../Core/Inc/bluetooth_icon.h \
+ ../Core/Inc/Battary-AC_icon.h ../Core/Inc/airplane_icon.h \
+ ../Core/Inc/settings_icon.h ../Core/Inc/Dinamic_icon.h \
+ ../System/Modules/crc_ctrl.h ../System/Modules/utilities_common.h
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
 ../Drivers/CMSIS/Device/ST/STM32WBAxx/Include/stm32wbaxx.h:
@@ -186,6 +186,7 @@ System/Config/LowPower/peripheral_init.o: \
 ../Core/Inc/sharp_lcd.h:
 ../Core/Inc/font_5x8.h:
 ../Core/Inc/Arial_18x27.h:
+../Core/Inc/main_display.h:
 ../Core/Inc/bluetooth_icon.h:
 ../Core/Inc/Battary-AC_icon.h:
 ../Core/Inc/airplane_icon.h:

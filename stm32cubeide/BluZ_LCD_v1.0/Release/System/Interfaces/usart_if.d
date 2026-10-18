@@ -82,9 +82,9 @@ System/Interfaces/usart_if.o: ../System/Interfaces/usart_if.c \
  ../Utilities/tim_serv/stm32_timer.h ../Utilities/sequencer/stm32_seq.h \
  ../Utilities/lpm/tiny_lpm/stm32_lpm.h ../Core/Inc/LTC1662.h \
  ../Core/Inc/sharp_lcd.h ../Core/Inc/font_5x8.h ../Core/Inc/Arial_18x27.h \
- ../Core/Inc/bluetooth_icon.h ../Core/Inc/Battary-AC_icon.h \
- ../Core/Inc/airplane_icon.h ../Core/Inc/settings_icon.h \
- ../Core/Inc/Dinamic_icon.h \
+ ../Core/Inc/main_display.h ../Core/Inc/bluetooth_icon.h \
+ ../Core/Inc/Battary-AC_icon.h ../Core/Inc/airplane_icon.h \
+ ../Core/Inc/settings_icon.h ../Core/Inc/Dinamic_icon.h \
  ../Utilities/trace/adv_trace/stm32_adv_trace.h \
  ../System/Interfaces/usart_if.h
 ../Core/Inc/main.h:
@@ -183,6 +183,7 @@ System/Interfaces/usart_if.o: ../System/Interfaces/usart_if.c \
 ../Core/Inc/sharp_lcd.h:
 ../Core/Inc/font_5x8.h:
 ../Core/Inc/Arial_18x27.h:
+../Core/Inc/main_display.h:
 ../Core/Inc/bluetooth_icon.h:
 ../Core/Inc/Battary-AC_icon.h:
 ../Core/Inc/airplane_icon.h:

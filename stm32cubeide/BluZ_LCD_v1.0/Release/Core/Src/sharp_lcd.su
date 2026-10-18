@@ -6,10 +6,11 @@
 ../Core/Src/sharp_lcd.c:85:6:SharpLCD_DrawBuffer	48	static,ignoring_inline_asm
 ../Core/Src/sharp_lcd.c:106:6:SharpLCD_DrawLine	40	static,ignoring_inline_asm
 ../Core/Src/sharp_lcd.c:117:6:SharpLCD_ClearAll	16	static
-../Core/Src/sharp_lcd.c:199:6:SharpLCD_DrawPixel	12	static
+../Core/Src/sharp_lcd.c:215:6:SharpLCD_DrawPixel	12	static
 ../Core/Src/sharp_lcd.c:51:6:SharpLCD_DrawIcon	56	static
 ../Core/Src/sharp_lcd.c:73:6:SharpLCD_ClearIcon	32	static
-../Core/Src/sharp_lcd.c:130:6:SharpLCD_DrawVLine	24	static
-../Core/Src/sharp_lcd.c:158:6:SharpLCD_WriteChar	40	static
-../Core/Src/sharp_lcd.c:137:6:SharpLCD_WriteString	24	static
-../Core/Src/sharp_lcd.c:207:6:SharpLCD_FillRect	32	static
+../Core/Src/sharp_lcd.c:131:6:SharpLCD_DrawHLine	24	static
+../Core/Src/sharp_lcd.c:138:6:SharpLCD_DrawVLine	24	static
+../Core/Src/sharp_lcd.c:166:6:SharpLCD_WriteChar	40	static
+../Core/Src/sharp_lcd.c:145:6:SharpLCD_WriteString	32	static
+../Core/Src/sharp_lcd.c:223:6:SharpLCD_FillRect	32	static

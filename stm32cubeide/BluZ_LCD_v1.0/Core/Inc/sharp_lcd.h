@@ -35,6 +35,11 @@ typedef struct {
     uint16_t disp_pin;
 } SharpLCD_t;
 
+enum {
+	F5X8,
+	F18X27,
+};
+
 extern uint8_t tx_buffer[1 + SHARP_HEIGHT * (1 + SHARP_BYTES_LINE) + 1];
 
 void SharpLCD_SetStatic(SharpLCD_t *lcd);
@@ -59,9 +64,10 @@ void SharpLCD_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color
 void SharpLCD_DrawLine(SharpLCD_t *lcd, uint8_t line, uint8_t color);
 
 void SharpLCD_ClearAll(SharpLCD_t *lcd);
-void SharpLCD_WriteChar(int16_t x, int16_t y, uint8_t font_id, uint8_t chr);
-void SharpLCD_WriteString(int16_t x, int16_t y, uint8_t font_id, char * str);
+void SharpLCD_WriteChar(int16_t x, int16_t y, uint8_t font_id, uint8_t chr, uint8_t invert);
+void SharpLCD_WriteString(int16_t x, int16_t y, uint8_t font_id, char * str, uint8_t invert);
 void SharpLCD_DrawVLine(int16_t x, int16_t y, int16_t height, uint8_t color);
+void SharpLCD_DrawHLine(int16_t x, int16_t y, int16_t widht, uint8_t color);
 void SharpLCD_DrawIcon(SharpLCD_t *lcd, int16_t x, int16_t y, uint8_t * icon);
 void SharpLCD_ClearIcon(SharpLCD_t *lcd, int16_t x, int16_t y, uint8_t * icon);
 

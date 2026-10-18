@@ -124,7 +124,7 @@ typedef enum
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
-extern bool connectFlag;
+//extern bool connectFlag;
 /* USER CODE END EV */
 
 /* Exported macro ------------------------------------------------------------*/

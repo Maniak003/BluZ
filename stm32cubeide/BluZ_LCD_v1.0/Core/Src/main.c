@@ -139,11 +139,8 @@ uint16_t HVoltage = 256, comparatorLevel = 256;						// Уровни настр�
 
 uint8_t notifyFlags = 0;											// 1 - Звук, 2 - Вибро, 4 - Led
 
-UTIL_TIMER_Object_t timerMeasureInterval, timerVibro, timerVibroOff, timerLed, timerTick;
+UTIL_TIMER_Object_t timerMeasureInterval, timerVibro, timerVibroOff, timerLed, timerTick, displayRefreshTimer;
 
-/* LCD display */
-SharpLCD_t lcd;
-unsigned char lcd_str_buffer[40] = {0,};
 
 /* USER CODE END PV */
 
@@ -151,7 +148,6 @@ unsigned char lcd_str_buffer[40] = {0,};
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void SystemPower_Config(void);
-static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 void updateMesurment(void);
 void updateMesurmentCb(void *arg);
@@ -165,23 +161,13 @@ void updateLedCb (void *arg);
 void ledActivate(void);
 void updateTickCb(void *arg);
 void tickSoundDeactivate(void);
+void updateDisplayCb(void *arg);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-/* Инициализация LCD дисплея */
-void lcd_init(void) {
-	/* Запускаем таймер для обновления экрана */
-	//UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-	HAL_TIM_OC_Start(&htim1, TIM_CHANNEL_4);
-	//__HAL_TIM_MOE_ENABLE(&htim1); // Принудительно открываем выход Advanced-таймера
-	SharpLCD_Init(&lcd, &hspi1, DISPLAY_CS_GPIO_Port, DISPLAY_CS_Pin, DISPLAY_ENABLE_GPIO_Port, DISPLAY_ENABLE_Pin);
-	SharpLCD_ClearAll(&lcd);
-	SharpLCD_DrawIcon(&lcd, 5, 1, bluetooth_icon_bits);
-	SharpLCD_DrawBuffer(&lcd);
-}
 /*
  *	SamplingTime selector
  *	Определение времени выборки ADC
@@ -328,7 +314,7 @@ int main(void)
   //NotifyAct(SOUND_NOTIFY, 2);
   //HAL_Delay(1000);
   lcd_init();
-  HAL_Delay(1000);
+  //HAL_Delay(1000);
   logUpdate(powerOnLog);	// Добавляем запись в логе о начале работы.
   HAL_ADCEx_Calibration_Start(&hadc4);
   /* USER CODE END 2 */
@@ -452,6 +438,12 @@ int main(void)
    * 652 или 1676 или 2700 или 4748 - Контрольная сумма.
    *
    */
+
+  /* Таймер для обновления дисплея */
+
+  UTIL_SEQ_RegTask(1<<SFG_TASK_REFRESH_DISPLAY_ID, UTIL_SEQ_RFU, redraw_display);
+  UTIL_TIMER_Create(&(displayRefreshTimer), DISPLAY_REFRASH_INTERVAL, UTIL_TIMER_PERIODIC, &updateDisplayCb, 0);
+  UTIL_TIMER_Start(&(displayRefreshTimer));
 
   /* Таймер для расчета статистики измерений */
   UTIL_SEQ_RegTask(1<<CFG_TASK_MEASURE_REQ_ID, UTIL_SEQ_RFU, updateMesurment);
@@ -1274,7 +1266,7 @@ void MX_RTC_Init(void)
   * @param None
   * @retval None
   */
-static void MX_SPI1_Init(void)
+void MX_SPI1_Init(void)
 {
 
   /* USER CODE BEGIN SPI1_Init 0 */
@@ -1495,6 +1487,10 @@ void updateMesurmentCb(void *arg) {
 	UTIL_SEQ_SetTask(1<<CFG_TASK_MEASURE_REQ_ID, CFG_SEQ_PRIO_0);
 }
 
+void updateDisplayCb(void *arg) {
+	UTIL_SEQ_SetTask(1<<SFG_TASK_REFRESH_DISPLAY_ID, CFG_SEQ_PRIO_0);
+}
+
 /*
  *	Вызывается раз в секунду по таймеру
  */
@@ -1536,22 +1532,6 @@ void updateMesurment(void) {
 			spectrometerTime++;
 		}
 		pulseCounterSecond = 0;
-		UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
-		HAL_TIM_OC_DeInit(&htim1);
-		MX_TIM1_Init();
-		HAL_TIM_OC_Stop(&htim1, TIM_CHANNEL_4);
-		HAL_TIM_OC_Start(&htim1, TIM_CHANNEL_4);
-		sprintf((char *) lcd_str_buffer, "cnt: %lu", currentTime);
-		SharpLCD_WriteString(5, 50, 0, (char *) lcd_str_buffer);
-		HAL_SPI_DeInit(&hspi1);
-		MX_SPI1_Init();
-		SharpLCD_DrawIcon(&lcd, 110, 1, Battary_AC_icon_bits);
-		if (connectFlag) {
-			SharpLCD_DrawIcon(&lcd, 5, 1, bluetooth_icon_bits);
-		} else {
-			SharpLCD_ClearIcon(&lcd, 5, 1, bluetooth_icon_bits);
-		}
-		SharpLCD_DrawBuffer(&lcd);
 		/* Массив для гистограммы уровней */
 		/*
 		if (indexDozimetrBufer >= SIZE_DOZIMETR_BUFER) {
@@ -1654,7 +1634,7 @@ void updateMesurment(void) {
 		if (low_batt_count > 1) {
 			if (batt_time_counter <= intervalNow) {
 				batt_time_counter = intervalNow + INTERVAL5;
-				NotifyAct(SOUND_NOTIFY, 1);
+				NotifyAct(SOUND_NOTIFY, 2);
 			}
 		}
 	}
@@ -1678,8 +1658,10 @@ void TVMeasure(void) {
 	if (dataType == onlyDozimeter ) {
 		//UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
 		MX_ADC4_Init();
-		currTemperature = ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR);	// Канал для измерения температуры
 		currVoltage = ADC_Switch_Channel(ADC_CHANNEL_7);				// Канал для измерения напряжения.
+		//currVoltage = ADC_Switch_Channel(ADC_CHANNEL_9);				// Test
+		//currVoltage = ADC_Switch_Channel(ADC_CHANNEL_VREFINT);		// Test
+		currTemperature = ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR);	// Канал для измерения температуры
 		HAL_ADC_DeInit(&hadc4);											// Для снижения потребления
 	} else {
 		/* Измерение температуры и напряжения в режиме спектрометра */
@@ -1688,8 +1670,10 @@ void TVMeasure(void) {
 		HAL_ADC_DeInit(&hadc4);
 		dataType = onlyDozimeter;
 		MX_ADC4_Init();													// Инициализируем ADC в режиме для программного запуска.
+		currVoltage = ADC_Switch_Channel(ADC_CHANNEL_7);				// Test
+		//currVoltage = ADC_Switch_Channel(ADC_CHANNEL_9);				// Test
+		//currVoltage = ADC_Switch_Channel(ADC_CHANNEL_VREFINT);
 		currTemperature = ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR); 	// Канал для измерения температуры
-		currVoltage = ADC_Switch_Channel(ADC_CHANNEL_7);				// Канал для измерения напряжения.
 
 		HAL_ADC_DeInit(&hadc4);											// Для снижения потребления
 		//HAL_DMA_DeInit(&handle_GPDMA1_Channel0);

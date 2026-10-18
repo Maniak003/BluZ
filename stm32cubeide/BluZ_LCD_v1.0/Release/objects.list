@@ -3,6 +3,8 @@
 "./Core/Src/app_entry.o"
 "./Core/Src/font_5x8.o"
 "./Core/Src/main.o"
+"./Core/Src/main_display.o"
+"./Core/Src/menu.o"
 "./Core/Src/rw_FLASH.o"
 "./Core/Src/sharp_lcd.o"
 "./Core/Src/stm32wbaxx_hal_msp.o"

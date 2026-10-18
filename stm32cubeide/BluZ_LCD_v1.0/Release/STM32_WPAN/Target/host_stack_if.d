@@ -84,9 +84,9 @@ STM32_WPAN/Target/host_stack_if.o: ../STM32_WPAN/Target/host_stack_if.c \
  ../Utilities/tim_serv/stm32_timer.h ../Utilities/sequencer/stm32_seq.h \
  ../Utilities/lpm/tiny_lpm/stm32_lpm.h ../Core/Inc/LTC1662.h \
  ../Core/Inc/sharp_lcd.h ../Core/Inc/font_5x8.h ../Core/Inc/Arial_18x27.h \
- ../Core/Inc/bluetooth_icon.h ../Core/Inc/Battary-AC_icon.h \
- ../Core/Inc/airplane_icon.h ../Core/Inc/settings_icon.h \
- ../Core/Inc/Dinamic_icon.h \
+ ../Core/Inc/main_display.h ../Core/Inc/bluetooth_icon.h \
+ ../Core/Inc/Battary-AC_icon.h ../Core/Inc/airplane_icon.h \
+ ../Core/Inc/settings_icon.h ../Core/Inc/Dinamic_icon.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_raw_api.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/auto/ble_types.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_const.h \
@@ -190,6 +190,7 @@ STM32_WPAN/Target/host_stack_if.o: ../STM32_WPAN/Target/host_stack_if.c \
 ../Core/Inc/sharp_lcd.h:
 ../Core/Inc/font_5x8.h:
 ../Core/Inc/Arial_18x27.h:
+../Core/Inc/main_display.h:
 ../Core/Inc/bluetooth_icon.h:
 ../Core/Inc/Battary-AC_icon.h:
 ../Core/Inc/airplane_icon.h:

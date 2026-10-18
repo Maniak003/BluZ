@@ -55,6 +55,7 @@ extern "C" {
 #include <stm32_lpm.h>
 #include "LTC1662.h"
 #include "sharp_lcd.h"
+#include "main_display.h"
 
 /* Icons*/
 /* Icons */
@@ -96,7 +97,7 @@ extern "C" {
 #define DEFAULTAQR		100									/* Точность дозиметра по умолчанию */
 #define SEND_DELAY		30									/* Задержка в ms между передачами MTU */
 #define DELAY_INTERVAL 10									/* Количество передач до задержке */
-#define LOW_BATT	2.9f									/* Критический уровень напряжения батареи */
+#define LOW_BATT	3.0f									/* Критический уровень напряжения батареи */
 
 typedef enum spectrResolution {
 	resolution1024,
@@ -142,6 +143,7 @@ extern uint32_t limitChan;
 extern double CoefChan;
 extern uint8_t currentSamplingTime;
 extern TIM_HandleTypeDef htim1;
+extern SPI_HandleTypeDef hspi1;
 
 typedef enum commandTx {
 	cmd_setup,					// 0
@@ -214,10 +216,12 @@ extern union dataA Temperature, Voltage;
 extern union dataA AvgCPS;
 extern union dataB battKoeff;
 extern uint16_t MTUSizeValue, dozimetrAquracy;
+extern volatile bool connectFlag;
 
 uint8_t sendData( uint8_t *dataSpectrBufer );
 void logUpdate(uint8_t act);
 void APP_BLE_Update_Manufacturer_Data(uint32_t data);
+void MX_SPI1_Init(void);
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -245,6 +249,7 @@ void MX_RAMCFG_Init(void);
 void MX_RNG_Init(void);
 void MX_RTC_Init(void);
 void MX_LPTIM2_Init(void);
+void MX_SPI1_Init(void);
 void MX_TIM1_Init(void);
 
 /* USER CODE BEGIN EFP */

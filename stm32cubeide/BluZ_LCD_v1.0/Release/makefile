@@ -108,7 +108,7 @@ main-build: BluZ_LCD_v1.0.elf secondary-outputs
 
 # Tool invocations
 BluZ_LCD_v1.0.elf BluZ_LCD_v1.0.map: $(OBJS) $(USER_OBJS) /home/ed/work/github/BluZ/stm32cubeide/BluZ_LCD_v1.0/STM32WBA54KGUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "BluZ_LCD_v1.0.elf" @"objects.list" $(USER_OBJS) -Wl,--start-group $(LIBS) -Wl,--end-group -mcpu=cortex-m33 -T"/home/ed/work/github/BluZ/stm32cubeide/BluZ_LCD_v1.0/STM32WBA54KGUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="BluZ_LCD_v1.0.map" -Wl,--gc-sections -static -L../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib -L../Middlewares/ST/STM32_WPAN/ble/stack/lib -z noexecstack --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+	arm-none-eabi-g++ -o "BluZ_LCD_v1.0.elf" @"objects.list" $(USER_OBJS) -Wl,--start-group $(LIBS) -Wl,--end-group -mcpu=cortex-m33 -T"/home/ed/work/github/BluZ/stm32cubeide/BluZ_LCD_v1.0/STM32WBA54KGUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="BluZ_LCD_v1.0.map" -Wl,--gc-sections -static -L../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib -L../Middlewares/ST/STM32_WPAN/ble/stack/lib -z noexecstack --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

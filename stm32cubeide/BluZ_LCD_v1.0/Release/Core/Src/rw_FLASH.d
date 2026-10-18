@@ -83,9 +83,10 @@ Core/Src/rw_FLASH.o: ../Core/Src/rw_FLASH.c ../Core/Inc/rw_FLASH.h \
  ../Core/Inc/rw_FLASH.h ../Utilities/tim_serv/stm32_timer.h \
  ../Utilities/sequencer/stm32_seq.h ../Utilities/lpm/tiny_lpm/stm32_lpm.h \
  ../Core/Inc/LTC1662.h ../Core/Inc/sharp_lcd.h ../Core/Inc/font_5x8.h \
- ../Core/Inc/Arial_18x27.h ../Core/Inc/bluetooth_icon.h \
- ../Core/Inc/Battary-AC_icon.h ../Core/Inc/airplane_icon.h \
- ../Core/Inc/settings_icon.h ../Core/Inc/Dinamic_icon.h
+ ../Core/Inc/Arial_18x27.h ../Core/Inc/main_display.h \
+ ../Core/Inc/bluetooth_icon.h ../Core/Inc/Battary-AC_icon.h \
+ ../Core/Inc/airplane_icon.h ../Core/Inc/settings_icon.h \
+ ../Core/Inc/Dinamic_icon.h
 ../Core/Inc/rw_FLASH.h:
 ../System/Modules/Flash/simple_nvm_arbiter.h:
 ../System/Modules/Flash/simple_nvm_arbiter_common.h:
@@ -182,6 +183,7 @@ Core/Src/rw_FLASH.o: ../Core/Src/rw_FLASH.c ../Core/Inc/rw_FLASH.h \
 ../Core/Inc/sharp_lcd.h:
 ../Core/Inc/font_5x8.h:
 ../Core/Inc/Arial_18x27.h:
+../Core/Inc/main_display.h:
 ../Core/Inc/bluetooth_icon.h:
 ../Core/Inc/Battary-AC_icon.h:
 ../Core/Inc/airplane_icon.h:

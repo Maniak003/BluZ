@@ -82,13 +82,14 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
  ../Utilities/tim_serv/stm32_timer.h ../Utilities/sequencer/stm32_seq.h \
  ../Utilities/lpm/tiny_lpm/stm32_lpm.h ../Core/Inc/LTC1662.h \
  ../Core/Inc/sharp_lcd.h ../Core/Inc/font_5x8.h ../Core/Inc/Arial_18x27.h \
- ../Core/Inc/bluetooth_icon.h ../Core/Inc/Battary-AC_icon.h \
- ../Core/Inc/airplane_icon.h ../Core/Inc/settings_icon.h \
- ../Core/Inc/Dinamic_icon.h ../Core/Inc/app_common.h \
- ../System/Config/Log/log_module.h ../System/Config/Log/log_module_conf.h \
- ../STM32_WPAN/App/app_ble.h ../STM32_WPAN/Target/ll_sys_if.h \
- ../System/Modules/dbg_trace.h ../Middlewares/ST/STM32_WPAN/ble/ble.h \
- ../STM32_WPAN/App/ble_conf.h ../STM32_WPAN/App/ble_dbg_conf.h \
+ ../Core/Inc/main_display.h ../Core/Inc/bluetooth_icon.h \
+ ../Core/Inc/Battary-AC_icon.h ../Core/Inc/airplane_icon.h \
+ ../Core/Inc/settings_icon.h ../Core/Inc/Dinamic_icon.h \
+ ../Core/Inc/app_common.h ../System/Config/Log/log_module.h \
+ ../System/Config/Log/log_module_conf.h ../STM32_WPAN/App/app_ble.h \
+ ../STM32_WPAN/Target/ll_sys_if.h ../System/Modules/dbg_trace.h \
+ ../Middlewares/ST/STM32_WPAN/ble/ble.h ../STM32_WPAN/App/ble_conf.h \
+ ../STM32_WPAN/App/ble_dbg_conf.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_core.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_std.h \
  ../Middlewares/ST/STM32_WPAN/ble/stack/include/ble_defs.h \
@@ -207,6 +208,7 @@ STM32_WPAN/App/bluz_app.o: ../STM32_WPAN/App/bluz_app.c \
 ../Core/Inc/sharp_lcd.h:
 ../Core/Inc/font_5x8.h:
 ../Core/Inc/Arial_18x27.h:
+../Core/Inc/main_display.h:
 ../Core/Inc/bluetooth_icon.h:
 ../Core/Inc/Battary-AC_icon.h:
 ../Core/Inc/airplane_icon.h:

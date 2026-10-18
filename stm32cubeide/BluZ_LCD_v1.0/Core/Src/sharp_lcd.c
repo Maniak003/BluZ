@@ -127,6 +127,14 @@ void SharpLCD_ClearAll(SharpLCD_t *lcd) {
 	}
 }
 
+/* Горизонтальная линия */
+void SharpLCD_DrawHLine(int16_t x, int16_t y, int16_t widht, uint8_t color) {
+	for (int16_t i = 0; i < widht; i++ ) {
+		SharpLCD_DrawPixel(x + i, y, color);
+	}
+}
+
+/* Вертикальная линия */
 void SharpLCD_DrawVLine(int16_t x, int16_t y, int16_t height, uint8_t color) {
 	for (int16_t i = 0; i < height; i++ ) {
 		SharpLCD_DrawPixel(x, y + i, color);
@@ -134,19 +142,19 @@ void SharpLCD_DrawVLine(int16_t x, int16_t y, int16_t height, uint8_t color) {
 }
 
 /* Вывод строки текста */
-void SharpLCD_WriteString(int16_t x, int16_t y, uint8_t font_id, char * str) {
+void SharpLCD_WriteString(int16_t x, int16_t y, uint8_t font_id, char * str, uint8_t invert) {
 	uint8_t ch_with;
 	switch (font_id) {
-	case 0:
+	case F5X8:
 		ch_with = 7;
 		for (int i = 0; i < strlen(str); i++) {
-			SharpLCD_WriteChar(x + i * ch_with, y, font_id, str[i]);
+			SharpLCD_WriteChar(x + i * ch_with, y, font_id, str[i], invert);
 		}
 		break;
-	case 1:
+	case F18X27:
 		ch_with = 18;
 		for (int i = 0; i < strlen(str); i++) {
-			SharpLCD_WriteChar(x + i * ch_with, y, font_id, str[i]);
+			SharpLCD_WriteChar(x + i * ch_with, y, font_id, str[i], invert);
 		}
 		break;
 	default:
@@ -155,25 +163,33 @@ void SharpLCD_WriteString(int16_t x, int16_t y, uint8_t font_id, char * str) {
 }
 
 /* Прорисовка символа с очисткой фона */
-void SharpLCD_WriteChar(int16_t x, int16_t y, uint8_t font_id, uint8_t chr) {
+void SharpLCD_WriteChar(int16_t x, int16_t y, uint8_t font_id, uint8_t chr, uint8_t invert) {
 	if (chr >= 32) {											// Фонт содержит только печатные символы
 		uint16_t fnt_addr = chr - 32;
 		switch (font_id) {
 		/* Шрифт 5x8 */
-		case 0:
+		case F5X8:
 			for (int j = 0; j < 5; j++) {						// Выбираем байт глифа символа
 				uint8_t chr_part = font_5x8[fnt_addr][j];		// Выбираем из массива байт глифа
 				for (int i = 0; i < 8; i++) {					// Определяем цвет точки в глифе
 					if (chr_part & (1 << i)) {
+						if (invert == 0) {
 						SharpLCD_DrawPixel(x + j, y + i, 0);	// Прорисовываем черную точку
+						} else {
+							SharpLCD_DrawPixel(x + j, y + i, 1);
+						}
 					} else {
+						if (invert == 0) {
 						SharpLCD_DrawPixel(x + j, y + i, 1);	// Прорисовываем белую точку
+						} else {
+							SharpLCD_DrawPixel(x + j, y + i, 0);
+						}
 					}
 				}
 			}
 			break;
 		/* Шрифт 18x27 */
-		case 1:
+		case F18X27:
 			for (uint8_t j = 0; j < 27; j++) {
 				uint32_t chr_part = Arial_18x27[(fnt_addr * 27) + j];	// Выбираем uint32_t для формирования изображения строки
 				for (uint8_t i = 0; i < 32; i++) {				// Будем рисовать 32 точки

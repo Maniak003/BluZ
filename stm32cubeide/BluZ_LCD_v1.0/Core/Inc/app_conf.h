@@ -334,6 +334,7 @@ typedef enum
   CFG_TASK_VIBROOFF_REQ_ID,
   CFG_TASK_LED_REQ_ID,
   CFG_TASK_TICK_REQ_ID,
+  SFG_TASK_REFRESH_DISPLAY_ID,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
