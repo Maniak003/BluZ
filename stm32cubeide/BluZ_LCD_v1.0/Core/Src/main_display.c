@@ -47,6 +47,19 @@ void redraw_display(void) {
 	//SharpLCD_DrawVLine(115, 3, 6, 0);
 	//SharpLCD_DrawVLine(116, 3, 6, 0);
 */
+	  /* Сумарное время работы */
+	  uint32_t dd, hh, mm, ss, rr;
+	  ss = currentTime;
+	  rr = ss % 86400;
+	  dd = ss / 86400; // Дни
+	  hh = rr / 3600;
+	  rr = rr % 3600;
+	  mm = rr / 60;
+	  ss = rr % 60;
+	  sprintf((char *) lcd_str_buffer, "%02lu:%02lu:%02lu:%02lu", dd, hh, mm, ss);
+	  SharpLCD_WriteString(25, 2, F5X8, (char *) lcd_str_buffer, BLACK_COL);
+
+
 	/* Уровень батареи */
 	SharpLCD_DrawIcon(&lcd, 110, 1, Battary_AC_icon_bits);
 	if ((float) currVoltage * battKoeff.Float >= LOW_BATT) {
@@ -57,7 +70,7 @@ void redraw_display(void) {
 		if (indicator_bat > 10) {
 			indicator_bat = 0;
 		}
-		SharpLCD_FillRect(114, 3, indicator_bat, 6, 0);
+		SharpLCD_FillRect(114, 3, indicator_bat, 6, BLACK_COL);
 		//sprintf((char *) lcd_str_buffer, "i:%u", indicator_bat);
 		//SharpLCD_WriteString(10, 1, 0, (char *) lcd_str_buffer, 0);
 	}
@@ -71,17 +84,55 @@ void redraw_display(void) {
 
 	draw_activity();
 	draw_indicator();
-
+	draw_gistogram_dosimeter();
 	SharpLCD_DrawBuffer(&lcd);
 
+}
+
+void draw_gistogram_dosimeter(void) {
+	  /* Обновление графика дозиметра */
+	  uint16_t idx_dosimeter;
+	  uint16_t mx_dosimeter;
+	  if (indexDozimetrBufer > SHARP_WIDTH) {
+		  idx_dosimeter = indexDozimetrBufer - SHARP_WIDTH;
+	  } else {
+		  idx_dosimeter = SIZE_DOZIMETR_BUFER - (SHARP_WIDTH - indexDozimetrBufer);
+	  }
+	  uint16_t tmp_idx_dosimeter = idx_dosimeter;
+	  mx_dosimeter = 0;
+	  /* Максимальное значение для масштабирования гистограммы */
+	  for (int i = 0; i < SHARP_HEIGHT; i++) {
+		  if (dozimetrBuffer[idx_dosimeter] > mx_dosimeter) {
+			  mx_dosimeter = dozimetrBuffer[idx_dosimeter];
+		  }
+		  idx_dosimeter++;
+		  if (idx_dosimeter >= SIZE_DOZIMETR_BUFER) {
+			  idx_dosimeter = 0;
+		  }
+	  }
+	  float resize_koeff = (mx_dosimeter > 0) ? ((float)HEIGHT_GISTOGRAM / mx_dosimeter) : 0.0f;
+	  idx_dosimeter = tmp_idx_dosimeter;
+	  /* Отрисовка гистограммы */
+	  for (int i = 0; i < SHARP_WIDTH; i++) {
+		  /* Очистим значение гистограммы */
+		  SharpLCD_DrawVLine(i, SHARP_HEIGHT - HEIGHT_GISTOGRAM, HEIGHT_GISTOGRAM, WHITE_COL);
+		  /* Вычислим размер значения гистограммы */
+		  uint32_t y_size = dozimetrBuffer[idx_dosimeter++] * resize_koeff;
+		  SharpLCD_DrawVLine(i, SHARP_HEIGHT - y_size, y_size, BLACK_COL);
+		  if (idx_dosimeter >= SIZE_DOZIMETR_BUFER) {
+			  idx_dosimeter = 0;
+		  }
+	  }
+	  //sprintf((char *) lcd_str_buffer, "i:%u m:%u b:%u", tmp_idx_dosimeter, mx_dosimeter, dozimetrBuffer[1]);
+	  //SharpLCD_WriteString(5, 118, 0, (char *) lcd_str_buffer, BLACK_COL);
 }
 
 		  /*
 		   * Индикатор изменения активности
 		   */
 void draw_activity(void) {
-	  SharpLCD_FillRect(0, ACTIVITY_Y - ACTIVITY_H, SHARP_WIDTH, ACTIVITY_H, 1);
-	  SharpLCD_DrawVLine(SHARP_WIDTH / 2, ACTIVITY_Y - ACTIVITY_H, ACTIVITY_H, 0);
+	  SharpLCD_FillRect(0, ACTIVITY_Y - ACTIVITY_H, SHARP_WIDTH, ACTIVITY_H, WHITE_COL);
+	  SharpLCD_DrawVLine(SHARP_WIDTH / 2, ACTIVITY_Y - ACTIVITY_H, ACTIVITY_H, BLACK_COL);
 	  SharpLCD_DrawHLine(2, ACTIVITY_Y, SHARP_WIDTH - 4, 0);
 	  float level_delta;
 	  bool level_direct;
@@ -100,9 +151,9 @@ void draw_activity(void) {
 	  //sprintf((char *) lcd_str_buffer, "%.0f    ", level_delta);
 	  //SharpLCD_WriteString(0, 10, F5X8, (char *) lcd_str_buffer, 0);
 	  if (level_direct) {
-		  SharpLCD_FillRect((SHARP_WIDTH / 2) - level_delta + 1, ACTIVITY_Y - ACTIVITY_H, level_delta, ACTIVITY_H - 1, 0);
+		  SharpLCD_FillRect((SHARP_WIDTH / 2) - level_delta + 1, ACTIVITY_Y - ACTIVITY_H, level_delta, ACTIVITY_H - 1, BLACK_COL);
 	  } else {
-		  SharpLCD_FillRect(SHARP_WIDTH / 2, ACTIVITY_Y - ACTIVITY_H, level_delta, ACTIVITY_H - 1, 0);
+		  SharpLCD_FillRect(SHARP_WIDTH / 2, ACTIVITY_Y - ACTIVITY_H, level_delta, ACTIVITY_H - 1, BLACK_COL);
 	  }
 }
 
@@ -114,87 +165,18 @@ void draw_indicator(void) {
 	  /* Рисуем только при установленных уровнях */
 
 	  if (level1 > 0) {
-		  SharpLCD_DrawVLine(SHARP_WIDTH / 2, LEVEL_Y - LEVEL_H, LEVEL_H, 0);
+		  SharpLCD_DrawVLine(SHARP_WIDTH / 2, LEVEL_Y - LEVEL_H, LEVEL_H, BLACK_COL);
 		  SharpLCD_DrawHLine(2, LEVEL_Y, SHARP_WIDTH - 4, 0);
 		  level_delta = (float) SHARP_WIDTH / level1 * CPS;
 		  if (level_delta > SHARP_WIDTH - 4) {
 			  level_delta = SHARP_WIDTH - 4;
 		  }
-		  SharpLCD_FillRect(2, LEVEL_Y - LEVEL_H, level_delta, LEVEL_H - 1, 0);
+		  SharpLCD_FillRect(2, LEVEL_Y - LEVEL_H, level_delta, LEVEL_H - 1, BLACK_COL);
 	  }
 }
 
 void draw_dosimeter(void) {
-	  /* Обновление графика дозиметра */
-	  uint16_t idx_dosimeter;
-	  uint32_t max_dosimeter;
-	  idx_dosimeter = indexDozimetrBufer;
-	  max_dosimeter = 0;
-	  /* Максимальное значение для масштабирования гистограммы */
-	  for (int i = 0; i < SIZE_DOZIMETR_BUFER; i++) {
-		  if (dozimetrBuffer[i] > max_dosimeter) {
-			  max_dosimeter = dozimetrBuffer[i];
-		  }
-	  }
-	  float resize_koeff = (float) HEIGHT_GISTOGRAM / max_dosimeter;
-	  //sprintf((char *) lcd_str_buffer, "Max:%lu", max_dosimeter);
-	  //SharpLCD_WriteString(5, 60, 0, (char *) lcd_str_buffer);
-	  /* Отрисовка гистограммы */
-	  for (int i = 0; i < SHARP_WIDTH; i++) {
-		  /* Очистим значение гистограммы */
-		  SharpLCD_DrawVLine(i, SHARP_HEIGHT - HEIGHT_GISTOGRAM, HEIGHT_GISTOGRAM, 1);
-		  /* Вычислим размер значения гистограммы */
-		  uint32_t y_size = dozimetrBuffer[idx_dosimeter++] * resize_koeff;
-		  SharpLCD_DrawVLine(i, SHARP_HEIGHT - y_size, y_size, 0);
-		  if (idx_dosimeter >= SIZE_DOZIMETR_BUFER) {
-			  idx_dosimeter = 0;
-		  }
-	  }
-
-	  /* Средний CPS по интервалу заданному в DOSIMETER_WIN * DELAY_03 */
-	  uint32_t summ_interval;
-	  //uint16_t idx_dosimeter;
-	  uint16_t cnt_interval;
-	  idx_dosimeter = indexDozimetrBufer;
-	  summ_interval = 0;
-	  cnt_interval = 0;
-	  for (uint8_t i = 0; i <= DOSIMETER_WIN; i++) {
-		  if (idx_dosimeter == 0) {
-			  idx_dosimeter = SIZE_DOZIMETR_BUFER - 1;
-		  }
-		  if (dozimetrBuffer[idx_dosimeter] > 0) {
-			  cnt_interval++;
-			  summ_interval += dozimetrBuffer[idx_dosimeter];
-		  }
-		  idx_dosimeter--;
-	  }
 	  /* Проверим наличие данных для обработки */
-	  if (cnt_interval >= 0) {
-		  //cps_find = (float) summ_interval * 1000 / DELAY_03 / cnt_interval;
-		  uint16_t x_pos;
-		  if (CPS < 10) {
-			  x_pos = CPS_X_POSITION + 36;
-		  } else if (CPS < 100) {
-			  x_pos = CPS_X_POSITION + 18;
-		  } else {
-			  x_pos = CPS_X_POSITION;
-		  }
-		  sprintf((char *) lcd_str_buffer, "REAL");
-		  SharpLCD_WriteString(3, CPS_Y_POSITION, F5X8, (char *) lcd_str_buffer, 0);
-		  /* Проверим на переполнение */
-		  if (CPS < 999) {
-			  sprintf((char *) lcd_str_buffer, "   ");
-			  SharpLCD_WriteString(CPS_X_POSITION, CPS_Y_POSITION, F18X27, (char *) lcd_str_buffer, 0);
-			  sprintf((char *) lcd_str_buffer, "%lu   ", CPS);
-			  SharpLCD_WriteString(x_pos, CPS_Y_POSITION, F18X27, (char *) lcd_str_buffer, 0);
-		  } else {
-			  sprintf((char *) lcd_str_buffer, "OVER");
-			  SharpLCD_WriteString(CPS_X_POSITION, CPS_Y_POSITION, F18X27, (char *) lcd_str_buffer, 0);
-		  }
-	  }
-
-	  /* Средний cps по полному времени измерения */
-	  //cps_total = (float) dosimeter_pulse_counter * 1000 / meassurment_time;
 	  uint16_t x_pos;
 	  if (CPS < 10) {
 		  x_pos = CPS_X_POSITION + 36;
@@ -203,22 +185,62 @@ void draw_dosimeter(void) {
 	  } else {
 		  x_pos = CPS_X_POSITION;
 	  }
+	  sprintf((char *) lcd_str_buffer, "REAL");
+	  SharpLCD_WriteString(3, CPS_Y_POSITION, F5X8, (char *) lcd_str_buffer, BLACK_COL);
+	  /* Проверим на переполнение */
+	  if (CPS < 999) {
+		  sprintf((char *) lcd_str_buffer, "   ");
+		  SharpLCD_WriteString(CPS_X_POSITION, CPS_Y_POSITION, F18X27, (char *) lcd_str_buffer, BLACK_COL);
+		  sprintf((char *) lcd_str_buffer, "%lu   ", CPS);
+		  SharpLCD_WriteString(x_pos, CPS_Y_POSITION, F18X27, (char *) lcd_str_buffer, BLACK_COL);
+	  } else {
+		  sprintf((char *) lcd_str_buffer, "OVER");
+		  SharpLCD_WriteString(CPS_X_POSITION, CPS_Y_POSITION, F18X27, (char *) lcd_str_buffer, BLACK_COL);
+	  }
+
+	  /* Средний cps по полному времени измерения */
+	  uint32_t summ_interval;
+	  float cps_find = 0;
+	  uint16_t cnt_interval;
+	  summ_interval = 0;
+	  cnt_interval = 0;
+
+	  for (uint16_t i = 0; i < SIZE_DOZIMETR_BUFER; i++) {
+		  if (dozimetrBuffer[i] > 0) {
+			  cnt_interval++;
+			  summ_interval += dozimetrBuffer[i];
+		  }
+	  }
+	  if (cnt_interval > 0) {
+		  cps_find = (float) summ_interval / cnt_interval;
+	  } else {
+		  cps_find = 0;
+	  }
+
+	  /* Позиция в зависимости от количества разрядов. */
+	  if (cps_find < 10) {
+		  x_pos = CPS_X_POSITION + 36;
+	  } else if (cps_find < 100) {
+		  x_pos = CPS_X_POSITION + 18;
+	  } else {
+		  x_pos = CPS_X_POSITION;
+	  }
 	  /* Проверим на переполненние */
 	  if (CPS < 999) {
 		  sprintf((char *) lcd_str_buffer, "   ");
-		  SharpLCD_WriteString(CPS_X_POSITION, CPS_Y_POSITION + 28, F18X27, (char *) lcd_str_buffer, 0);
-		  sprintf((char *) lcd_str_buffer, "%lu    ", CPS);
-		  SharpLCD_WriteString(x_pos, CPS_Y_POSITION + 28, F18X27, (char *) lcd_str_buffer, 0);
+		  SharpLCD_WriteString(CPS_X_POSITION, CPS_Y_POSITION + 28, F18X27, (char *) lcd_str_buffer, BLACK_COL);
+		  sprintf((char *) lcd_str_buffer, "%0.0f    ", cps_find);
+		  SharpLCD_WriteString(x_pos, CPS_Y_POSITION + 28, F18X27, (char *) lcd_str_buffer, BLACK_COL);
 	  } else {
 		  sprintf((char *) lcd_str_buffer, "OVER");
-		  SharpLCD_WriteString(CPS_X_POSITION, CPS_Y_POSITION + 28, F18X27, (char *) lcd_str_buffer, 0);
+		  SharpLCD_WriteString(CPS_X_POSITION, CPS_Y_POSITION + 28, F18X27, (char *) lcd_str_buffer, BLACK_COL);
 	  }
 	  sprintf((char *) lcd_str_buffer, "AVG");
-	  SharpLCD_WriteString(3, CPS_Y_POSITION + 28, F5X8, (char *) lcd_str_buffer, 0);
+	  SharpLCD_WriteString(3, CPS_Y_POSITION + 28, F5X8, (char *) lcd_str_buffer, BLACK_COL);
 	  if (pulseCounter > 0) {
-		  float accuracy = (float) 900 / pulseCounter;
+		  float accuracy = (float) 300 / sqrt(pulseCounter);
 		  sprintf((char *) lcd_str_buffer, "%.1f%% ", accuracy);
-		  SharpLCD_WriteString(3, CPS_Y_POSITION + 38, F5X8, (char *) lcd_str_buffer, 0);
+		  SharpLCD_WriteString(3, CPS_Y_POSITION + 38, F5X8, (char *) lcd_str_buffer, BLACK_COL);
 	  }
 
 }

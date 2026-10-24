@@ -40,6 +40,11 @@ enum {
 	F18X27,
 };
 
+enum {
+	BLACK_COL,
+	WHITE_COL
+};
+
 extern uint8_t tx_buffer[1 + SHARP_HEIGHT * (1 + SHARP_BYTES_LINE) + 1];
 
 void SharpLCD_SetStatic(SharpLCD_t *lcd);

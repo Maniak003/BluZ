@@ -420,6 +420,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 					} else if (p_Notification->DataTransfered.p_Payload[3] == cmd_clear_dosimeter) {
 						pulseCounter = 0;
 						currentTime = 0;
+						indexDozimetrBufer = 0;
 						//memset(dozimetrBuffer, 0, SIZE_DOZIMETR_BUFER * 2);
 						for (int ii = 0; ii < SIZE_DOZIMETR_BUFER; ii++) {
 							dozimetrBuffer[ii] = 0;

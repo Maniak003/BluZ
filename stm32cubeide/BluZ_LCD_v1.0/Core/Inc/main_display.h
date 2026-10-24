@@ -29,6 +29,7 @@ void redraw_display(void);
 void draw_activity(void);
 void draw_dosimeter(void);
 void draw_indicator(void);
+void draw_gistogram_dosimeter(void);
 
 
 #endif /* INC_MAIN_DISPLAY_H_ */
