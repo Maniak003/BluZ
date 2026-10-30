@@ -313,6 +313,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							resolutionSpecter = (spectrResolution_t) p_Notification->DataTransfered.p_Payload[37];
 							/* Время выборки изменяется - нужно очистить спектр */
 							if (currentSamplingTime != tmpSample) {
+								/* При изменении этого параметра, необходимо очистить спектр */
 								for (int iii = 0; iii < MAX_RESOLUTION; iii++) {
 									tmpSpecterBuffer[iii] = 0;
 								}

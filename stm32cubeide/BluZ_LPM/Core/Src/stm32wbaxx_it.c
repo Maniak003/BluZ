@@ -302,7 +302,10 @@ void GPDMA1_Channel0_IRQHandler(void)
 		//	break;
 		/* 4096 */
 		//case resolution4096:
-			tmpLevel = (TVLevel[0] + OFFSET_CHAN) & 0xFFF;
+		tmpLevel = TVLevel[0] + OFFSET_CHAN;
+		if (tmpLevel > 0xFFF) {
+			tmpLevel = 0xFFF;
+		}
 		//	break;
 		//default:
 		//	tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 2) & 0x3FF;

@@ -170,12 +170,12 @@ void tickSoundDeactivate(void);
 uint8_t currentSamplingTime = 1;
 uint32_t samplingTm(uint8_t smplTm) {
 	switch(smplTm) {
-		case 0: return ADC_SAMPLETIME_1CYCLE_5;
-		case 1: return ADC_SAMPLETIME_3CYCLES_5;
-		case 2: return ADC_SAMPLETIME_7CYCLES_5;
+		case 0: return ADC_SAMPLETIME_1CYCLE_5;			// Для Бромида лантана.
+		case 1: return ADC_SAMPLETIME_3CYCLES_5;		// Для NaI(Tl)
+		case 2: return ADC_SAMPLETIME_7CYCLES_5;		// Для
 		case 3: return ADC_SAMPLETIME_12CYCLES_5;
 		case 4: return ADC_SAMPLETIME_19CYCLES_5;
-		case 5: return ADC_SAMPLETIME_39CYCLES_5;
+		case 5: return ADC_SAMPLETIME_39CYCLES_5;		// Для CsI(Tl)
 		case 6: return ADC_SAMPLETIME_79CYCLES_5;
 		case 7: return ADC_SAMPLETIME_814CYCLES_5;
 		default: return ADC_SAMPLETIME_1CYCLE_5;
@@ -203,6 +203,8 @@ uint32_t samplingTm(uint8_t smplTm) {
  *	14 - Перегрузка дозиметра
  *	15 - Калибровка батареи
  *	16 - Низкий заряд батареи
+ *	17 - Очистка истории
+ *	18 - Отключение тревоги
  */
 
 void logUpdate(logTypes_t act) {
@@ -1471,10 +1473,10 @@ uint32_t ADC_Switch_Channel(uint32_t channel) {
 void TVMeasure(void) {
 	if (dataType == onlyDozimeter ) {
 		//UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
-		MX_ADC4_Init();
+		MX_ADC4_Init();													// Включаем АЦП
 		currTemperature = ADC_Switch_Channel(ADC_CHANNEL_TEMPSENSOR);	// Канал для измерения температуры
 		currVoltage = ADC_Switch_Channel(ADC_CHANNEL_7);				// Канал для измерения напряжения.
-		HAL_ADC_DeInit(&hadc4);											// Для снижения потребления
+		HAL_ADC_DeInit(&hadc4);											// Выключаем АЦП, для снижения потребления
 	} else {
 		/* Измерение температуры и напряжения в режиме спектрометра */
 		sendDataTypes_t tmp_data_type = dataType;						// Сохраним текущий режим.
