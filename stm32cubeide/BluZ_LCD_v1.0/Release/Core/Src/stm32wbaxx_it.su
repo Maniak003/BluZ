@@ -11,7 +11,7 @@
 ../Core/Src/stm32wbaxx_it.c:228:6:RCC_IRQHandler	0	static
 ../Core/Src/stm32wbaxx_it.c:258:6:EXTI15_IRQHandler	0	static
 ../Core/Src/stm32wbaxx_it.c:280:6:GPDMA1_Channel0_IRQHandler	8	static
-../Core/Src/stm32wbaxx_it.c:338:6:TIM16_IRQHandler	0	static
-../Core/Src/stm32wbaxx_it.c:364:6:RADIO_IRQHandler	8	static,ignoring_inline_asm
-../Core/Src/stm32wbaxx_it.c:386:6:WKUP_IRQHandler	0	static
-../Core/Src/stm32wbaxx_it.c:400:6:HASH_IRQHandler	16	static,ignoring_inline_asm
+../Core/Src/stm32wbaxx_it.c:315:6:TIM16_IRQHandler	0	static
+../Core/Src/stm32wbaxx_it.c:341:6:RADIO_IRQHandler	8	static,ignoring_inline_asm
+../Core/Src/stm32wbaxx_it.c:363:6:WKUP_IRQHandler	0	static
+../Core/Src/stm32wbaxx_it.c:377:6:HASH_IRQHandler	16	static,ignoring_inline_asm

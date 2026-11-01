@@ -286,41 +286,14 @@ void GPDMA1_Channel0_IRQHandler(void)
   /* USER CODE BEGIN GPDMA1_Channel0_IRQn 1 */
 	if (dataType > onlyDozimeter) {
 		spectrometerPulse++;
-		/*
-		* 0 - 1024 канала
-		* 1 - 2048 каналов
-		* 2 - 4096 каналов
-		*/
-		//switch (resolutionSpecter) {
-		/* 1024 */
-		//case resolution1024:
-		//	tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 2) & 0x3FF;
-		//	break;
-		/* 2048 */
-		//case resolution2048:
-		//	tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 1) & 0x7FF;
-		//	break;
-		/* 4096 */
-		//case resolution4096:
-		tmpLevel = TVLevel[0] + OFFSET_CHAN;
+		tmpLevel = (TVLevel[0] & 0xFFF) + OFFSET_CHAN;
 		if (tmpLevel > 0xFFF) {
 			tmpLevel = 0xFFF;
 		}
-		//	break;
-		//default:
-		//	tmpLevel = ((TVLevel[0] + OFFSET_CHAN) >> 2) & 0x3FF;
-		//	break;
-		//}
 
 		/* Счетчик 32 разряда */
 		if (tmpSpecterBuffer[tmpLevel] < 0xFFFFFFFF) {
 			tmpSpecterBuffer[tmpLevel]++;
-			/* Автоматическое изменение разрядности канала если данные не помещаются */
-			//if (tmpSpecterBuffer[tmpLevel] >= limitChan) {
-			//	bitsOfChannal++;
-			//	CoefChan = 65535.0 / (double) bitsOfChannal;
-			//	limitChan = (1 << bitsOfChannal) - 1;
-			//}
 		}
 
 		/* Накопление спектра при превышении уровней */
