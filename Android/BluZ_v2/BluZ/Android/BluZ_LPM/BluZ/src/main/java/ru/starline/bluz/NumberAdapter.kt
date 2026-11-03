@@ -22,14 +22,15 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
  */
 class NumberAdapter(fragment: FragmentActivity) : FragmentStateAdapter(fragment) {
 
-    override fun getItemCount(): Int = 5
+    override fun getItemCount(): Int = 6
 
     override fun createFragment(position: Int): Fragment = when (position) {
         0 -> SpectrumFragment()         // Спектр
-        1 -> HistoryFragment()         // История
-        2 -> DoseFragment()             // Дозиметр
-        3 -> BluZMapFragment()          // Карта
-        4 -> SettingsFragment()         // Настройки
+        1 -> SpectrogrammaFragment()    // Спектрограмма
+        2 -> HistoryFragment()          // История
+        3 -> DoseFragment()             // Дозиметр
+        4 -> BluZMapFragment()          // Карта
+        5 -> SettingsFragment()         // Настройки
         else -> SpectrumFragment()
     }
 }

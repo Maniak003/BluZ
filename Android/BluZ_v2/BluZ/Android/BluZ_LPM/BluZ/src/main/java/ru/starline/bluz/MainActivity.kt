@@ -997,6 +997,7 @@ public class MainActivity : FragmentActivity() {
 
         val tabSpecs = listOf(
             BzTabSpec(R.id.tab_spectrum, R.drawable.ic_nav_spectrum, "Спектр"),
+            BzTabSpec(R.id.tab_s_gram_tab, R.drawable.ic_nav_s_gram, "S-gram"),
             BzTabSpec(R.id.tab_history, R.drawable.ic_nav_spectrum, "Alarm"),
             BzTabSpec(R.id.tab_dose,     R.drawable.ic_nav_dose,     "Доза"),
             BzTabSpec(R.id.tab_map,      R.drawable.ic_nav_map,      "Карта"),
@@ -1006,6 +1007,7 @@ public class MainActivity : FragmentActivity() {
 
         val railSpecs = listOf(
             BzTabSpec(R.id.rail_spectrum, R.drawable.ic_nav_spectrum, "Спектр"),
+            BzTabSpec(R.id.tab_s_gram_rail, R.drawable.ic_nav_s_gram, "S-gram"),
             BzTabSpec(R.id.rail_history, R.drawable.ic_nav_spectrum, "Alarm"),
             BzTabSpec(R.id.rail_dose,     R.drawable.ic_nav_dose,     "Доза"),
             BzTabSpec(R.id.rail_map,      R.drawable.ic_nav_map,      "Карта"),

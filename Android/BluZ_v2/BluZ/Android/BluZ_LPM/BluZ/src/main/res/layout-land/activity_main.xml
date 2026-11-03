@@ -239,6 +239,7 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <include layout="@layout/item_bz_nav_rail" android:id="@+id/rail_spectrum" />
+        <include layout="@layout/item_bz_s_gram_rail" android:id="@+id/tab_s_gram_rail" />
 
         <include
             android:id="@+id/rail_history"

@@ -251,6 +251,13 @@
             android:layout_weight="1" />
 
         <include
+            android:id="@+id/tab_s_gram_tab"
+            layout="@layout/item_bz_nav_tab"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <include
             android:id="@+id/tab_history"
             layout="@layout/item_bz_nav_tab"
             android:layout_width="0dp"

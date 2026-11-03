@@ -183,7 +183,7 @@ class globalObj {
     public lateinit var scanButton: Button
     public lateinit var btnSpecterSS: ImageButton
     public var btnSpecterSSisInit: Boolean = false
-    public var specterRunning: Boolean = false        // true = идёт запись спектра (иконка стоп, фон red)
+    public var specterRunning: Boolean = false          // true = идёт запись спектра (иконка стоп, фон red)
     public lateinit var btnReadFromDevice: Button
     public lateinit var buttonAlarmOff: Button          // Кнопка включения/выключения тревоги.
     public lateinit var btnWriteToDevice: Button
@@ -194,7 +194,7 @@ class globalObj {
     public lateinit var txtStat2: TextView
     public lateinit var txtStat3: TextView
     public lateinit var txtCompMED: TextView
-    public var txtIsotopInfo: TextView? = null         // Текст для вывода данных об изотопе (внутри chart card на Spectrum tab)
+    public var txtIsotopInfo: TextView? = null          // Текст для вывода данных об изотопе (внутри chart card на Spectrum tab)
     public var txtHistoryIsotop: TextView? = null       // Название изотопа для закладки истории
     public lateinit var  enrgCalc: energyCalculator
     public var focusSetVw: Int = 0                      // Выбор элемента в закладке настроек.
@@ -1431,7 +1431,7 @@ class globalObj {
         val drawable = ContextCompat.getDrawable(GO.mainContext, R.drawable.ic_gps_point)!!.mutate()
         bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
         canvas = Canvas(bitmap)
-        for (i in 0 until imp.size) {
+        for (i in imp.indices) {
             val hue = i * 270f / imp.size  // От 0 до ~270 градусов
             val hsv = floatArrayOf(hue, 1.0f, 1.0f)  // Насыщенность и яркость = 100%
             DrawableCompat.setTint(drawable, Color.HSVToColor(hsv))
