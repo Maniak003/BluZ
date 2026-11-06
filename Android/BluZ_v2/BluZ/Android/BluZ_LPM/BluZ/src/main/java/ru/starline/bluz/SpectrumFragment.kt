@@ -168,7 +168,7 @@ class SpectrumFragment : Fragment() {
 
         val CBSMA: CheckBox = view.findViewById(R.id.cbSMA)
         val CBMEDIAN: CheckBox = view.findViewById(R.id.cbMED)
-
+        val CBMARKER: CheckBox = view.findViewById(R.id.cbMarker)
         var calState: Int = 0
         //val matrx = Mtrx()
 
@@ -286,6 +286,7 @@ class SpectrumFragment : Fragment() {
         CBSMA.setOnCheckedChangeListener { _, isChecked ->
             if (GO.propButtonInit) {
                 GO.drawSPECTER.flagSMA = isChecked
+                GO.drawSPECTER.firstCompare = true
                 if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                     GO.drawSPECTER.clearSpecter()
                     GO.drawSPECTER.redrawSpecter(GO.specterType)
@@ -298,6 +299,7 @@ class SpectrumFragment : Fragment() {
         CBMEDIAN.setOnCheckedChangeListener { _, isChecked ->
             if (GO.propButtonInit) {
                 GO.drawSPECTER.flagMEDIAN = isChecked
+                GO.drawSPECTER.firstCompare = true
                 if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                     GO.drawSPECTER.clearSpecter()
                     GO.drawSPECTER.redrawSpecter(GO.specterType)
@@ -306,6 +308,14 @@ class SpectrumFragment : Fragment() {
                 }
             }
         }
+
+        CBMARKER.setOnCheckedChangeListener { _, isChecked ->
+            if (GO.propButtonInit) {
+                GO.drawSPECTER.flagMARKER = isChecked
+                GO.drawSPECTER.firstCompare = true
+            }
+        }
+
 
         GO.btnSpecterSS = view.findViewById(R.id.buttonSpecterSS)
         GO.btnSpecterSSisInit = true

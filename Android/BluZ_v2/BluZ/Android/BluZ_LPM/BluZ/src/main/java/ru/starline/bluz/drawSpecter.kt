@@ -4,10 +4,12 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Build
 import android.text.Html
 import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.collection.emptyLongSet
 import androidx.core.text.HtmlCompat
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -47,12 +49,23 @@ class drawSpecter {
     private lateinit var specBitmap: Bitmap
     private lateinit var specCanvas: Canvas
     public lateinit var imgView : ImageView
+    @OptIn(ExperimentalUnsignedTypes::class)
+    public var sGrammBuffer = Array(2048) { UIntArray(1024) }
+    @OptIn(ExperimentalUnsignedTypes::class)
+    val rowsSGramm = sGrammBuffer.size
+    @OptIn(ExperimentalUnsignedTypes::class)
+    val colsSGramm = sGrammBuffer[0].size
+    var sGrammIndex: Int = 0
     public var mlemBuffer = DoubleArray(4096)
+    public var oldSpecter = DoubleArray(4096)
+    public var deltaSpectr = DoubleArray(4096)
+    public var firstCompare = true
     public var spectrData: DoubleArray = DoubleArray(4096)
     public var tmpSpecterData: DoubleArray = DoubleArray(4096)
     public var flagSMA: Boolean = false
     public var flagMEDIAN: Boolean = false
     public var flagMLEM: Boolean = false
+    public var flagMARKER: Boolean = false
     public var ResolutionSpectr: Int = 1024;
     public var koefLog: Double = 1.0
     public var koefLin: Double = 1.0
@@ -104,18 +117,27 @@ class drawSpecter {
      *  логируется для отладки. Реальное разрешение — [ResolutionSpectr].
      * @param offSetX Резерв на будущее, не используется в текущей реализации.
      */
+    @RequiresApi(Build.VERSION_CODES.Q)
+    @OptIn(ExperimentalUnsignedTypes::class)
     fun redrawSpecter(spType: Int) {
         if (!this::specBitmap.isInitialized) {
             Log.w("BluZ-BT", "specBitmap not initialized, call init() first")
             return
         }
-        Log.d("BluZ-BT", "Type: $spType HSize: $HSize VSize: $VSize, Res: $ResolutionSpectr")
-        //Log.d("BluZ-BT", "Draw specter.")
-        val paintLin: Paint = Paint()
-        val paintLog: Paint = Paint()
+        //Log.d("BluZ-BT", "Type: $spType HSize: $HSize VSize: $VSize, Res: $ResolutionSpectr")
+        Log.i("BluZ-BT", "Draw specter.")
+        val paintMarker = Paint()
+        val paintLin = Paint()
+        val paintLog = Paint()
         val paintFoneLin = Paint()
         val paintFoneLog = Paint()
-
+        val hasCoef = GO.propCPS2UR > 0f
+        val doze: Float
+        if (hasCoef) {
+            doze = kotlin.math.round(GO.pulsePerSec.toFloat() * GO.propCPS2UR * 100f) / 100f
+        } else {
+            doze = GO.pulsePerSec.toFloat()
+        }
         /*
          *  Подготовка массива для отрисовки данных
          *  Функии фильтрации
@@ -148,8 +170,30 @@ class drawSpecter {
                         indexMF = 0
                     }
                 }
+                /* Сохранение дельты относительно предыдущего спектра */
+                if (firstCompare) {
+                    oldSpecter[ttt] = tmpSpecterData[ttt]
+                    deltaSpectr[ttt] = 0.0
+                } else {
+                    deltaSpectr[ttt] = tmpSpecterData[ttt] - oldSpecter[ttt]
+                    oldSpecter[ttt] = tmpSpecterData[ttt]
+                    /* Запись спектрограммы */
+                    if (GO.drawSGinit) {
+                        sGrammBuffer[sGrammIndex][ttt] = deltaSpectr[ttt].toUInt()
+                    }
+                }
             } else {
                 tmpSpecterData[ttt] = 0.0       // Удалим данные из не используемых каналов
+            }
+        }
+        if (flagMARKER) {
+            firstCompare = false
+            sGrammIndex++
+            if (sGrammIndex >= rowsSGramm) {
+                sGrammIndex = 0
+            }
+            if (GO.drawSGinit) {
+                GO.drawSG.redraw()
             }
         }
 
@@ -182,6 +226,8 @@ class drawSpecter {
                 paintFoneLog.strokeWidth = 4.0f //xSize.toFloat() * 2
             }
         }
+
+        paintMarker.strokeWidth = paintLin.strokeWidth * 2
 
         if (GO.specterGraphType == 0) {         // Линейный стиль графика
             paintLin.color = GO.ColorLin        // Цвет для отображения линейного спектра
@@ -260,12 +306,29 @@ class drawSpecter {
                 /* Логарифмический график */
                 specCanvas.drawLine((idx * xSize).toFloat(), Ylog, (idx * xSize).toFloat(),VSize.toFloat(), paintLog )
             }
+            /* Требуется подсветка изменений */
+            if (flagMARKER) {
+                if (deltaSpectr[idx1] > 0) {
+                    if (hasCoef) {
+                        paintMarker.color = when {
+                            doze < GO.propLevel1 -> Color.GREEN
+                            doze < GO.propLevel2 -> Color.YELLOW
+                            doze < GO.propLevel3 -> Color.RED
+                            else -> Color.MAGENTA
+                        }
+                    } else {
+                        paintMarker.color = Color.MAGENTA
+                    }
+                    specCanvas.drawPoint((idx * xSize).toFloat(), Ylog, paintMarker)
+                }
+            }
             //if ((Ylin.toDouble() < VSize) && (GO.specterGraphType == 0)) {
                 oldYlin = Ylin.toDouble()
                 oldYlog = Ylog.toDouble()
                 oldX = idx.toDouble()
             //}
         }
+
         /* Тестовая линия */
         //specCanvas.drawLine(0.0f, VSize.toFloat(), HSize.toFloat(),VSize.toFloat(), paintLin )
 
@@ -289,7 +352,7 @@ class drawSpecter {
                 spectrData,
                 false,
                 GO.spectrometerTime.toDouble(),
-                maxEnergy.toFloat()
+                maxEnergy
             ).toFloat()
         } else {
             GO.compMED = 0f

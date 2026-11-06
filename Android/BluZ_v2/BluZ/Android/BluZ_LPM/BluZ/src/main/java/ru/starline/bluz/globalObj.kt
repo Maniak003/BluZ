@@ -14,6 +14,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ImageButton
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -38,6 +39,7 @@ import kotlin.math.sqrt
 import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.runtime.image.ImageProvider
+import ru.starline.bluz.GO
 import ru.starline.bluz.data.AppDatabase
 import ru.starline.bluz.data.dao.DosimeterDao
 import ru.starline.bluz.data.entity.TrackDetail
@@ -149,6 +151,9 @@ class globalObj {
     public var LEMAC: String = ""               // default 00:08:E1:2A:12:34
     public lateinit var mainContext: Context
     public lateinit var drawSPECTER: drawSpecter
+    public lateinit var drawSG: drawSGramm
+    public var drawSGinit = false
+    public lateinit var sGramView: ImageView
     public lateinit var drawHISTORY: drawHistory
     public lateinit var drawDOZIMETER: drawDozimeter
     public lateinit var drawCURSOR: drawCursor

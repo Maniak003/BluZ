@@ -266,6 +266,18 @@
 
             <!-- Hidden legacy IDs referenced by old code paths -->
 
+            <CheckBox
+                android:id="@+id/cbMarker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="-10dp"
+                android:layout_marginBottom="-10dp"
+                android:buttonTint="@color/bz_accent"
+                android:text="MARK"
+                android:textColor="@color/bz_text_dim"
+                android:textSize="10sp" />
+
             <Space
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

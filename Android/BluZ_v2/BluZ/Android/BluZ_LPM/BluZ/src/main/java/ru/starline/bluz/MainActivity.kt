@@ -58,6 +58,7 @@ import kotlin.math.round
 import kotlin.system.exitProcess
 import androidx.core.content.edit
 import android.view.ViewGroup.LayoutParams
+import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import java.nio.ByteBuffer
 import androidx.viewpager2.widget.ViewPager2
@@ -255,6 +256,7 @@ public class MainActivity : FragmentActivity() {
     }*/
 
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     @OptIn(ExperimentalUnsignedTypes::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -546,6 +548,7 @@ public class MainActivity : FragmentActivity() {
      *
      * suspend collect не пропускает фреймы — фреймы приходят примерно раз в секунду.
      */
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun observeDeviceFrames() {
         lifecycleScope.launch {
             GO.BTT.deviceFrames.collect { frame ->
@@ -696,6 +699,7 @@ public class MainActivity : FragmentActivity() {
      *
      * Вызывается из подписчика [BluetoothInterface.deviceFrames] в [observeDeviceFrames].
      */
+    @RequiresApi(Build.VERSION_CODES.Q)
     private suspend fun applyFrameToUi(frame: DeviceFrame) {
         /* Mark indicator green on good data — new pill */
         val tint = ContextCompat.getColor(this, R.color.bz_bt_on)
@@ -1015,6 +1019,7 @@ public class MainActivity : FragmentActivity() {
             BzTabSpec(R.id.rail_exit,     R.drawable.ic_bz_exit,      "Выход")
         )
 
+        @RequiresApi(Build.VERSION_CODES.Q)
         fun wireTabs(container: View?, specs: List<BzTabSpec>) {
             container ?: return
             specs.forEachIndexed { index, spec ->
@@ -1027,6 +1032,11 @@ public class MainActivity : FragmentActivity() {
                         performExit()
                     } else if (GO.viewPager.currentItem != index) {
                         GO.viewPager.setCurrentItem(index, false)
+                        if (index == 1) {
+                            if (GO.drawSGinit) {
+                                GO.drawSG.redraw()
+                            }
+                        }
                     }
                 }
             }
