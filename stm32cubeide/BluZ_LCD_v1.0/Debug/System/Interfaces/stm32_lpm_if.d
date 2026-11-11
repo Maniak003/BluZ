@@ -36,6 +36,10 @@ System/Interfaces/stm32_lpm_if.o: ../System/Interfaces/stm32_lpm_if.c \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_spi.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_spi_ex.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h \
+ ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h \
  ../Core/Inc/app_conf.h ../System/Interfaces/hw_if.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h \
  ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_ll_exti.h \
@@ -77,6 +81,10 @@ System/Interfaces/stm32_lpm_if.o: ../System/Interfaces/stm32_lpm_if.c \
  ../System/Modules/Flash/simple_nvm_arbiter_common.h ../Core/Inc/main.h \
  ../Utilities/tim_serv/stm32_timer.h ../Utilities/sequencer/stm32_seq.h \
  ../Utilities/lpm/tiny_lpm/stm32_lpm.h ../Core/Inc/LTC1662.h \
+ ../Core/Inc/sharp_lcd.h ../Core/Inc/font_5x8.h ../Core/Inc/Arial_18x27.h \
+ ../Core/Inc/main_display.h ../Core/Inc/bluetooth_icon.h \
+ ../Core/Inc/Battary-AC_icon.h ../Core/Inc/airplane_icon.h \
+ ../Core/Inc/settings_icon.h ../Core/Inc/Dinamic_icon.h \
  ../System/Modules/scm.h ../System/Interfaces/stm32_lpm_if.h \
  ../System/Config/LowPower/peripheral_init.h
 ../Core/Inc/main.h:
@@ -117,6 +125,10 @@ System/Interfaces/stm32_lpm_if.o: ../System/Interfaces/stm32_lpm_if.c \
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rng_ex.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_rtc_ex.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_spi.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_spi_ex.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim.h:
+../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_tim_ex.h:
 ../Core/Inc/app_conf.h:
 ../System/Interfaces/hw_if.h:
 ../Drivers/STM32WBAxx_HAL_Driver/Inc/stm32wbaxx_hal_def.h:
@@ -168,6 +180,15 @@ System/Interfaces/stm32_lpm_if.o: ../System/Interfaces/stm32_lpm_if.c \
 ../Utilities/sequencer/stm32_seq.h:
 ../Utilities/lpm/tiny_lpm/stm32_lpm.h:
 ../Core/Inc/LTC1662.h:
+../Core/Inc/sharp_lcd.h:
+../Core/Inc/font_5x8.h:
+../Core/Inc/Arial_18x27.h:
+../Core/Inc/main_display.h:
+../Core/Inc/bluetooth_icon.h:
+../Core/Inc/Battary-AC_icon.h:
+../Core/Inc/airplane_icon.h:
+../Core/Inc/settings_icon.h:
+../Core/Inc/Dinamic_icon.h:
 ../System/Modules/scm.h:
 ../System/Interfaces/stm32_lpm_if.h:
 ../System/Config/LowPower/peripheral_init.h:
