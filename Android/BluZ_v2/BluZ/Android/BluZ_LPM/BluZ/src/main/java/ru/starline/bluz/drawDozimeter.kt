@@ -88,7 +88,7 @@ class drawDozimeter {
         var dozKoef: Double
         var SMAWindow: Int = 20
         var dozPaint: Paint = Paint()
-        dozPaint.color = GO.ColorDosimeter        // Цвет для отображения статистики дозиметра
+        dozPaint.color = GO.ColorDosimeter              // Цвет для отображения статистики дозиметра
         dozPaint.strokeWidth = 2.0f
         var dozPaintSMA: Paint = Paint()
         dozPaintSMA.color = GO.ColorDosimeterSMA        // Цвет для отображения статистики дозиметра

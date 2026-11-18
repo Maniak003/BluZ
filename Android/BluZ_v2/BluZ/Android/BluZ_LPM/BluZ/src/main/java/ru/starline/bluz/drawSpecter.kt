@@ -50,7 +50,7 @@ class drawSpecter {
     private lateinit var specCanvas: Canvas
     public lateinit var imgView : ImageView
     @OptIn(ExperimentalUnsignedTypes::class)
-    public var sGrammBuffer = Array(2048) { UIntArray(1024) }
+    public var sGrammBuffer = Array(2048) { DoubleArray(1024) }
     @OptIn(ExperimentalUnsignedTypes::class)
     val rowsSGramm = sGrammBuffer.size
     @OptIn(ExperimentalUnsignedTypes::class)
@@ -179,7 +179,7 @@ class drawSpecter {
                     oldSpecter[ttt] = tmpSpecterData[ttt]
                     /* Запись спектрограммы */
                     if (GO.drawSGinit) {
-                        sGrammBuffer[sGrammIndex][ttt] = deltaSpectr[ttt].toUInt()
+                        sGrammBuffer[sGrammIndex][ttt] = deltaSpectr[ttt]
                     }
                 }
             } else {
@@ -255,7 +255,7 @@ class drawSpecter {
             }
         }
         /* Поиск максимального значения для масштабирования */
-        for (idx in GO.rejectChann .. ResolutionSpectr - 1) {
+        for (idx in GO.rejectChann..<ResolutionSpectr) {
             if (maxYlin < tmpSpecterData[idx]) {
                 maxYlin = tmpSpecterData[idx]
             }
