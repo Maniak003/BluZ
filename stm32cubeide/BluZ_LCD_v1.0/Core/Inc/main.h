@@ -76,6 +76,7 @@ extern "C" {
  * для разрешения 4096
  * 8192 + 104 =  34 * 244(MTU)
  */
+#define PROTOVERSION 0x0001									/* Версия протокола */
 #define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 #define CRC_SIZE 1											/* размер в uint16_t */
 #define MTU_SIZE DATA_NOTIFICATION_MAX_PACKET_SIZE			/* Размер mtu в uint8_t */

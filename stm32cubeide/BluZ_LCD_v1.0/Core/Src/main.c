@@ -65,6 +65,7 @@ uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval
 uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
 bool noSendProgress = true;
+uint8_t dataSize = 0;
 /*
  *	Точность измерения дозиметра
  *	1 sigma <10% -  100
@@ -517,8 +518,8 @@ int main(void)
 
 	  transmitBuffer[0] = ((uint16_t) '<' & 0xFF) | (((uint16_t)'B' << 8) & 0xFF00);
 	  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((dataType << 8) & 0xFF00);
-	  transmitBuffer[2] = ((uint16_t) inhibitAlarm & 1);	// Состояние флага отключения тревоги.
-	  transmitBuffer[3] = 0;
+	  transmitBuffer[2] = ((uint16_t) inhibitAlarm & 1) | ((dataSize << 8) & 0xFF00);	// Состояние флага отключения тревоги.
+	  transmitBuffer[3] = PROTOVERSION;
 
 	  uint16_t idxCS = 0 ;
 	  int kkk = 0;
