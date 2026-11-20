@@ -611,6 +611,12 @@ int main(void)
 		  }
 	  }
 	  dataType = tmpDataType;	// Востановление исходного типа данных после передачи истории
+	  if (requestHardwareInfo) {
+		  /* Ответ hw info - только заголовок, данные дозиметра и лог не передаются (остаток кадра нулевой) */
+		  for (uint16_t jjj = HEADER_OFFSET; jjj < idxCS; jjj++) {
+			  transmitBuffer[jjj] = 0;
+		  }
+	  } else {
 		/* Подготавливаем данные дозиметра */
 	  uint16_t ddd = indexDozimetrBufer;
 	  for (uint16_t jjj = HEADER_OFFSET; jjj < HEADER_OFFSET + SIZE_DOZIMETR_BUFER; jjj++) {
@@ -635,6 +641,7 @@ int main(void)
 		  if (ddd >= LOG_BUFER_SIZE) {
 			  ddd = 0;
 		  }
+	  }
 	  }
 
 	  /* Общее количество импульсов */
