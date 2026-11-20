@@ -15,6 +15,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.SystemClock
 import android.text.TextUtils
 import android.util.Log
 import android.widget.EditText
@@ -61,13 +62,16 @@ import kotlin.system.exitProcess
  *  2. `requestMtu(251)` → onMtuChanged
  *  3. `discoverServices` → onServicesDiscovered
  *  4. `setCharacteristicNotification(RX, true)` — готово к приёму
+ *  5. onDescriptorWrite → команда 10 (hw info): до ответа остальные фреймы игнорируются; если версия
+ *     протокола не 1 или ответа нет за 6 с — прибор отклоняется ([rejectDevice]), команды ему не шлются.
+ *     [BleStatus.Connected] выставляется только после ответа с поддерживаемой версией
  *
  * **Формат фрейма** — см. DEVELOPER_GUIDE.md раздел 5.2 или комментарии в [globalObj].
  * Многопакетный (MTU 251, payload 248): первый байт каждого MTU-пакета — порядковый номер
  * (0 = старт нового фрейма). [processIncomingPacket] собирает их в общий буфер и при
  * получении ожидаемого финального пакета эмитит [DeviceFrame].
  *
- * **Команды отправки** — [sendCommand]. Командные коды 0..8 описаны в DEVELOPER_GUIDE.md
+ * **Команды отправки** — [sendCommand]. Командные коды 0..10 описаны в DEVELOPER_GUIDE.md
  * раздел 5.3. Для команд с параметрами заполняется [sendBuffer] заранее.
  *
  * **Reconnect.** [GO.tmFull] (`intervalTimer`) каждые 10 секунд проверяет [connected];
@@ -87,6 +91,8 @@ class BluetoothInterface {
     private var writeBuffer: ArrayList<ByteArray>? = null
     private val MAX_MTU: Int = 251
     private val payloadSize: Int = MAX_MTU - 3
+    private val SUPPORTED_PROTOCOL_VERSION: UInt = 1u
+    private val HW_INFO_TIMEOUT_MS: Long = 6000L
     private var writePending = false
     var connected: Boolean = false
 
@@ -272,11 +278,82 @@ class BluetoothInterface {
         }
         Log.i("BluZ-BT", "Try gatt connect.")
         GO.drawLOG.appendAppLogs("Try gatt connect.", 1)
+        resetHandshake()
         _status.tryEmit(BleStatus.InitBLE)
         gatt = device!!.connectGatt(GO.mainContext, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
         if (gatt == null) {
             Log.i("BluZ-BT", "Error: Gatt create failed.")
             GO.drawLOG.appendAppLogs("Gatt create failed.", 0)
+        }
+    }
+
+    // --- Handshake hw info ---
+
+    /* Рукопожатие: после подключения запрашиваем hw info, до ответа остальные фреймы игнорируются */
+    @Volatile private var hwState = HwInfoState.IDLE
+    private var hwRequestedAt = 0L
+
+    /* Переходы состояния рукопожатия идут из потоков таймера и GATT, поэтому под общей блокировкой */
+    /** Сброс рукопожатия: при каждом разрыве и перед каждым новым подключением. */
+    @Synchronized
+    private fun resetHandshake() {
+        hwState = HwInfoState.IDLE
+    }
+
+    /**
+     * Переводит рукопожатие в ожидание ответа hw info.
+     *
+     * @return false, если рукопожатие в этом соединении уже начато (повторный `onDescriptorWrite`)
+     */
+    @Synchronized
+    private fun beginHandshake(): Boolean {
+        if (hwState != HwInfoState.IDLE) return false
+        hwRequestedAt = SystemClock.elapsedRealtime()
+        hwState = HwInfoState.PENDING
+        return true
+    }
+
+    /** Вызывается тиком [MyTimerTask]: если ответа на hw info нет дольше [HW_INFO_TIMEOUT_MS] - отказ. */
+    @Synchronized
+    fun checkHandshakeTimeout() {
+        if (hwState == HwInfoState.PENDING
+            && SystemClock.elapsedRealtime() - hwRequestedAt >= HW_INFO_TIMEOUT_MS) {
+            rejectDevice("Device did not answer the hardware info request. Please update the device firmware.")
+        }
+    }
+
+    /** Ответ на запрос hw info: запоминаем версию протокола и проверяем, что она нам известна. */
+    @Synchronized
+    private fun onHardwareInfo(version: UInt) {
+        if (hwState == HwInfoState.IDLE) return
+        GO.whVersInfo = version
+        GO.drawLOG.appendAppLogs("Proto version: $version", 1)
+        when {
+            version > SUPPORTED_PROTOCOL_VERSION ->
+                rejectDevice("Device protocol version $version is newer than the app supports. Please update the app.")
+            version < SUPPORTED_PROTOCOL_VERSION ->
+                rejectDevice("Device protocol version $version is not supported. Please update the device firmware.")
+            else -> {
+                hwState = HwInfoState.READY
+                _status.tryEmit(BleStatus.Connected)
+            }
+        }
+    }
+
+    /**
+     * Прибор не поддерживается (нет ответа или неизвестная версия): пишем пользователю и дальше
+     * игнорируем все данные. Соединение не рвём, иначе таймер переподключения будет
+     * повторять попытку бесконечно.
+     */
+    @Synchronized
+    private fun rejectDevice(message: String) {
+        hwState = HwInfoState.REJECTED
+        Log.w("BluZ-BT", message)
+        GO.drawLOG.appendAppLogs(message, 0)
+        MainScope().launch {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(GO.mainContext, message, Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -327,6 +404,7 @@ class BluetoothInterface {
                     connected = false
                     writePending = false
                     GO.configDataReady = false
+                    resetHandshake()
                     Log.i("BluZ-BT", "Disconnect.")
                     GO.drawLOG.appendAppLogs("Disconnect.", 1)
                     _status.tryEmit(BleStatus.Disconnected)
@@ -367,7 +445,10 @@ class BluetoothInterface {
                 Log.i("BluZ-BT", "Connect success.")
                 GO.drawLOG.appendAppLogs("Write characteristic Ok.", 3)
                 connected = true
-                _status.tryEmit(BleStatus.Connected)
+                if (beginHandshake()) {
+                    GO.drawLOG.appendAppLogs("Request HW info.", 1)
+                    sendCommand(10u)
+                }
             }
         }
 
@@ -468,6 +549,7 @@ class BluetoothInterface {
          */
         private fun processIncomingPacket(data: ByteArray, gatt: BluetoothGatt) {
             GO.drawLOG.appendAppLogs("onCharacteristicChanged", 5)
+            if (hwState == HwInfoState.REJECTED) return
             /* First packet of a new frame starts with <B> (60, 66, 62) */
             if (data[0].toUByte() == 60.toUByte()
                 && data[1].toUByte() == 66.toUByte()
@@ -486,7 +568,6 @@ class BluetoothInterface {
                     6 -> { numberMTU = 40; spectrumResolution = 0; historyResolution = 4096 }
                     7 -> { numberMTU = 1; spectrumResolution = 0; historyResolution = 0 }
                 }
-                GO.whVersInfo = data[6].toUInt() + (data[7].toUInt() shl 8)
                 totalPulses = ByteBuffer.wrap(data, 10, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                 pulsesPerSec = ByteBuffer.wrap(data, 14, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                 measurementTime = (data[18].toUByte().toUInt()
@@ -530,7 +611,12 @@ class BluetoothInterface {
             }
             GO.drawLOG.appendAppLogs("CS correct: $checkSum", 3)
             if (dataType == 7) {
-               GO.drawLOG.appendAppLogs("Proto version: ${data[7]}${data[6]}", 1)
+                onHardwareInfo(receiveData[6].toUInt() or (receiveData[7].toUInt() shl 8))
+                return
+            }
+            if (hwState != HwInfoState.READY) {
+                Log.d("BluZ-BT", "Frame ignored: hardware info not received yet")
+                return
             }
             gatt.readRemoteRssi()
             /* Decode hardware config from receiveData */
@@ -668,6 +754,7 @@ class BluetoothInterface {
     fun destroyDevice() {
         GO.drawLOG.appendAppLogs("BLE destroy.", 4)
         connected = false
+        resetHandshake()
         _status.tryEmit(BleStatus.Disconnected)
         if (gatt != null) {
             GO.drawLOG.appendAppLogs("gatt close.", 4)
@@ -731,10 +818,21 @@ class BluetoothInterface {
      *  - 7 — Передать реальное напряжение АКБ (параметр: float в `sendBuffer[4..7]`)
      *  - 8 — Очистить историю
      *  - 9 — Отключить тревогу временно
-     *  - 10- Вернуть настройки тревоги по умолчанию.
+     *  - 10 - Запрос hw info (ответ - фрейм типа 7 с версией протокола).
      *
      */
+    @Synchronized
     fun sendCommand(cmd: UByte) {
+        /* Отклонённому прибору команды не шлём */
+        if (hwState == HwInfoState.REJECTED) {
+            GO.drawLOG.appendAppLogs("Command $cmd not sent: device is not supported.", 0)
+            MainScope().launch {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(GO.mainContext, "Command not sent: the device is not supported.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            return
+        }
         sendBuffer[0] = '<'.code.toUByte()
         sendBuffer[1] = 'S'.code.toUByte()
         sendBuffer[2] = '>'.code.toUByte()
@@ -798,3 +896,6 @@ class BluetoothInterface {
         }
     }
 }
+
+/** Состояние рукопожатия hw info после подключения. */
+private enum class HwInfoState { IDLE, PENDING, READY, REJECTED }
