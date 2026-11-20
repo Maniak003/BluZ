@@ -1172,10 +1172,10 @@ fun recordTrackPoint() {
 startScan() → обнаружение устройства → initLeDevice()
   └── connectGatt()
       └── onConnectionStateChange(CONNECTED)
-          └── requestMtu(251)
-              └── onMtuChanged()
-                  └── discoverServices()
-                      └── onServicesDiscovered()
+          └── discoverServices()
+              └── onServicesDiscovered()
+                  └── requestMtu(251)
+                      └── onMtuChanged()
                           └── setCharacteristicNotification(RX, true)
                               └── Готов к приёму фреймов
 ```

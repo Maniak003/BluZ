@@ -302,9 +302,9 @@ Android уничтожает MainActivity → создаёт новую
 ```
 1. UI вызывает GO.BTT.initLeDevice() (с заполненным GO.LEMAC)
 2. BluetoothInterface.connectGatt(autoConnect=false)
-3. onConnectionStateChange(CONNECTED) → requestMtu(251)
-4. onMtuChanged → discoverServices
-5. onServicesDiscovered → setCharacteristicNotification(RX, true)
+3. onConnectionStateChange(CONNECTED) → discoverServices
+4. onServicesDiscovered → requestMtu(251)
+5. onMtuChanged → setCharacteristicNotification(RX, true) и запись CCCD
 6. onDescriptorWrite → команда 10 (hw info); до ответа остальные фреймы игнорируются,
    при версии протокола не 1 или без ответа прибор отклоняется (см. BLE_PROTOCOL.md);
    статус Connected выставляется только после ответа с поддерживаемой версией

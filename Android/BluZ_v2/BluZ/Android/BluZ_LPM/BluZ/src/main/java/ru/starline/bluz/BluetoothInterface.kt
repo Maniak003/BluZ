@@ -59,9 +59,9 @@ import kotlin.system.exitProcess
  *
  * **Жизненный цикл соединения** (см. [initLeDevice]):
  *  1. `connectGatt(autoConnect=false)` → onConnectionStateChange(CONNECTED)
- *  2. `requestMtu(251)` → onMtuChanged
- *  3. `discoverServices` → onServicesDiscovered
- *  4. `setCharacteristicNotification(RX, true)` — готово к приёму
+ *  2. `discoverServices` → onServicesDiscovered
+ *  3. `requestMtu(251)` → onMtuChanged
+ *  4. `setCharacteristicNotification(RX, true)` и запись CCCD — готово к приёму
  *  5. onDescriptorWrite → команда 10 (hw info): до ответа остальные фреймы игнорируются; если версия
  *     протокола не 1 или ответа нет за 6 с — прибор отклоняется ([rejectDevice]), команды ему не шлются.
  *     [BleStatus.Connected] выставляется только после ответа с поддерживаемой версией
@@ -240,8 +240,8 @@ class BluetoothInterface {
      * **Шаги:**
      *  1. Валидация MAC (длина 17, не начинается с 'X')
      *  2. `bluetoothAdapter.getRemoteDevice(mac).connectGatt(autoConnect=false)`
-     *  3. Дальше работает [gattCallback]: onConnectionStateChange → requestMtu(251) →
-     *     onMtuChanged → discoverServices → onServicesDiscovered → setCharacteristicNotification
+     *  3. Дальше работает [gattCallback]: onConnectionStateChange → discoverServices →
+     *     onServicesDiscovered → requestMtu(251) → onMtuChanged → setCharacteristicNotification
      *  4. Эмитит в [_status]: `Connecting` → `Connected`
      *
      * **Подводный камень.** Если уже было соединение (например при ping другого MAC) —
@@ -389,12 +389,6 @@ class BluetoothInterface {
                         Log.e("BluZ-BT", "Error: Discover service failed.")
                         GO.drawLOG.appendAppLogs("Discover service failed.", 0)
                     }
-                    if (!gatt.requestMtu(MAX_MTU)) {
-                        Log.e("BluZ-BT", "MTU set failed.")
-                        GO.drawLOG.appendAppLogs("MTU set failed.", 0)
-                    } else {
-                        GO.initBT = true
-                    }
                     if (!gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)) {
                         Log.e("BluZ-BT", "High priority set failed.")
                     }
@@ -434,6 +428,8 @@ class BluetoothInterface {
             if (!charFlag) GO.drawLOG.appendAppLogs("Characteristics not found.", 0)
             if (!gatt.requestMtu(MAX_MTU)) {
                 GO.drawLOG.appendAppLogs("Error set MTU.", 0)
+            } else {
+                GO.initBT = true
             }
         }
 
