@@ -61,7 +61,6 @@ uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval
 uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
 bool noSendProgress = true, requestHardwareInfo = false, requestSpectrum = false, requestDosimeter = false, requestState = false;
-uint8_t dataSize = 0;
 /*
  *	Точность измерения дозиметра
  *	1 sigma <10% -  100
@@ -536,7 +535,6 @@ int main(void)
 	  if (dataType != onlyDozimeter) {
 		  flags |= 0x02;										// Бит 1: спектрометр запущен
 	  }
-	  transmitBuffer[2] = flags | ((dataSize << 8) & 0xFF00);
 	  transmitBuffer[3] = PROTOVERSION;
 
 	  uint16_t idxCS = 0 ;
@@ -590,6 +588,8 @@ int main(void)
   		  idxCS = 244 / 2 - 1;
   		  break;
 	  }
+
+	  transmitBuffer[2] = flags | ((countMTU << 8) & 0xFF00);	// Байт 5: число MTU в кадре
 
 	  if (frameType != hardwareInformation) {
 

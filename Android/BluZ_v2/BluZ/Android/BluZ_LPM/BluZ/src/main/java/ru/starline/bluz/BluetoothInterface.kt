@@ -558,15 +558,17 @@ class BluetoothInterface {
                 dataType = data[3].toInt()
                 idxArray = 0
                 checkSum = 0u
+                /* Число MTU в кадре — байт 5 заголовка; кадр, не помещающийся в буфер, отбрасывается */
+                numberMTU = data[5].toInt() and 0xFF
+                if (numberMTU * (data.size - 4) > receiveData.size) numberMTU = 0
                 when (dataType) {
-                    0 -> { numberMTU = 6;  spectrumResolution = 0; historyResolution = 0 }
-                    1 -> { numberMTU = 16; spectrumResolution = 1024; historyResolution = 0 }
-                    2 -> { numberMTU = 23; spectrumResolution = 2048; historyResolution = 0 }
-                    3 -> { numberMTU = 40; spectrumResolution = 4096; historyResolution = 0 }
-                    4 -> { numberMTU = 16; spectrumResolution = 0; historyResolution = 1024 }
-                    5 -> { numberMTU = 23; spectrumResolution = 0; historyResolution = 2048 }
-                    6 -> { numberMTU = 40; spectrumResolution = 0; historyResolution = 4096 }
-                    7 -> { numberMTU = 1; spectrumResolution = 0; historyResolution = 0 }
+                    0, 7 -> { spectrumResolution = 0; historyResolution = 0 }
+                    1 -> { spectrumResolution = 1024; historyResolution = 0 }
+                    2 -> { spectrumResolution = 2048; historyResolution = 0 }
+                    3 -> { spectrumResolution = 4096; historyResolution = 0 }
+                    4 -> { spectrumResolution = 0; historyResolution = 1024 }
+                    5 -> { spectrumResolution = 0; historyResolution = 2048 }
+                    6 -> { spectrumResolution = 0; historyResolution = 4096 }
                 }
                 totalPulses = ByteBuffer.wrap(data, 10, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                 pulsesPerSec = ByteBuffer.wrap(data, 14, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
@@ -591,6 +593,7 @@ class BluetoothInterface {
                 Log.d("BluZ-BT", "Frame start: type=$dataType mtu=$numberMTU pulses=$totalPulses voltage=$batteryVoltage")
             }
 
+            if (numberMTU <= 0) return   // no valid frame start (bad size in header)
             numberMTU--
             /* Copy payload bytes (skip 5-byte footer; skip last 7 bytes on the final MTU for checksum) */
             val endOfData = if (numberMTU == 0) data.size - 7 else data.size - 5
