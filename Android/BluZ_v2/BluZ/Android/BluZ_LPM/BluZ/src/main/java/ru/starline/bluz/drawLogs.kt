@@ -165,6 +165,7 @@ class drawLogs {
                     16 -> "<font color=#FF2EE8>Low battery"
                     17 -> "Clear history"
                     18 -> "<font color=#FF2EE8>Need upgrade."
+                    19 -> "Request HW config."
                     else -> "Unknown: ${logData[idx].act.toInt()}"
                 }
                 //Log.i("BluZ-BT", "LT: " + GO.messTm.toString())

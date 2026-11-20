@@ -60,7 +60,8 @@ bool historyRequest = false, LEDflag = false, SoundFlag = false, VibroFlag = fal
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
 uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
-bool noSendProgress = true;
+bool noSendProgress = true, requestHardwareInfo = false;
+uint8_t dataSize = 0;
 /*
  *	Точность измерения дозиметра
  *	1 sigma <10% -  100
@@ -482,6 +483,9 @@ int main(void)
 	  uint16_t countMTU = 4;
 	  sendDataTypes_t tmpDataType;
 	  tmpDataType = dataType;
+	  if (requestHardwareInfo) {
+		  dataType = hardwareInformation;
+	  }
 	  if (historyRequest) {
 		  	  historyRequest = false;
 			switch (resolutionSpecter) {
@@ -503,8 +507,8 @@ int main(void)
 
 	  transmitBuffer[0] = ((uint16_t) '<' & 0xFF) | (((uint16_t)'B' << 8) & 0xFF00);
 	  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((dataType << 8) & 0xFF00);
-	  transmitBuffer[2] = ((uint16_t) inhibitAlarm & 1);	// Состояние флага отключения тревоги.
-	  transmitBuffer[3] = 0;
+	  transmitBuffer[2] = ((uint16_t) inhibitAlarm & 1) | ((dataSize << 8) & 0xFF00);	// Состояние флага отключения тревоги.
+	  transmitBuffer[3] = PROTOVERSION;
 
 	  uint16_t idxCS = 0 ;
 	  int kkk = 0;
@@ -552,47 +556,58 @@ int main(void)
   		  nm_channel = CHANNELS_4096;
   		  chanCnt = 1;
   		  break;
+  	  case hardwareInformation:
+  		  countMTU = 1;
+  		  idxCS = 244 / 2 - 1;
+  		  break;
 	  }
-	  if (dataType > onlyDozimeter) {							/* Нужно передавать спектр ? */
-		  /* Test */
-		  //for (int jjj = 0; jjj < nm_channel; jjj++) {
-		//	  tmpSpecterBuffer[jjj] = (uint32_t) jjj;
-		  //}
-		  /* Медианный фильтр для устранения артефактов ADC */
-		#ifdef MEDIAN
-		  MA[0] = 0;
-		  MA[1] = 0;
-		  MA[2] = 0;
-		  medianIdx = 0;
-		#endif
-		  double tmpLog;
-		  uint32_t tmpSpectrData;
-		  bool limFlag = false;
-		  /* Что будем передавать, историю или текущий спектр */
-		  const uint32_t * __restrict src = (dataType > dozimeterSpecter4096) ? historySpecterBuffer : tmpSpecterBuffer;
-		  uint16_t *dest = &transmitBuffer[SPECTER_OFFSET];
-		  for (int jjj = 0; jjj < nm_channel; jjj++) {
-			  tmpSpectrData = 0;
-			  for (int chIdx = 0; chIdx < chanCnt; chIdx++) {
-				  tmpSpectrData += src[kkk++];
-			  }
-			  limFlag |= (tmpSpectrData >= limitChan);
+
+	  if (requestHardwareInfo) {
+		  //requestHardwareInfo = false;
+		  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((hardwareInformation << 8) & 0xFF00);
+	  } else {
+
+		  if (dataType > onlyDozimeter) {							/* Нужно передавать спектр ? */
+			  /* Test */
+			  //for (int jjj = 0; jjj < nm_channel; jjj++) {
+			//	  tmpSpecterBuffer[jjj] = (uint32_t) jjj;
+			  //}
+			  /* Медианный фильтр для устранения артефактов ADC */
 			#ifdef MEDIAN
-			  MA[medianIdx] = tmpSpectrData;
-			  tmpSpectrData = (MA[0] < MA[1]) ? ((MA[1] < MA[2]) ? MA[1] : ((MA[2] < MA[0]) ? MA[0] : MA[2])) : ((MA[0] < MA[2]) ? MA[0] : ((MA[2] < MA[1]) ? MA[1] : MA[2]));
-			  if (++medianIdx >= 3) {
-				  medianIdx = 0;
-			  }
+			  MA[0] = 0;
+			  MA[1] = 0;
+			  MA[2] = 0;
+			  medianIdx = 0;
 			#endif
-			  /* Логарифмическое сжатие */
-			  tmpLog = log2(tmpSpectrData + 1) * (double) CoefChan;
-			  dest[jjj] = (uint16_t) tmpLog;
-		  }
-		  /* Если данные не помещаются - увеличим разрадность */
-		  if (limFlag) {
-			  bitsOfChannal++;
-			  CoefChan = 65535.0 / (double) bitsOfChannal;
-			  limitChan = (1 << bitsOfChannal) - 1;
+			  double tmpLog;
+			  uint32_t tmpSpectrData;
+			  bool limFlag = false;
+			  /* Что будем передавать, историю или текущий спектр */
+			  const uint32_t * __restrict src = (dataType > dozimeterSpecter4096) ? historySpecterBuffer : tmpSpecterBuffer;
+			  uint16_t *dest = &transmitBuffer[SPECTER_OFFSET];
+			  for (int jjj = 0; jjj < nm_channel; jjj++) {
+				  tmpSpectrData = 0;
+				  for (int chIdx = 0; chIdx < chanCnt; chIdx++) {
+					  tmpSpectrData += src[kkk++];
+				  }
+				  limFlag |= (tmpSpectrData >= limitChan);
+				#ifdef MEDIAN
+				  MA[medianIdx] = tmpSpectrData;
+				  tmpSpectrData = (MA[0] < MA[1]) ? ((MA[1] < MA[2]) ? MA[1] : ((MA[2] < MA[0]) ? MA[0] : MA[2])) : ((MA[0] < MA[2]) ? MA[0] : ((MA[2] < MA[1]) ? MA[1] : MA[2]));
+				  if (++medianIdx >= 3) {
+					  medianIdx = 0;
+				  }
+				#endif
+				  /* Логарифмическое сжатие */
+				  tmpLog = log2(tmpSpectrData + 1) * (double) CoefChan;
+				  dest[jjj] = (uint16_t) tmpLog;
+			  }
+			  /* Если данные не помещаются - увеличим разрадность */
+			  if (limFlag) {
+				  bitsOfChannal++;
+				  CoefChan = 65535.0 / (double) bitsOfChannal;
+				  limitChan = (1 << bitsOfChannal) - 1;
+			  }
 		  }
 	  }
 	  dataType = tmpDataType;	// Востановление исходного типа данных после передачи истории
@@ -718,6 +733,11 @@ int main(void)
 		  transmitBuffer[48] = (((uint16_t) bitsOfChannal & 0xFF) | (((uint16_t) currentSamplingTime & 0x7) << 8)) & 0b1111011111111111;
 	  }
 
+	  if (requestHardwareInfo) {
+		  requestHardwareInfo = false;
+		  tmpBTBuffer[242] = 0;
+		  tmpBTBuffer[243] = 0;
+	  }
 
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
 	  transmitBuffer[idxCS] = 0;

@@ -161,6 +161,7 @@ class globalObj {
     public lateinit var drawLOG: drawLogs
     public var appLogBuffer: String = ""
     public var appLogLevel: Int = 0
+    public var whVersInfo: UInt = 0u
     public var paddingLeft: Int = 0
     public var paddingRight: Int = 0
     public var xZoom: Float = 1.0f

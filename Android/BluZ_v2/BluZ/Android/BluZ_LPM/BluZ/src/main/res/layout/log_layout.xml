@@ -108,6 +108,15 @@
                 android:textAllCaps="false"
                 android:textColor="@color/bz_accent"
                 android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btnGetHWInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:backgroundTint="@color/bz_surface_3"
+                android:text="hwinf"
+                android:textColor="@color/bz_accent" />
         </LinearLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

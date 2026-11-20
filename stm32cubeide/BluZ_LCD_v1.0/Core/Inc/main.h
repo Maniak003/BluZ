@@ -113,7 +113,8 @@ typedef enum sendDataTypes {
 	dozimeterSpecter4096,
 	dozimeterHistory1024,
 	dozimeterHistory2048,
-	dozimeterHistory4096
+	dozimeterHistory4096,
+	hardwareInformation,
 } sendDataTypes_t;
 
 extern uint16_t MTUSizeValue;
@@ -145,6 +146,7 @@ extern double CoefChan;
 extern uint8_t currentSamplingTime;
 extern TIM_HandleTypeDef htim1;
 extern SPI_HandleTypeDef hspi1;
+extern bool requestHardwareInfo;
 
 typedef enum commandTx {
 	cmd_setup,					// 0
@@ -156,7 +158,8 @@ typedef enum commandTx {
 	cmd_find_device,			// 6
 	cmd_calibrate_batt,			// 7
 	cmd_clear_history,			// 8
-	cmd_infibit_alarm			// 9
+	cmd_infibit_alarm,			// 9
+	cmd_get_hardware_info		// 10
 } commantTx_t;
 
 typedef enum logTypes {
@@ -179,7 +182,8 @@ typedef enum logTypes {
 	lowBatt,					// 16
 	clearHistory,				// 17
 	inhibitAlarms,				// 18
-	unknownCommand				// 19
+	requestWHcfg,				// 19
+	unknownCommand				//
 } logTypes_t;
 
 struct LG {

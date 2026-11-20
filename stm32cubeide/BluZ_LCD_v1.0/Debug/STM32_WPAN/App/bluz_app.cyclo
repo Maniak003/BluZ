@@ -1,6 +1,6 @@
-../STM32_WPAN/App/bluz_app.c:105:6:BLUZ_Notification	46
-../STM32_WPAN/App/bluz_app.c:518:6:BLUZ_APP_EvtRx	3
-../STM32_WPAN/App/bluz_app.c:569:6:BLUZ_APP_Init	1
-../STM32_WPAN/App/bluz_app.c:589:13:BLUZ_Rx_SendNotification	2
-../STM32_WPAN/App/bluz_app.c:613:13:BLUZ_Tx_SendNotification	2
-../STM32_WPAN/App/bluz_app.c:640:9:sendData	7
+../STM32_WPAN/App/bluz_app.c:105:6:BLUZ_Notification	47
+../STM32_WPAN/App/bluz_app.c:536:6:BLUZ_APP_EvtRx	3
+../STM32_WPAN/App/bluz_app.c:587:6:BLUZ_APP_Init	1
+../STM32_WPAN/App/bluz_app.c:607:13:BLUZ_Rx_SendNotification	2
+../STM32_WPAN/App/bluz_app.c:631:13:BLUZ_Tx_SendNotification	2
+../STM32_WPAN/App/bluz_app.c:658:9:sendData	7

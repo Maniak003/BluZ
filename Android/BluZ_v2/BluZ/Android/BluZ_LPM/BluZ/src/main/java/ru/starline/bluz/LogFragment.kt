@@ -85,6 +85,13 @@ class LogFragment : Fragment() {
             GO.drawLOG.updateAppLogs()
         }
 
+        /* Запрос аппаратного конфига */
+        val btnGetHWInfo: Button = view.findViewById(R.id.btnGetHWInfo)
+        btnGetHWInfo.setOnClickListener {
+            GO.BTT.sendCommand(10u)
+            Toast.makeText(GO.mainContext, "Request HW info", Toast.LENGTH_SHORT).show()
+        }
+
         val btnClearLog: Button = view.findViewById(R.id.buttonClearLog)
         btnClearLog.setOnClickListener {
             GO.BTT.sendCommand(4u)

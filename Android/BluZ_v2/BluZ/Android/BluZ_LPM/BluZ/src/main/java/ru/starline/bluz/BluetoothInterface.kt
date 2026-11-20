@@ -484,7 +484,9 @@ class BluetoothInterface {
                     4 -> { numberMTU = 16; spectrumResolution = 0; historyResolution = 1024 }
                     5 -> { numberMTU = 23; spectrumResolution = 0; historyResolution = 2048 }
                     6 -> { numberMTU = 40; spectrumResolution = 0; historyResolution = 4096 }
+                    7 -> { numberMTU = 1; spectrumResolution = 0; historyResolution = 0 }
                 }
+                GO.whVersInfo = data[6].toUInt() + (data[7].toUInt() shl 8)
                 totalPulses = ByteBuffer.wrap(data, 10, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                 pulsesPerSec = ByteBuffer.wrap(data, 14, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                 measurementTime = (data[18].toUByte().toUInt()
@@ -527,6 +529,9 @@ class BluetoothInterface {
                 return
             }
             GO.drawLOG.appendAppLogs("CS correct: $checkSum", 3)
+            if (dataType == 7) {
+               GO.drawLOG.appendAppLogs("Proto version: ${data[7]}${data[6]}", 1)
+            }
             gatt.readRemoteRssi()
             /* Decode hardware config from receiveData */
             val hw = decodeHardwareConfig(receiveData)

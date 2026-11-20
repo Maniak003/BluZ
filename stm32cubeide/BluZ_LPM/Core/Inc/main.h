@@ -64,6 +64,7 @@ extern "C" {
  * для разрешения 4096
  * 8192 + 104 =  34 * 244(MTU)
  */
+#define PROTOVERSION 0x0001									/* Версия протокола */
 #define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 #define CRC_SIZE 1											/* размер в uint16_t */
 #define MTU_SIZE DATA_NOTIFICATION_MAX_PACKET_SIZE			/* Размер mtu в uint8_t */
@@ -100,7 +101,8 @@ typedef enum sendDataTypes {
 	dozimeterSpecter4096,
 	dozimeterHistory1024,
 	dozimeterHistory2048,
-	dozimeterHistory4096
+	dozimeterHistory4096,
+	hardwareInformation,
 } sendDataTypes_t;
 
 extern uint16_t MTUSizeValue;
@@ -130,6 +132,7 @@ extern uint32_t tmpLevel;
 extern uint32_t limitChan;
 extern double CoefChan;
 extern uint8_t currentSamplingTime;
+extern bool requestHardwareInfo;
 
 typedef enum commandTx {
 	cmd_setup,					// 0
@@ -141,7 +144,8 @@ typedef enum commandTx {
 	cmd_find_device,			// 6
 	cmd_calibrate_batt,			// 7
 	cmd_clear_history,			// 8
-	cmd_infibit_alarm			// 9
+	cmd_infibit_alarm,			// 9
+	cmd_get_hardware_info,		// 10
 } commantTx_t;
 
 typedef enum logTypes {
@@ -164,7 +168,8 @@ typedef enum logTypes {
 	lowBatt,					// 16
 	clearHistory,				// 17
 	inhibitAlarms,				// 18
-	unknownCommand				// 19
+	requestWHcfg,				// 19
+	unknownCommand				//
 } logTypes_t;
 
 struct LG {
