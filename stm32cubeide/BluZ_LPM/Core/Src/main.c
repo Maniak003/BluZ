@@ -60,7 +60,7 @@ bool requestHistory = false, LEDflag = false, SoundFlag = false, VibroFlag = fal
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
 uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
-bool noSendProgress = true, requestHardwareInfo = false, requestState = false;
+bool noSendProgress = true, requestHardwareInfo = false, requestSpectrum = false, requestDosimeter = false, requestState = false;
 uint8_t dataSize = 0;
 /*
  *	Точность измерения дозиметра
@@ -475,12 +475,12 @@ int main(void)
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
-    if ( connectFlag && (requestHardwareInfo || requestHistory || requestState || interval2 < intervalNow) /*&& system_startup_done*/) {
+    if ( connectFlag && (requestHardwareInfo || requestHistory || requestSpectrum || requestDosimeter || requestState || interval2 < intervalNow) /*&& system_startup_done*/) {
 	  noSendProgress = false;
 	  //HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	  /* Шаблон заголовка */
 	  uint16_t countMTU = 4;
-	  /* За один проход отправляется один кадр: hw info, история, автонотификация. Остальные уйдут на следующих проходах. */
+	  /* За один проход отправляется один кадр: hw info, история, спектр, дозиметр, автонотификация. Остальные уйдут на следующих проходах. */
 	  sendDataTypes_t frameType = dataType;
 	  if (requestHardwareInfo) {
 		  requestHardwareInfo = false;
@@ -502,6 +502,26 @@ int main(void)
 				resolutionSpecter = resolution1024;
 				break;
 			}
+	  } else if (requestSpectrum) {
+		  requestSpectrum = false;
+		  switch (resolutionSpecter) {
+		  case resolution1024:
+			  frameType = dozimeterSpecter1024;
+			  break;
+		  case resolution2048:
+			  frameType = dozimeterSpecter2048;
+			  break;
+		  case resolution4096:
+			  frameType = dozimeterSpecter4096;
+			  break;
+		  default:
+			  frameType = dozimeterSpecter1024;
+			  resolutionSpecter = resolution1024;
+			  break;
+		  }
+	  } else if (requestDosimeter) {
+		  requestDosimeter = false;
+		  frameType = onlyDozimeter;
 	  } else {
 		  requestState = false;
 	  }

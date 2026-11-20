@@ -132,7 +132,7 @@ extern uint32_t tmpLevel;
 extern uint32_t limitChan;
 extern double CoefChan;
 extern uint8_t currentSamplingTime;
-extern bool requestHardwareInfo, requestState;
+extern bool requestHardwareInfo, requestSpectrum, requestDosimeter, requestState;
 
 typedef enum commandTx {
 	cmd_setup,					// 0
@@ -146,6 +146,8 @@ typedef enum commandTx {
 	cmd_clear_history,			// 8
 	cmd_infibit_alarm,			// 9
 	cmd_get_hardware_info,		// 10
+	cmd_get_specter,			// 11
+	cmd_get_dosimeter,			// 12
 } commantTx_t;
 
 typedef enum logTypes {

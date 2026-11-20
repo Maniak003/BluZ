@@ -64,14 +64,15 @@ import kotlin.system.exitProcess
  *  4. `setCharacteristicNotification(RX, true)` и запись CCCD — готово к приёму
  *  5. onDescriptorWrite → команда 10 (hw info): до ответа остальные фреймы игнорируются; если версия
  *     протокола не 1 или ответа нет за 6 с — прибор отклоняется ([rejectDevice]), команды ему не шлются.
- *     [BleStatus.Connected] выставляется только после ответа с поддерживаемой версией
+ *     [BleStatus.Connected] выставляется только после ответа с поддерживаемой версией,
+ *     затем запрашивается полный кадр: спектр (команда 11) или дозиметр (команда 12)
  *
  * **Формат фрейма** — см. DEVELOPER_GUIDE.md раздел 5.2 или комментарии в [globalObj].
  * Многопакетный (MTU 251, payload 248): первый байт каждого MTU-пакета — порядковый номер
  * (0 = старт нового фрейма). [processIncomingPacket] собирает их в общий буфер и при
  * получении ожидаемого финального пакета эмитит [DeviceFrame].
  *
- * **Команды отправки** — [sendCommand]. Командные коды 0..10 описаны в DEVELOPER_GUIDE.md
+ * **Команды отправки** — [sendCommand]. Командные коды 0..12 описаны в DEVELOPER_GUIDE.md
  * раздел 5.3. Для команд с параметрами заполняется [sendBuffer] заранее.
  *
  * **Reconnect.** [GO.tmFull] (`intervalTimer`) каждые 10 секунд проверяет [connected];
@@ -324,8 +325,8 @@ class BluetoothInterface {
 
     /** Ответ на запрос hw info: запоминаем версию протокола и проверяем, что она нам известна. */
     @Synchronized
-    private fun onHardwareInfo(version: UInt) {
-        if (hwState == HwInfoState.IDLE) return
+    private fun onHardwareInfo(version: UInt, spectrometerPulses: UInt) {
+        if (hwState != HwInfoState.PENDING) return
         GO.whVersInfo = version
         GO.drawLOG.appendAppLogs("Proto version: $version", 1)
         when {
@@ -336,6 +337,8 @@ class BluetoothInterface {
             else -> {
                 hwState = HwInfoState.READY
                 _status.tryEmit(BleStatus.Connected)
+                /* Сразу запрашиваем полный кадр: со спектром, если он набран, иначе дозиметра */
+                sendCommand(if (spectrometerPulses != 0u) 11u else 12u)
             }
         }
     }
@@ -609,7 +612,11 @@ class BluetoothInterface {
             }
             GO.drawLOG.appendAppLogs("CS correct: $checkSum", 3)
             if (dataType == 7) {
-                onHardwareInfo(receiveData[6].toUInt() or (receiveData[7].toUInt() shl 8))
+                onHardwareInfo(
+                    receiveData[6].toUInt() or (receiveData[7].toUInt() shl 8),
+                    receiveData[90].toUInt() or (receiveData[91].toUInt() shl 8) or
+                        (receiveData[92].toUInt() shl 16) or (receiveData[93].toUInt() shl 24)
+                )
                 return
             }
             if (hwState != HwInfoState.READY) {
@@ -818,6 +825,8 @@ class BluetoothInterface {
      *  - 8 — Очистить историю
      *  - 9 — Отключить тревогу временно
      *  - 10 - Запрос hw info (ответ - фрейм типа 7 с версией протокола).
+     *  - 11 - Запрос кадра со спектром (ответ - фрейм типа 1..3, даже если спектрометр выключен).
+     *  - 12 - Запрос кадра дозиметра (ответ - фрейм типа 0).
      *
      */
     @Synchronized

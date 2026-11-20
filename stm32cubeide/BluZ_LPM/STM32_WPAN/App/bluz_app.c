@@ -120,6 +120,8 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
     	if (!connectFlag) {
     		requestHardwareInfo = false;
     		requestHistory = false;
+    		requestSpectrum = false;
+    		requestDosimeter = false;
     		requestState = false;
     	}
     	connectFlag = true;
@@ -175,6 +177,9 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     *                   7 - Калибровка батареи
                     *                   8 - Очистка истории
                     *                   9 - Отключение тревог
+                    *                   10 - Запрос аппаратной информации
+                    *                   11 - Запрос кадра со спектром
+                    *                   12 - Запрос кадра дозиметра
                     *
                     * 4,5,6,7       - Первый порог в uR
                     * 8,9,10,11     - Второй порог в uR
@@ -467,6 +472,14 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						inhibitAlarm = ! inhibitAlarm;
 						logUpdate(inhibitAlarms);
 						requestState = true;
+						break;
+					/* Запрос кадра со спектром (спектрометр может быть выключен) */
+					case cmd_get_specter:
+						requestSpectrum = true;
+						break;
+					/* Запрос кадра дозиметра */
+					case cmd_get_dosimeter:
+						requestDosimeter = true;
 						break;
 						/* Запрос аппаратной конфигурации */
 					case cmd_get_hardware_info:
