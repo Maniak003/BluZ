@@ -507,7 +507,14 @@ int main(void)
 
 	  transmitBuffer[0] = ((uint16_t) '<' & 0xFF) | (((uint16_t)'B' << 8) & 0xFF00);
 	  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((dataType << 8) & 0xFF00);
-	  transmitBuffer[2] = ((uint16_t) inhibitAlarm & 1) | ((dataSize << 8) & 0xFF00);	// Состояние флага отключения тревоги.
+	  uint16_t flags = 0;										// Байт флагов заголовка
+	  if (inhibitAlarm) {
+		  flags |= 0x01;										// Бит 0: тревога отключена
+	  }
+	  if (tmpDataType != onlyDozimeter) {
+		  flags |= 0x02;										// Бит 1: спектрометр запущен
+	  }
+	  transmitBuffer[2] = flags | ((dataSize << 8) & 0xFF00);
 	  transmitBuffer[3] = PROTOVERSION;
 
 	  uint16_t idxCS = 0 ;

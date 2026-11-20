@@ -24,6 +24,7 @@ package ru.starline.bluz
  * @property logEntries До 50 [LogEntry] с прибора (timestamp + код действия).
  * @property spectrumData Спектр (1024/2048/4096 каналов) для [frameType] 1..3, иначе null.
  * @property historyData Историчный спектр для [frameType] 4..6, иначе null.
+ * @property spectrometerRunning Спектрометр запущен (бит 1 байта флагов заголовка).
  * @property hw Распарсенная [HardwareConfig] из шапки фрейма.
  * @property overload Флаг перегрузки прибора (превышен макс. предел измерения).
  */
@@ -39,6 +40,7 @@ data class DeviceFrame(
     val logEntries: List<LogEntry>,
     val spectrumData: DoubleArray?,
     val historyData: DoubleArray?,
+    val spectrometerRunning: Boolean,
     val hw: HardwareConfig,
     val overload: Boolean
 )

@@ -567,7 +567,7 @@ public class MainActivity : FragmentActivity() {
      *    [GO.messTm], [GO.tempMC], [GO.battLevel], [GO.overloadFlag]
      *  - `HardwareConfig` → все `GO.HW*` поля (LED/звук/вибро, пороги, коэффициенты полинома,
      *    ВВ, компаратор, время спектрометра)
-     *  - Состояние спектрометра ([GO.specterRunning]) — `true` если frame содержит `spectrumData`
+     *  - Состояние спектрометра ([GO.specterRunning]) — бит «спектрометр запущен» из заголовка frame
      *  - [GO.specterType] и [drawSpecter.ResolutionSpectr] / [drawHistory.ResolutionHistory]
      *    подгоняются под [frame.frameType]
      */
@@ -773,19 +773,14 @@ public class MainActivity : FragmentActivity() {
         }
 
         /* Live spectrum */
+        GO.specterRunning = frame.spectrometerRunning
+        applySpecterButton()
         frame.spectrumData?.let { specData ->
-            GO.specterRunning = true
-            applySpecterButton()
             specData.copyInto(GO.drawSPECTER.spectrData)
             GO.drawSPECTER.init()
             if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                 GO.drawSPECTER.clearSpecter()
                 GO.drawSPECTER.redrawSpecter(GO.specterType)
-            }
-        } ?: run {
-            if (frame.frameType == 0) {
-                GO.specterRunning = false
-                applySpecterButton()
             }
         }
     }

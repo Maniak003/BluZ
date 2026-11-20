@@ -377,6 +377,7 @@ class BluetoothInterface {
         private var avgCps: Float = 0f
         private var temperature: Float = 0f
         private var batteryVoltage: Float = 0f
+        private var spectrometerRunning: Boolean = false
 
         @SuppressLint("MissingPermission")
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
@@ -580,8 +581,9 @@ class BluetoothInterface {
                     ByteBuffer.wrap(data, 26, 4).order(ByteOrder.LITTLE_ENDIAN).int))
                 batteryVoltage = round(java.lang.Float.intBitsToFloat(
                     ByteBuffer.wrap(data, 30, 4).order(ByteOrder.LITTLE_ENDIAN).int) * 100) / 100
-                /* Бит запрета тревоги */
+                /* Флаги: бит 0 - запрет тревоги, бит 1 - спектрометр запущен */
                 GO.inhibitAlarm = (data[4].toUInt() and 1u) == 1u
+                spectrometerRunning = (data[4].toUInt() and 2u) != 0u
                 if (GO.inhibitAlarm) {
                     Log.d("BluZ-BT", "Alarm disable")
                 } else {
@@ -674,6 +676,7 @@ class BluetoothInterface {
                 logEntries = logEntries,
                 spectrumData = spectrumData,
                 historyData = historyData,
+                spectrometerRunning = spectrometerRunning,
                 hw = hw,
                 overload = overload
             )
