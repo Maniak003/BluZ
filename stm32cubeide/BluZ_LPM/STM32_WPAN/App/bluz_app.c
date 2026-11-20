@@ -115,6 +115,13 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 
     case BLUZ_RX_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char1_NOTIFY_ENABLED_EVT */
+    	/* Ответы, оставшиеся от прошлого подключения, новому клиенту не нужны.
+    	 * Клиент может записать CCCD несколько раз за подключение, поэтому сбрасываем только при первом включении. */
+    	if (!connectFlag) {
+    		requestHardwareInfo = false;
+    		requestHistory = false;
+    		requestState = false;
+    	}
     	connectFlag = true;
       	//UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
     	//connectFlag = true;
@@ -369,6 +376,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						writeFlash();
 						calcPulseLevel();	 // Обновление порогов
 						logUpdate(writeFlashLog);
+						requestState = true;
 						break;
 					/* Очистка буфера спектра */
 					case cmd_clear_specter:			// Очистка буфера спектрометра
@@ -378,6 +386,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						spectrometerPulse = 0;
 						spectrometerTime = 0;
 						logUpdate(resSpectrometerLog);
+						requestState = true;
 						break;
 					/* Очистка спектра событий */
 					case cmd_clear_history:
@@ -385,6 +394,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							historySpecterBuffer[iii] = 0;
 						}
 						logUpdate(clearHistory);
+						requestState = true;
 						break;
 					/* Включение/выключение спектрометра */
 					case cmd_startup_spectrometer:	// Запуск/останов спектрометра
@@ -419,6 +429,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							MX_ADC4_Init();
 							logUpdate(stopSpectrometerLog);
 						}
+						requestState = true;
 						break;
 					/* Сброс дозиметра */
 					case cmd_clear_dosimeter:
@@ -430,6 +441,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							dozimetrBuffer[ii] = 0;
 						}
 						logUpdate(resDozimeterLog);
+						requestState = true;
 						break;
 					/* Очистка лога */
 					case cmd_clear_logs:
@@ -438,21 +450,23 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							logBuffer[ii].type = 0;
 						}
 						logUpdate(clearLog);
+						requestState = true;
 						break;
 					/* Запрос на передачу спектра истории */
 					case cmd_history_request:
-						historyRequest = true;
-						interval2 = 0;
+						requestHistory = true;
 						break;
 					/* Включение звука и вибро, для поиска прибора */
 					case cmd_find_device:
 						NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 5);
 						logUpdate(requestWHcfg);
+						requestState = true;
 						break;
 					/* Отключение тревоги */
 					case cmd_infibit_alarm:
 						inhibitAlarm = ! inhibitAlarm;
 						logUpdate(inhibitAlarms);
+						requestState = true;
 						break;
 						/* Запрос аппаратной конфигурации */
 					case cmd_get_hardware_info:
@@ -482,6 +496,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 								}
 							}
 						}
+						requestState = true;
 						break;
 					}
 				} else {

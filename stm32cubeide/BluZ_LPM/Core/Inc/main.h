@@ -118,7 +118,7 @@ extern bool SoundEnable, VibroEnable, LEDEnable, LEDflag;
 extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
 extern bool flagTemperatureMess, autoStartSpecrometr;
-extern bool history_active, historyRequest/*, findDevice*/;
+extern bool history_active, requestHistory/*, findDevice*/;
 extern bool divide10sound, divide10led;
 extern bool inhibitAlarm;
 extern uint16_t HVoltage, comparatorLevel;
@@ -132,7 +132,7 @@ extern uint32_t tmpLevel;
 extern uint32_t limitChan;
 extern double CoefChan;
 extern uint8_t currentSamplingTime;
-extern bool requestHardwareInfo;
+extern bool requestHardwareInfo, requestState;
 
 typedef enum commandTx {
 	cmd_setup,					// 0

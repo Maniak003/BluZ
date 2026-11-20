@@ -56,11 +56,11 @@ RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN PV */
 volatile bool connectFlag = false;
-bool historyRequest = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false, firstInital = true/*, findDevice = false*/, inhibitAlarm = false;;
+bool requestHistory = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false, firstInital = true/*, findDevice = false*/, inhibitAlarm = false;;
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
 uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
-bool noSendProgress = true, requestHardwareInfo = false;
+bool noSendProgress = true, requestHardwareInfo = false, requestState = false;
 uint8_t dataSize = 0;
 /*
  *	Точность измерения дозиметра
@@ -475,43 +475,45 @@ int main(void)
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
-    if ( connectFlag && (interval2 < intervalNow) /*&& system_startup_done*/) {
-	  interval2 = intervalNow + INTERVAL2;
+    if ( connectFlag && (requestHardwareInfo || requestHistory || requestState || interval2 < intervalNow) /*&& system_startup_done*/) {
 	  noSendProgress = false;
 	  //HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	  /* Шаблон заголовка */
 	  uint16_t countMTU = 4;
-	  sendDataTypes_t tmpDataType;
-	  tmpDataType = dataType;
+	  /* За один проход отправляется один кадр: hw info, история, автонотификация. Остальные уйдут на следующих проходах. */
+	  sendDataTypes_t frameType = dataType;
 	  if (requestHardwareInfo) {
-		  dataType = hardwareInformation;
-	  }
-	  if (historyRequest) {
-		  	  historyRequest = false;
+		  requestHardwareInfo = false;
+		  frameType = hardwareInformation;
+	  } else if (requestHistory) {
+		  	  requestHistory = false;
 			switch (resolutionSpecter) {
 			case resolution1024:
-				dataType = dozimeterHistory1024;
+				frameType = dozimeterHistory1024;
 				break;
 			case resolution2048:
-				dataType = dozimeterHistory2048;
+				frameType = dozimeterHistory2048;
 				break;
 			case resolution4096:
-				dataType = dozimeterHistory4096;
+				frameType = dozimeterHistory4096;
 				break;
 			default:
-				dataType = dozimeterHistory1024;
+				frameType = dozimeterHistory1024;
 				resolutionSpecter = resolution1024;
 				break;
 			}
+	  } else {
+		  requestState = false;
 	  }
+	  interval2 = intervalNow + INTERVAL2;			// Любой кадр заменяет плановую автонотификацию
 
 	  transmitBuffer[0] = ((uint16_t) '<' & 0xFF) | (((uint16_t)'B' << 8) & 0xFF00);
-	  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((dataType << 8) & 0xFF00);
+	  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((frameType << 8) & 0xFF00);
 	  uint16_t flags = 0;										// Байт флагов заголовка
 	  if (inhibitAlarm) {
 		  flags |= 0x01;										// Бит 0: тревога отключена
 	  }
-	  if (tmpDataType != onlyDozimeter) {
+	  if (dataType != onlyDozimeter) {
 		  flags |= 0x02;										// Бит 1: спектрометр запущен
 	  }
 	  transmitBuffer[2] = flags | ((dataSize << 8) & 0xFF00);
@@ -521,7 +523,7 @@ int main(void)
 	  int kkk = 0;
 	  int chanCnt = 4;
 	  uint16_t nm_channel = 0;
-	  switch (dataType) {
+	  switch (frameType) {
   	  case onlyDozimeter:							/* Передача данных дозиметра и лога */
   		  countMTU = NUMBER_MTU_DOZR;
   		  idxCS =  NUMBER_MTU_DOZR * 244 / 2 - 1;
@@ -569,12 +571,9 @@ int main(void)
   		  break;
 	  }
 
-	  if (requestHardwareInfo) {
-		  //requestHardwareInfo = false;
-		  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((hardwareInformation << 8) & 0xFF00);
-	  } else {
+	  if (frameType != hardwareInformation) {
 
-		  if (dataType > onlyDozimeter) {							/* Нужно передавать спектр ? */
+		  if (frameType > onlyDozimeter) {							/* Нужно передавать спектр ? */
 			  /* Test */
 			  //for (int jjj = 0; jjj < nm_channel; jjj++) {
 			//	  tmpSpecterBuffer[jjj] = (uint32_t) jjj;
@@ -590,7 +589,7 @@ int main(void)
 			  uint32_t tmpSpectrData;
 			  bool limFlag = false;
 			  /* Что будем передавать, историю или текущий спектр */
-			  const uint32_t * __restrict src = (dataType > dozimeterSpecter4096) ? historySpecterBuffer : tmpSpecterBuffer;
+			  const uint32_t * __restrict src = (frameType > dozimeterSpecter4096) ? historySpecterBuffer : tmpSpecterBuffer;
 			  uint16_t *dest = &transmitBuffer[SPECTER_OFFSET];
 			  for (int jjj = 0; jjj < nm_channel; jjj++) {
 				  tmpSpectrData = 0;
@@ -617,8 +616,7 @@ int main(void)
 			  }
 		  }
 	  }
-	  dataType = tmpDataType;	// Востановление исходного типа данных после передачи истории
-	  if (requestHardwareInfo) {
+	  if (frameType == hardwareInformation) {
 		  /* Ответ hw info - только заголовок, данные дозиметра и лог не передаются (остаток кадра нулевой) */
 		  for (uint16_t jjj = HEADER_OFFSET; jjj < idxCS; jjj++) {
 			  transmitBuffer[jjj] = 0;
@@ -745,12 +743,6 @@ int main(void)
 		  transmitBuffer[48] = ((uint16_t) bitsOfChannal & 0xFF) | (((uint16_t) currentSamplingTime & 0x7) << 8)   | 0b0000100000000000;
 	  } else {
 		  transmitBuffer[48] = (((uint16_t) bitsOfChannal & 0xFF) | (((uint16_t) currentSamplingTime & 0x7) << 8)) & 0b1111011111111111;
-	  }
-
-	  if (requestHardwareInfo) {
-		  requestHardwareInfo = false;
-		  tmpBTBuffer[242] = 0;
-		  tmpBTBuffer[243] = 0;
 	  }
 
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
