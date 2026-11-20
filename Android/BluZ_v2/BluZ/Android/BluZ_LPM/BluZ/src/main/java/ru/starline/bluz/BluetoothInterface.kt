@@ -32,8 +32,6 @@ import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import kotlin.math.exp
-import kotlin.math.ln
 import kotlin.math.round
 import kotlin.system.exitProcess
 
@@ -371,7 +369,7 @@ class BluetoothInterface {
         private var checkSum: UShort = 0u
         private var spectrumResolution: Int = 1024
         private var historyResolution: Int = 1024
-        private val receiveData = UByteArray(9760)
+        private val receiveData = UByteArray(17812)
 
         /* Per-frame header fields parsed from the first MTU packet */
         private var totalPulses: UInt = 0u
@@ -540,7 +538,7 @@ class BluetoothInterface {
          *  3. По достижению ожидаемой длины (зависит от [DeviceFrame.frameType]) проверяется
          *     CRC (uint16 = `sum(bytes[0..len-3]) & 0xFFFF`, хранится в последних 2 байтах)
          *  4. Парсится header (58 байт), dosimeterData (512 байт), log (50×5 байт),
-         *     spectrum/history (resolution×2 байт)
+         *     spectrum/history (формат по байту 96, см. [SpectrumCodec])
          *  5. [decodeHardwareConfig] извлекает [HardwareConfig] из header'а
          *  6. `_deviceFrames.tryEmit(frame)` или suspend-emit — на главном потоке
          *
@@ -649,24 +647,18 @@ class BluetoothInterface {
             }
 
             /* Decode spectrum / history (offset 1424 bytes) */
-            val mult = hw.bitsChan.toDouble() / 65535.0 * ln(2.0)
-            val spectrumData: DoubleArray? = if (spectrumResolution > 0) {
-                DoubleArray(spectrumResolution) { i ->
-                    val base = 1424 + i * 2
-                    val compressed = (receiveData[base].toUInt() and 0xFFu) or
-                            ((receiveData[base + 1].toUInt() and 0xFFu) shl 8)
-                    exp(compressed.toDouble() * mult) - 1.0
+            val channels = spectrumResolution + historyResolution
+            val decoded: DoubleArray? = if (channels > 0) {
+                try {
+                    SpectrumCodec.decode(receiveData.asByteArray(), 1424, idxArray, channels, receiveData[96].toInt())
+                } catch (e: IllegalArgumentException) {
+                    Log.e("BluZ-BT", "Spectrum decode error: ${e.message}")
+                    GO.drawLOG.appendAppLogs("Spectrum decode error: ${e.message}", 0)
+                    return
                 }
             } else null
-
-            val historyData: DoubleArray? = if (historyResolution > 0) {
-                DoubleArray(historyResolution) { i ->
-                    val base = 1424 + i * 2
-                    round(exp(
-                        ((receiveData[base].toUInt() or (receiveData[base + 1].toUInt() shl 8)).toDouble()) * mult
-                    ) - 1.0)
-                }
-            } else null
+            val spectrumData: DoubleArray? = if (spectrumResolution > 0) decoded else null
+            val historyData: DoubleArray? = if (historyResolution > 0) decoded else null
 
             val overload = (receiveData[97].toUByte() and 8.toUByte()) != 0.toUByte()
 
@@ -710,8 +702,6 @@ class BluetoothInterface {
                     (d[87].toULong() shl 8) or d[86].toULong()).toUInt()
             val specPulse = ((d[93].toULong() shl 24) or (d[92].toULong() shl 16) or
                     (d[91].toULong() shl 8) or d[90].toULong()).toUInt()
-            var bitsChan = d[96].toUByte()
-            if (bitsChan < 16u || bitsChan > 32u) bitsChan = 20u
             var sampleTime = d[97].toUByte() and 7.toUByte()
             if (sampleTime > 7u) sampleTime = 1u
             return HardwareConfig(
@@ -742,7 +732,6 @@ class BluetoothInterface {
                 coef4096B = ByteBuffer.wrap(d.asByteArray(), 78, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 coef4096C = ByteBuffer.wrap(d.asByteArray(), 82, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 acquireValue = ((d[95].toUInt() shl 8) or d[94].toUInt()).toUShort(),
-                bitsChan = bitsChan,
                 sampleTime = sampleTime,
                 spectrometerTime = specTime,
                 spectrometerPulse = specPulse

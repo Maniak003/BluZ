@@ -163,7 +163,6 @@ class SettingsFragment : Fragment() {
         GO.rbSpctType = view.findViewById(R.id.rbSpctType)
         GO.textMACADR = view.findViewById(R.id.textMACADDR)
         GO.aqureEdit = view.findViewById(R.id.editAquracy)
-        GO.bitsChannelEdit = view.findViewById(R.id.editBitsChannel)
         GO.cbFullScrn = view.findViewById(R.id.CBFullScreen)
         GO.rbGPXType = view.findViewById(R.id.rbGPX)
         GO.rbKMLType = view.findViewById(R.id.rbKML)
@@ -534,10 +533,6 @@ class SettingsFragment : Fragment() {
                 GO.spectrResolution = 0
             }
             GO.aqureValue = GO.aqureEdit.text.toString().trim().toIntOrNull() ?: 0
-            GO.bitsChannel = GO.bitsChannelEdit.text.toString().trim().toIntOrNull() ?: 20
-            if (GO.bitsChannel < 16 || GO.bitsChannel > 32) {
-                GO.bitsChannel = 20
-            }
             GO.sampleTime = GO.sampleTimeEdit.text.toString().trim().toIntOrNull() ?: 0
             if (GO.sampleTime < 0 || GO.sampleTime > 7) {
                 GO.sampleTime = 0
@@ -737,8 +732,6 @@ class SettingsFragment : Fragment() {
             val convVal2 = ByteBuffer.allocate(2).putShort(aqureRaw.toShort()).array()
             GO.BTT.sendBuffer[64] = convVal2[0].toUByte()
             GO.BTT.sendBuffer[63] = convVal2[1].toUByte()
-
-            GO.BTT.sendBuffer[65] = GO.bitsChannelEdit.text.toString().toUByte()
 
             GO.BTT.sendBuffer[33] = (GO.propHVoltage and 255u).toUByte()
             GO.BTT.sendBuffer[34] = ((GO.propHVoltage.toUInt() shr 8) and 255u).toUByte()
@@ -1864,7 +1857,6 @@ class SettingsFragment : Fragment() {
         GO.editSMA.setText(GO.windowSMA.toString())
         GO.propButtonInit = true
         GO.aqureEdit.setText(GO.aqureValue.toString())
-        GO.bitsChannelEdit.setText(GO.bitsChannel.toString())
         GO.cbFullScrn.isChecked = GO.fullScrn
         GO.sampleTimeEdit.setText(GO.sampleTime.toString())
         GO.textAppLogLevel.setText(GO.appLogLevel.toString())

@@ -122,7 +122,6 @@ class globalObj {
                                           //0.013870353993599009
     public val acuricyPatern : String = "###0.##################"
     public val propAquracy : String = "AquracyDozimeter"
-    public val propBitsChan: String = "BitsOfChannel"
     public val propFullScrn: String = "FullScreen"
     public val propNightMode: String = "NightMapMode"
     public val propSaveTrackType: String = "SaveTrackType"
@@ -393,12 +392,10 @@ class globalObj {
     lateinit var rbSpctTypeSPE: RadioButton
     lateinit var rbSpctType : RadioGroup
     lateinit var aqureEdit : EditText
-    lateinit var bitsChannelEdit: EditText
     lateinit var sampleTimeEdit: EditText
     lateinit var textAppLogLevel: EditText
     lateinit var textXZoom: EditText
     var aqureValue: Int = 100
-    var bitsChannel:Int = 20
     public lateinit var cbFullScrn: CheckBox            // Управление полноэкранным режимом
     public var fullScrn: Boolean = false                // Флаг для полноэкранного режима
     /*
@@ -593,7 +590,6 @@ class globalObj {
     public var HWCoef4096D: Float = 0.0f
     public var HWCoef4096E: Float = 0.0f
     public var HWAqureValue: UShort = 0u
-    public var HWBitsChan: UByte = 0u
     public var HWSampleTime: UByte = 0u
 
     /**
@@ -811,9 +807,6 @@ class globalObj {
             return
         } else {
             // Первый "живой" канал ограничен аппаратным порогом компаратора.
-            // propComparator — отсчёты АЦП, bitsChannel — отсчётов АЦП на 1 канал спектра.
-            //val bitsCh = if (GO.bitsChannel in 1..64) GO.bitsChannel else 20
-            //val firstCh = (GO.propComparator.toInt() / bitsCh).coerceIn(0, channels - 1)
             //val firstCh = 0
             val lastCh = channels - 1
             val eFirst = 0
@@ -1140,11 +1133,6 @@ class globalObj {
         GO.propComparator = GO.HWpropComparator
         GO.propAutoStartSpectrometr = GO.HWpropAutoStartSpectrometr
         GO.aqureValue = GO.HWAqureValue.toInt()
-        if (GO.HWBitsChan.toInt() < 16 || GO.HWBitsChan.toInt() > 32) {
-            GO.bitsChannel = 20
-        } else {
-            GO.bitsChannel = GO.HWBitsChan.toInt()
-        }
         /* Время выборки АЦП */
         if (GO.HWSampleTime > 7u) {
             GO.sampleTime = 0
@@ -1219,7 +1207,6 @@ class globalObj {
         GO.PP.setPropInt(propCfgSoundKvant, GO.propSoundKvant)
         GO.PP.setPropInt(propCfgSpectrGraphType, GO.specterGraphType)
         GO.PP.setPropInt(propAquracy, GO.aqureValue)                        // Точность усреднения для дозиметра, количество импульсов.
-        GO.PP.setPropInt(propBitsChan, GO.bitsChannel)                      // Количество  бит в канале
         GO.PP.setPropBoolean(propFullScrn, GO.fullScrn)                     // Полноэкранный режим
         GO.PP.setPropInt(propSaveTrackType, GO.saveTrackType)               // Формат для сохранения трека
         GO.PP.setPropInt(propSampleTime, GO.sampleTime)                     // Время выборки АЦП
@@ -1317,10 +1304,6 @@ class globalObj {
         */
         GO.saveSpecterType = GO.PP.getPropInt(propCfgSaveSpecterType)
         GO.aqureValue = GO.PP.getPropInt(propAquracy)
-        GO.bitsChannel = GO.PP.getPropInt(propBitsChan)
-        if (GO.bitsChannel < 16 || GO.bitsChannel > 32) {
-            GO.bitsChannel = 20
-        }
         GO.sampleTime = GO.PP.getPropInt(propSampleTime)
         if (GO.sampleTime < 0 || GO.sampleTime > 7) {
             GO.sampleTime = 0
@@ -1462,4 +1445,4 @@ class globalObj {
     val dao: DosimeterDao
         get() = database.dosimeterDao()
 
-}
+}

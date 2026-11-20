@@ -73,15 +73,11 @@ extern "C" {
 #define LOG_BUFER_SIZE 50									/* Количество записей в логе */
 #define LOG_OFFSET (HEADER_OFFSET + SIZE_DOZIMETR_BUFER)	/* Начало данных лога */
 #define SPECTER_OFFSET (LOG_OFFSET + LOG_BUFER_SIZE * 3)	/* Начало спектра в буфере в uint16_t */
-#define NUMBER_MTU_DOZR 6									/* Количество MTU для передачи накоплений дозиметра */
-#define NUMBER_MTU_1024 16									/* Количество MTU для передачи спектра разрешением 1024 */
-#define NUMBER_MTU_2048 23									/* Количество MTU для передачи спектра разрешением 2048 */
-#define NUMBER_MTU_4096 40									/* Количество MTU для передачи спектра разрешением 4096 */
+#define NUMBER_MTU_MAX 73									/* Максимум MTU в кадре: 1424 + 4 * 4096 + 2 байт (несжатый спектр 4096) */
 #define CHANNELS_1024	1024
 #define CHANNELS_2048	2048
 #define CHANNELS_4096	4096
 #define MAX_RESOLUTION 	4096
-#define CAPCHAN 20											/* Количество разрядов в канале */
 #define OFFSET_CHAN		1U									/* Смещение канала для усредненния */
 #define DEFAULTAQR		100									/* Точность дозиметра по умолчанию */
 #define SEND_DELAY		30									/* Задержка в ms между передачами MTU */
@@ -108,7 +104,7 @@ typedef enum sendDataTypes {
 extern uint16_t MTUSizeValue;
 extern spectrResolution_t resolutionSpecter;
 extern sendDataTypes_t dataType;
-extern uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET];
+extern uint16_t transmitBuffer[NUMBER_MTU_MAX * 244 / 2];
 extern uint16_t currTemperature, currVoltage;
 extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION], spectrometerTime, spectrometerPulse;
 extern uint32_t historySpecterBuffer[MAX_RESOLUTION];
@@ -129,8 +125,6 @@ extern int indexDozimetrBufer;
 extern ADC_HandleTypeDef hadc4;
 extern uint64_t PL[19];
 extern uint32_t tmpLevel;
-extern uint32_t limitChan;
-extern double CoefChan;
 extern uint8_t currentSamplingTime;
 extern bool requestHardwareInfo, requestSpectrum, requestDosimeter, requestState;
 
@@ -200,7 +194,6 @@ union dataA {
 
 extern uint32_t level1_cps, level2_cps, level3_cps, tmp_level;
 extern uint16_t level1, level2, level3;
-extern uint8_t bitsOfChannal;
 extern union dataC calcCoeff;
 extern union dataC enCoefA1024, enCoefB1024, enCoefC1024;
 extern union dataC enCoefA2048, enCoefB2048, enCoefC2048;

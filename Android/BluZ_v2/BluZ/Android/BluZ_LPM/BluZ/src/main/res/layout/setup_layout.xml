@@ -1426,35 +1426,6 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Бит канала (16–32)"
-                        android:textColor="@color/bz_text"
-                        android:textSize="13sp" />
-
-                    <EditText
-                        android:id="@+id/editBitsChannel"
-                        android:layout_width="80dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_bz_button_surface"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold"
-                        android:gravity="center"
-                        android:imeOptions="actionDone"
-                        android:inputType="number"
-                        android:padding="8dp"
-                        android:text="20"
-                        android:textColor="@color/bz_text"
-                        android:textSize="13sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:text="Время выборки (0–7)"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />

@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "spectrum_codec.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -82,7 +83,6 @@ struct LG logBuffer[LOG_BUFER_SIZE];
 uint64_t PL[19] = {0,};
 spectrResolution_t resolutionSpecter = resolution1024;
 uint8_t repetionCount = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
-uint8_t bitsOfChannal;	// Разрядность канала
 uint8_t divade10counter = 0;
 uint8_t div10Ledcounter = 0;
 /*
@@ -102,7 +102,7 @@ uint32_t tmpSpecterBuffer[MAX_RESOLUTION];
 uint32_t historySpecterBuffer[MAX_RESOLUTION];
 
 /* Настройки прибора */
-uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET] = {0,};
+uint16_t transmitBuffer[NUMBER_MTU_MAX * 244 / 2] = {0,};
 bool SoundEnable = true, VibroEnable = true, LEDEnable = false;		// Сопровождение квантов
 bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активность звука для разных уровней
 bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
@@ -112,9 +112,6 @@ bool history_active = false; // Флаг набора истории.
 bool overloadFlag = false;	// Флаг перегрузки
 bool divide10sound = false; // Флаг деления озвучки событий на 10.
 bool divide10led = false; // Флаг деления озвучки событий на 10.
-
-double CoefChan;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
-uint32_t limitChan;
 
 /* Коэффициенты для коррекции температуры */
 float TK1, TK2;
@@ -338,8 +335,6 @@ int main(void)
   }
   /* Пересчет уровней в uint32_t для ускорения обработки */
   calcPulseLevel();
-  CoefChan = 65535.0 / (double) bitsOfChannal;
-  limitChan = (1 << bitsOfChannal) - 1 ;
 
   /*
    * Настройка порога компаратора
@@ -538,58 +533,42 @@ int main(void)
 	  transmitBuffer[3] = PROTOVERSION;
 
 	  uint16_t idxCS = 0 ;
+	  uint32_t payloadSize = 0;								// Байт спектра в кадре без заполнения
+	  uint8_t spectrumFormat = 0;								// Байт 96 заголовка: 0 - отсчеты uint32 как есть, 1 - DPCM + ZigZag + varint
 	  int kkk = 0;
 	  int chanCnt = 4;
 	  uint16_t nm_channel = 0;
 	  switch (frameType) {
   	  case onlyDozimeter:							/* Передача данных дозиметра и лога */
-  		  countMTU = NUMBER_MTU_DOZR;
-  		  idxCS =  NUMBER_MTU_DOZR * 244 / 2 - 1;
   		  nm_channel = 0;
   		  break;
   	  case dozimeterSpecter1024:
-  		  countMTU = NUMBER_MTU_1024;				/* Передача данных дозиметра, лога и спектра 1024 */
-  		  idxCS = NUMBER_MTU_1024 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_1024;
+  		  nm_channel = CHANNELS_1024;				/* Передача данных дозиметра, лога и спектра 1024 */
   		  chanCnt = 4;
   		  break;
   	  case dozimeterSpecter2048:
-  		  countMTU = NUMBER_MTU_2048;				/* Передача данных дозиметра, лога и спектра 2048 */
-  		  idxCS = NUMBER_MTU_2048 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_2048;
+  		  nm_channel = CHANNELS_2048;				/* Передача данных дозиметра, лога и спектра 2048 */
   		  chanCnt = 2;
   		  break;
   	  case dozimeterSpecter4096:
-  		  countMTU = NUMBER_MTU_4096;				/* Передача данных дозиметра, лога и спектра 4096 */
-  		  idxCS = NUMBER_MTU_4096 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_4096;
+  		  nm_channel = CHANNELS_4096;				/* Передача данных дозиметра, лога и спектра 4096 */
   		  chanCnt = 1;
   		  break;
   	  case dozimeterHistory1024:
-  		  countMTU = NUMBER_MTU_1024;				/* Передача данных дозиметра, лога и спектра 1024 */
-  		  idxCS = NUMBER_MTU_1024 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_1024;
+  		  nm_channel = CHANNELS_1024;				/* Передача данных дозиметра, лога и истории 1024 */
   		  chanCnt = 4;
   		  break;
   	  case dozimeterHistory2048:
-  		  countMTU = NUMBER_MTU_2048;				/* Передача данных дозиметра, лога и спектра 2048 */
-  		  idxCS = NUMBER_MTU_2048 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_2048;
+  		  nm_channel = CHANNELS_2048;				/* Передача данных дозиметра, лога и истории 2048 */
   		  chanCnt = 2;
   		  break;
   	  case dozimeterHistory4096:
-  		  countMTU = NUMBER_MTU_4096;				/* Передача данных дозиметра, лога и спектра 4096 */
-  		  idxCS = NUMBER_MTU_4096 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_4096;
+  		  nm_channel = CHANNELS_4096;				/* Передача данных дозиметра, лога и истории 4096 */
   		  chanCnt = 1;
   		  break;
   	  case hardwareInformation:
-  		  countMTU = 1;
-  		  idxCS = 244 / 2 - 1;
   		  break;
 	  }
-
-	  transmitBuffer[2] = flags | ((countMTU << 8) & 0xFF00);	// Байт 5: число MTU в кадре
 
 	  if (frameType != hardwareInformation) {
 
@@ -598,44 +577,75 @@ int main(void)
 			  //for (int jjj = 0; jjj < nm_channel; jjj++) {
 			//	  tmpSpecterBuffer[jjj] = (uint32_t) jjj;
 			  //}
-			  /* Медианный фильтр для устранения артефактов ADC */
-			#ifdef MEDIAN
-			  MA[0] = 0;
-			  MA[1] = 0;
-			  MA[2] = 0;
-			  medianIdx = 0;
-			#endif
-			  double tmpLog;
 			  uint32_t tmpSpectrData;
-			  bool limFlag = false;
 			  /* Что будем передавать, историю или текущий спектр */
 			  const uint32_t * __restrict src = (frameType > dozimeterSpecter4096) ? historySpecterBuffer : tmpSpecterBuffer;
 			  uint16_t *dest = &transmitBuffer[SPECTER_OFFSET];
-			  for (int jjj = 0; jjj < nm_channel; jjj++) {
-				  tmpSpectrData = 0;
-				  for (int chIdx = 0; chIdx < chanCnt; chIdx++) {
-					  tmpSpectrData += src[kkk++];
-				  }
-				  limFlag |= (tmpSpectrData >= limitChan);
+			  uint32_t rawSize = (uint32_t) nm_channel * 4;
+			  spectrum_encoder_t encoder;
+			  bool packed = true;
+			  bool restart;
+			  do {
+				  /* Сжатый поток берется, только если он строго меньше несжатого. Иначе проход повторяется без сжатия. */
+				  restart = false;
+				  kkk = 0;
+				  spectrum_encoder_init(&encoder, (uint8_t *) dest, rawSize - 1);
+				  /* Медианный фильтр для устранения артефактов ADC */
 				#ifdef MEDIAN
-				  MA[medianIdx] = tmpSpectrData;
-				  tmpSpectrData = (MA[0] < MA[1]) ? ((MA[1] < MA[2]) ? MA[1] : ((MA[2] < MA[0]) ? MA[0] : MA[2])) : ((MA[0] < MA[2]) ? MA[0] : ((MA[2] < MA[1]) ? MA[1] : MA[2]));
-				  if (++medianIdx >= 3) {
-					  medianIdx = 0;
-				  }
+				  MA[0] = 0;
+				  MA[1] = 0;
+				  MA[2] = 0;
+				  medianIdx = 0;
 				#endif
-				  /* Логарифмическое сжатие */
-				  tmpLog = log2(tmpSpectrData + 1) * (double) CoefChan;
-				  dest[jjj] = (uint16_t) tmpLog;
-			  }
-			  /* Если данные не помещаются - увеличим разрадность */
-			  if (limFlag) {
-				  bitsOfChannal++;
-				  CoefChan = 65535.0 / (double) bitsOfChannal;
-				  limitChan = (1 << bitsOfChannal) - 1;
+				  for (int jjj = 0; jjj < nm_channel; jjj++) {
+					  tmpSpectrData = 0;
+					  for (int chIdx = 0; chIdx < chanCnt; chIdx++) {
+						  tmpSpectrData += src[kkk++];
+					  }
+					#ifdef MEDIAN
+					  MA[medianIdx] = tmpSpectrData;
+					  tmpSpectrData = (MA[0] < MA[1]) ? ((MA[1] < MA[2]) ? MA[1] : ((MA[2] < MA[0]) ? MA[0] : MA[2])) : ((MA[0] < MA[2]) ? MA[0] : ((MA[2] < MA[1]) ? MA[1] : MA[2]));
+					  if (++medianIdx >= 3) {
+						  medianIdx = 0;
+					  }
+					#endif
+					  if (packed) {
+						  if (!spectrum_encoder_put(&encoder, tmpSpectrData)) {
+							  packed = false;
+							  restart = true;
+							  break;
+						  }
+					  } else {
+						  /* Несжатые отсчеты uint32_t little-endian */
+						  dest[jjj * 2] = (uint16_t) (tmpSpectrData & 0xFFFF);
+						  dest[jjj * 2 + 1] = (uint16_t) (tmpSpectrData >> 16);
+					  }
+				  }
+			  } while (restart);
+			  if (packed) {
+				  payloadSize = (uint32_t) spectrum_encoder_size(&encoder);
+				  spectrumFormat = 1;
+			  } else {
+				  payloadSize = rawSize;
 			  }
 		  }
 	  }
+
+	  if (frameType == hardwareInformation) {
+		  countMTU = 1;
+		  idxCS = MTU_SIZE / 2 - 1;
+	  } else {
+		  /* Число MTU: данные дозиметра и лога, спектр и 2 байта контрольной суммы */
+		  countMTU = (SPECTER_OFFSET * 2 + payloadSize + 2 + MTU_SIZE - 1) / MTU_SIZE;
+		  idxCS = countMTU * MTU_SIZE / 2 - 1;
+		  /* Остаток после спектра, включая место под контрольную сумму, заполняется нулями */
+		  uint8_t *frameBytes = (uint8_t *) transmitBuffer;
+		  for (uint32_t iii = SPECTER_OFFSET * 2 + payloadSize; iii < (uint32_t) countMTU * MTU_SIZE; iii++) {
+			  frameBytes[iii] = 0;
+		  }
+	  }
+	  transmitBuffer[2] = flags | ((countMTU << 8) & 0xFF00);	// Байт 5: число MTU в кадре
+
 	  if (frameType == hardwareInformation) {
 		  /* Ответ hw info - только заголовок, данные дозиметра и лог не передаются (остаток кадра нулевой) */
 		  for (uint16_t jjj = HEADER_OFFSET; jjj < idxCS; jjj++) {
@@ -760,9 +770,9 @@ int main(void)
 	  /* Разрядность канала и время выборки АЦП*/
 	  //currentSamplingTime = 3;
 	  if (overloadFlag) {		// Флаг перегрузки
-		  transmitBuffer[48] = ((uint16_t) bitsOfChannal & 0xFF) | (((uint16_t) currentSamplingTime & 0x7) << 8)   | 0b0000100000000000;
+		  transmitBuffer[48] = (uint16_t) spectrumFormat | (((uint16_t) currentSamplingTime & 0x7) << 8)   | 0b0000100000000000;
 	  } else {
-		  transmitBuffer[48] = (((uint16_t) bitsOfChannal & 0xFF) | (((uint16_t) currentSamplingTime & 0x7) << 8)) & 0b1111011111111111;
+		  transmitBuffer[48] = ((uint16_t) spectrumFormat | (((uint16_t) currentSamplingTime & 0x7) << 8)) & 0b1111011111111111;
 	  }
 
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */

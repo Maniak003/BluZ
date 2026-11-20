@@ -135,7 +135,7 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData = enCoefA4096.Uint32 | ((uint64_t)enCoefB4096.Uint32 << 32);
 	PL[idxPL++] = tmpData;					// 12, 13
 
-	tmpData = enCoefC4096.Uint32 | ((uint64_t)dozimetrAquracy << 32) | (((uint64_t) bitsOfChannal & 0xFF) << 48) | (((uint64_t) currentSamplingTime & 0x7) << 56) | (((uint64_t) divide10sound & 0x1) << 59) | (((uint64_t) divide10led & 0x1) << 60);
+	tmpData = enCoefC4096.Uint32 | ((uint64_t)dozimetrAquracy << 32) | (((uint64_t) currentSamplingTime & 0x7) << 56) | (((uint64_t) divide10sound & 0x1) << 59) | (((uint64_t) divide10led & 0x1) << 60);
 	PL[idxPL++] = tmpData;					// 14, 15
 
 	tmpData = battKoeff.Uint32;
@@ -280,11 +280,6 @@ HAL_StatusTypeDef readFlash() {
 		dozimetrAquracy = (tmpData >> 32) & 0xFFFF;						// 32 - 47 биты
 		if ((dozimetrAquracy == 0xFFFF) || (dozimetrAquracy == 0)) {
 			dozimetrAquracy = 100;
-		}
-		/* Разрядность канала */
-		bitsOfChannal = (tmpData >> 48) & 0xFF;							// 48 - 55 биты
-		if ((bitsOfChannal < 16) || (bitsOfChannal > 32)) {
-			bitsOfChannal = CAPCHAN;
 		}
 		/* Время выборки для ADC */										// 56 - 58 биты
 		currentSamplingTime = (tmpData >> 56) & 0x7;

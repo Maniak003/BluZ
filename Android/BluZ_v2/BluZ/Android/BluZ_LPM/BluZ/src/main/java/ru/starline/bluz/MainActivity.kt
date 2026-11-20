@@ -612,7 +612,6 @@ public class MainActivity : FragmentActivity() {
         GO.HWCoef4096D             = hw.coef4096D
         GO.HWCoef4096E             = hw.coef4096E
         GO.HWAqureValue            = hw.acquireValue
-        GO.HWBitsChan              = hw.bitsChan
         GO.HWSampleTime            = hw.sampleTime
         GO.spectrometerTime        = hw.spectrometerTime
         GO.spectrometerPulse       = hw.spectrometerPulse
