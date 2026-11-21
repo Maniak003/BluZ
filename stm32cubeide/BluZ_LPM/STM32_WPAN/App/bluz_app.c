@@ -123,6 +123,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
     		requestSpectrum = false;
     		requestDosimeter = false;
     		requestState = false;
+    		notifyInterval = 0;						// Автонотификация включается только по команде клиента
     	}
     	connectFlag = true;
       	//UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
@@ -180,6 +181,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     *                   10 - Запрос аппаратной информации
                     *                   11 - Запрос кадра со спектром
                     *                   12 - Запрос кадра дозиметра
+                    *                   13 - Интервал автонотификации: байт 4 - секунды, 0 - выключить; байт 5, бит 0 - forceSpectrum: ответить кадром со спектром (иначе кадром по состоянию прибора)
                     *
                     * 4,5,6,7       - Первый порог в uR
                     * 8,9,10,11     - Второй порог в uR
@@ -472,6 +474,16 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 					/* Запрос кадра дозиметра */
 					case cmd_get_dosimeter:
 						requestDosimeter = true;
+						break;
+					/* Интервал автонотификации в секундах, 0 - выключить. Ответ - кадр спектра при forceSpectrum (байт 5, бит 0, как на команду 11) или кадр по состоянию прибора, в его байте 8 новое значение. */
+					case cmd_set_notify_interval:
+						notifyInterval = p_Notification->DataTransfered.p_Payload[4];
+						interval2 = intervalNow + notifyInterval;
+						if (p_Notification->DataTransfered.p_Payload[5] & 0x01) {
+							requestSpectrum = true;
+						} else {
+							requestState = true;
+						}
 						break;
 						/* Запрос аппаратной конфигурации */
 					case cmd_get_hardware_info:

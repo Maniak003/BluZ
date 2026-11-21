@@ -61,6 +61,7 @@ bool requestHistory = false, LEDflag = false, SoundFlag = false, VibroFlag = fal
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
 uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
+uint8_t notifyInterval = 0;									/* Интервал автонотификации в секундах, 0 - выключена. Во flash не хранится. */
 bool noSendProgress = true, requestHardwareInfo = false, requestSpectrum = false, requestDosimeter = false, requestState = false;
 /*
  *	Точность измерения дозиметра
@@ -469,7 +470,7 @@ int main(void)
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
-    if ( connectFlag && (requestHardwareInfo || requestHistory || requestSpectrum || requestDosimeter || requestState || interval2 < intervalNow) /*&& system_startup_done*/) {
+    if ( connectFlag && (requestHardwareInfo || requestHistory || requestSpectrum || requestDosimeter || requestState || (notifyInterval != 0 && interval2 < intervalNow)) /*&& system_startup_done*/) {
 	  noSendProgress = false;
 	  //HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	  /* Шаблон заголовка */
@@ -519,7 +520,6 @@ int main(void)
 	  } else {
 		  requestState = false;
 	  }
-	  interval2 = intervalNow + INTERVAL2;			// Любой кадр заменяет плановую автонотификацию
 
 	  transmitBuffer[0] = ((uint16_t) '<' & 0xFF) | (((uint16_t)'B' << 8) & 0xFF00);
 	  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((frameType << 8) & 0xFF00);
@@ -531,6 +531,7 @@ int main(void)
 		  flags |= 0x02;										// Бит 1: спектрометр запущен
 	  }
 	  transmitBuffer[3] = PROTOVERSION;
+	  transmitBuffer[4] = notifyInterval;					// Байт 8: интервал автонотификации, 0 - выключена. Байт 9 зарезервирован
 
 	  uint16_t idxCS = 0 ;
 	  uint32_t payloadSize = 0;								// Байт спектра в кадре без заполнения
@@ -816,6 +817,8 @@ int main(void)
 		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 		#endif
 		noSendProgress = true;
+		/* Любой кадр заменяет плановую автонотификацию. Интервал считается от конца передачи: если кадр шёл дольше интервала, плановый кадр пропускается, а не идёт следом. */
+		interval2 = intervalNow + notifyInterval;
 	}
 
     /*if (interval1 < intervalNow) {

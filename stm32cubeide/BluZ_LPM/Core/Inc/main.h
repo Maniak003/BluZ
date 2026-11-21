@@ -110,6 +110,7 @@ extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION], spectrometerTime, spectrometer
 extern uint32_t historySpecterBuffer[MAX_RESOLUTION];
 extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, currentTime, pulseCounterSecond, CPS, intervalNow, TVLevel[3];
 extern uint32_t interval2;
+extern uint8_t notifyInterval;
 extern bool SoundEnable, VibroEnable, LEDEnable, LEDflag;
 extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
@@ -142,6 +143,7 @@ typedef enum commandTx {
 	cmd_get_hardware_info,		// 10
 	cmd_get_specter,			// 11
 	cmd_get_dosimeter,			// 12
+	cmd_set_notify_interval,	// 13
 } commantTx_t;
 
 typedef enum logTypes {
@@ -263,7 +265,6 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 
 /* USER CODE BEGIN Private defines */
 #define INTERVAL1 1
-#define INTERVAL2 5
 #define INTERVAL3 1
 #define INTERVAL4 120
 #define INTERVAL5 60									// Интервал звукового оповещения о низком заряде аккумулятора
