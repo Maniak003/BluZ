@@ -92,6 +92,8 @@ class BluetoothInterface {
     private val payloadSize: Int = MAX_MTU - 3
     private val SUPPORTED_PROTOCOL_VERSION: UInt = 1u
     private val HW_INFO_TIMEOUT_MS: Long = 6000L
+    /** Интервал автонотификации прибора в секундах, задаётся после рукопожатия (0 - выключено) */
+    private val NOTIFICATION_INTERVAL_S: Int = 5
     private var writePending = false
     var connected: Boolean = false
 
@@ -335,8 +337,8 @@ class BluetoothInterface {
             else -> {
                 hwState = HwInfoState.READY
                 _status.tryEmit(BleStatus.Connected)
-                /* Сразу запрашиваем полный кадр: со спектром, если он набран, иначе дозиметра */
-                sendCommand(if (spectrometerPulses != 0u) 11u else 12u)
+                /* Прибор сам кадры не шлёт, пока не задан интервал. Ответ - первый кадр: со спектром (forceSpectrum), если он набран, иначе по состоянию прибора */
+                setNotificationInterval(NOTIFICATION_INTERVAL_S, spectrometerPulses != 0u)
             }
         }
     }
@@ -802,6 +804,17 @@ class BluetoothInterface {
     /** Sends a command packet to the device, calculating checksum. */
     @OptIn(ExperimentalUnsignedTypes::class)
     /**
+     * Команда 13: прибор шлёт автонотификацию раз в [seconds] секунд, 0 - не шлёт. После подключения интервал равен 0.
+     * Ответ - кадр со спектром при [forceSpectrum] (как на команду 11) или кадр по состоянию прибора.
+     */
+    @Synchronized
+    fun setNotificationInterval(seconds: Int, forceSpectrum: Boolean) {
+        sendBuffer[4] = seconds.coerceIn(0, 255).toUByte()
+        sendBuffer[5] = if (forceSpectrum) 1u else 0u
+        sendCommand(13u)
+    }
+
+    /**
      * Отправляет управляющую команду прибору. Заполняет header `sendBuffer`:
      *  - `[0..2]` = `<S>` (0x3C 0x53 0x3E) — маркер начала
      *  - `[3]` = `cmd` — код команды
@@ -819,6 +832,7 @@ class BluetoothInterface {
      *  - 10 - Запрос hw info (ответ - фрейм типа 7 с версией протокола).
      *  - 11 - Запрос кадра со спектром (ответ - фрейм типа 1..3, даже если спектрометр выключен).
      *  - 12 - Запрос кадра дозиметра (ответ - фрейм типа 0).
+     *  - 13 - Интервал автонотификации: секунды в `sendBuffer[4]`, 0 - выключить; `sendBuffer[5]` бит 0 - forceSpectrum: ответ кадром со спектром, иначе кадром по состоянию прибора. См. [setNotificationInterval].
      *
      */
     @Synchronized
