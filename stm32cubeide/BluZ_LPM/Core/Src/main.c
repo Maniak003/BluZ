@@ -530,7 +530,7 @@ int main(void)
 	  if (dataType != onlyDozimeter) {
 		  flags |= 0x02;										// Бит 1: спектрометр запущен
 	  }
-	  transmitBuffer[3] = PROTOVERSION;
+	  transmitBuffer[3] = (PROTOVERSION_MINOR << 8) | PROTOVERSION_MAJOR;	// Байт 6: мажорная версия, байт 7: минорная
 	  transmitBuffer[4] = notifyInterval;					// Байт 8: интервал автонотификации, 0 - выключена. Байт 9 зарезервирован
 
 	  uint16_t idxCS = 0 ;
