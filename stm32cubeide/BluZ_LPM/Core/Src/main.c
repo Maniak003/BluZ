@@ -470,7 +470,7 @@ int main(void)
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
-    if ( connectFlag && (requestHardwareInfo || requestHistory || requestSpectrum || requestDosimeter || requestState || (notifyInterval != 0 && interval2 < intervalNow)) /*&& system_startup_done*/) {
+    if ( connectFlag && (requestHardwareInfo || requestHistory || requestSpectrum || requestDosimeter || requestState || (notifyInterval != 0 && interval2 <= intervalNow)) /*&& system_startup_done*/) {
 	  noSendProgress = false;
 	  //HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	  /* Шаблон заголовка */
