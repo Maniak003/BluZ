@@ -90,7 +90,7 @@ class BluetoothInterface {
     private var writeBuffer: ArrayList<ByteArray>? = null
     private val MAX_MTU: Int = 251
     private val payloadSize: Int = MAX_MTU - 3
-    private val SUPPORTED_PROTOCOL_VERSION: UInt = 1u
+    private val SUPPORTED_PROTOCOL_MAJOR: UInt = 1u
     private val HW_INFO_TIMEOUT_MS: Long = 6000L
     /** Интервал автонотификации прибора в секундах, задаётся после рукопожатия (0 - выключено) */
     private val NOTIFICATION_INTERVAL_S: Int = 5
@@ -334,16 +334,17 @@ class BluetoothInterface {
 
     /** Ответ на запрос hw info: запоминаем версию протокола и проверяем, что она нам известна. */
     @Synchronized
-    private fun onHardwareInfo(version: UInt, spectrometerPulses: UInt) {
+    private fun onHardwareInfo(major: UInt, minor: UInt, spectrometerPulses: UInt) {
         if (hwState != HwInfoState.PENDING) return
-        GO.whVersInfo = version
-        GO.drawLOG.appendAppLogs("Proto version: $version", 1)
+        GO.whVersInfo = major
         when {
-            version > SUPPORTED_PROTOCOL_VERSION ->
-                rejectDevice("Device protocol version $version is newer than the app supports. Please update the app.")
-            version < SUPPORTED_PROTOCOL_VERSION ->
-                rejectDevice("Device protocol version $version is not supported. Please update the device firmware.")
+            major > SUPPORTED_PROTOCOL_MAJOR ->
+                rejectDevice("Device protocol version $major.$minor is newer than the app supports. Please update the app.")
+            major < SUPPORTED_PROTOCOL_MAJOR ->
+                rejectDevice("Device protocol version $major.$minor is not supported. Please update the device firmware.")
             else -> {
+                /* Минорная версия только для диагностики: совместимость определяет мажорная */
+                GO.drawLOG.appendAppLogs("Proto version: $major.$minor", 1)
                 hwState = HwInfoState.READY
                 _status.tryEmit(BleStatus.Connected)
                 /* Прибор сам кадры не шлёт, пока не задан интервал. Ответ - первый кадр: со спектром (forceSpectrum), если он набран, иначе по состоянию прибора */
@@ -627,7 +628,7 @@ class BluetoothInterface {
             GO.drawLOG.appendAppLogs("CS correct: $checkSum", 3)
             if (dataType == 7) {
                 onHardwareInfo(
-                    receiveData[6].toUInt() or (receiveData[7].toUInt() shl 8),
+                    receiveData[6].toUInt(), receiveData[7].toUInt(),
                     receiveData[90].toUInt() or (receiveData[91].toUInt() shl 8) or
                         (receiveData[92].toUInt() shl 16) or (receiveData[93].toUInt() shl 24)
                 )
