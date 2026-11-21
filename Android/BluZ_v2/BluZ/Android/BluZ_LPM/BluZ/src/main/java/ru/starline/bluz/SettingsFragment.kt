@@ -619,7 +619,7 @@ class SettingsFragment : Fragment() {
             convVal = ByteBuffer.allocate(4).putInt(GO.propLevel2).array()
             GO.BTT.sendBuffer[8] = convVal[0].toUByte()
             GO.BTT.sendBuffer[9] = convVal[1].toUByte()
-            GO.BTT.sendBuffer[10] = convVal[1].toUByte()
+            GO.BTT.sendBuffer[10] = convVal[2].toUByte()
             GO.BTT.sendBuffer[11] = convVal[3].toUByte()
 
             convVal = ByteBuffer.allocate(4).putInt(GO.propLevel3).array()
