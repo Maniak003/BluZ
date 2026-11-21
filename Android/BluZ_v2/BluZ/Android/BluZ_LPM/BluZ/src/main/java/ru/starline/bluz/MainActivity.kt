@@ -508,6 +508,10 @@ public class MainActivity : FragmentActivity() {
                 val tint = ContextCompat.getColor(GO.mainContext, tintRes)
                 GO.bzBtDot.backgroundTintList = ColorStateList.valueOf(tint)
                 ImageViewCompat.setImageTintList(GO.bzBtIcon, ColorStateList.valueOf(tint))
+                if (status is BleStatus.Connecting) {
+                    // Новое подключение: спектр прошлого прибора не показываем. Если у прибора спектр есть, первый кадр его перерисует.
+                    GO.drawSPECTER.resetSpecter()
+                }
                 if (status !is BleStatus.Connected) {
                     // При отключении сбрасываем индикатор — иначе на экране висят старые «-78» с зелёным цветом.
                     GO.Current_RSSI = -400
