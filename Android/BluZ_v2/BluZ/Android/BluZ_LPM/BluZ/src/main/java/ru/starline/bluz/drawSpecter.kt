@@ -7,9 +7,11 @@ import android.graphics.Paint
 import android.os.Build
 import android.text.Html
 import android.util.Log
+import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.appcompat.widget.TooltipCompat
 import androidx.collection.emptyLongSet
 import androidx.core.text.HtmlCompat
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -30,6 +32,7 @@ import androidx.core.graphics.createBitmap
  * при повороте экрана, чтобы не терять накопленный спектр [spectrData] (4096 значений).
  *
  * **Цикл отрисовки** ([redrawSpecter]):
+ *  0. Коррекция DNL ([DnlCorrector]) если [flagDNL] — применяется первой
  *  1. SMA-фильтр (окно `GO.windowSMA`) если [flagSMA]
  *  2. Медианный фильтр (3 точки) если [flagMEDIAN]
  *  3. Энергокомпенсация MLEM (через [DoseCalculator.calculateH10DoseSafe]) → `GO.compMED`,
@@ -62,6 +65,7 @@ class drawSpecter {
     public var firstCompare = true
     public var spectrData: DoubleArray = DoubleArray(4096)
     public var tmpSpecterData: DoubleArray = DoubleArray(4096)
+    public var flagDNL: Boolean = false
     public var flagSMA: Boolean = false
     public var flagMEDIAN: Boolean = false
     public var flagMLEM: Boolean = false
@@ -72,6 +76,21 @@ class drawSpecter {
     public var xSize: Double = 1.0                          // Размер для одного канала.
     private var MF: DoubleArray = DoubleArray(3)
     private var indexMF: Int = 0
+    private val dnlCorrector = DnlCorrector()
+    public var cbDnl: CheckBox? = null
+
+    /** DNL определён только для 4096 каналов: при 1024/2048 прибор суммирует соседние каналы. */
+    fun applyDnlEnabled() {
+        val box = cbDnl ?: return
+        box.isEnabled = ResolutionSpectr == 4096
+        box.alpha = if (box.isEnabled) 1f else 0.35f
+        /* Галочку не показываем, пока DNL не может работать; сам флаг сохраняется. */
+        val guard = GO.propButtonInit
+        GO.propButtonInit = false
+        box.isChecked = flagDNL && box.isEnabled
+        GO.propButtonInit = guard
+        TooltipCompat.setTooltipText(box, box.context.getString(R.string.hintDnl4096))
+    }
 
     /**
      * Создаёт (или пересоздаёт) [specBitmap] и [specCanvas] под текущие размеры [imgView].
@@ -148,6 +167,14 @@ class drawSpecter {
             MF[idx] = 0.0
         }
         indexMF = 0
+        applyDnlEnabled()
+        /* DNL работает только с полным 4096-канальным спектром */
+        val source = if (flagDNL && ResolutionSpectr == 4096) {
+            dnlCorrector.apply(spectrData)
+        } else {
+            dnlCorrector.reset()    // копия спектра устарела, пока коррекция не применялась
+            spectrData
+        }
         for (ttt: Int in 0 until ResolutionSpectr - GO.windowSMA) {
             if (ttt > GO.rejectChann) {
                 /* SMA фильтр */
@@ -155,12 +182,12 @@ class drawSpecter {
                     /* SMA */
                     tmpSM = 0.0
                     for (k in 0 until GO.windowSMA) {
-                        tmpSM += spectrData[ttt + k]
+                        tmpSM += source[ttt + k]
                     }
                     tmpSpecterData[ttt] = tmpSM / GO.windowSMA
                 } else {
                     /* Без преобразования */
-                    tmpSpecterData[ttt] = spectrData[ttt]
+                    tmpSpecterData[ttt] = source[ttt]
                 }
                 /* Медианный фильтр */
                 if (flagMEDIAN) {
@@ -438,6 +465,7 @@ class drawSpecter {
             tmpSpecterData[ttt] = 0.0
             spectrData[ttt] = 0.0
         }
+        dnlCorrector.reset()
         if ((HSize > 0) and (VSize > 0)) {
             specCanvas.drawColor(Color.argb(255, 0, 0, 0))
             imgView.setImageBitmap(specBitmap)

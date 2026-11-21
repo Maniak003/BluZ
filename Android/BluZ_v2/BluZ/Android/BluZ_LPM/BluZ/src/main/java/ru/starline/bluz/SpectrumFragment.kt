@@ -166,6 +166,7 @@ class SpectrumFragment : Fragment() {
             }
         }
 
+        val CBDNL: CheckBox = view.findViewById(R.id.cbDNL)
         val CBSMA: CheckBox = view.findViewById(R.id.cbSMA)
         val CBMEDIAN: CheckBox = view.findViewById(R.id.cbMED)
         val CBMARKER: CheckBox = view.findViewById(R.id.cbMarker)
@@ -279,9 +280,25 @@ class SpectrumFragment : Fragment() {
         }
 
         GO.propButtonInit = false
+        CBDNL.isChecked = GO.drawSPECTER.flagDNL
+        GO.drawSPECTER.cbDnl = CBDNL
+        GO.drawSPECTER.applyDnlEnabled()
         CBSMA.isChecked = GO.drawSPECTER.flagSMA
         CBMEDIAN.isChecked = GO.drawSPECTER.flagMEDIAN
         GO.propButtonInit = true
+
+        CBDNL.setOnCheckedChangeListener { _, isChecked ->
+            if (GO.propButtonInit) {
+                GO.drawSPECTER.flagDNL = isChecked
+                GO.drawSPECTER.firstCompare = true
+                if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
+                    GO.drawSPECTER.clearSpecter()
+                    GO.drawSPECTER.redrawSpecter(GO.specterType)
+                } else {
+                    Log.e("BluZ-BT", "drawSPEC is null")
+                }
+            }
+        }
 
         CBSMA.setOnCheckedChangeListener { _, isChecked ->
             if (GO.propButtonInit) {

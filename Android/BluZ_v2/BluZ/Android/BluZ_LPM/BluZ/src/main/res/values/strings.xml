@@ -49,6 +49,7 @@
     <string name="textPolinomB">B:</string>
     <string name="textPolinomC">C:</string>
     <string name="textSMA">SMA</string>
+    <string name="hintDnl4096">DNL works only with 4096 channels</string>
     <string name="textType1">BqMon</string>
     <string name="textType2">CSV</string>
     <string name="textHVoltage">HV:</string>

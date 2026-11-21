@@ -5,7 +5,9 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.Log
+import android.widget.CheckBox
 import android.widget.ImageView
+import androidx.appcompat.widget.TooltipCompat
 import androidx.core.graphics.createBitmap
 import kotlin.math.ln
 
@@ -28,6 +30,7 @@ class drawHistory {
     public lateinit var imgView : ImageView
     public var historyData: DoubleArray = DoubleArray(4096)
     public var tmpHistoryData: DoubleArray = DoubleArray(4096)
+    public var flagDNL: Boolean = false
     public var flagSMA: Boolean = false
     public var flagMEDIAN: Boolean = false
     public var ResolutionHistory: Int = 1024;
@@ -36,6 +39,20 @@ class drawHistory {
     public var xSize: Double = 1.0
     private var MF: DoubleArray = DoubleArray(3)
     private var indexMF: Int = 0
+    public var cbDnl: CheckBox? = null
+
+    /** DNL определён только для 4096 каналов: при 1024/2048 прибор суммирует соседние каналы. */
+    fun applyDnlEnabled() {
+        val box = cbDnl ?: return
+        box.isEnabled = ResolutionHistory == 4096
+        box.alpha = if (box.isEnabled) 1f else 0.35f
+        /* Галочку не показываем, пока DNL не может работать; сам флаг сохраняется. */
+        val guard = GO.propButtonInit
+        GO.propButtonInit = false
+        box.isChecked = flagDNL && box.isEnabled
+        GO.propButtonInit = guard
+        TooltipCompat.setTooltipText(box, box.context.getString(R.string.hintDnl4096))
+    }
 
     /** См. [drawSpecter.init] — аналогично, но управляется флагом `GO.drawObjectInitHistory`. */
     fun init() {
@@ -80,6 +97,9 @@ class drawHistory {
             MF[idx] = 0.0
         }
         indexMF = 0
+        applyDnlEnabled()
+        /* Спектр событий приходит целиком, поэтому коррекция без накопления между вызовами */
+        val source = if (flagDNL && ResolutionHistory == 4096) DnlCorrector().apply(historyData) else historyData
         for (ttt: Int in 0 until ResolutionHistory - GO.windowSMA) {
             if (ttt > GO.rejectChann) {
                 /* SMA фильтр */
@@ -87,12 +107,12 @@ class drawHistory {
                     /* SMA */
                     tmpSM = 0.0
                     for (k in 0 until GO.windowSMA) {
-                        tmpSM += historyData[ttt + k]
+                        tmpSM += source[ttt + k]
                     }
                     tmpHistoryData[ttt] = tmpSM / GO.windowSMA
                 } else {
                     /* Без преобразования */
-                    tmpHistoryData[ttt] = historyData[ttt]
+                    tmpHistoryData[ttt] = source[ttt]
                 }
                 /* Медианный фильтр */
                 if (flagMEDIAN) {

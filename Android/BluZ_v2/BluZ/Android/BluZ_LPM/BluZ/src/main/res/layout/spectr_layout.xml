@@ -266,9 +266,20 @@
             android:paddingBottom="2dp">
 
             <CheckBox
+                android:id="@+id/cbDNL"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:buttonTint="@color/bz_accent"
+                android:minWidth="0dp"
+                android:text="DNL"
+                android:textColor="@color/bz_text_dim"
+                android:textSize="10sp" />
+
+            <CheckBox
                 android:id="@+id/cbSMA"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
+                android:layout_marginStart="4dp"
                 android:buttonTint="@color/bz_accent"
                 android:minWidth="0dp"
                 android:text="SMA"
