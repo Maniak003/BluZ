@@ -415,6 +415,36 @@ public class MainActivity : FragmentActivity() {
         */
         GO.PP = propControl()
         GO.readConfigParameters()
+        if (GO.ColorDosimeter == 0) {
+            GO.ColorDosimeter = resources.getColor(R.color.ColorDosimeter, theme)
+        }
+        if (GO.ColorDosimeterSMA == 0) {
+            GO.ColorDosimeterSMA = resources.getColor(R.color.ColorDosimeterSMA, theme)
+        }
+        if (GO.ColorLin == 0) {
+            GO.ColorLin = resources.getColor(R.color.specterColorLin, theme)
+        }
+        if (GO.ColorLog == 0) {
+            GO.ColorLog = resources.getColor(R.color.specterColorLog, theme)
+        }
+        if (GO.ColorFone == 0) {
+            GO.ColorFone = resources.getColor(R.color.specterColorFone, theme)
+        }
+        if (GO.ColorFoneLg == 0) {
+            GO.ColorFoneLg = resources.getColor(R.color.specterColorFoneLg, theme)
+        }
+        if (GO.ColorLinGisto == 0) {
+            GO.ColorLinGisto = resources.getColor(R.color.specterColorLinGisto, theme)
+        }
+        if (GO.ColorLogGisto == 0) {
+            GO.ColorLogGisto = resources.getColor(R.color.specterColorLogGisto, theme)
+        }
+        if (GO.ColorFoneGisto == 0) {
+            GO.ColorFoneGisto = resources.getColor(R.color.specterColorFoneGisto, theme)
+        }
+        if (GO.ColorFoneLgGisto == 0) {
+            GO.ColorFoneLgGisto = resources.getColor(R.color.specterColorFoneLgGisto, theme)
+        }
         if (GO.fullScrn) {
             enableEdgeToEdge()
         }

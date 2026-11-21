@@ -770,37 +770,6 @@ class SettingsFragment : Fragment() {
             GO.BTT.sendCommand(0u)
         }
 
-        if (GO.ColorDosimeter == 0) {
-            GO.ColorDosimeter = resources.getColor(R.color.ColorDosimeter, GO.mainContext.theme)
-        }
-        if (GO.ColorDosimeterSMA == 0) {
-            GO.ColorDosimeterSMA = resources.getColor(R.color.ColorDosimeterSMA, GO.mainContext.theme)
-        }
-        if (GO.ColorLin == 0) {
-            GO.ColorLin = resources.getColor(R.color.specterColorLin, GO.mainContext.theme)
-        }
-        if (GO.ColorLog == 0) {
-            GO.ColorLog = resources.getColor(R.color.specterColorLog, GO.mainContext.theme)
-        }
-        if (GO.ColorFone == 0) {
-            GO.ColorFone = resources.getColor(R.color.specterColorFone, GO.mainContext.theme)
-        }
-        if (GO.ColorFoneLg == 0) {
-            GO.ColorFoneLg = resources.getColor(R.color.specterColorFoneLg, GO.mainContext.theme)
-        }
-        if (GO.ColorLinGisto == 0) {
-            GO.ColorLinGisto = resources.getColor(R.color.specterColorLinGisto, GO.mainContext.theme)
-        }
-        if (GO.ColorLogGisto == 0) {
-            GO.ColorLogGisto = resources.getColor(R.color.specterColorLogGisto, GO.mainContext.theme)
-        }
-        if (GO.ColorFoneGisto == 0) {
-            GO.ColorFoneGisto = resources.getColor(R.color.specterColorFoneGisto, GO.mainContext.theme)
-        }
-        if (GO.ColorFoneLgGisto == 0) {
-            GO.ColorFoneLgGisto = resources.getColor(R.color.specterColorFoneLgGisto, GO.mainContext.theme)
-        }
-
         rbLine = view.findViewById(R.id.RBLin)
         rbLg = view.findViewById(R.id.RBLg)
         rbFoneLin = view.findViewById(R.id.RBFoneLin)
