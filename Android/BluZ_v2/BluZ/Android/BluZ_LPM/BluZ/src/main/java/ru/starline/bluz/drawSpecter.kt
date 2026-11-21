@@ -260,7 +260,7 @@ class drawSpecter {
                 maxYlin = tmpSpecterData[idx]
             }
         }
-        maxYlog = ln(maxYlin);
+        maxYlog = ln(1.0 + maxYlin);
         //Log.d("BluZ-BT", "MAX: : $maxYlin")
         koefLin = VSize / maxYlin
         koefLog = VSize / maxYlog
@@ -274,7 +274,7 @@ class drawSpecter {
             /* Подготовка данных спектра */
             Ylin = (VSize - tmpSpecterData[idx1] * koefLin).toFloat()
             Ylog = if (tmpSpecterData[idx1] != 0.0) {
-                (VSize - ln(tmpSpecterData[idx1]) * koefLog).toFloat()
+                (VSize - ln(1.0 + tmpSpecterData[idx1]) * koefLog).toFloat()
             } else {
                 VSize.toFloat()
             }
@@ -445,4 +445,4 @@ class drawSpecter {
             Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize")
         }
     }
-}
+}

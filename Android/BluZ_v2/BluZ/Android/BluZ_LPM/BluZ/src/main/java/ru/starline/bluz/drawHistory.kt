@@ -132,7 +132,7 @@ class drawHistory {
                 maxYlin = tmpHistoryData[idx]
             }
         }
-        maxYlog = ln(maxYlin);
+        maxYlog = ln(1.0 + maxYlin);
         //Log.d("BluZ-BT", "MAX: : $maxYlin")
         koefLin = VSize / maxYlin
         koefLog = VSize / maxYlog
@@ -145,7 +145,7 @@ class drawHistory {
             }
             Ylin = (VSize - tmpHistoryData[idx1] * koefLin).toFloat()
             if (tmpHistoryData[idx] != 0.0) {
-                Ylog = (VSize - ln(tmpHistoryData[idx1]) * koefLog).toFloat()
+                Ylog = (VSize - ln(1.0 + tmpHistoryData[idx1]) * koefLog).toFloat()
             } else {
                 Ylog = VSize.toFloat()
             }
@@ -195,4 +195,4 @@ class drawHistory {
         }
     }
 
-}
+}
