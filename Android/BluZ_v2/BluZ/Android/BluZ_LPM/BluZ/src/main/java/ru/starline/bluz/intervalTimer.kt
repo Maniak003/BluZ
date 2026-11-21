@@ -12,7 +12,8 @@ import java.util.TimerTask
  *  - Если `GO.needTerminate` — `System.exit(0)` (выход через Back)
  *  - Иначе если `GO.BTT.connected == false` → `destroyDevice() + initLeDevice()` —
  *    попытка переподключения
- *  - Иначе проверяет, что прибор ответил на запрос hw info ([BluetoothInterface.checkHandshakeTimeout])
+ *  - Иначе проверяет, что прибор ответил на запрос hw info и прислал первый кадр после команды 13
+ *    ([BluetoothInterface.checkHandshakeTimeout])
  *
  * Останавливается через [stopTimer]. Используется в обработчиках смены MAC, выхода
  * и переключения сценариев.
@@ -50,7 +51,8 @@ class intervalTimer {
  *  - Если `GO.needTerminate == true` → `System.exit(0)` (это сигнал из performExit для
  *    тех приборов, где нужно закрыть приложение по таймеру)
  *  - Если `GO.BTT.connected == false` → принудительный `destroyDevice + initLeDevice`
- *  - Иначе проверяет, что прибор ответил на запрос hw info ([BluetoothInterface.checkHandshakeTimeout])
+ *  - Иначе проверяет, что прибор ответил на запрос hw info и прислал первый кадр после команды 13
+ *    ([BluetoothInterface.checkHandshakeTimeout])
  */
 internal class MyTimerTask : TimerTask() {
     override fun run() {

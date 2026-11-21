@@ -293,6 +293,9 @@ class BluetoothInterface {
     /* Рукопожатие: после подключения запрашиваем hw info, до ответа остальные фреймы игнорируются */
     @Volatile private var hwState = HwInfoState.IDLE
     private var hwRequestedAt = 0L
+    /** Момент включения автонотификации (команда 13) и признак того, что после неё пришёл первый кадр */
+    private var notifyRequestedAt = 0L
+    @Volatile private var firstFrameSeen = false
 
     /* Переходы состояния рукопожатия идут из потоков таймера и GATT, поэтому под общей блокировкой */
     /** Сброс рукопожатия: при каждом разрыве и перед каждым новым подключением. */
@@ -314,12 +317,18 @@ class BluetoothInterface {
         return true
     }
 
-    /** Вызывается тиком [MyTimerTask]: если ответа на hw info нет дольше [HW_INFO_TIMEOUT_MS] - отказ. */
+    /**
+     * Вызывается тиком [MyTimerTask]: если ответа на hw info или первого кадра после команды 13
+     * нет дольше [HW_INFO_TIMEOUT_MS] - отказ.
+     */
     @Synchronized
     fun checkHandshakeTimeout() {
         if (hwState == HwInfoState.PENDING
             && SystemClock.elapsedRealtime() - hwRequestedAt >= HW_INFO_TIMEOUT_MS) {
             rejectDevice("Device did not answer the hardware info request. Please update the device firmware.")
+        } else if (hwState == HwInfoState.READY && !firstFrameSeen
+            && SystemClock.elapsedRealtime() - notifyRequestedAt >= HW_INFO_TIMEOUT_MS) {
+            rejectDevice("Device did not send data after the notification interval was set. Please reconnect the device.")
         }
     }
 
@@ -338,6 +347,8 @@ class BluetoothInterface {
                 hwState = HwInfoState.READY
                 _status.tryEmit(BleStatus.Connected)
                 /* Прибор сам кадры не шлёт, пока не задан интервал. Ответ - первый кадр: со спектром (forceSpectrum), если он набран, иначе по состоянию прибора */
+                notifyRequestedAt = SystemClock.elapsedRealtime()
+                firstFrameSeen = false
                 setNotificationInterval(NOTIFICATION_INTERVAL_S, spectrometerPulses != 0u)
             }
         }
@@ -626,6 +637,7 @@ class BluetoothInterface {
                 Log.d("BluZ-BT", "Frame ignored: hardware info not received yet")
                 return
             }
+            firstFrameSeen = true
             gatt.readRemoteRssi()
             /* Decode hardware config from receiveData */
             val hw = decodeHardwareConfig(receiveData)
@@ -801,19 +813,21 @@ class BluetoothInterface {
         }
     }
 
-    /** Sends a command packet to the device, calculating checksum. */
-    @OptIn(ExperimentalUnsignedTypes::class)
     /**
      * Команда 13: прибор шлёт автонотификацию раз в [seconds] секунд, 0 - не шлёт. После подключения интервал равен 0.
      * Ответ - кадр со спектром при [forceSpectrum] (как на команду 11) или кадр по состоянию прибора.
      */
     @Synchronized
     fun setNotificationInterval(seconds: Int, forceSpectrum: Boolean) {
-        sendBuffer[4] = seconds.coerceIn(0, 255).toUByte()
-        sendBuffer[5] = if (forceSpectrum) 1u else 0u
-        sendCommand(13u)
+        /* Свой буфер: общий sendBuffer заполняет экран настроек, рукопожатие не должно его портить */
+        val packet = UByteArray(sendBuffer.size)
+        packet[4] = seconds.coerceIn(0, 255).toUByte()
+        packet[5] = if (forceSpectrum) 1u else 0u
+        sendPacket(13u, packet)
     }
 
+    /** Sends a command packet to the device, calculating checksum. */
+    @OptIn(ExperimentalUnsignedTypes::class)
     /**
      * Отправляет управляющую команду прибору. Заполняет header `sendBuffer`:
      *  - `[0..2]` = `<S>` (0x3C 0x53 0x3E) — маркер начала
@@ -836,7 +850,11 @@ class BluetoothInterface {
      *
      */
     @Synchronized
-    fun sendCommand(cmd: UByte) {
+    fun sendCommand(cmd: UByte) = sendPacket(cmd, sendBuffer)
+
+    /** Заполняет заголовок и контрольную сумму пакета [buffer] и отправляет его. */
+    @Synchronized
+    private fun sendPacket(cmd: UByte, buffer: UByteArray) {
         /* Отклонённому прибору команды не шлём */
         if (hwState == HwInfoState.REJECTED) {
             GO.drawLOG.appendAppLogs("Command $cmd not sent: device is not supported.", 0)
@@ -847,15 +865,15 @@ class BluetoothInterface {
             }
             return
         }
-        sendBuffer[0] = '<'.code.toUByte()
-        sendBuffer[1] = 'S'.code.toUByte()
-        sendBuffer[2] = '>'.code.toUByte()
-        sendBuffer[3] = cmd
+        buffer[0] = '<'.code.toUByte()
+        buffer[1] = 'S'.code.toUByte()
+        buffer[2] = '>'.code.toUByte()
+        buffer[3] = cmd
         var cs: UShort = 0u
-        for (i in 0..241) cs = (cs + sendBuffer[i]).toUShort()
-        sendBuffer[242] = (cs and 255u).toUByte()
-        sendBuffer[243] = ((cs.toUInt() shr 8) and 255u).toUByte()
-        write(sendBuffer.toByteArray())
+        for (i in 0..241) cs = (cs + buffer[i]).toUShort()
+        buffer[242] = (cs and 255u).toUByte()
+        buffer[243] = ((cs.toUInt() shr 8) and 255u).toUByte()
+        write(buffer.toByteArray())
     }
 
     /**
