@@ -120,6 +120,8 @@ extern bool history_active, requestHistory/*, findDevice*/;
 extern bool divide10sound, divide10led;
 extern bool inhibitAlarm;
 extern uint16_t HVoltage, comparatorLevel;
+extern int16_t hvTempCoef;
+void hvCompensate(void);
 extern LPTIM_HandleTypeDef hlptim2;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER];
@@ -269,6 +271,8 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 #define INTERVAL1 1
 #define INTERVAL3 1
 #define INTERVAL4 120
+#define HV_TEMP_REF 20.0f								// Температура, при которой коррекция высокого напряжения равна нулю, °C
+#define HV_TEMP_COEF_DEFAULT 7900						// Коэффициент температурной коррекции по умолчанию, 0.001 кода DAC на °C
 #define INTERVAL5 60									// Интервал звукового оповещения о низком заряде аккумулятора
 #define DIVCOUNTER 5									// Делитель событий для озвучки.
 #define DIVCOUNTERLED 10								// Делитель событий для светодиода.

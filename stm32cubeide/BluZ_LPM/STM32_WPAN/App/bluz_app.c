@@ -212,6 +212,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     * 					6 -
                     * 					7 -
                     * 63, 64		- Точность расчета для дозиметра. Количество импульсов в усреднении.
+                    * 65, 66		- Температурная коррекция высокого напряжения, int16 LE, 0.001 кода DAC на °C (по умолчанию 7900), 0 - выключена
                     *
                     * 242, 243      - Контрольная сумма
                     */
@@ -314,6 +315,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						/* Уровни компаратора и высокого напряжения */
 						HVoltage = p_Notification->DataTransfered.p_Payload[33] | (p_Notification->DataTransfered.p_Payload[34] << 8);
 						comparatorLevel = p_Notification->DataTransfered.p_Payload[35] | (p_Notification->DataTransfered.p_Payload[36] << 8);
+						hvTempCoef = (int16_t) (p_Notification->DataTransfered.p_Payload[65] | (p_Notification->DataTransfered.p_Payload[66] << 8));
 
 						/* Разрешение спектра. 0 - 1024, 1 - 2048, 2 - 4096 */
 						if ((resolutionSpecter != (spectrResolution_t) p_Notification->DataTransfered.p_Payload[37]) || currentSamplingTime != tmpSample) {
@@ -366,7 +368,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 
 						/* Установка уровней для компаратора и высокого напряжения */
 						setLevelOnPort(CHANNEL_A, comparatorLevel);
-						setLevelOnPort(CHANNEL_B, HVoltage);
+						hvCompensate();
 						/*
 						 * TODO -- не получается разобраться, почему запись выполняется со второго раза.
 						 * Первый вызов стирает Flash и только на втором происходит запись.

@@ -138,7 +138,7 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData = enCoefC4096.Uint32 | ((uint64_t)dozimetrAquracy << 32) | (((uint64_t) currentSamplingTime & 0x7) << 56) | (((uint64_t) divide10sound & 0x1) << 59) | (((uint64_t) divide10led & 0x1) << 60);
 	PL[idxPL++] = tmpData;					// 14, 15
 
-	tmpData = battKoeff.Uint32;
+	tmpData = battKoeff.Uint32 | ((uint64_t)(uint16_t)hvTempCoef << 32);
 	PL[idxPL++] = tmpData;
 
 	//PL[idxPL++] = 0xDDDDDDFFCCCCCCFF;		// 16, 17
@@ -213,7 +213,7 @@ HAL_StatusTypeDef readFlash() {
 		 *	15			--	Коэффициент B пересчета канала в энергию для 4096
 		 *	16			--	Коэффициент C пересчета канала в энергию для 4096
 		 *	17			--	Количество импульсов для усреднения (uint16_t), Разрядность канала (uint8_t), Время выборки АЦП (0x7 - три бита), Деление озвучки (0x10 - один бит)
-		 *	18			--  Коэффициент пересчета напряжения для аккумулятора (uint32_t)
+		 *	18			--  Коэффициент пересчета напряжения для аккумулятора (uint32_t, 0 - 31 биты), температурная коррекция HV (int16_t, 32 - 47 биты)
 		 *
 		 */
 
@@ -298,6 +298,9 @@ HAL_StatusTypeDef readFlash() {
 		if (isnan(battKoeff.Float) || isinf(battKoeff.Float) || battKoeff.Float < 0.00095f || battKoeff.Float > 0.00115f) {
 			battKoeff.Float = ADC_VREF_COEF;
 		}
+
+		/* Температурная коррекция высокого напряжения */
+		hvTempCoef = (int16_t) ((tmpData >> 32) & 0xFFFF);
 
 	return HAL_OK;
 

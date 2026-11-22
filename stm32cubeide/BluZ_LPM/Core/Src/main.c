@@ -129,6 +129,7 @@ union dataB battKoeff;
 
 uint8_t	low_batt_count = 0;											// Счетчик низкого уровня батареии
 uint32_t batt_time_counter = 0;										// ИНтервал звукового оповещения о низком заряде аккумулятора
+int16_t hvTempCoef = HV_TEMP_COEF_DEFAULT;									// Температурная коррекция высокого напряжения, 0.001 кода DAC на °C, 0 - выключена
 uint16_t HVoltage = 256, comparatorLevel = 256;						// Уровни настройки высокого напряжения и компаратора
 
 uint8_t notifyFlags = 0;											// 1 - Звук, 2 - Вибро, 4 - Led
@@ -458,6 +459,7 @@ int main(void)
   //NotifyAct(SOUND_NOTIFY /*| VIBRO_NOTIFY*/, 1);
 
   TVMeasure();
+  hvCompensate();
 
   /* Сброс счетчиков */
   pulseCounter = 0;
@@ -787,6 +789,8 @@ int main(void)
 	  } else {
 		  transmitBuffer[48] = ((uint16_t) spectrumFormat | (((uint16_t) currentSamplingTime & 0x7) << 8)) & 0b1111011111111111;
 	  }
+	  /* Температурная коррекция высокого напряжения, 0.001 кода DAC на °C */
+	  transmitBuffer[49] = (uint16_t) hvTempCoef;
 
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
 	  transmitBuffer[idxCS] = 0;
@@ -1508,6 +1512,7 @@ void updateMesurment(void) {
 		if (interval4 <= intervalNow) {
 			interval4 = intervalNow + INTERVAL4;
 			TVMeasure();
+			hvCompensate();
 			if ((float) currVoltage * battKoeff.Float > LOW_BATT) {
 				low_batt_count = 0;
 			} else {
@@ -1539,6 +1544,20 @@ uint32_t ADC_Switch_Channel(uint32_t channel) {
 	tmp_level = HAL_ADC_GetValue(&hadc4) & 0xFFF;
 	HAL_ADC_Stop(&hadc4);
 	return tmp_level;
+}
+
+/*
+ * Температурная коррекция высокого напряжения.
+ * Чем выше значение DAC тем ниже напряжение.
+ */
+void hvCompensate(void) {
+	float level = (float) HVoltage + (float) hvTempCoef / 1000.0f * (HV_TEMP_REF - (TK1 * (float) currTemperature + TK2));
+	if (level < 0.0f) {
+		level = 0.0f;
+	} else if (level > 1023.0f) {
+		level = 1023.0f;
+	}
+	setLevelOnPort(CHANNEL_B, (uint16_t) (level + 0.5f));
 }
 
 void TVMeasure(void) {
