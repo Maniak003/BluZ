@@ -203,6 +203,7 @@ uint32_t samplingTm(uint8_t smplTm) {
  *	16 - Низкий заряд батареи
  *	17 - Очистка истории
  *	18 - Отключение тревоги
+ *	21 - Восстановление таймеров после потери алярма RTC
  */
 
 void logUpdate(logTypes_t act) {
@@ -470,6 +471,17 @@ int main(void)
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
+    /* Самовосстановление: алярм RTC потерян, голова списка таймеров просрочена более чем на 1 с (1024 тика) */
+    {
+      UTILS_ENTER_CRITICAL_SECTION();
+      UTIL_TIMER_Object_t *timerHead = UTIL_TIMER_GetTimerList();
+      bool timerLost = (timerHead != NULL) && (UTIL_TimerDriver.GetTimerElapsedTime() > timerHead->Timestamp + 1024);
+      UTILS_EXIT_CRITICAL_SECTION();
+      if (timerLost) {
+        logUpdate(timerRecoverLog);
+        UTIL_TIMER_IRQ_Handler();	/* Выполнит просроченный таймер и заново взведет алярм */
+      }
+    }
     if ( connectFlag && (requestHardwareInfo || requestHistory || requestSpectrum || requestDosimeter || requestState || (notifyInterval != 0 && interval2 <= intervalNow)) /*&& system_startup_done*/) {
 	  noSendProgress = false;
 	  //HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
