@@ -111,6 +111,7 @@ class globalObj {
     public val propCfgCoef4096D: String = "Coeff4096D"
     public val propCfgCoef4096E: String = "Coeff4096E"
     public val propCfgHV: String = "HVoltage"
+    public val propCfgHVTempCoef: String = "HVTempCoef"
     public val propCfgComparator: String = "Comparator"
     public val propCfgSoundKvant: String = "SoundKvantN"
     public val propCfgLedKvant: String = "LedKvantN"
@@ -384,6 +385,7 @@ class globalObj {
     lateinit var rbResolution2048: RadioButton
     lateinit var rbResolution4096: RadioButton
     lateinit var editHVoltage: EditText
+    lateinit var editHVTempCoef: EditText
     lateinit var editComparator: EditText
     lateinit var cbSpectrometr: CheckBox
     lateinit var editSMA: EditText
@@ -473,6 +475,7 @@ class globalObj {
     public var propCoef4096E: Float = 0.0f
     public var propComparator: UShort = 0u          // Уровень компаратора
     public var propHVoltage: UShort = 0u            // Уровень высокого напряжения
+    public var propHVTempCoef: Int = 0             // Температурная коррекция высокого напряжения, 0.001 кода DAC на °C
     public var windowSMA: Int = 5
     public var sampleTime: Int = 0
 
@@ -569,6 +572,7 @@ class globalObj {
     public var HWpropCPS2UR: Float = 0.0f
 
     public var HWpropHVoltage: UShort = 0u
+    public var HWpropHVTempCoef: Int = 0
 
     public var HWpropComparator: UShort = 0u
 
@@ -1130,6 +1134,7 @@ class globalObj {
         GO.propCPSLevel2 = GO.propLevel2 * GO.propCPS2UR
         GO.propCPSLevel3 = GO.propLevel3 * GO.propCPS2UR
         GO.propHVoltage = GO.HWpropHVoltage
+        GO.propHVTempCoef = GO.HWpropHVTempCoef
         GO.propComparator = GO.HWpropComparator
         GO.propAutoStartSpectrometr = GO.HWpropAutoStartSpectrometr
         GO.aqureValue = GO.HWAqureValue.toInt()
@@ -1180,6 +1185,7 @@ class globalObj {
         GO.PP.setPropInt(propCfgResolution, GO.spectrResolution)
         GO.PP.setPropInt(propCfgComparator, GO.propComparator.toInt())     // Уровень Компаратора
         GO.PP.setPropInt(propCfgHV, GO.propHVoltage.toInt())               // Уровень высокого напряжения
+        GO.PP.setPropInt(propCfgHVTempCoef, GO.propHVTempCoef)             // Температурная коррекция высокого напряжения
         GO.PP.setPropInt(propCfgSMAWindow, GO.windowSMA)
         //GO.PP.setPropFloat(propCfgCoef1024A, GO.propCoef1024A)             // A - полинома пересчета канала в энергию
         //GO.PP.setPropFloat(propCfgCoef1024B, GO.propCoef1024B)             // B - полинома пересчета канала в энергию
@@ -1290,6 +1296,7 @@ class globalObj {
         GO.propCoef4096E = GO.PP.getPropFloat(propCfgCoef4096E)
         GO.propCPS2UR = GO.PP.getPropFloat(propCfgCPS2UR)
         GO.propHVoltage = GO.PP.getPropInt(propCfgHV).toUShort()
+        GO.propHVTempCoef = GO.PP.getPropInt(propCfgHVTempCoef)
         GO.propComparator = GO.PP.getPropInt(propCfgComparator).toUShort()
         GO.spectrResolution = GO.PP.getPropInt(propCfgResolution)
         GO.windowSMA = GO.PP.getPropInt(propCfgSMAWindow)

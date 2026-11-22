@@ -80,6 +80,7 @@ data class LogEntry(val timestamp: UInt, val action: UByte)
  * @property hVoltage Высокое напряжение SiPM (10-битное значение АЦП, 0..1023).
  * @property comparator Порог компаратора АЦП (10-битное, 0..1023). Используется для
  *  расчёта первого «живого» канала в [globalObj.updateSpecSubtitle].
+ * @property hvTempCoef Температурная коррекция высокого напряжения, int16, 0.001 кода DAC на °C (байты 98-99).
  * @property coef1024A Коэф полинома `A·ch² + B·ch + C` (энергия в кэВ) для разрешения 1024.
  * @property coef1024B B-коэф для 1024.
  * @property coef1024C C-коэф для 1024.
@@ -112,6 +113,7 @@ data class HardwareConfig(
     val cps2ur: Float,
     val hVoltage: UShort,
     val comparator: UShort,
+    val hvTempCoef: Int,
     //val coef1024A: Float, val coef1024B: Float, val coef1024C: Float,
     //val coef2048A: Float, val coef2048B: Float, val coef2048C: Float,
     val coef4096A: Float, val coef4096B: Float, val coef4096C: Float, val coef4096D: Float, val coef4096E: Float,

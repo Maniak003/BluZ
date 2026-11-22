@@ -737,6 +737,7 @@ class BluetoothInterface {
                 cps2ur = ByteBuffer.wrap(d.asByteArray(), 46, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 hVoltage = (((d[51].toUInt() shl 8) or d[50].toUInt()) and 0x3FFu).toUShort(),
                 comparator = (((d[53].toUInt() shl 8) or d[52].toUInt()) and 0x3FFu).toUShort(),
+                hvTempCoef = ((d[99].toUInt() shl 8) or d[98].toUInt()).toShort().toInt(),
                 //coef1024A = ByteBuffer.wrap(d.asByteArray(), 34, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 //coef1024B = ByteBuffer.wrap(d.asByteArray(), 38, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 //coef1024C = ByteBuffer.wrap(d.asByteArray(), 42, 4).order(ByteOrder.LITTLE_ENDIAN).float,

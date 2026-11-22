@@ -634,6 +634,7 @@ public class MainActivity : FragmentActivity() {
         GO.HWpropCPS2UR            = hw.cps2ur
         GO.HWpropHVoltage          = hw.hVoltage
         GO.HWpropComparator        = hw.comparator
+        GO.HWpropHVTempCoef       = hw.hvTempCoef
         //GO.HWCoef1024A             = hw.coef1024A
         //GO.HWCoef1024B             = hw.coef1024B
         //GO.HWCoef1024C             = hw.coef1024C

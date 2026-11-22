@@ -154,6 +154,7 @@ class SettingsFragment : Fragment() {
         GO.rbResolution2048 = view.findViewById(R.id.RBResol2048)
         GO.rbResolution4096 = view.findViewById(R.id.RBResol4096)
         GO.editHVoltage = view.findViewById(R.id.editHvoltage)
+        GO.editHVTempCoef = view.findViewById(R.id.editHVTempCoef)
         GO.editComparator = view.findViewById(R.id.editComparator)
         GO.cbSpectrometr = view.findViewById(R.id.CBSpectrometer)
         GO.editSMA = view.findViewById(R.id.editTextSMAWindow)
@@ -522,6 +523,7 @@ class SettingsFragment : Fragment() {
             val smaRaw = GO.editSMA.text.toString().trim().toIntOrNull() ?: 0
             GO.windowSMA = (smaRaw / 2) * 2 + 1
             GO.propHVoltage = (GO.editHVoltage.text.toString().trim().toIntOrNull() ?: 0).toUShort()
+            GO.propHVTempCoef = (GO.editHVTempCoef.text.toString().trim().toIntOrNull() ?: 0).coerceIn(-32768, 32767)
             GO.propComparator = (GO.editComparator.text.toString().trim().toIntOrNull() ?: 0).toUShort()
             if (GO.rbResolution1024.isChecked) {
                 GO.spectrResolution = 0
@@ -599,6 +601,7 @@ class SettingsFragment : Fragment() {
             GO.propVibroLevel3 = GO.cbVibroLevel3.isChecked
             GO.propCPS2UR = GO.editCPS2Rh.text.toString().trim().replace(',', '.').toFloatOrNull() ?: 0f
             GO.propHVoltage = (GO.editHVoltage.text.toString().trim().toIntOrNull() ?: 0).toUShort()
+            GO.propHVTempCoef = (GO.editHVTempCoef.text.toString().trim().toIntOrNull() ?: 0).coerceIn(-32768, 32767)
             GO.propComparator = (GO.editComparator.text.toString().trim().toIntOrNull() ?: 0).toUShort()
             if (GO.rbResolution1024.isChecked) {
                 GO.spectrResolution = 0
@@ -735,6 +738,9 @@ class SettingsFragment : Fragment() {
 
             GO.BTT.sendBuffer[33] = (GO.propHVoltage and 255u).toUByte()
             GO.BTT.sendBuffer[34] = ((GO.propHVoltage.toUInt() shr 8) and 255u).toUByte()
+
+            GO.BTT.sendBuffer[65] = (GO.propHVTempCoef and 255).toUByte()
+            GO.BTT.sendBuffer[66] = ((GO.propHVTempCoef shr 8) and 255).toUByte()
 
             GO.BTT.sendBuffer[35] = (GO.propComparator and 255u).toUByte()
             GO.BTT.sendBuffer[36] = ((GO.propComparator.toUInt() shr 8) and 255u).toUByte()
@@ -1822,6 +1828,7 @@ class SettingsFragment : Fragment() {
         GO.editPolinomE.setText(df.format(GO.propCoef4096E))
         GO.editCPS2Rh.setText(GO.propCPS2UR.toString())
         GO.editHVoltage.setText(GO.propHVoltage.toString())
+        GO.editHVTempCoef.setText(GO.propHVTempCoef.toString())
         GO.editComparator.setText(GO.propComparator.toString())
         GO.editSMA.setText(GO.windowSMA.toString())
         GO.propButtonInit = true

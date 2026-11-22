@@ -1265,6 +1265,7 @@ class AutoCalibrationController(
      *  - `[39..50]` polynom 2048
      *  - `[51..62]` polynom 4096
      *  - `[63..64]` aqureValue (uint16 LE)
+     *  - `[65..66]` propHVTempCoef (int16 LE, 0.001 кода DAC на °C)
      */
     private fun sendFullConfigToDevice() {
         val buf = GO.BTT.sendBuffer
@@ -1299,6 +1300,8 @@ class AutoCalibrationController(
         buf[34] = ((GO.propHVoltage.toUInt() shr 8) and 255u).toUByte()
         buf[35] = (GO.propComparator and 255u).toUByte()
         buf[36] = ((GO.propComparator.toUInt() shr 8) and 255u).toUByte()
+        buf[65] = (GO.propHVTempCoef and 255).toUByte()
+        buf[66] = ((GO.propHVTempCoef shr 8) and 255).toUByte()
 
         buf[37] = GO.spectrResolution.toUByte()
 
