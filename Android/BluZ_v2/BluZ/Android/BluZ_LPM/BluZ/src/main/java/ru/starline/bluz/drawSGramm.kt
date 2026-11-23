@@ -127,7 +127,7 @@ class drawSGramm {
     fun redraw() {
         /* Поиск максимально и минимального значений, для раскраски */
         var maxSGramm: Double = 0.0
-        var minSGramm: Double = 10000.0
+        var minSGramm: Double = 1000000.0
         for (row: Int in 0 until GO.drawSPECTER.rowsSGramm)  {
             for (col: Int in 0 until GO.drawSPECTER.colsSGramm) {
                 /* Test */

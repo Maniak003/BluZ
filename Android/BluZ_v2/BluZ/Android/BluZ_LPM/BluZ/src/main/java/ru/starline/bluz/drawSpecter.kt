@@ -175,6 +175,42 @@ class drawSpecter {
             dnlCorrector.reset()    // копия спектра устарела, пока коррекция не применялась
             spectrData
         }
+        var convert1024 = 1
+        var summChan = 0.0
+        when (ResolutionSpectr) {
+            1024 -> {
+                paintLin.strokeWidth = 3.0f //xSize.toFloat()
+                paintLog.strokeWidth = 3.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 4.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 4.0f //xSize.toFloat() * 2
+                convert1024 = 1
+            }
+
+            2048 -> {
+                paintLin.strokeWidth = 2.0f //xSize.toFloat()
+                paintLog.strokeWidth = 2.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 3.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 3.0f //xSize.toFloat() * 2
+                convert1024 = 2
+            }
+
+            4096 -> {
+                paintLin.strokeWidth = 1.0f //xSize.toFloat()
+                paintLog . strokeWidth = 1.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 2.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 2.0f //xSize.toFloat() * 2
+                convert1024 = 4
+            }
+            else -> {
+                paintLin.strokeWidth = 3.0f //xSize.toFloat()
+                paintLog.strokeWidth = 3.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 4.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 4.0f //xSize.toFloat() * 2
+                convert1024 = 1
+            }
+        }
+
+
         for (ttt: Int in 0 until ResolutionSpectr - GO.windowSMA) {
             if (ttt > GO.rejectChann) {
                 /* SMA фильтр */
@@ -206,7 +242,11 @@ class drawSpecter {
                     oldSpecter[ttt] = tmpSpecterData[ttt]
                     /* Запись спектрограммы */
                     if (GO.drawSGinit) {
-                        sGrammBuffer[sGrammIndex][ttt] = deltaSpectr[ttt]
+                        summChan += deltaSpectr[ttt]
+                        if (ttt % convert1024 == 0) {
+                            sGrammBuffer[sGrammIndex][ttt / convert1024] = summChan
+                            summChan = 0.0
+                        }
                     }
                 }
             } else {
@@ -225,34 +265,6 @@ class drawSpecter {
         }
 
         xSize = HSize.toDouble() / ResolutionSpectr * GO.xZoom
-        when (ResolutionSpectr) {
-            1024 -> {
-                paintLin.strokeWidth = 3.0f //xSize.toFloat()
-                paintLog.strokeWidth = 3.0f // xSize.toFloat()
-                paintFoneLin.strokeWidth = 4.0f //xSize.toFloat() * 2
-                paintFoneLog.strokeWidth = 4.0f //xSize.toFloat() * 2
-            }
-
-            2048 -> {
-                paintLin.strokeWidth = 2.0f //xSize.toFloat()
-                paintLog.strokeWidth = 2.0f // xSize.toFloat()
-                paintFoneLin.strokeWidth = 3.0f //xSize.toFloat() * 2
-                paintFoneLog.strokeWidth = 3.0f //xSize.toFloat() * 2
-            }
-
-            4096 -> {
-                paintLin.strokeWidth = 1.0f //xSize.toFloat()
-                paintLog . strokeWidth = 1.0f // xSize.toFloat()
-                paintFoneLin.strokeWidth = 2.0f //xSize.toFloat() * 2
-                paintFoneLog.strokeWidth = 2.0f //xSize.toFloat() * 2
-            }
-            else -> {
-                paintLin.strokeWidth = 3.0f //xSize.toFloat()
-                paintLog.strokeWidth = 3.0f // xSize.toFloat()
-                paintFoneLin.strokeWidth = 4.0f //xSize.toFloat() * 2
-                paintFoneLog.strokeWidth = 4.0f //xSize.toFloat() * 2
-            }
-        }
 
         paintMarker.strokeWidth = paintLin.strokeWidth * 2
 
@@ -473,4 +485,4 @@ class drawSpecter {
             Log.e("BluZ-BT", "HSize: $HSize, VSize: $VSize")
         }
     }
-}
+}

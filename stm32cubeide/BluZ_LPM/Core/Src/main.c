@@ -484,6 +484,7 @@ int main(void)
         UTIL_TIMER_IRQ_Handler();	/* Выполнит просроченный таймер и заново взведет алярм */
       }
     }
+
     if ( connectFlag && (requestHardwareInfo || requestHistory || requestSpectrum || requestDosimeter || requestState || (notifyInterval != 0 && interval2 <= intervalNow)) /*&& system_startup_done*/) {
 	  noSendProgress = false;
 	  //HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
