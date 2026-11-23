@@ -149,7 +149,7 @@ class drawSGramm {
         val hSize = sGramCanvas.width
         val vSize = sGramCanvas.height
         val paintPixel = Paint().apply {
-            strokeWidth = 6.0f
+            strokeWidth = GO.drawSPECTER.colsSGramm.toFloat() / sGramCanvas.width
             isAntiAlias = false
         }
         val kfHSize = (hSize.toFloat() / GO.drawSPECTER.colsSGramm)
@@ -163,7 +163,7 @@ class drawSGramm {
                 val pntCol = (GO.drawSPECTER.sGrammBuffer[row][col] - minSGramm).toFloat() * kfColor
                 val colorIndex = pntCol.toInt().coerceIn(0, clr.size - 1)
                 paintPixel.color = clr[colorIndex]
-                sGramCanvas.drawPoint(x, y, paintPixel)
+                sGramCanvas.drawPoint(x, y * paintPixel.strokeWidth , paintPixel)
             }
             //virtRow--
             //if (virtRow <= 0) {
