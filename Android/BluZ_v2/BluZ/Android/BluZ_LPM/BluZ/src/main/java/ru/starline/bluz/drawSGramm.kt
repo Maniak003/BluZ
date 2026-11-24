@@ -154,7 +154,7 @@ class drawSGramm {
         }
         val kfHSize = (hSize.toFloat() / GO.drawSPECTER.colsSGramm)
         val kfVSize = (vSize.toFloat() / GO.drawSPECTER.rowsSGramm)
-        Log.i("BluZ-BT", "Draw spectrogramm: ${hSize}x${vSize}")
+        Log.i("BluZ-BT", "Draw spectrogramm: ${hSize}x${vSize}, index: ${GO.drawSPECTER.sGrammIndex}")
         //Log.d("BluZ-BT", "Spectrogramm HSize: $hSize, VSize: $vSize, kfHSize: $kfHSize, kfVSize: $kfVSize, rowsSGramm: ${GO.drawSPECTER.rowsSGramm}")
         for (row: Int in 0 until GO.drawSPECTER.rowsSGramm ) {
             val y: Float = kfVSize * row

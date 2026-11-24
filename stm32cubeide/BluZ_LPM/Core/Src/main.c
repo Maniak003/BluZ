@@ -474,14 +474,35 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     /* Самовосстановление: алярм RTC потерян, голова списка таймеров просрочена более чем на 1 с (1024 тика) */
-    {
+    /*{
       UTILS_ENTER_CRITICAL_SECTION();
       UTIL_TIMER_Object_t *timerHead = UTIL_TIMER_GetTimerList();
       bool timerLost = (timerHead != NULL) && (UTIL_TimerDriver.GetTimerElapsedTime() > timerHead->Timestamp + 1024);
       UTILS_EXIT_CRITICAL_SECTION();
       if (timerLost) {
         logUpdate(timerRecoverLog);
-        UTIL_TIMER_IRQ_Handler();	/* Выполнит просроченный таймер и заново взведет алярм */
+        UTIL_TIMER_IRQ_Handler();	// Выполнит просроченный таймер и заново взведет алярм
+      }
+    }*/
+
+    {
+      UTILS_ENTER_CRITICAL_SECTION();
+      UTIL_TIMER_Object_t *timerHead = UTIL_TIMER_GetTimerList();
+      bool timerLost = false;
+      if (timerHead != NULL) {
+        uint32_t current_time = UTIL_TimerDriver.GetTimerElapsedTime();
+        // Магия знакового вычитания:
+        // Если таймер в будущем: (current - target) будет отрицательным -> условие ложно.
+        // Если таймер просрочен > 1024 тиков: результат будет положительным и > 1024.
+        // Это корректно работает даже при переполнении (wrap-around) аппаратного счётчика.
+        if ((int32_t)(current_time - timerHead->Timestamp) > 1024) {
+          timerLost = true;
+        }
+      }
+      UTILS_EXIT_CRITICAL_SECTION();
+      if (timerLost) {
+        logUpdate(timerRecoverLog);
+        UTIL_TIMER_IRQ_Handler();	// Выполнит просроченный таймер и заново взведет алярм
       }
     }
 
@@ -721,7 +742,9 @@ int main(void)
 	  *
 	  *	 T(°C) = (130 - 30) / (*(__IO uint32_t*) 0x0BF9 0742 - *(__IO uint32_t*) 0x0BF9 0710) * (TS_DATA - *(__IO uint32_t*) 0x0BF9 0710) + 30
 	  */
+	  //
 	  // Перенесено в процедуру Temperature.Float
+	  //
 	  //Temperature.Float = TK1 * (float) currTemperature + TK2;
 	  //
 	  //Temperature.Float = (float) currTemperature;
