@@ -262,19 +262,6 @@
                 android:textColor="@color/bz_text_dim"
                 android:textSize="10sp" />
 
-            <CheckBox
-                android:id="@+id/cbMED"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="-10dp"
-                android:layout_marginBottom="-10dp"
-                android:buttonTint="@color/bz_accent"
-                android:minWidth="0dp"
-                android:text="MED"
-                android:textColor="@color/bz_text_dim"
-                android:textSize="10sp" />
-
             <!-- Bottom swipe pager: page 0 = measurement clock, page 1 = history readouts/controls -->
 
             <!-- Hidden legacy IDs referenced by old code paths -->

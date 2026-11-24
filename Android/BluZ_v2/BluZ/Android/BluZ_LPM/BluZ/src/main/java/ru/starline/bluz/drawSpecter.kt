@@ -70,6 +70,8 @@ class drawSpecter {
     public var flagMEDIAN: Boolean = false
     public var flagMLEM: Boolean = false
     public var flagMARKER: Boolean = false
+    public var spectrogramActive: Boolean = false
+    private var firstSgrammRow: Boolean = true
     public var ResolutionSpectr: Int = 1024;
     public var koefLog: Double = 1.0
     public var koefLin: Double = 1.0
@@ -226,20 +228,21 @@ class drawSpecter {
                     tmpSpecterData[ttt] = source[ttt]
                 }
                 /* Медианный фильтр */
+                /*
                 if (flagMEDIAN) {
                     MF[indexMF] = tmpSpecterData[ttt]
                     tmpSpecterData[ttt] = MF.sorted()[1]
                     if (++indexMF >= 3) {
                         indexMF = 0
                     }
-                }
+                }*/
                 /* Сохранение дельты относительно предыдущего спектра */
-                if (firstCompare) {
-                    oldSpecter[ttt] = tmpSpecterData[ttt]
+                if (firstSgrammRow) {
+                    oldSpecter[ttt] = source[ttt]
                     deltaSpectr[ttt] = 0.0
                 } else {
-                    deltaSpectr[ttt] = tmpSpecterData[ttt] - oldSpecter[ttt]
-                    oldSpecter[ttt] = tmpSpecterData[ttt]
+                    deltaSpectr[ttt] = source[ttt] - oldSpecter[ttt]
+                    oldSpecter[ttt] = source[ttt]
                     /* Запись спектрограммы */
                     if (GO.drawSGinit) {
                         summChan += deltaSpectr[ttt]
@@ -253,8 +256,10 @@ class drawSpecter {
                 tmpSpecterData[ttt] = 0.0       // Удалим данные из не используемых каналов
             }
         }
-        if (flagMARKER) {
-            firstCompare = false
+
+        if (spectrogramActive) {
+            firstSgrammRow = false
+            Log.i("BluZ-BT", "Next sGram row.")
             sGrammIndex++
             if (sGrammIndex >= rowsSGramm) {
                 sGrammIndex = 0
@@ -262,6 +267,10 @@ class drawSpecter {
             if (GO.drawSGinit) {
                 GO.drawSG.redraw()
             }
+        }
+
+        if (flagMARKER) {
+            firstCompare = false
         }
 
         xSize = HSize.toDouble() / ResolutionSpectr * GO.xZoom
