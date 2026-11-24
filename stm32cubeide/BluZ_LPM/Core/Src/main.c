@@ -721,7 +721,9 @@ int main(void)
 	  *
 	  *	 T(°C) = (130 - 30) / (*(__IO uint32_t*) 0x0BF9 0742 - *(__IO uint32_t*) 0x0BF9 0710) * (TS_DATA - *(__IO uint32_t*) 0x0BF9 0710) + 30
 	  */
-	  Temperature.Float = TK1 * (float) currTemperature + TK2;
+	  // Перенесено в процедуру Temperature.Float
+	  //Temperature.Float = TK1 * (float) currTemperature + TK2;
+	  //
 	  //Temperature.Float = (float) currTemperature;
 	  Voltage.Float = currVoltage * battKoeff.Float;
 	  //Voltage.Float = 4.2;
@@ -1551,8 +1553,9 @@ uint32_t ADC_Switch_Channel(uint32_t channel) {
  * Температурная коррекция высокого напряжения.
  * Чем выше значение DAC тем ниже напряжение.
  */
-void hvCompensate(void) {
-	float level = (float) HVoltage + (float) hvTempCoef / 1000.0f * (HV_TEMP_REF - (TK1 * (float) currTemperature + TK2));
+void hvCompensate(void) { // Temperature.Float = TK1 * (float) currTemperature + TK2;
+	Temperature.Float = TK1 * (float) currTemperature + TK2;
+	float level = (float) HVoltage + (float) hvTempCoef / 1000.0f * (HV_TEMP_REF - Temperature.Float);
 	if (level < 0.0f) {
 		level = 0.0f;
 	} else if (level > 1023.0f) {
