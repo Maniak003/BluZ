@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/bz_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -26,6 +27,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="0"
                 android:background="@drawable/bg_bz_circle_accent"
+                android:contentDescription="Start/Stop gistogramm"
                 android:scaleType="center"
                 android:src="@drawable/ic_bz_play"
                 app:tint="@color/bz_on_accent" />
