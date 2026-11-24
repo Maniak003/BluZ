@@ -590,8 +590,8 @@ class BluetoothInterface {
                     or (data[21].toUByte().toUInt() shl 24))
                 avgCps = round(java.lang.Float.intBitsToFloat(
                     ByteBuffer.wrap(data, 22, 4).order(ByteOrder.LITTLE_ENDIAN).int) * 100) / 100
-                temperature = round(java.lang.Float.intBitsToFloat(
-                    ByteBuffer.wrap(data, 26, 4).order(ByteOrder.LITTLE_ENDIAN).int))
+                temperature = java.lang.Float.intBitsToFloat(
+                    ByteBuffer.wrap(data, 26, 4).order(ByteOrder.LITTLE_ENDIAN).int)
                 batteryVoltage = round(java.lang.Float.intBitsToFloat(
                     ByteBuffer.wrap(data, 30, 4).order(ByteOrder.LITTLE_ENDIAN).int) * 100) / 100
                 /* Флаги: бит 0 - запрет тревоги, бит 1 - спектрометр запущен */

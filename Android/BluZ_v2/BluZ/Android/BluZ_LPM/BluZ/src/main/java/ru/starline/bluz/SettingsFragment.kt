@@ -155,6 +155,14 @@ class SettingsFragment : Fragment() {
         GO.rbResolution4096 = view.findViewById(R.id.RBResol4096)
         GO.editHVoltage = view.findViewById(R.id.editHvoltage)
         GO.editHVTempCoef = view.findViewById(R.id.editHVTempCoef)
+        GO.textHVActual = view.findViewById(R.id.textHVActual)
+        val hvActualWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) { GO.updateHvActual() }
+        }
+        GO.editHVoltage.addTextChangedListener(hvActualWatcher)
+        GO.editHVTempCoef.addTextChangedListener(hvActualWatcher)
         GO.editComparator = view.findViewById(R.id.editComparator)
         GO.cbSpectrometr = view.findViewById(R.id.CBSpectrometer)
         GO.editSMA = view.findViewById(R.id.editTextSMAWindow)

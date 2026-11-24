@@ -386,6 +386,7 @@ class globalObj {
     lateinit var rbResolution4096: RadioButton
     lateinit var editHVoltage: EditText
     lateinit var editHVTempCoef: EditText
+    lateinit var textHVActual: TextView
     lateinit var editComparator: EditText
     lateinit var cbSpectrometr: CheckBox
     lateinit var editSMA: EditText
@@ -618,6 +619,22 @@ class globalObj {
      *  - 1 (L1) → то же + `bz_warn`, title "Превышение порога 1"
      *  - 0 (NORMAL) → `bz_accent`, title "В норме"
      */
+    /**
+     * Фактическое (компенсированное) ВВ в окне настроек — та же формула, что `hvCompensate()` в прошивке:
+     * HV = HV0 + HVTC/1000 · (20 − T), в пределах 0..1023. Без подключённого прибора — прочерк.
+     */
+    fun updateHvActual() {
+        if (!::textHVActual.isInitialized) return
+        val hv0 = editHVoltage.text.toString().trim().toIntOrNull()
+        val tc = editHVTempCoef.text.toString().trim().toIntOrNull()
+        textHVActual.text = if (!BTT.connected || hv0 == null || tc == null) {
+            "—"
+        } else {
+            val level = (hv0 + tc / 1000.0f * (20.0f - tempMC)).coerceIn(0.0f, 1023.0f)
+            (level + 0.5f).toInt().toString()
+        }
+    }
+
     fun applyDoseReadouts() {
         val hasCoef = GO.propCPS2UR > 0f
 

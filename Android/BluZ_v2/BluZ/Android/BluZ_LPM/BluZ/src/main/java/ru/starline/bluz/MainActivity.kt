@@ -691,7 +691,8 @@ public class MainActivity : FragmentActivity() {
                 if (GO.overloadFlag) R.color.bz_danger_soft else R.color.bz_surface
             )
         )
-        GO.bzTempValue.text = "%d°C".format(GO.tempMC.toInt())
+        GO.bzTempValue.text = "%d°C".format(Math.round(GO.tempMC))
+        GO.updateHvActual()
         applyBatteryDisplay(GO.battLevel)
         applyBtRssi()
 
@@ -760,7 +761,7 @@ public class MainActivity : FragmentActivity() {
                 if (frame.overload) R.color.bz_danger_soft else R.color.bz_surface
             )
         )
-        GO.bzTempValue.text = "%d°C".format(frame.temperature.toInt())
+        GO.bzTempValue.text = "%d°C".format(Math.round(frame.temperature))
         applyBatteryDisplay(frame.batteryVoltage)
         applyBtRssi()
 
