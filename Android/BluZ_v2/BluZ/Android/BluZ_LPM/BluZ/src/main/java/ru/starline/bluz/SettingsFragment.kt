@@ -75,6 +75,11 @@ class SettingsFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
+        if (GO.autoLoadDeviceCfg && GO.configDataReady && view != null) {
+            GO.readConfigFormDevice()
+            reloadConfigParameters()
+        }
+
         val df = DecimalFormat(GO.acuricyPatern, DecimalFormatSymbols(Locale.US))
         view?.findViewById<EditText>(R.id.editPolA)?.setText(df.format(GO.propCoef4096A))
         view?.findViewById<EditText>(R.id.editPolB)?.setText(df.format(GO.propCoef4096B))
