@@ -675,7 +675,7 @@ class BluetoothInterface {
             val spectrumData: DoubleArray? = if (spectrumResolution > 0) decoded else null
             val historyData: DoubleArray? = if (historyResolution > 0) decoded else null
 
-            val overload = (receiveData[97].toUByte() and 8.toUByte()) != 0.toUByte()
+            val overload = (receiveData[97] and 8.toUByte()) != 0.toUByte()
 
             val frame = DeviceFrame(
                 frameType = dataType,

@@ -29,6 +29,12 @@ class SpectrogrammaFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val btnStartSGram: ImageButton = view.findViewById(R.id.btnStartSpectrogram)
         GO.sGramView = view.findViewById(R.id.sGrammaView)
+        val running = GO.drawSPECTER.spectrogramActive
+        btnStartSGram.setImageResource(if (running) R.drawable.ic_bz_stop else R.drawable.ic_bz_play)
+        btnStartSGram.background = ContextCompat.getDrawable(
+            view.context,
+            if (running) R.drawable.bg_bz_circle_danger else R.drawable.bg_bz_circle_accent
+        )
 
         btnStartSGram.setOnClickListener {
             GO.drawSPECTER.spectrogramActive = ! GO.drawSPECTER.spectrogramActive

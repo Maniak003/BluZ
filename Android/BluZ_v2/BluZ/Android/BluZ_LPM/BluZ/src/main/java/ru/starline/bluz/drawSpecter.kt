@@ -259,8 +259,8 @@ class drawSpecter {
 
         if (spectrogramActive) {
             firstSgrammRow = false
-            Log.i("BluZ-BT", "Next sGram row.")
             sGrammIndex++
+            Log.i("BluZ-BT", "Next sGram row. ${sGrammIndex}")
             if (sGrammIndex >= rowsSGramm) {
                 sGrammIndex = 0
             }
