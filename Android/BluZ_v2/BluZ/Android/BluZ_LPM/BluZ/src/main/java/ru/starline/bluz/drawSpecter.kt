@@ -71,7 +71,6 @@ class drawSpecter {
     public var flagMLEM: Boolean = false
     public var flagMARKER: Boolean = false
     public var spectrogramActive: Boolean = false
-    private var firstSgrammRow: Boolean = true
     public var ResolutionSpectr: Int = 1024;
     public var koefLog: Double = 1.0
     public var koefLin: Double = 1.0
@@ -237,7 +236,7 @@ class drawSpecter {
                     }
                 }*/
                 /* Сохранение дельты относительно предыдущего спектра */
-                if (firstSgrammRow) {
+                if (firstCompare) {
                     oldSpecter[ttt] = source[ttt]
                     deltaSpectr[ttt] = 0.0
                 } else {
@@ -258,7 +257,7 @@ class drawSpecter {
         }
 
         if (spectrogramActive) {
-            firstSgrammRow = false
+            firstCompare = false
             sGrammIndex++
             //Log.i("BluZ-BT", "Next sGram row. ${sGrammIndex}")
             if (sGrammIndex >= rowsSGramm) {
@@ -275,7 +274,8 @@ class drawSpecter {
 
         xSize = HSize.toDouble() / ResolutionSpectr * GO.xZoom
 
-        paintMarker.strokeWidth = paintLin.strokeWidth * 2
+        paintMarker.strokeWidth = 5.0f
+        //paintMarker.strokeWidth = paintLin.strokeWidth * 2
 
         if (GO.specterGraphType == 0) {         // Линейный стиль графика
             paintLin.color = GO.ColorLin        // Цвет для отображения линейного спектра
