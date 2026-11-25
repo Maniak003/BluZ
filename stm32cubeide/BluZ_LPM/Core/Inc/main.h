@@ -170,8 +170,8 @@ typedef enum logTypes {
 	clearHistory,				// 17
 	inhibitAlarms,				// 18
 	requestWHcfg,				// 19
-	unknownCommand,				// 20
-	timerRecoverLog				// 21
+	timerRecoverLog,			// 20
+	unknownCommand,				// EOF
 } logTypes_t;
 
 struct LG {

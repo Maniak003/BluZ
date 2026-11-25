@@ -166,7 +166,7 @@ class drawLogs {
                     17 -> "Clear history"
                     18 -> "<font color=#FF2EE8>Need upgrade."
                     19 -> "Request HW config."
-                    21 -> "<font color=#FF2EE8>Timer recovered"
+                    20 -> "<font color=#FF2EE8>Timer recovered"
                     else -> "Unknown: ${logData[idx].act.toInt()}"
                 }
                 //Log.i("BluZ-BT", "LT: " + GO.messTm.toString())

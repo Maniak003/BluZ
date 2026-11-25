@@ -256,6 +256,7 @@ class drawSpecter {
             }
         }
 
+        /* Необходимость обновления спектрограммы */
         if (spectrogramActive) {
             firstCompare = false
             sGrammIndex++
@@ -268,6 +269,7 @@ class drawSpecter {
             }
         }
 
+        /* Флаг первого заполнения дельты спектра */
         if (flagMARKER) {
             firstCompare = false
         }
