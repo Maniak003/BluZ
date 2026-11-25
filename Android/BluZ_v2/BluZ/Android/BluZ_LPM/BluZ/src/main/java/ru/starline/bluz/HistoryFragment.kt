@@ -29,6 +29,7 @@ class HistoryFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Phase D: register hero refs (nullable; null when fragment not visible)
+        val CBDNL: CheckBox = view.findViewById(R.id.cbHistoryDNL)
         val CBSMA: CheckBox = view.findViewById(R.id.cbHistorySMA)
         GO.bzHistDuration = view.findViewById(R.id.bzHistDuration)
         GO.bzHistIntegralValue = view.findViewById(R.id.bzHistIntegralValue)
@@ -117,6 +118,21 @@ class HistoryFragment : Fragment() {
                 }
             }
         )
+
+        CBDNL.isChecked = GO.drawHISTORY.flagDNL
+        GO.drawHISTORY.cbDnl = CBDNL
+        GO.drawHISTORY.applyDnlEnabled()
+        CBDNL.setOnCheckedChangeListener { _, isChecked ->
+            if (GO.propButtonInit) {
+                GO.drawHISTORY.flagDNL = isChecked
+                if (GO.drawHISTORY.VSize > 0 && GO.drawHISTORY.HSize > 0) {
+                    GO.drawHISTORY.clearHistory()
+                    GO.drawHISTORY.redrawSpecter(GO.specterType)
+                } else {
+                    Log.e("BluZ-BT", "drawSPEC is null")
+                }
+            }
+        }
 
         CBSMA.isChecked = GO.drawHISTORY.flagSMA
         CBSMA.setOnCheckedChangeListener { _, isChecked ->

@@ -7,9 +7,11 @@ import android.graphics.Paint
 import android.os.Build
 import android.text.Html
 import android.util.Log
+import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.appcompat.widget.TooltipCompat
 import androidx.collection.emptyLongSet
 import androidx.core.text.HtmlCompat
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -30,6 +32,7 @@ import androidx.core.graphics.createBitmap
  * при повороте экрана, чтобы не терять накопленный спектр [spectrData] (4096 значений).
  *
  * **Цикл отрисовки** ([redrawSpecter]):
+ *  0. Коррекция DNL ([DnlCorrector]) если [flagDNL] — применяется первой
  *  1. SMA-фильтр (окно `GO.windowSMA`) если [flagSMA]
  *  2. Медианный фильтр (3 точки) если [flagMEDIAN]
  *  3. Энергокомпенсация MLEM (через [DoseCalculator.calculateH10DoseSafe]) → `GO.compMED`,
@@ -62,16 +65,33 @@ class drawSpecter {
     public var firstCompare = true
     public var spectrData: DoubleArray = DoubleArray(4096)
     public var tmpSpecterData: DoubleArray = DoubleArray(4096)
+    public var flagDNL: Boolean = false
     public var flagSMA: Boolean = false
     public var flagMEDIAN: Boolean = false
     public var flagMLEM: Boolean = false
     public var flagMARKER: Boolean = false
+    public var spectrogramActive: Boolean = false
     public var ResolutionSpectr: Int = 1024;
     public var koefLog: Double = 1.0
     public var koefLin: Double = 1.0
     public var xSize: Double = 1.0                          // Размер для одного канала.
     private var MF: DoubleArray = DoubleArray(3)
     private var indexMF: Int = 0
+    private val dnlCorrector = DnlCorrector()
+    public var cbDnl: CheckBox? = null
+
+    /** DNL определён только для 4096 каналов: при 1024/2048 прибор суммирует соседние каналы. */
+    fun applyDnlEnabled() {
+        val box = cbDnl ?: return
+        box.isEnabled = ResolutionSpectr == 4096
+        box.alpha = if (box.isEnabled) 1f else 0.35f
+        /* Галочку не показываем, пока DNL не может работать; сам флаг сохраняется. */
+        val guard = GO.propButtonInit
+        GO.propButtonInit = false
+        box.isChecked = flagDNL && box.isEnabled
+        GO.propButtonInit = guard
+        TooltipCompat.setTooltipText(box, box.context.getString(R.string.hintDnl4096))
+    }
 
     /**
      * Создаёт (или пересоздаёт) [specBitmap] и [specCanvas] под текущие размеры [imgView].
@@ -148,6 +168,50 @@ class drawSpecter {
             MF[idx] = 0.0
         }
         indexMF = 0
+        applyDnlEnabled()
+        /* DNL работает только с полным 4096-канальным спектром */
+        val source = if (flagDNL && ResolutionSpectr == 4096) {
+            dnlCorrector.apply(spectrData)
+        } else {
+            dnlCorrector.reset()    // копия спектра устарела, пока коррекция не применялась
+            spectrData
+        }
+        var convert1024 = 1
+        var summChan = 0.0
+        when (ResolutionSpectr) {
+            1024 -> {
+                paintLin.strokeWidth = 3.0f //xSize.toFloat()
+                paintLog.strokeWidth = 3.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 4.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 4.0f //xSize.toFloat() * 2
+                convert1024 = 1
+            }
+
+            2048 -> {
+                paintLin.strokeWidth = 2.0f //xSize.toFloat()
+                paintLog.strokeWidth = 2.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 3.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 3.0f //xSize.toFloat() * 2
+                convert1024 = 2
+            }
+
+            4096 -> {
+                paintLin.strokeWidth = 1.0f //xSize.toFloat()
+                paintLog . strokeWidth = 1.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 2.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 2.0f //xSize.toFloat() * 2
+                convert1024 = 4
+            }
+            else -> {
+                paintLin.strokeWidth = 3.0f //xSize.toFloat()
+                paintLog.strokeWidth = 3.0f // xSize.toFloat()
+                paintFoneLin.strokeWidth = 4.0f //xSize.toFloat() * 2
+                paintFoneLog.strokeWidth = 4.0f //xSize.toFloat() * 2
+                convert1024 = 1
+            }
+        }
+
+
         for (ttt: Int in 0 until ResolutionSpectr - GO.windowSMA) {
             if (ttt > GO.rejectChann) {
                 /* SMA фильтр */
@@ -155,40 +219,48 @@ class drawSpecter {
                     /* SMA */
                     tmpSM = 0.0
                     for (k in 0 until GO.windowSMA) {
-                        tmpSM += spectrData[ttt + k]
+                        tmpSM += source[ttt + k]
                     }
                     tmpSpecterData[ttt] = tmpSM / GO.windowSMA
                 } else {
                     /* Без преобразования */
-                    tmpSpecterData[ttt] = spectrData[ttt]
+                    tmpSpecterData[ttt] = source[ttt]
                 }
                 /* Медианный фильтр */
+                /*
                 if (flagMEDIAN) {
                     MF[indexMF] = tmpSpecterData[ttt]
                     tmpSpecterData[ttt] = MF.sorted()[1]
                     if (++indexMF >= 3) {
                         indexMF = 0
                     }
-                }
+                }*/
                 /* Сохранение дельты относительно предыдущего спектра */
                 if (firstCompare) {
-                    oldSpecter[ttt] = tmpSpecterData[ttt]
+                    oldSpecter[ttt] = source[ttt]
                     deltaSpectr[ttt] = 0.0
                 } else {
-                    deltaSpectr[ttt] = tmpSpecterData[ttt] - oldSpecter[ttt]
-                    oldSpecter[ttt] = tmpSpecterData[ttt]
+                    deltaSpectr[ttt] = source[ttt] - oldSpecter[ttt]
+                    oldSpecter[ttt] = source[ttt]
                     /* Запись спектрограммы */
                     if (GO.drawSGinit) {
-                        sGrammBuffer[sGrammIndex][ttt] = deltaSpectr[ttt]
+                        summChan += deltaSpectr[ttt]
+                        if (ttt % convert1024 == 0) {
+                            sGrammBuffer[sGrammIndex][ttt / convert1024] = summChan
+                            summChan = 0.0
+                        }
                     }
                 }
             } else {
                 tmpSpecterData[ttt] = 0.0       // Удалим данные из не используемых каналов
             }
         }
-        if (flagMARKER) {
+
+        /* Необходимость обновления спектрограммы */
+        if (spectrogramActive) {
             firstCompare = false
             sGrammIndex++
+            //Log.i("BluZ-BT", "Next sGram row. ${sGrammIndex}")
             if (sGrammIndex >= rowsSGramm) {
                 sGrammIndex = 0
             }
@@ -197,37 +269,15 @@ class drawSpecter {
             }
         }
 
-        xSize = HSize.toDouble() / ResolutionSpectr * GO.xZoom
-        when (ResolutionSpectr) {
-            1024 -> {
-                paintLin.strokeWidth = 3.0f //xSize.toFloat()
-                paintLog.strokeWidth = 3.0f // xSize.toFloat()
-                paintFoneLin.strokeWidth = 4.0f //xSize.toFloat() * 2
-                paintFoneLog.strokeWidth = 4.0f //xSize.toFloat() * 2
-            }
-
-            2048 -> {
-                paintLin.strokeWidth = 2.0f //xSize.toFloat()
-                paintLog.strokeWidth = 2.0f // xSize.toFloat()
-                paintFoneLin.strokeWidth = 3.0f //xSize.toFloat() * 2
-                paintFoneLog.strokeWidth = 3.0f //xSize.toFloat() * 2
-            }
-
-            4096 -> {
-                paintLin.strokeWidth = 1.0f //xSize.toFloat()
-                paintLog . strokeWidth = 1.0f // xSize.toFloat()
-                paintFoneLin.strokeWidth = 2.0f //xSize.toFloat() * 2
-                paintFoneLog.strokeWidth = 2.0f //xSize.toFloat() * 2
-            }
-            else -> {
-                paintLin.strokeWidth = 3.0f //xSize.toFloat()
-                paintLog.strokeWidth = 3.0f // xSize.toFloat()
-                paintFoneLin.strokeWidth = 4.0f //xSize.toFloat() * 2
-                paintFoneLog.strokeWidth = 4.0f //xSize.toFloat() * 2
-            }
+        /* Флаг первого заполнения дельты спектра */
+        if (flagMARKER) {
+            firstCompare = false
         }
 
-        paintMarker.strokeWidth = paintLin.strokeWidth * 2
+        xSize = HSize.toDouble() / ResolutionSpectr * GO.xZoom
+
+        paintMarker.strokeWidth = 5.0f
+        //paintMarker.strokeWidth = paintLin.strokeWidth * 2
 
         if (GO.specterGraphType == 0) {         // Линейный стиль графика
             paintLin.color = GO.ColorLin        // Цвет для отображения линейного спектра
@@ -260,7 +310,7 @@ class drawSpecter {
                 maxYlin = tmpSpecterData[idx]
             }
         }
-        maxYlog = ln(maxYlin);
+        maxYlog = ln(1.0 + maxYlin);
         //Log.d("BluZ-BT", "MAX: : $maxYlin")
         koefLin = VSize / maxYlin
         koefLog = VSize / maxYlog
@@ -274,7 +324,7 @@ class drawSpecter {
             /* Подготовка данных спектра */
             Ylin = (VSize - tmpSpecterData[idx1] * koefLin).toFloat()
             Ylog = if (tmpSpecterData[idx1] != 0.0) {
-                (VSize - ln(tmpSpecterData[idx1]) * koefLog).toFloat()
+                (VSize - ln(1.0 + tmpSpecterData[idx1]) * koefLog).toFloat()
             } else {
                 VSize.toFloat()
             }
@@ -438,6 +488,7 @@ class drawSpecter {
             tmpSpecterData[ttt] = 0.0
             spectrData[ttt] = 0.0
         }
+        dnlCorrector.reset()
         if ((HSize > 0) and (VSize > 0)) {
             specCanvas.drawColor(Color.argb(255, 0, 0, 0))
             imgView.setImageBitmap(specBitmap)

@@ -15,6 +15,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.SystemClock
 import android.text.TextUtils
 import android.util.Log
 import android.widget.EditText
@@ -31,8 +32,6 @@ import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import kotlin.math.exp
-import kotlin.math.ln
 import kotlin.math.round
 import kotlin.system.exitProcess
 
@@ -58,16 +57,20 @@ import kotlin.system.exitProcess
  *
  * **Жизненный цикл соединения** (см. [initLeDevice]):
  *  1. `connectGatt(autoConnect=false)` → onConnectionStateChange(CONNECTED)
- *  2. `requestMtu(251)` → onMtuChanged
- *  3. `discoverServices` → onServicesDiscovered
- *  4. `setCharacteristicNotification(RX, true)` — готово к приёму
+ *  2. `discoverServices` → onServicesDiscovered
+ *  3. `requestMtu(251)` → onMtuChanged
+ *  4. `setCharacteristicNotification(RX, true)` и запись CCCD — готово к приёму
+ *  5. onDescriptorWrite → команда 10 (hw info): до ответа остальные фреймы игнорируются; если версия
+ *     протокола не 1 или ответа нет за 6 с — прибор отклоняется ([rejectDevice]), команды ему не шлются.
+ *     [BleStatus.Connected] выставляется только после ответа с поддерживаемой версией,
+ *     затем запрашивается полный кадр: спектр (команда 11) или дозиметр (команда 12)
  *
  * **Формат фрейма** — см. DEVELOPER_GUIDE.md раздел 5.2 или комментарии в [globalObj].
  * Многопакетный (MTU 251, payload 248): первый байт каждого MTU-пакета — порядковый номер
  * (0 = старт нового фрейма). [processIncomingPacket] собирает их в общий буфер и при
  * получении ожидаемого финального пакета эмитит [DeviceFrame].
  *
- * **Команды отправки** — [sendCommand]. Командные коды 0..8 описаны в DEVELOPER_GUIDE.md
+ * **Команды отправки** — [sendCommand]. Командные коды 0..12 описаны в DEVELOPER_GUIDE.md
  * раздел 5.3. Для команд с параметрами заполняется [sendBuffer] заранее.
  *
  * **Reconnect.** [GO.tmFull] (`intervalTimer`) каждые 10 секунд проверяет [connected];
@@ -87,6 +90,10 @@ class BluetoothInterface {
     private var writeBuffer: ArrayList<ByteArray>? = null
     private val MAX_MTU: Int = 251
     private val payloadSize: Int = MAX_MTU - 3
+    private val SUPPORTED_PROTOCOL_MAJOR: UInt = 1u
+    private val HW_INFO_TIMEOUT_MS: Long = 6000L
+    /** Интервал автонотификации прибора в секундах, задаётся после рукопожатия (0 - выключено) */
+    private val NOTIFICATION_INTERVAL_S: Int = 5
     private var writePending = false
     var connected: Boolean = false
 
@@ -234,8 +241,8 @@ class BluetoothInterface {
      * **Шаги:**
      *  1. Валидация MAC (длина 17, не начинается с 'X')
      *  2. `bluetoothAdapter.getRemoteDevice(mac).connectGatt(autoConnect=false)`
-     *  3. Дальше работает [gattCallback]: onConnectionStateChange → requestMtu(251) →
-     *     onMtuChanged → discoverServices → onServicesDiscovered → setCharacteristicNotification
+     *  3. Дальше работает [gattCallback]: onConnectionStateChange → discoverServices →
+     *     onServicesDiscovered → requestMtu(251) → onMtuChanged → setCharacteristicNotification
      *  4. Эмитит в [_status]: `Connecting` → `Connected`
      *
      * **Подводный камень.** Если уже было соединение (например при ping другого MAC) —
@@ -272,11 +279,96 @@ class BluetoothInterface {
         }
         Log.i("BluZ-BT", "Try gatt connect.")
         GO.drawLOG.appendAppLogs("Try gatt connect.", 1)
+        resetHandshake()
         _status.tryEmit(BleStatus.InitBLE)
         gatt = device!!.connectGatt(GO.mainContext, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
         if (gatt == null) {
             Log.i("BluZ-BT", "Error: Gatt create failed.")
             GO.drawLOG.appendAppLogs("Gatt create failed.", 0)
+        }
+    }
+
+    // --- Handshake hw info ---
+
+    /* Рукопожатие: после подключения запрашиваем hw info, до ответа остальные фреймы игнорируются */
+    @Volatile private var hwState = HwInfoState.IDLE
+    private var hwRequestedAt = 0L
+    /** Момент включения автонотификации (команда 13) и признак того, что после неё пришёл первый кадр */
+    private var notifyRequestedAt = 0L
+    @Volatile private var firstFrameSeen = false
+
+    /* Переходы состояния рукопожатия идут из потоков таймера и GATT, поэтому под общей блокировкой */
+    /** Сброс рукопожатия: при каждом разрыве и перед каждым новым подключением. */
+    @Synchronized
+    private fun resetHandshake() {
+        hwState = HwInfoState.IDLE
+    }
+
+    /**
+     * Переводит рукопожатие в ожидание ответа hw info.
+     *
+     * @return false, если рукопожатие в этом соединении уже начато (повторный `onDescriptorWrite`)
+     */
+    @Synchronized
+    private fun beginHandshake(): Boolean {
+        if (hwState != HwInfoState.IDLE) return false
+        hwRequestedAt = SystemClock.elapsedRealtime()
+        hwState = HwInfoState.PENDING
+        return true
+    }
+
+    /**
+     * Вызывается тиком [MyTimerTask]: если ответа на hw info или первого кадра после команды 13
+     * нет дольше [HW_INFO_TIMEOUT_MS] - отказ.
+     */
+    @Synchronized
+    fun checkHandshakeTimeout() {
+        if (hwState == HwInfoState.PENDING
+            && SystemClock.elapsedRealtime() - hwRequestedAt >= HW_INFO_TIMEOUT_MS) {
+            rejectDevice("Device did not answer the hardware info request. Please update the device firmware.")
+        } else if (hwState == HwInfoState.READY && !firstFrameSeen
+            && SystemClock.elapsedRealtime() - notifyRequestedAt >= HW_INFO_TIMEOUT_MS) {
+            rejectDevice("Device did not send data after the notification interval was set. Please reconnect the device.")
+        }
+    }
+
+    /** Ответ на запрос hw info: запоминаем версию протокола и проверяем, что она нам известна. */
+    @Synchronized
+    private fun onHardwareInfo(major: UInt, minor: UInt, spectrometerPulses: UInt) {
+        if (hwState != HwInfoState.PENDING) return
+        GO.whVersInfo = major
+        when {
+            major > SUPPORTED_PROTOCOL_MAJOR ->
+                rejectDevice("Device protocol version $major.$minor is newer than the app supports. Please update the app.")
+            major < SUPPORTED_PROTOCOL_MAJOR ->
+                rejectDevice("Device protocol version $major.$minor is not supported. Please update the device firmware.")
+            else -> {
+                /* Минорная версия только для диагностики: совместимость определяет мажорная */
+                GO.drawLOG.appendAppLogs("Proto version: $major.$minor", 1)
+                hwState = HwInfoState.READY
+                _status.tryEmit(BleStatus.Connected)
+                /* Прибор сам кадры не шлёт, пока не задан интервал. Ответ - первый кадр: со спектром (forceSpectrum), если он набран, иначе по состоянию прибора */
+                notifyRequestedAt = SystemClock.elapsedRealtime()
+                firstFrameSeen = false
+                setNotificationInterval(NOTIFICATION_INTERVAL_S, spectrometerPulses != 0u)
+            }
+        }
+    }
+
+    /**
+     * Прибор не поддерживается (нет ответа или неизвестная версия): пишем пользователю и дальше
+     * игнорируем все данные. Соединение не рвём, иначе таймер переподключения будет
+     * повторять попытку бесконечно.
+     */
+    @Synchronized
+    private fun rejectDevice(message: String) {
+        hwState = HwInfoState.REJECTED
+        Log.w("BluZ-BT", message)
+        GO.drawLOG.appendAppLogs(message, 0)
+        MainScope().launch {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(GO.mainContext, message, Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -291,7 +383,7 @@ class BluetoothInterface {
         private var checkSum: UShort = 0u
         private var spectrumResolution: Int = 1024
         private var historyResolution: Int = 1024
-        private val receiveData = UByteArray(9760)
+        private val receiveData = UByteArray(17812)
 
         /* Per-frame header fields parsed from the first MTU packet */
         private var totalPulses: UInt = 0u
@@ -300,6 +392,7 @@ class BluetoothInterface {
         private var avgCps: Float = 0f
         private var temperature: Float = 0f
         private var batteryVoltage: Float = 0f
+        private var spectrometerRunning: Boolean = false
 
         @SuppressLint("MissingPermission")
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
@@ -311,12 +404,6 @@ class BluetoothInterface {
                         Log.e("BluZ-BT", "Error: Discover service failed.")
                         GO.drawLOG.appendAppLogs("Discover service failed.", 0)
                     }
-                    if (!gatt.requestMtu(MAX_MTU)) {
-                        Log.e("BluZ-BT", "MTU set failed.")
-                        GO.drawLOG.appendAppLogs("MTU set failed.", 0)
-                    } else {
-                        GO.initBT = true
-                    }
                     if (!gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)) {
                         Log.e("BluZ-BT", "High priority set failed.")
                     }
@@ -327,6 +414,7 @@ class BluetoothInterface {
                     connected = false
                     writePending = false
                     GO.configDataReady = false
+                    resetHandshake()
                     Log.i("BluZ-BT", "Disconnect.")
                     GO.drawLOG.appendAppLogs("Disconnect.", 1)
                     _status.tryEmit(BleStatus.Disconnected)
@@ -355,6 +443,8 @@ class BluetoothInterface {
             if (!charFlag) GO.drawLOG.appendAppLogs("Characteristics not found.", 0)
             if (!gatt.requestMtu(MAX_MTU)) {
                 GO.drawLOG.appendAppLogs("Error set MTU.", 0)
+            } else {
+                GO.initBT = true
             }
         }
 
@@ -367,7 +457,10 @@ class BluetoothInterface {
                 Log.i("BluZ-BT", "Connect success.")
                 GO.drawLOG.appendAppLogs("Write characteristic Ok.", 3)
                 connected = true
-                _status.tryEmit(BleStatus.Connected)
+                if (beginHandshake()) {
+                    GO.drawLOG.appendAppLogs("Request HW info.", 1)
+                    sendCommand(10u)
+                }
             }
         }
 
@@ -459,7 +552,7 @@ class BluetoothInterface {
          *  3. По достижению ожидаемой длины (зависит от [DeviceFrame.frameType]) проверяется
          *     CRC (uint16 = `sum(bytes[0..len-3]) & 0xFFFF`, хранится в последних 2 байтах)
          *  4. Парсится header (58 байт), dosimeterData (512 байт), log (50×5 байт),
-         *     spectrum/history (resolution×2 байт)
+         *     spectrum/history (формат по байту 96, см. [SpectrumCodec])
          *  5. [decodeHardwareConfig] извлекает [HardwareConfig] из header'а
          *  6. `_deviceFrames.tryEmit(frame)` или suspend-emit — на главном потоке
          *
@@ -468,6 +561,7 @@ class BluetoothInterface {
          */
         private fun processIncomingPacket(data: ByteArray, gatt: BluetoothGatt) {
             GO.drawLOG.appendAppLogs("onCharacteristicChanged", 5)
+            if (hwState == HwInfoState.REJECTED) return
             /* First packet of a new frame starts with <B> (60, 66, 62) */
             if (data[0].toUByte() == 60.toUByte()
                 && data[1].toUByte() == 66.toUByte()
@@ -476,17 +570,18 @@ class BluetoothInterface {
                 dataType = data[3].toInt()
                 idxArray = 0
                 checkSum = 0u
+                /* Число MTU в кадре — байт 5 заголовка; кадр, не помещающийся в буфер, отбрасывается */
+                numberMTU = data[5].toInt() and 0xFF
+                if (numberMTU * (data.size - 4) > receiveData.size) numberMTU = 0
                 when (dataType) {
-                    0 -> { numberMTU = 6;  spectrumResolution = 0; historyResolution = 0 }
-                    1 -> { numberMTU = 16; spectrumResolution = 1024; historyResolution = 0 }
-                    2 -> { numberMTU = 23; spectrumResolution = 2048; historyResolution = 0 }
-                    3 -> { numberMTU = 40; spectrumResolution = 4096; historyResolution = 0 }
-                    4 -> { numberMTU = 16; spectrumResolution = 0; historyResolution = 1024 }
-                    5 -> { numberMTU = 23; spectrumResolution = 0; historyResolution = 2048 }
-                    6 -> { numberMTU = 40; spectrumResolution = 0; historyResolution = 4096 }
-                    7 -> { numberMTU = 1; spectrumResolution = 0; historyResolution = 0 }
+                    0, 7 -> { spectrumResolution = 0; historyResolution = 0 }
+                    1 -> { spectrumResolution = 1024; historyResolution = 0 }
+                    2 -> { spectrumResolution = 2048; historyResolution = 0 }
+                    3 -> { spectrumResolution = 4096; historyResolution = 0 }
+                    4 -> { spectrumResolution = 0; historyResolution = 1024 }
+                    5 -> { spectrumResolution = 0; historyResolution = 2048 }
+                    6 -> { spectrumResolution = 0; historyResolution = 4096 }
                 }
-                GO.whVersInfo = data[6].toUInt() + (data[7].toUInt() shl 8)
                 totalPulses = ByteBuffer.wrap(data, 10, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                 pulsesPerSec = ByteBuffer.wrap(data, 14, 4).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
                 measurementTime = (data[18].toUByte().toUInt()
@@ -495,12 +590,13 @@ class BluetoothInterface {
                     or (data[21].toUByte().toUInt() shl 24))
                 avgCps = round(java.lang.Float.intBitsToFloat(
                     ByteBuffer.wrap(data, 22, 4).order(ByteOrder.LITTLE_ENDIAN).int) * 100) / 100
-                temperature = round(java.lang.Float.intBitsToFloat(
-                    ByteBuffer.wrap(data, 26, 4).order(ByteOrder.LITTLE_ENDIAN).int))
+                temperature = java.lang.Float.intBitsToFloat(
+                    ByteBuffer.wrap(data, 26, 4).order(ByteOrder.LITTLE_ENDIAN).int)
                 batteryVoltage = round(java.lang.Float.intBitsToFloat(
                     ByteBuffer.wrap(data, 30, 4).order(ByteOrder.LITTLE_ENDIAN).int) * 100) / 100
-                /* Бит запрета тревоги */
+                /* Флаги: бит 0 - запрет тревоги, бит 1 - спектрометр запущен */
                 GO.inhibitAlarm = (data[4].toUInt() and 1u) == 1u
+                spectrometerRunning = (data[4].toUInt() and 2u) != 0u
                 if (GO.inhibitAlarm) {
                     Log.d("BluZ-BT", "Alarm disable")
                 } else {
@@ -509,6 +605,7 @@ class BluetoothInterface {
                 Log.d("BluZ-BT", "Frame start: type=$dataType mtu=$numberMTU pulses=$totalPulses voltage=$batteryVoltage")
             }
 
+            if (numberMTU <= 0) return   // no valid frame start (bad size in header)
             numberMTU--
             /* Copy payload bytes (skip 5-byte footer; skip last 7 bytes on the final MTU for checksum) */
             val endOfData = if (numberMTU == 0) data.size - 7 else data.size - 5
@@ -530,8 +627,18 @@ class BluetoothInterface {
             }
             GO.drawLOG.appendAppLogs("CS correct: $checkSum", 3)
             if (dataType == 7) {
-               GO.drawLOG.appendAppLogs("Proto version: ${data[7]}${data[6]}", 1)
+                onHardwareInfo(
+                    receiveData[6].toUInt(), receiveData[7].toUInt(),
+                    receiveData[90].toUInt() or (receiveData[91].toUInt() shl 8) or
+                        (receiveData[92].toUInt() shl 16) or (receiveData[93].toUInt() shl 24)
+                )
+                return
             }
+            if (hwState != HwInfoState.READY) {
+                Log.d("BluZ-BT", "Frame ignored: hardware info not received yet")
+                return
+            }
+            firstFrameSeen = true
             gatt.readRemoteRssi()
             /* Decode hardware config from receiveData */
             val hw = decodeHardwareConfig(receiveData)
@@ -555,26 +662,20 @@ class BluetoothInterface {
             }
 
             /* Decode spectrum / history (offset 1424 bytes) */
-            val mult = hw.bitsChan.toDouble() / 65535.0 * ln(2.0)
-            val spectrumData: DoubleArray? = if (spectrumResolution > 0) {
-                DoubleArray(spectrumResolution) { i ->
-                    val base = 1424 + i * 2
-                    val compressed = (receiveData[base].toUInt() and 0xFFu) or
-                            ((receiveData[base + 1].toUInt() and 0xFFu) shl 8)
-                    exp(compressed.toDouble() * mult) - 1.0
+            val channels = spectrumResolution + historyResolution
+            val decoded: DoubleArray? = if (channels > 0) {
+                try {
+                    SpectrumCodec.decode(receiveData.asByteArray(), 1424, idxArray, channels, receiveData[96].toInt())
+                } catch (e: IllegalArgumentException) {
+                    Log.e("BluZ-BT", "Spectrum decode error: ${e.message}")
+                    GO.drawLOG.appendAppLogs("Spectrum decode error: ${e.message}", 0)
+                    return
                 }
             } else null
+            val spectrumData: DoubleArray? = if (spectrumResolution > 0) decoded else null
+            val historyData: DoubleArray? = if (historyResolution > 0) decoded else null
 
-            val historyData: DoubleArray? = if (historyResolution > 0) {
-                DoubleArray(historyResolution) { i ->
-                    val base = 1424 + i * 2
-                    round(exp(
-                        ((receiveData[base].toUInt() or (receiveData[base + 1].toUInt() shl 8)).toDouble()) * mult
-                    ) - 1.0)
-                }
-            } else null
-
-            val overload = (receiveData[97].toUByte() and 8.toUByte()) != 0.toUByte()
+            val overload = (receiveData[97] and 8.toUByte()) != 0.toUByte()
 
             val frame = DeviceFrame(
                 frameType = dataType,
@@ -588,6 +689,7 @@ class BluetoothInterface {
                 logEntries = logEntries,
                 spectrumData = spectrumData,
                 historyData = historyData,
+                spectrometerRunning = spectrometerRunning,
                 hw = hw,
                 overload = overload
             )
@@ -615,8 +717,6 @@ class BluetoothInterface {
                     (d[87].toULong() shl 8) or d[86].toULong()).toUInt()
             val specPulse = ((d[93].toULong() shl 24) or (d[92].toULong() shl 16) or
                     (d[91].toULong() shl 8) or d[90].toULong()).toUInt()
-            var bitsChan = d[96].toUByte()
-            if (bitsChan < 16u || bitsChan > 32u) bitsChan = 20u
             var sampleTime = d[97].toUByte() and 7.toUByte()
             if (sampleTime > 7u) sampleTime = 1u
             return HardwareConfig(
@@ -637,6 +737,7 @@ class BluetoothInterface {
                 cps2ur = ByteBuffer.wrap(d.asByteArray(), 46, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 hVoltage = (((d[51].toUInt() shl 8) or d[50].toUInt()) and 0x3FFu).toUShort(),
                 comparator = (((d[53].toUInt() shl 8) or d[52].toUInt()) and 0x3FFu).toUShort(),
+                hvTempCoef = ((d[99].toUInt() shl 8) or d[98].toUInt()).toShort().toInt(),
                 //coef1024A = ByteBuffer.wrap(d.asByteArray(), 34, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 //coef1024B = ByteBuffer.wrap(d.asByteArray(), 38, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 //coef1024C = ByteBuffer.wrap(d.asByteArray(), 42, 4).order(ByteOrder.LITTLE_ENDIAN).float,
@@ -647,7 +748,6 @@ class BluetoothInterface {
                 coef4096B = ByteBuffer.wrap(d.asByteArray(), 78, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 coef4096C = ByteBuffer.wrap(d.asByteArray(), 82, 4).order(ByteOrder.LITTLE_ENDIAN).float,
                 acquireValue = ((d[95].toUInt() shl 8) or d[94].toUInt()).toUShort(),
-                bitsChan = bitsChan,
                 sampleTime = sampleTime,
                 spectrometerTime = specTime,
                 spectrometerPulse = specPulse
@@ -668,6 +768,7 @@ class BluetoothInterface {
     fun destroyDevice() {
         GO.drawLOG.appendAppLogs("BLE destroy.", 4)
         connected = false
+        resetHandshake()
         _status.tryEmit(BleStatus.Disconnected)
         if (gatt != null) {
             GO.drawLOG.appendAppLogs("gatt close.", 4)
@@ -714,6 +815,19 @@ class BluetoothInterface {
         }
     }
 
+    /**
+     * Команда 13: прибор шлёт автонотификацию раз в [seconds] секунд, 0 - не шлёт. После подключения интервал равен 0.
+     * Ответ - кадр со спектром при [forceSpectrum] (как на команду 11) или кадр по состоянию прибора.
+     */
+    @Synchronized
+    fun setNotificationInterval(seconds: Int, forceSpectrum: Boolean) {
+        /* Свой буфер: общий sendBuffer заполняет экран настроек, рукопожатие не должно его портить */
+        val packet = UByteArray(sendBuffer.size)
+        packet[4] = seconds.coerceIn(0, 255).toUByte()
+        packet[5] = if (forceSpectrum) 1u else 0u
+        sendPacket(13u, packet)
+    }
+
     /** Sends a command packet to the device, calculating checksum. */
     @OptIn(ExperimentalUnsignedTypes::class)
     /**
@@ -731,19 +845,37 @@ class BluetoothInterface {
      *  - 7 — Передать реальное напряжение АКБ (параметр: float в `sendBuffer[4..7]`)
      *  - 8 — Очистить историю
      *  - 9 — Отключить тревогу временно
-     *  - 10- Вернуть настройки тревоги по умолчанию.
+     *  - 10 - Запрос hw info (ответ - фрейм типа 7 с версией протокола).
+     *  - 11 - Запрос кадра со спектром (ответ - фрейм типа 1..3, даже если спектрометр выключен).
+     *  - 12 - Запрос кадра дозиметра (ответ - фрейм типа 0).
+     *  - 13 - Интервал автонотификации: секунды в `sendBuffer[4]`, 0 - выключить; `sendBuffer[5]` бит 0 - forceSpectrum: ответ кадром со спектром, иначе кадром по состоянию прибора. См. [setNotificationInterval].
      *
      */
-    fun sendCommand(cmd: UByte) {
-        sendBuffer[0] = '<'.code.toUByte()
-        sendBuffer[1] = 'S'.code.toUByte()
-        sendBuffer[2] = '>'.code.toUByte()
-        sendBuffer[3] = cmd
+    @Synchronized
+    fun sendCommand(cmd: UByte) = sendPacket(cmd, sendBuffer)
+
+    /** Заполняет заголовок и контрольную сумму пакета [buffer] и отправляет его. */
+    @Synchronized
+    private fun sendPacket(cmd: UByte, buffer: UByteArray) {
+        /* Отклонённому прибору команды не шлём */
+        if (hwState == HwInfoState.REJECTED) {
+            GO.drawLOG.appendAppLogs("Command $cmd not sent: device is not supported.", 0)
+            MainScope().launch {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(GO.mainContext, "Command not sent: the device is not supported.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            return
+        }
+        buffer[0] = '<'.code.toUByte()
+        buffer[1] = 'S'.code.toUByte()
+        buffer[2] = '>'.code.toUByte()
+        buffer[3] = cmd
         var cs: UShort = 0u
-        for (i in 0..241) cs = (cs + sendBuffer[i]).toUShort()
-        sendBuffer[242] = (cs and 255u).toUByte()
-        sendBuffer[243] = ((cs.toUInt() shr 8) and 255u).toUByte()
-        write(sendBuffer.toByteArray())
+        for (i in 0..241) cs = (cs + buffer[i]).toUShort()
+        buffer[242] = (cs and 255u).toUByte()
+        buffer[243] = ((cs.toUInt() shr 8) and 255u).toUByte()
+        write(buffer.toByteArray())
     }
 
     /**
@@ -798,3 +930,6 @@ class BluetoothInterface {
         }
     }
 }
+
+/** Состояние рукопожатия hw info после подключения. */
+private enum class HwInfoState { IDLE, PENDING, READY, REJECTED }

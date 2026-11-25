@@ -127,7 +127,7 @@ class drawSGramm {
     fun redraw() {
         /* Поиск максимально и минимального значений, для раскраски */
         var maxSGramm: Double = 0.0
-        var minSGramm: Double = 10000.0
+        var minSGramm: Double = 1000000.0
         for (row: Int in 0 until GO.drawSPECTER.rowsSGramm)  {
             for (col: Int in 0 until GO.drawSPECTER.colsSGramm) {
                 /* Test */
@@ -149,12 +149,12 @@ class drawSGramm {
         val hSize = sGramCanvas.width
         val vSize = sGramCanvas.height
         val paintPixel = Paint().apply {
-            strokeWidth = 6.0f
+            strokeWidth = GO.drawSPECTER.colsSGramm.toFloat() / sGramCanvas.width
             isAntiAlias = false
         }
         val kfHSize = (hSize.toFloat() / GO.drawSPECTER.colsSGramm)
         val kfVSize = (vSize.toFloat() / GO.drawSPECTER.rowsSGramm)
-        Log.i("BluZ-BT", "Draw spectrogramm")
+        Log.i("BluZ-BT", "Draw spectrogramm: ${hSize}x${vSize}, index: ${GO.drawSPECTER.sGrammIndex}")
         //Log.d("BluZ-BT", "Spectrogramm HSize: $hSize, VSize: $vSize, kfHSize: $kfHSize, kfVSize: $kfVSize, rowsSGramm: ${GO.drawSPECTER.rowsSGramm}")
         for (row: Int in 0 until GO.drawSPECTER.rowsSGramm ) {
             val y: Float = kfVSize * row
@@ -163,7 +163,7 @@ class drawSGramm {
                 val pntCol = (GO.drawSPECTER.sGrammBuffer[row][col] - minSGramm).toFloat() * kfColor
                 val colorIndex = pntCol.toInt().coerceIn(0, clr.size - 1)
                 paintPixel.color = clr[colorIndex]
-                sGramCanvas.drawPoint(x, y, paintPixel)
+                sGramCanvas.drawPoint(x, y * paintPixel.strokeWidth , paintPixel)
             }
             //virtRow--
             //if (virtRow <= 0) {

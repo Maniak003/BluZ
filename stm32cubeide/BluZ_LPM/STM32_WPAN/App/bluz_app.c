@@ -115,6 +115,16 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 
     case BLUZ_RX_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char1_NOTIFY_ENABLED_EVT */
+    	/* Ответы, оставшиеся от прошлого подключения, новому клиенту не нужны.
+    	 * Клиент может записать CCCD несколько раз за подключение, поэтому сбрасываем только при первом включении. */
+    	if (!connectFlag) {
+    		requestHardwareInfo = false;
+    		requestHistory = false;
+    		requestSpectrum = false;
+    		requestDosimeter = false;
+    		requestState = false;
+    		notifyInterval = 0;						// Автонотификация включается только по команде клиента
+    	}
     	connectFlag = true;
       	//UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
     	//connectFlag = true;
@@ -168,6 +178,10 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     *                   7 - Калибровка батареи
                     *                   8 - Очистка истории
                     *                   9 - Отключение тревог
+                    *                   10 - Запрос аппаратной информации
+                    *                   11 - Запрос кадра со спектром
+                    *                   12 - Запрос кадра дозиметра
+                    *                   13 - Интервал автонотификации: байт 4 - секунды, 0 - выключить; байт 5, бит 0 - forceSpectrum: ответить кадром со спектром (иначе кадром по состоянию прибора)
                     *
                     * 4,5,6,7       - Первый порог в uR
                     * 8,9,10,11     - Второй порог в uR
@@ -182,9 +196,9 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     *                   5 - Вибро сигнализация 1 порог   (1 - включено, 0 - выключено)
                     *                   6 - Вибро сигнализация 2 порог   (1 - включено, 0 - выключено)
                     *                   7 - Вибро сигнализация 3 порог   (1 - включено, 0 - выключено)
-                    * 21,22,23,24   - Коэффициент A полинома преобразования канала в энергию.
-                    * 25,26,27,28   - Коэффициент B полинома преобразования канала в энергию.
-                    * 29,30,31,32   - Коэффициент C полинома преобразования канала в энергию.
+                    * 21,22,23,24   - Не используется
+                    * 25,26,27,28   - Не используется
+                    * 29,30,31,32   - Не используется
                     * 33,34         - Уровень высокого напряжения
                     * 35,36         - Уровень компаратора
                     * 37			- Разрешение. 0 - 1024, 1 - 2048, 2 - 4096
@@ -197,7 +211,13 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
                     * 					5 -
                     * 					6 -
                     * 					7 -
+                    * 43,44,45,46	- Коэффициент D полинома преобразования канала в энергию (4096).
+                    * 47,48,49,50	- Коэффициент E полинома преобразования канала в энергию (4096).
+                    * 51,52,53,54	- Коэффициент A полинома преобразования канала в энергию (4096).
+                    * 55,56,57,58	- Коэффициент B полинома преобразования канала в энергию (4096).
+                    * 59,60,61,62	- Коэффициент C полинома преобразования канала в энергию (4096).
                     * 63, 64		- Точность расчета для дозиметра. Количество импульсов в усреднении.
+                    * 65, 66		- Температурная коррекция высокого напряжения, int16 LE, 0.001 кода DAC на °C (по умолчанию 7900), 0 - выключена
                     *
                     * 242, 243      - Контрольная сумма
                     */
@@ -297,17 +317,10 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						/* Точность усреднения для дозиметра, количество импульсов */
 						dozimetrAquracy = p_Notification->DataTransfered.p_Payload[63] | ((uint16_t) p_Notification->DataTransfered.p_Payload[64] << 8);
 
-						/* Разрядность канала */
-						if (p_Notification->DataTransfered.p_Payload[65] < 16 || p_Notification->DataTransfered.p_Payload[65] > 32) {
-							bitsOfChannal = CAPCHAN;
-						} else if (bitsOfChannal != (uint32_t) p_Notification->DataTransfered.p_Payload[65]) {
-							bitsOfChannal = (uint32_t) p_Notification->DataTransfered.p_Payload[65];
-							CoefChan = 65535.0 / (double) bitsOfChannal;
-						}
-
 						/* Уровни компаратора и высокого напряжения */
 						HVoltage = p_Notification->DataTransfered.p_Payload[33] | (p_Notification->DataTransfered.p_Payload[34] << 8);
 						comparatorLevel = p_Notification->DataTransfered.p_Payload[35] | (p_Notification->DataTransfered.p_Payload[36] << 8);
+						hvTempCoef = (int16_t) (p_Notification->DataTransfered.p_Payload[65] | (p_Notification->DataTransfered.p_Payload[66] << 8));
 
 						/* Разрешение спектра. 0 - 1024, 1 - 2048, 2 - 4096 */
 						if ((resolutionSpecter != (spectrResolution_t) p_Notification->DataTransfered.p_Payload[37]) || currentSamplingTime != tmpSample) {
@@ -360,7 +373,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 
 						/* Установка уровней для компаратора и высокого напряжения */
 						setLevelOnPort(CHANNEL_A, comparatorLevel);
-						setLevelOnPort(CHANNEL_B, HVoltage);
+						hvCompensate();
 						/*
 						 * TODO -- не получается разобраться, почему запись выполняется со второго раза.
 						 * Первый вызов стирает Flash и только на втором происходит запись.
@@ -369,6 +382,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						writeFlash();
 						calcPulseLevel();	 // Обновление порогов
 						logUpdate(writeFlashLog);
+						requestState = true;
 						break;
 					/* Очистка буфера спектра */
 					case cmd_clear_specter:			// Очистка буфера спектрометра
@@ -378,6 +392,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 						spectrometerPulse = 0;
 						spectrometerTime = 0;
 						logUpdate(resSpectrometerLog);
+						requestState = true;
 						break;
 					/* Очистка спектра событий */
 					case cmd_clear_history:
@@ -385,6 +400,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							historySpecterBuffer[iii] = 0;
 						}
 						logUpdate(clearHistory);
+						requestState = true;
 						break;
 					/* Включение/выключение спектрометра */
 					case cmd_startup_spectrometer:	// Запуск/останов спектрометра
@@ -419,6 +435,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							MX_ADC4_Init();
 							logUpdate(stopSpectrometerLog);
 						}
+						requestState = true;
 						break;
 					/* Сброс дозиметра */
 					case cmd_clear_dosimeter:
@@ -430,6 +447,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							dozimetrBuffer[ii] = 0;
 						}
 						logUpdate(resDozimeterLog);
+						requestState = true;
 						break;
 					/* Очистка лога */
 					case cmd_clear_logs:
@@ -438,21 +456,41 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 							logBuffer[ii].type = 0;
 						}
 						logUpdate(clearLog);
+						requestState = true;
 						break;
 					/* Запрос на передачу спектра истории */
 					case cmd_history_request:
-						historyRequest = true;
-						interval2 = 0;
+						requestHistory = true;
 						break;
 					/* Включение звука и вибро, для поиска прибора */
 					case cmd_find_device:
 						NotifyAct(SOUND_NOTIFY | VIBRO_NOTIFY, 5);
 						logUpdate(requestWHcfg);
+						requestState = true;
 						break;
 					/* Отключение тревоги */
 					case cmd_infibit_alarm:
 						inhibitAlarm = ! inhibitAlarm;
 						logUpdate(inhibitAlarms);
+						requestState = true;
+						break;
+					/* Запрос кадра со спектром (спектрометр может быть выключен) */
+					case cmd_get_specter:
+						requestSpectrum = true;
+						break;
+					/* Запрос кадра дозиметра */
+					case cmd_get_dosimeter:
+						requestDosimeter = true;
+						break;
+					/* Интервал автонотификации в секундах, 0 - выключить. Ответ - кадр спектра при forceSpectrum (байт 5, бит 0, как на команду 11) или кадр по состоянию прибора, в его байте 8 новое значение. */
+					case cmd_set_notify_interval:
+						notifyInterval = p_Notification->DataTransfered.p_Payload[4];
+						interval2 = intervalNow + notifyInterval;
+						if (p_Notification->DataTransfered.p_Payload[5] & 0x01) {
+							requestSpectrum = true;
+						} else {
+							requestState = true;
+						}
 						break;
 						/* Запрос аппаратной конфигурации */
 					case cmd_get_hardware_info:
@@ -482,6 +520,7 @@ void BLUZ_Notification(BLUZ_NotificationEvt_t *p_Notification)
 								}
 							}
 						}
+						requestState = true;
 						break;
 					}
 				} else {

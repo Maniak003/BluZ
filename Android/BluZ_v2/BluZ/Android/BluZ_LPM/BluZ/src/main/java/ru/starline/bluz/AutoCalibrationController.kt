@@ -274,10 +274,11 @@ class AutoCalibrationController(
     val HV_BRACKET_HIGH: Int = 500
 
     /**
-     * Базовый шаг изменения уровня компаратора в каналах спектра — зависит от разрешения.
+     * Базовый шаг изменения уровня компаратора в единицах АЦП (== единицах DAC компаратора
+     * `LTC1662`) — зависит от разрешения.
      *
-     * Значение интерпретируется как «прирост позиции порога компаратора в каналах
-     * спектра на одну итерацию подбора». Маленький шаг (3/5/10 для 1024/2048/4096)
+     * Значение интерпретируется как «прирост порога компаратора на одну итерацию подбора».
+     * Маленький шаг (60/100/200 для 1024/2048/4096, то есть 3/5/10 каналов спектра)
      * даёт точное попадание у границы: больший шаг одним прыжком уводит компаратор
      * в зону «отсекает всё» — после чего ВВ перестаёт влиять на масштаб спектра.
      *
@@ -285,22 +286,10 @@ class AutoCalibrationController(
      * (×4/×2/×1) в зависимости от текущего значения ratio шум/плато — быстро
      * проходим зону массивной иголки и точно попадаем у границы сходимости.
      */
-    private fun comparatorStepInSpectrumChannels(channels: Int): Int = when (channels) {
-        4096 -> 10
-        2048 -> 5
-        else -> 3
-    }
-
-    /**
-     * Шаг компаратора в единицах АЦП (== единицах DAC компаратора `LTC1662`).
-     *
-     * Связь канала спектра и значения АЦП: `канал = ADC / bitsChannel`, поэтому
-     * `ΔADC = Δканал × bitsChannel`. Значение `bitsChannel` берётся из `GO`, при
-     * нештатной величине используется дефолт 20.
-     */
-    private fun comparatorStepInAdc(channels: Int): Int {
-        val bitsCh = if (GO.bitsChannel in 1..64) GO.bitsChannel else 20
-        return comparatorStepInSpectrumChannels(channels) * bitsCh
+    private fun comparatorStepInAdc(channels: Int): Int = when (channels) {
+        4096 -> 200
+        2048 -> 100
+        else -> 60
     }
 
     /** Текущее количество каналов спектра по `GO.spectrResolution` (0=1024, 1=2048, 2=4096). */
@@ -759,7 +748,7 @@ class AutoCalibrationController(
      *
      * При V=100 (максимум реального усиления) шумовая иголка максимальна — что найдём
      * здесь, того хватит для любого V ≥ 100 (большие V → меньшее усиление → иголка
-     * меньше). Стартовый comp=100, шаг = step × bitsChannel в АЦП (5/10/20 каналов
+     * меньше). Стартовый comp=100, шаг = step в АЦП (5/10/20 каналов
      * спектра для 1024/2048/4096). Поднимаем пока max в первых 5% каналов не упадёт
      * ниже 2× max в плато 10..30%.
      */
@@ -777,7 +766,7 @@ class AutoCalibrationController(
     private suspend fun tuneComparatorAtCurrentHv(channels: Int): Int {
 
         var comp = 100
-        val baseStep = comparatorStepInAdc(channels)  // например 60 АЦП (3 канала × 20)
+        val baseStep = comparatorStepInAdc(channels)  // например 60 АЦП
         val noiseZoneEnd = (channels * 0.05).toInt().coerceAtLeast(20)
         val plateauStart = (channels * 0.10).toInt().coerceAtLeast(noiseZoneEnd * 2)
         val plateauEnd = (channels * 0.30).toInt().coerceAtLeast(plateauStart * 2)
@@ -1276,7 +1265,7 @@ class AutoCalibrationController(
      *  - `[39..50]` polynom 2048
      *  - `[51..62]` polynom 4096
      *  - `[63..64]` aqureValue (uint16 LE)
-     *  - `[65]` bitsChannel
+     *  - `[65..66]` propHVTempCoef (int16 LE, 0.001 кода DAC на °C)
      */
     private fun sendFullConfigToDevice() {
         val buf = GO.BTT.sendBuffer
@@ -1311,6 +1300,8 @@ class AutoCalibrationController(
         buf[34] = ((GO.propHVoltage.toUInt() shr 8) and 255u).toUByte()
         buf[35] = (GO.propComparator and 255u).toUByte()
         buf[36] = ((GO.propComparator.toUInt() shr 8) and 255u).toUByte()
+        buf[65] = (GO.propHVTempCoef and 255).toUByte()
+        buf[66] = ((GO.propHVTempCoef shr 8) and 255).toUByte()
 
         buf[37] = GO.spectrResolution.toUByte()
 
@@ -1333,7 +1324,6 @@ class AutoCalibrationController(
         // aqure (uint16 LE через .toShort() truncate — допускает значения >32767)
         val aqureBytes = ByteBuffer.allocate(2).putShort(GO.aqureValue.toInt().toShort()).array()
         buf[63] = aqureBytes[0].toUByte(); buf[64] = aqureBytes[1].toUByte()
-        buf[65] = GO.bitsChannel.toUByte()
 
         GO.BTT.sendCommand(0u)  // cmd_setup
     }

@@ -513,17 +513,13 @@ if (a == 0f) {
     tv.text = "КАНАЛОВ · $channels"     // калибровки нет
     return
 }
-val bitsCh = if (GO.bitsChannel in 1..64) GO.bitsChannel else 20
-val firstCh = (GO.propComparator.toInt() / bitsCh).coerceIn(0, channels - 1)
 val lastCh = channels - 1
-val eFirst = (a * firstCh * firstCh + b * firstCh + c).toInt().coerceAtLeast(0)
+val eFirst = 0
 val eLast  = (a * lastCh * lastCh + b * lastCh + c).toInt().coerceAtLeast(0)
 tv.text = "КАНАЛОВ · $channels · $eFirst – $eLast кэВ"
 ```
 
-**Первый «живой» канал** = `propComparator / bitsChannel`:
-- `propComparator` — порог компаратора в **отсчётах АЦП** (10-битное значение из BLE-фрейма, 0..1023)
-- `bitsChannel` — отсчётов АЦП на 1 канал спектра (16..32, дефолт 20)
+Нижняя граница диапазона не зависит от порога компаратора: `eFirst = 0`.
 
 `coerceAtLeast(0)` защищает от отрицательных энергий при экзотических калибровках с `C < 0`.
 
@@ -761,7 +757,7 @@ val table: List<Pair<Float, Int>> = listOf(
 │   3) stable: |curr-prev|/prev < 30% подряд 2 раза, curr<100  │
 │   Критерии 2 и 3 нужны на большом кристалле (CsI 10×10×50,   │
 │   фон ~30 имп/с): ratio не падает ниже ~3 из-за фона        │
-│ • baseStep = 3/5/10 каналов спектра × bitsChannel (АЦП)      │
+│ • baseStep = 60/100/200 АЦП (3/5/10 каналов спектра)         │
 └──────────────────────────────────────────────────────────────┘
         │
         ▼
@@ -1172,10 +1168,10 @@ fun recordTrackPoint() {
 startScan() → обнаружение устройства → initLeDevice()
   └── connectGatt()
       └── onConnectionStateChange(CONNECTED)
-          └── requestMtu(251)
-              └── onMtuChanged()
-                  └── discoverServices()
-                      └── onServicesDiscovered()
+          └── discoverServices()
+              └── onServicesDiscovered()
+                  └── requestMtu(251)
+                      └── onMtuChanged()
                           └── setCharacteristicNotification(RX, true)
                               └── Готов к приёму фреймов
 ```
@@ -1252,7 +1248,6 @@ data class DeviceFrame(
 - `autoStartSpectrometer` — автозапуск при включении
 - `spectrResolution` — разрядность (0=1024, 1=2048, 2=4096)
 - `aqureValue` — погрешность измерения дозиметра
-- `bitsChan` — разрядность канала АЦП
 - `sampleTime` — время выборки АЦП
 - `spectrometerTime`, `spectrometerPulse` — время работы и число импульсов спектрометра
 
@@ -1285,6 +1280,7 @@ data class LogEntry(val tm: UInt, val act: UByte)
 | 16 | Низкий заряд батареи |
 | 17 | Очистка истории |
 | 18 | Требуется обновление прошивки |
+| 21 | Восстановление таймеров после потери алярма RTC |
 
 ---
 
@@ -1427,7 +1423,7 @@ Settings: `cbFullScrn`, `editPolinomA/B/C`, `rbResolution1024/2048/4096`, ...
 
 **`formatClock(totalSec: Int, showSeconds: Boolean): String`** — форматирование длительности с учётом дней. См. раздел [0.4](#04-формат-таймера-с-днями--клик-переключение-в-секунды).
 
-**`updateSpecSubtitle()`** — пересчитывает subtitle «КАНАЛОВ · N · X – Y кэВ» над заголовком Spectrum tab. Использует текущие коэф калибровки, `propComparator`, `bitsChannel` и `spectrResolution`. См. раздел [0.25](#025-subtitle-на-вкладке-спектр-реальный-диапазон).
+**`updateSpecSubtitle()`** — пересчитывает subtitle «КАНАЛОВ · N · X – Y кэВ» над заголовком Spectrum tab. Использует текущие коэф калибровки и `spectrResolution`. См. раздел [0.25](#025-subtitle-на-вкладке-спектр-реальный-диапазон).
 
 **`loadIsotop()`** — инициализирует справочник из 47 изотопов. Каждый изотоп: `Name: String`, `Energy: Int` (keV), `Channel: Int`, `Activity: Int` (0=нет активности). Примеры: K-40 (1460 keV), Cs-137 (662 keV), Am-241 (60 keV).
 
@@ -1611,7 +1607,7 @@ onStop()  → MapKitFactory.getInstance().onStop() + mapView.onStop()
 - Звук/вибро по уровням (CheckBox)
 - Коэффициенты полинома (A, B, C) для 1024/2048/4096 каналов
 - CPS→мкР/ч коэффициент
-- ВВ, компаратор, точность измерения, разрядность канала, время выборки АЦП
+- ВВ, компаратор, точность измерения, время выборки АЦП
 
 **5. Приложение:**
 - `bzSwitchDayTheme` (SwitchCompat — не MaterialSwitch) — тема (управляет также режимом карты, см. [0.3](#03-ночной-режим-карты--тема-приложения))

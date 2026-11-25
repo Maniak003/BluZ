@@ -75,6 +75,11 @@ class SettingsFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
+        if (GO.autoLoadDeviceCfg && GO.configDataReady && view != null) {
+            GO.readConfigFormDevice()
+            reloadConfigParameters()
+        }
+
         val df = DecimalFormat(GO.acuricyPatern, DecimalFormatSymbols(Locale.US))
         view?.findViewById<EditText>(R.id.editPolA)?.setText(df.format(GO.propCoef4096A))
         view?.findViewById<EditText>(R.id.editPolB)?.setText(df.format(GO.propCoef4096B))
@@ -154,6 +159,15 @@ class SettingsFragment : Fragment() {
         GO.rbResolution2048 = view.findViewById(R.id.RBResol2048)
         GO.rbResolution4096 = view.findViewById(R.id.RBResol4096)
         GO.editHVoltage = view.findViewById(R.id.editHvoltage)
+        GO.editHVTempCoef = view.findViewById(R.id.editHVTempCoef)
+        GO.textHVActual = view.findViewById(R.id.textHVActual)
+        val hvActualWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) { GO.updateHvActual() }
+        }
+        GO.editHVoltage.addTextChangedListener(hvActualWatcher)
+        GO.editHVTempCoef.addTextChangedListener(hvActualWatcher)
         GO.editComparator = view.findViewById(R.id.editComparator)
         GO.cbSpectrometr = view.findViewById(R.id.CBSpectrometer)
         GO.editSMA = view.findViewById(R.id.editTextSMAWindow)
@@ -163,7 +177,6 @@ class SettingsFragment : Fragment() {
         GO.rbSpctType = view.findViewById(R.id.rbSpctType)
         GO.textMACADR = view.findViewById(R.id.textMACADDR)
         GO.aqureEdit = view.findViewById(R.id.editAquracy)
-        GO.bitsChannelEdit = view.findViewById(R.id.editBitsChannel)
         GO.cbFullScrn = view.findViewById(R.id.CBFullScreen)
         GO.rbGPXType = view.findViewById(R.id.rbGPX)
         GO.rbKMLType = view.findViewById(R.id.rbKML)
@@ -523,6 +536,7 @@ class SettingsFragment : Fragment() {
             val smaRaw = GO.editSMA.text.toString().trim().toIntOrNull() ?: 0
             GO.windowSMA = (smaRaw / 2) * 2 + 1
             GO.propHVoltage = (GO.editHVoltage.text.toString().trim().toIntOrNull() ?: 0).toUShort()
+            GO.propHVTempCoef = (GO.editHVTempCoef.text.toString().trim().toIntOrNull() ?: 0).coerceIn(-32768, 32767)
             GO.propComparator = (GO.editComparator.text.toString().trim().toIntOrNull() ?: 0).toUShort()
             if (GO.rbResolution1024.isChecked) {
                 GO.spectrResolution = 0
@@ -534,10 +548,6 @@ class SettingsFragment : Fragment() {
                 GO.spectrResolution = 0
             }
             GO.aqureValue = GO.aqureEdit.text.toString().trim().toIntOrNull() ?: 0
-            GO.bitsChannel = GO.bitsChannelEdit.text.toString().trim().toIntOrNull() ?: 20
-            if (GO.bitsChannel < 16 || GO.bitsChannel > 32) {
-                GO.bitsChannel = 20
-            }
             GO.sampleTime = GO.sampleTimeEdit.text.toString().trim().toIntOrNull() ?: 0
             if (GO.sampleTime < 0 || GO.sampleTime > 7) {
                 GO.sampleTime = 0
@@ -604,6 +614,7 @@ class SettingsFragment : Fragment() {
             GO.propVibroLevel3 = GO.cbVibroLevel3.isChecked
             GO.propCPS2UR = GO.editCPS2Rh.text.toString().trim().replace(',', '.').toFloatOrNull() ?: 0f
             GO.propHVoltage = (GO.editHVoltage.text.toString().trim().toIntOrNull() ?: 0).toUShort()
+            GO.propHVTempCoef = (GO.editHVTempCoef.text.toString().trim().toIntOrNull() ?: 0).coerceIn(-32768, 32767)
             GO.propComparator = (GO.editComparator.text.toString().trim().toIntOrNull() ?: 0).toUShort()
             if (GO.rbResolution1024.isChecked) {
                 GO.spectrResolution = 0
@@ -624,7 +635,7 @@ class SettingsFragment : Fragment() {
             convVal = ByteBuffer.allocate(4).putInt(GO.propLevel2).array()
             GO.BTT.sendBuffer[8] = convVal[0].toUByte()
             GO.BTT.sendBuffer[9] = convVal[1].toUByte()
-            GO.BTT.sendBuffer[10] = convVal[1].toUByte()
+            GO.BTT.sendBuffer[10] = convVal[2].toUByte()
             GO.BTT.sendBuffer[11] = convVal[3].toUByte()
 
             convVal = ByteBuffer.allocate(4).putInt(GO.propLevel3).array()
@@ -738,10 +749,12 @@ class SettingsFragment : Fragment() {
             GO.BTT.sendBuffer[64] = convVal2[0].toUByte()
             GO.BTT.sendBuffer[63] = convVal2[1].toUByte()
 
-            GO.BTT.sendBuffer[65] = GO.bitsChannelEdit.text.toString().toUByte()
-
             GO.BTT.sendBuffer[33] = (GO.propHVoltage and 255u).toUByte()
             GO.BTT.sendBuffer[34] = ((GO.propHVoltage.toUInt() shr 8) and 255u).toUByte()
+
+            /* Температурная коррекция, int16 LE, 0.001 кода DAC на °C (по умолчанию 7900), 0 - выключена */
+            GO.BTT.sendBuffer[65] = (GO.propHVTempCoef and 255).toUByte()
+            GO.BTT.sendBuffer[66] = ((GO.propHVTempCoef shr 8) and 255).toUByte()
 
             GO.BTT.sendBuffer[35] = (GO.propComparator and 255u).toUByte()
             GO.BTT.sendBuffer[36] = ((GO.propComparator.toUInt() shr 8) and 255u).toUByte()
@@ -775,37 +788,6 @@ class SettingsFragment : Fragment() {
             }
 
             GO.BTT.sendCommand(0u)
-        }
-
-        if (GO.ColorDosimeter == 0) {
-            GO.ColorDosimeter = resources.getColor(R.color.ColorDosimeter, GO.mainContext.theme)
-        }
-        if (GO.ColorDosimeterSMA == 0) {
-            GO.ColorDosimeterSMA = resources.getColor(R.color.ColorDosimeterSMA, GO.mainContext.theme)
-        }
-        if (GO.ColorLin == 0) {
-            GO.ColorLin = resources.getColor(R.color.specterColorLin, GO.mainContext.theme)
-        }
-        if (GO.ColorLog == 0) {
-            GO.ColorLog = resources.getColor(R.color.specterColorLog, GO.mainContext.theme)
-        }
-        if (GO.ColorFone == 0) {
-            GO.ColorFone = resources.getColor(R.color.specterColorFone, GO.mainContext.theme)
-        }
-        if (GO.ColorFoneLg == 0) {
-            GO.ColorFoneLg = resources.getColor(R.color.specterColorFoneLg, GO.mainContext.theme)
-        }
-        if (GO.ColorLinGisto == 0) {
-            GO.ColorLinGisto = resources.getColor(R.color.specterColorLinGisto, GO.mainContext.theme)
-        }
-        if (GO.ColorLogGisto == 0) {
-            GO.ColorLogGisto = resources.getColor(R.color.specterColorLogGisto, GO.mainContext.theme)
-        }
-        if (GO.ColorFoneGisto == 0) {
-            GO.ColorFoneGisto = resources.getColor(R.color.specterColorFoneGisto, GO.mainContext.theme)
-        }
-        if (GO.ColorFoneLgGisto == 0) {
-            GO.ColorFoneLgGisto = resources.getColor(R.color.specterColorFoneLgGisto, GO.mainContext.theme)
         }
 
         rbLine = view.findViewById(R.id.RBLin)
@@ -1860,11 +1842,11 @@ class SettingsFragment : Fragment() {
         GO.editPolinomE.setText(df.format(GO.propCoef4096E))
         GO.editCPS2Rh.setText(GO.propCPS2UR.toString())
         GO.editHVoltage.setText(GO.propHVoltage.toString())
+        GO.editHVTempCoef.setText(GO.propHVTempCoef.toString())
         GO.editComparator.setText(GO.propComparator.toString())
         GO.editSMA.setText(GO.windowSMA.toString())
         GO.propButtonInit = true
         GO.aqureEdit.setText(GO.aqureValue.toString())
-        GO.bitsChannelEdit.setText(GO.bitsChannel.toString())
         GO.cbFullScrn.isChecked = GO.fullScrn
         GO.sampleTimeEdit.setText(GO.sampleTime.toString())
         GO.textAppLogLevel.setText(GO.appLogLevel.toString())

@@ -238,19 +238,19 @@
             android:paddingTop="6dp">
 
             <CheckBox
-                android:id="@+id/cbSMA"
+                android:id="@+id/cbDNL"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-10dp"
                 android:layout_marginBottom="-10dp"
                 android:buttonTint="@color/bz_accent"
                 android:minWidth="0dp"
-                android:text="SMA"
+                android:text="DNL"
                 android:textColor="@color/bz_text_dim"
                 android:textSize="10sp" />
 
             <CheckBox
-                android:id="@+id/cbMED"
+                android:id="@+id/cbSMA"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
@@ -258,7 +258,7 @@
                 android:layout_marginBottom="-10dp"
                 android:buttonTint="@color/bz_accent"
                 android:minWidth="0dp"
-                android:text="MED"
+                android:text="SMA"
                 android:textColor="@color/bz_text_dim"
                 android:textSize="10sp" />
 

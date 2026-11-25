@@ -239,10 +239,14 @@ Android уничтожает MainActivity → создаёт новую
 | 2 | + спектр 2048 каналов | ~4800 байт |
 | 3 | + спектр 4096 каналов | ~8800 байт |
 | 4–6 | + история (тот же набор разрешений) | соответственно |
+| 7 | Ответ на hw info: только шапка | 1 нотификация |
 
 Каждый фрейм режется на MTU-чанки (~248 байт payload при MTU 251). `BluetoothInterface.processIncomingPacket` собирает их обратно: первый байт пакета — порядковый номер (0 — старт нового фрейма).
 
 **Структура шапки фрейма (байты 0–58):**
+
+> Раскладка ниже устарела. Актуальное начало шапки (тип 7, флаги в байте 4, версия протокола в байтах 6–7,
+> счётчики с байта 10) описано в BLE_PROTOCOL.md.
 
 ```
 0-2   : header '<B>' (0x3C 0x42 0x3E)
@@ -291,16 +295,25 @@ Android уничтожает MainActivity → создаёт новую
 | 6 | Найти прибор (звук+вибро на 3 сек) | — |
 | 7 | Передать реальное напряжение АКБ | `sendBuffer[4..7]` — float |
 | 8 | Очистить историю | — |
+| 10 | Запрос hw info (ответ — фрейм типа 7 с версией протокола) | — |
+| 11 | Запрос кадра со спектром (ответ — фрейм типа 1..3, даже если спектрометр выключен) | — |
+| 12 | Запрос кадра дозиметра (ответ — фрейм типа 0, даже если спектрометр включён) | — |
 
 ### 5.4 Сценарий подключения
 
 ```
 1. UI вызывает GO.BTT.initLeDevice() (с заполненным GO.LEMAC)
 2. BluetoothInterface.connectGatt(autoConnect=false)
-3. onConnectionStateChange(CONNECTED) → requestMtu(251)
-4. onMtuChanged → discoverServices
-5. onServicesDiscovered → setCharacteristicNotification(RX, true)
-6. С этого момента приходят onCharacteristicChanged каждую секунду
+3. onConnectionStateChange(CONNECTED) → discoverServices
+4. onServicesDiscovered → requestMtu(251)
+5. onMtuChanged → setCharacteristicNotification(RX, true) и запись CCCD
+6. onDescriptorWrite → команда 10 (hw info); до ответа остальные фреймы игнорируются,
+   при мажорной версии протокола не 1 или без ответа прибор отклоняется (см. BLE_PROTOCOL.md);
+   статус Connected выставляется только после ответа с поддерживаемой версией;
+   сразу после ответа приложение включает автонотификацию (команда 13, интервал 5 с);
+   в ней бит 0 байта 5 (forceSpectrum) просит ответить спектром, если спектрометр набрал импульсы, иначе кадром по состоянию прибора;
+   ответ на неё - первый кадр
+7. С этого момента приходят onCharacteristicChanged с заданным интервалом
 ```
 
 `GO.tmFull` — `intervalTimer`, который через `MyTimerTask.run()` каждые 10 сек проверяет: если `connected == false`, вызывает `destroyDevice() + initLeDevice()`. Это автоматический реконнект.

@@ -31,7 +31,7 @@ BluZ-устройство (BLE)
         │ onCharacteristicChanged (GATT фоновый поток)
         ▼
 BluetoothInterface.processIncomingPacket()
-  • сборка MTU-фрагментов в буфер receiveData[9760]
+  • сборка MTU-фрагментов в буфер receiveData[17812]
   • проверка контрольной суммы (CRC16 Little-Endian)
   • декодирование: дозиметр, лог, спектр, HardwareConfig
         │

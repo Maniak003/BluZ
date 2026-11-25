@@ -24,6 +24,7 @@ package ru.starline.bluz
  * @property logEntries До 50 [LogEntry] с прибора (timestamp + код действия).
  * @property spectrumData Спектр (1024/2048/4096 каналов) для [frameType] 1..3, иначе null.
  * @property historyData Историчный спектр для [frameType] 4..6, иначе null.
+ * @property spectrometerRunning Спектрометр запущен (бит 1 байта флагов заголовка).
  * @property hw Распарсенная [HardwareConfig] из шапки фрейма.
  * @property overload Флаг перегрузки прибора (превышен макс. предел измерения).
  */
@@ -39,6 +40,7 @@ data class DeviceFrame(
     val logEntries: List<LogEntry>,
     val spectrumData: DoubleArray?,
     val historyData: DoubleArray?,
+    val spectrometerRunning: Boolean,
     val hw: HardwareConfig,
     val overload: Boolean
 )
@@ -77,8 +79,8 @@ data class LogEntry(val timestamp: UInt, val action: UByte)
  * @property cps2ur Коэффициент перевода CPS → мкР/ч (зависит от детектора).
  * @property hVoltage Высокое напряжение SiPM (10-битное значение АЦП, 0..1023).
  * @property comparator Порог компаратора АЦП (10-битное, 0..1023). Используется для
- *  расчёта первого «живого» канала в [globalObj.updateSpecSubtitle]:
- *  `firstCh = comparator / bitsChannel`.
+ *  расчёта первого «живого» канала в [globalObj.updateSpecSubtitle].
+ * @property hvTempCoef Температурная коррекция высокого напряжения, int16, 0.001 кода DAC на °C (байты 98-99).
  * @property coef1024A Коэф полинома `A·ch² + B·ch + C` (энергия в кэВ) для разрешения 1024.
  * @property coef1024B B-коэф для 1024.
  * @property coef1024C C-коэф для 1024.
@@ -89,7 +91,6 @@ data class LogEntry(val timestamp: UInt, val action: UByte)
  * @property coef4096B B-коэф для 4096.
  * @property coef4096C C-коэф для 4096.
  * @property acquireValue Точность измерения дозиметра (unsigned 16-bit, 0..65535).
- * @property bitsChan Бит/отсчётов АЦП на 1 канал спектра. Дефолт 20, диапазон 16..32.
  * @property sampleTime Время выборки АЦП (3 бита).
  * @property spectrometerTime Время работы спектрометра, секунд.
  * @property spectrometerPulse Импульсов, набранных спектрометром.
@@ -112,11 +113,11 @@ data class HardwareConfig(
     val cps2ur: Float,
     val hVoltage: UShort,
     val comparator: UShort,
+    val hvTempCoef: Int,
     //val coef1024A: Float, val coef1024B: Float, val coef1024C: Float,
     //val coef2048A: Float, val coef2048B: Float, val coef2048C: Float,
     val coef4096A: Float, val coef4096B: Float, val coef4096C: Float, val coef4096D: Float, val coef4096E: Float,
     val acquireValue: UShort,
-    val bitsChan: UByte,
     val sampleTime: UByte,
     val spectrometerTime: UInt,
     val spectrometerPulse: UInt

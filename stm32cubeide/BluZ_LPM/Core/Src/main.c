@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "spectrum_codec.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,12 +57,12 @@ RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN PV */
 volatile bool connectFlag = false;
-bool historyRequest = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false, firstInital = true/*, findDevice = false*/, inhibitAlarm = false;;
+bool requestHistory = false, LEDflag = false, SoundFlag = false, VibroFlag = false, autoStartSpecrometr = false, firstInital = true/*, findDevice = false*/, inhibitAlarm = false;;
 uint32_t currentLevel = 10, tmp_level, currentTimeAvg, pulseCounterAvg, interval1 = 0, interval2 = 0, interval3 = 0, interval4 = 0, intervalNow = 0;
 uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, CPS = 0, TVLevel[3] = {0,}, spectrometerTime = 0, spectrometerPulse = 0;
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
-bool noSendProgress = true, requestHardwareInfo = false;
-uint8_t dataSize = 0;
+uint8_t notifyInterval = 0;									/* Интервал автонотификации в секундах, 0 - выключена. Во flash не хранится. */
+bool noSendProgress = true, requestHardwareInfo = false, requestSpectrum = false, requestDosimeter = false, requestState = false;
 /*
  *	Точность измерения дозиметра
  *	1 sigma <10% -  100
@@ -83,7 +84,6 @@ struct LG logBuffer[LOG_BUFER_SIZE];
 uint64_t PL[19] = {0,};
 spectrResolution_t resolutionSpecter = resolution1024;
 uint8_t repetionCount = 0; /* 0 - 1024, 1 - 2048, 2 - 4096 */
-uint8_t bitsOfChannal;	// Разрядность канала
 uint8_t divade10counter = 0;
 uint8_t div10Ledcounter = 0;
 /*
@@ -103,7 +103,7 @@ uint32_t tmpSpecterBuffer[MAX_RESOLUTION];
 uint32_t historySpecterBuffer[MAX_RESOLUTION];
 
 /* Настройки прибора */
-uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET] = {0,};
+uint16_t transmitBuffer[NUMBER_MTU_MAX * 244 / 2] = {0,};
 bool SoundEnable = true, VibroEnable = true, LEDEnable = false;		// Сопровождение квантов
 bool levelSound1 = true, levelSound2 = true, levelSound3 = true;	// Активность звука для разных уровней
 bool levelVibro1 = true, levelVibro2 = true, levelVibro3 = true;	// Активность вибро для разнвх уровней
@@ -113,9 +113,6 @@ bool history_active = false; // Флаг набора истории.
 bool overloadFlag = false;	// Флаг перегрузки
 bool divide10sound = false; // Флаг деления озвучки событий на 10.
 bool divide10led = false; // Флаг деления озвучки событий на 10.
-
-double CoefChan;							/* Коэффициент, для отказа от операции деления 65535 / 20 */
-uint32_t limitChan;
 
 /* Коэффициенты для коррекции температуры */
 float TK1, TK2;
@@ -132,6 +129,7 @@ union dataB battKoeff;
 
 uint8_t	low_batt_count = 0;											// Счетчик низкого уровня батареии
 uint32_t batt_time_counter = 0;										// ИНтервал звукового оповещения о низком заряде аккумулятора
+int16_t hvTempCoef = HV_TEMP_COEF_DEFAULT;									// Температурная коррекция высокого напряжения, 0.001 кода DAC на °C, 0 - выключена
 uint16_t HVoltage = 256, comparatorLevel = 256;						// Уровни настройки высокого напряжения и компаратора
 
 uint8_t notifyFlags = 0;											// 1 - Звук, 2 - Вибро, 4 - Led
@@ -206,6 +204,7 @@ uint32_t samplingTm(uint8_t smplTm) {
  *	16 - Низкий заряд батареи
  *	17 - Очистка истории
  *	18 - Отключение тревоги
+ *	21 - Восстановление таймеров после потери алярма RTC
  */
 
 void logUpdate(logTypes_t act) {
@@ -339,8 +338,6 @@ int main(void)
   }
   /* Пересчет уровней в uint32_t для ускорения обработки */
   calcPulseLevel();
-  CoefChan = 65535.0 / (double) bitsOfChannal;
-  limitChan = (1 << bitsOfChannal) - 1 ;
 
   /*
    * Настройка порога компаратора
@@ -391,9 +388,9 @@ int main(void)
    * 11, 12 - Среднее количество имльсов в секунду. float
    * 13, 14 - Температура в гр. цельсия
    * 15, 16 - Напряжение батареи в вольтах
-   * 17, 18 - Коэффициент полинома A для 1024 каналов
-   * 19, 20 - Коэффициент полинома B для 1024 каналов
-   * 21, 22 - Коэффициент полинома C для 1024 каналов
+   * 17, 18 - Не используется
+   * 19, 20 - Не используется
+   * 21, 22 - Не используется
    * 23, 24 - Коэффициент пересчета uRh/cps
    * 25     - Значение высокого напряжения
    * 26     - Значение порога компаратора
@@ -412,9 +409,9 @@ int main(void)
    *     8 - Автозапуск спектрометра при включении
    *     9 - Деление событий для озвучки
    *     10- Деление событий для светодиода
-   * 31, 32 - Коэффициент полинома A для 2048 каналов
-   * 33, 34 - Коэффициент полинома B для 2048 каналов
-   * 35, 36 - Коэффициент полинома C для 2048 каналов
+   * 31, 32 - Не используется
+   * 33, 34 - Коэффициент полинома D для 4096 каналов
+   * 35, 36 - Коэффициент полинома E для 4096 каналов
    * 37, 38 - Коэффициент полинома A для 4096 каналов
    * 39, 40 - Коэффициент полинома B для 4096 каналов
    * 41, 42 - Коэффициент полинома C для 4096 каналов
@@ -462,6 +459,7 @@ int main(void)
   //NotifyAct(SOUND_NOTIFY /*| VIBRO_NOTIFY*/, 1);
 
   TVMeasure();
+  hvCompensate();
 
   /* Сброс счетчиков */
   pulseCounter = 0;
@@ -475,142 +473,222 @@ int main(void)
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
-    if ( connectFlag && (interval2 < intervalNow) /*&& system_startup_done*/) {
-	  interval2 = intervalNow + INTERVAL2;
+    /* Самовосстановление: алярм RTC потерян, голова списка таймеров просрочена более чем на 1 с (1024 тика) */
+    /*{
+      UTILS_ENTER_CRITICAL_SECTION();
+      UTIL_TIMER_Object_t *timerHead = UTIL_TIMER_GetTimerList();
+      bool timerLost = (timerHead != NULL) && (UTIL_TimerDriver.GetTimerElapsedTime() > timerHead->Timestamp + 1024);
+      UTILS_EXIT_CRITICAL_SECTION();
+      if (timerLost) {
+        logUpdate(timerRecoverLog);
+        UTIL_TIMER_IRQ_Handler();	// Выполнит просроченный таймер и заново взведет алярм
+      }
+    }*/
+
+    {
+      UTILS_ENTER_CRITICAL_SECTION();
+      UTIL_TIMER_Object_t *timerHead = UTIL_TIMER_GetTimerList();
+      bool timerLost = false;
+      if (timerHead != NULL) {
+        uint32_t current_time = UTIL_TimerDriver.GetTimerElapsedTime();
+        // Магия знакового вычитания:
+        // Если таймер в будущем: (current - target) будет отрицательным -> условие ложно.
+        // Если таймер просрочен > 1024 тиков: результат будет положительным и > 1024.
+        // Это корректно работает даже при переполнении (wrap-around) аппаратного счётчика.
+        if ((int32_t)(current_time - timerHead->Timestamp) > 1024) {
+          timerLost = true;
+        }
+      }
+      UTILS_EXIT_CRITICAL_SECTION();
+      if (timerLost) {
+        logUpdate(timerRecoverLog);
+        UTIL_TIMER_IRQ_Handler();	// Выполнит просроченный таймер и заново взведет алярм
+      }
+    }
+
+    if ( connectFlag && (requestHardwareInfo || requestHistory || requestSpectrum || requestDosimeter || requestState || (notifyInterval != 0 && interval2 <= intervalNow)) /*&& system_startup_done*/) {
 	  noSendProgress = false;
 	  //HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	  /* Шаблон заголовка */
 	  uint16_t countMTU = 4;
-	  sendDataTypes_t tmpDataType;
-	  tmpDataType = dataType;
+	  /* За один проход отправляется один кадр: hw info, история, спектр, дозиметр, автонотификация. Остальные уйдут на следующих проходах. */
+	  sendDataTypes_t frameType = dataType;
 	  if (requestHardwareInfo) {
-		  dataType = hardwareInformation;
-	  }
-	  if (historyRequest) {
-		  	  historyRequest = false;
+		  requestHardwareInfo = false;
+		  frameType = hardwareInformation;
+	  } else if (requestHistory) {
+		  	  requestHistory = false;
 			switch (resolutionSpecter) {
 			case resolution1024:
-				dataType = dozimeterHistory1024;
+				frameType = dozimeterHistory1024;
 				break;
 			case resolution2048:
-				dataType = dozimeterHistory2048;
+				frameType = dozimeterHistory2048;
 				break;
 			case resolution4096:
-				dataType = dozimeterHistory4096;
+				frameType = dozimeterHistory4096;
 				break;
 			default:
-				dataType = dozimeterHistory1024;
+				frameType = dozimeterHistory1024;
 				resolutionSpecter = resolution1024;
 				break;
 			}
+	  } else if (requestSpectrum) {
+		  requestSpectrum = false;
+		  switch (resolutionSpecter) {
+		  case resolution1024:
+			  frameType = dozimeterSpecter1024;
+			  break;
+		  case resolution2048:
+			  frameType = dozimeterSpecter2048;
+			  break;
+		  case resolution4096:
+			  frameType = dozimeterSpecter4096;
+			  break;
+		  default:
+			  frameType = dozimeterSpecter1024;
+			  resolutionSpecter = resolution1024;
+			  break;
+		  }
+	  } else if (requestDosimeter) {
+		  requestDosimeter = false;
+		  frameType = onlyDozimeter;
+	  } else {
+		  requestState = false;
 	  }
 
 	  transmitBuffer[0] = ((uint16_t) '<' & 0xFF) | (((uint16_t)'B' << 8) & 0xFF00);
-	  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((dataType << 8) & 0xFF00);
-	  transmitBuffer[2] = ((uint16_t) inhibitAlarm & 1) | ((dataSize << 8) & 0xFF00);	// Состояние флага отключения тревоги.
-	  transmitBuffer[3] = PROTOVERSION;
+	  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((frameType << 8) & 0xFF00);
+	  uint16_t flags = 0;										// Байт флагов заголовка
+	  if (inhibitAlarm) {
+		  flags |= 0x01;										// Бит 0: тревога отключена
+	  }
+	  if (dataType != onlyDozimeter) {
+		  flags |= 0x02;										// Бит 1: спектрометр запущен
+	  }
+	  transmitBuffer[3] = (PROTOVERSION_MINOR << 8) | PROTOVERSION_MAJOR;	// Байт 6: мажорная версия, байт 7: минорная
+	  transmitBuffer[4] = notifyInterval;					// Байт 8: интервал автонотификации, 0 - выключена. Байт 9 зарезервирован
 
 	  uint16_t idxCS = 0 ;
+	  uint32_t payloadSize = 0;								// Байт спектра в кадре без заполнения
+	  uint8_t spectrumFormat = 0;								// Байт 96 заголовка: 0 - отсчеты uint32 как есть, 1 - DPCM + ZigZag + varint
 	  int kkk = 0;
 	  int chanCnt = 4;
 	  uint16_t nm_channel = 0;
-	  switch (dataType) {
+	  switch (frameType) {
   	  case onlyDozimeter:							/* Передача данных дозиметра и лога */
-  		  countMTU = NUMBER_MTU_DOZR;
-  		  idxCS =  NUMBER_MTU_DOZR * 244 / 2 - 1;
   		  nm_channel = 0;
   		  break;
   	  case dozimeterSpecter1024:
-  		  countMTU = NUMBER_MTU_1024;				/* Передача данных дозиметра, лога и спектра 1024 */
-  		  idxCS = NUMBER_MTU_1024 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_1024;
+  		  nm_channel = CHANNELS_1024;				/* Передача данных дозиметра, лога и спектра 1024 */
   		  chanCnt = 4;
   		  break;
   	  case dozimeterSpecter2048:
-  		  countMTU = NUMBER_MTU_2048;				/* Передача данных дозиметра, лога и спектра 2048 */
-  		  idxCS = NUMBER_MTU_2048 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_2048;
+  		  nm_channel = CHANNELS_2048;				/* Передача данных дозиметра, лога и спектра 2048 */
   		  chanCnt = 2;
   		  break;
   	  case dozimeterSpecter4096:
-  		  countMTU = NUMBER_MTU_4096;				/* Передача данных дозиметра, лога и спектра 4096 */
-  		  idxCS = NUMBER_MTU_4096 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_4096;
+  		  nm_channel = CHANNELS_4096;				/* Передача данных дозиметра, лога и спектра 4096 */
   		  chanCnt = 1;
   		  break;
   	  case dozimeterHistory1024:
-  		  countMTU = NUMBER_MTU_1024;				/* Передача данных дозиметра, лога и спектра 1024 */
-  		  idxCS = NUMBER_MTU_1024 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_1024;
+  		  nm_channel = CHANNELS_1024;				/* Передача данных дозиметра, лога и истории 1024 */
   		  chanCnt = 4;
   		  break;
   	  case dozimeterHistory2048:
-  		  countMTU = NUMBER_MTU_2048;				/* Передача данных дозиметра, лога и спектра 2048 */
-  		  idxCS = NUMBER_MTU_2048 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_2048;
+  		  nm_channel = CHANNELS_2048;				/* Передача данных дозиметра, лога и истории 2048 */
   		  chanCnt = 2;
   		  break;
   	  case dozimeterHistory4096:
-  		  countMTU = NUMBER_MTU_4096;				/* Передача данных дозиметра, лога и спектра 4096 */
-  		  idxCS = NUMBER_MTU_4096 * 244 / 2 - 1;
-  		  nm_channel = CHANNELS_4096;
+  		  nm_channel = CHANNELS_4096;				/* Передача данных дозиметра, лога и истории 4096 */
   		  chanCnt = 1;
   		  break;
   	  case hardwareInformation:
-  		  countMTU = 1;
-  		  idxCS = 244 / 2 - 1;
   		  break;
 	  }
 
-	  if (requestHardwareInfo) {
-		  //requestHardwareInfo = false;
-		  transmitBuffer[1] = ((uint16_t) '>' & 0xFF) | ((hardwareInformation << 8) & 0xFF00);
-	  } else {
+	  if (frameType != hardwareInformation) {
 
-		  if (dataType > onlyDozimeter) {							/* Нужно передавать спектр ? */
+		  if (frameType > onlyDozimeter) {							/* Нужно передавать спектр ? */
 			  /* Test */
 			  //for (int jjj = 0; jjj < nm_channel; jjj++) {
 			//	  tmpSpecterBuffer[jjj] = (uint32_t) jjj;
 			  //}
-			  /* Медианный фильтр для устранения артефактов ADC */
-			#ifdef MEDIAN
-			  MA[0] = 0;
-			  MA[1] = 0;
-			  MA[2] = 0;
-			  medianIdx = 0;
-			#endif
-			  double tmpLog;
 			  uint32_t tmpSpectrData;
-			  bool limFlag = false;
 			  /* Что будем передавать, историю или текущий спектр */
-			  const uint32_t * __restrict src = (dataType > dozimeterSpecter4096) ? historySpecterBuffer : tmpSpecterBuffer;
+			  const uint32_t * __restrict src = (frameType > dozimeterSpecter4096) ? historySpecterBuffer : tmpSpecterBuffer;
 			  uint16_t *dest = &transmitBuffer[SPECTER_OFFSET];
-			  for (int jjj = 0; jjj < nm_channel; jjj++) {
-				  tmpSpectrData = 0;
-				  for (int chIdx = 0; chIdx < chanCnt; chIdx++) {
-					  tmpSpectrData += src[kkk++];
-				  }
-				  limFlag |= (tmpSpectrData >= limitChan);
+			  uint32_t rawSize = (uint32_t) nm_channel * 4;
+			  spectrum_encoder_t encoder;
+			  bool packed = true;
+			  bool restart;
+			  do {
+				  /* Сжатый поток берется, только если он строго меньше несжатого. Иначе проход повторяется без сжатия. */
+				  restart = false;
+				  kkk = 0;
+				  spectrum_encoder_init(&encoder, (uint8_t *) dest, rawSize - 1);
+				  /* Медианный фильтр для устранения артефактов ADC */
 				#ifdef MEDIAN
-				  MA[medianIdx] = tmpSpectrData;
-				  tmpSpectrData = (MA[0] < MA[1]) ? ((MA[1] < MA[2]) ? MA[1] : ((MA[2] < MA[0]) ? MA[0] : MA[2])) : ((MA[0] < MA[2]) ? MA[0] : ((MA[2] < MA[1]) ? MA[1] : MA[2]));
-				  if (++medianIdx >= 3) {
-					  medianIdx = 0;
-				  }
+				  MA[0] = 0;
+				  MA[1] = 0;
+				  MA[2] = 0;
+				  medianIdx = 0;
 				#endif
-				  /* Логарифмическое сжатие */
-				  tmpLog = log2(tmpSpectrData + 1) * (double) CoefChan;
-				  dest[jjj] = (uint16_t) tmpLog;
-			  }
-			  /* Если данные не помещаются - увеличим разрадность */
-			  if (limFlag) {
-				  bitsOfChannal++;
-				  CoefChan = 65535.0 / (double) bitsOfChannal;
-				  limitChan = (1 << bitsOfChannal) - 1;
+				  for (int jjj = 0; jjj < nm_channel; jjj++) {
+					  tmpSpectrData = 0;
+					  for (int chIdx = 0; chIdx < chanCnt; chIdx++) {
+						  tmpSpectrData += src[kkk++];
+					  }
+					#ifdef MEDIAN
+					  MA[medianIdx] = tmpSpectrData;
+					  tmpSpectrData = (MA[0] < MA[1]) ? ((MA[1] < MA[2]) ? MA[1] : ((MA[2] < MA[0]) ? MA[0] : MA[2])) : ((MA[0] < MA[2]) ? MA[0] : ((MA[2] < MA[1]) ? MA[1] : MA[2]));
+					  if (++medianIdx >= 3) {
+						  medianIdx = 0;
+					  }
+					#endif
+					  if (packed) {
+						  if (!spectrum_encoder_put(&encoder, tmpSpectrData)) {
+							  packed = false;
+							  restart = true;
+							  break;
+						  }
+					  } else {
+						  /* Несжатые отсчеты uint32_t little-endian */
+						  dest[jjj * 2] = (uint16_t) (tmpSpectrData & 0xFFFF);
+						  dest[jjj * 2 + 1] = (uint16_t) (tmpSpectrData >> 16);
+					  }
+				  }
+			  } while (restart);
+			  if (packed) {
+				  payloadSize = (uint32_t) spectrum_encoder_size(&encoder);
+				  spectrumFormat = 1;
+			  } else {
+				  payloadSize = rawSize;
 			  }
 		  }
 	  }
-	  dataType = tmpDataType;	// Востановление исходного типа данных после передачи истории
+
+	  if (frameType == hardwareInformation) {
+		  countMTU = 1;
+		  idxCS = MTU_SIZE / 2 - 1;
+	  } else {
+		  /* Число MTU: данные дозиметра и лога, спектр и 2 байта контрольной суммы */
+		  countMTU = (SPECTER_OFFSET * 2 + payloadSize + 2 + MTU_SIZE - 1) / MTU_SIZE;
+		  idxCS = countMTU * MTU_SIZE / 2 - 1;
+		  /* Остаток после спектра, включая место под контрольную сумму, заполняется нулями */
+		  uint8_t *frameBytes = (uint8_t *) transmitBuffer;
+		  for (uint32_t iii = SPECTER_OFFSET * 2 + payloadSize; iii < (uint32_t) countMTU * MTU_SIZE; iii++) {
+			  frameBytes[iii] = 0;
+		  }
+	  }
+	  transmitBuffer[2] = flags | ((countMTU << 8) & 0xFF00);	// Байт 5: число MTU в кадре
+
+	  if (frameType == hardwareInformation) {
+		  /* Ответ hw info - только заголовок, данные дозиметра и лог не передаются (остаток кадра нулевой) */
+		  for (uint16_t jjj = HEADER_OFFSET; jjj < idxCS; jjj++) {
+			  transmitBuffer[jjj] = 0;
+		  }
+	  } else {
 		/* Подготавливаем данные дозиметра */
 	  uint16_t ddd = indexDozimetrBufer;
 	  for (uint16_t jjj = HEADER_OFFSET; jjj < HEADER_OFFSET + SIZE_DOZIMETR_BUFER; jjj++) {
@@ -635,6 +713,7 @@ int main(void)
 		  if (ddd >= LOG_BUFER_SIZE) {
 			  ddd = 0;
 		  }
+	  }
 	  }
 
 	  /* Общее количество импульсов */
@@ -663,7 +742,11 @@ int main(void)
 	  *
 	  *	 T(°C) = (130 - 30) / (*(__IO uint32_t*) 0x0BF9 0742 - *(__IO uint32_t*) 0x0BF9 0710) * (TS_DATA - *(__IO uint32_t*) 0x0BF9 0710) + 30
 	  */
-	  Temperature.Float = TK1 * (float) currTemperature + TK2;
+	  //
+	  // Перенесено в процедуру Temperature.Float
+	  //
+	  //Temperature.Float = TK1 * (float) currTemperature + TK2;
+	  //
 	  //Temperature.Float = (float) currTemperature;
 	  Voltage.Float = currVoltage * battKoeff.Float;
 	  //Voltage.Float = 4.2;
@@ -728,16 +811,12 @@ int main(void)
 	  /* Разрядность канала и время выборки АЦП*/
 	  //currentSamplingTime = 3;
 	  if (overloadFlag) {		// Флаг перегрузки
-		  transmitBuffer[48] = ((uint16_t) bitsOfChannal & 0xFF) | (((uint16_t) currentSamplingTime & 0x7) << 8)   | 0b0000100000000000;
+		  transmitBuffer[48] = (uint16_t) spectrumFormat | (((uint16_t) currentSamplingTime & 0x7) << 8)   | 0b0000100000000000;
 	  } else {
-		  transmitBuffer[48] = (((uint16_t) bitsOfChannal & 0xFF) | (((uint16_t) currentSamplingTime & 0x7) << 8)) & 0b1111011111111111;
+		  transmitBuffer[48] = ((uint16_t) spectrumFormat | (((uint16_t) currentSamplingTime & 0x7) << 8)) & 0b1111011111111111;
 	  }
-
-	  if (requestHardwareInfo) {
-		  requestHardwareInfo = false;
-		  tmpBTBuffer[242] = 0;
-		  tmpBTBuffer[243] = 0;
-	  }
+	  /* Температурная коррекция высокого напряжения, 0.001 кода DAC на °C */
+	  transmitBuffer[49] = (uint16_t) hvTempCoef;
 
 	  uint16_t tmpCS = 0;			/* Очистим контрольнуюю сумму */
 	  transmitBuffer[idxCS] = 0;
@@ -780,6 +859,8 @@ int main(void)
 		HAL_UART_Transmit(&huart2, (uint8_t *) uartBuffer, strlen(uartBuffer), 100);
 		#endif
 		noSendProgress = true;
+		/* Любой кадр заменяет плановую автонотификацию. Интервал считается от конца передачи: если кадр шёл дольше интервала, плановый кадр пропускается, а не идёт следом. */
+		interval2 = intervalNow + notifyInterval;
 	}
 
     /*if (interval1 < intervalNow) {
@@ -1457,6 +1538,7 @@ void updateMesurment(void) {
 		if (interval4 <= intervalNow) {
 			interval4 = intervalNow + INTERVAL4;
 			TVMeasure();
+			hvCompensate();
 			if ((float) currVoltage * battKoeff.Float > LOW_BATT) {
 				low_batt_count = 0;
 			} else {
@@ -1488,6 +1570,21 @@ uint32_t ADC_Switch_Channel(uint32_t channel) {
 	tmp_level = HAL_ADC_GetValue(&hadc4) & 0xFFF;
 	HAL_ADC_Stop(&hadc4);
 	return tmp_level;
+}
+
+/*
+ * Температурная коррекция высокого напряжения.
+ * Чем выше значение DAC тем ниже напряжение.
+ */
+void hvCompensate(void) { // Temperature.Float = TK1 * (float) currTemperature + TK2;
+	Temperature.Float = TK1 * (float) currTemperature + TK2;
+	float level = (float) HVoltage + (float) hvTempCoef / 1000.0f * (HV_TEMP_REF - Temperature.Float);
+	if (level < 0.0f) {
+		level = 0.0f;
+	} else if (level > 1023.0f) {
+		level = 1023.0f;
+	}
+	setLevelOnPort(CHANNEL_B, (uint16_t) (level + 0.5f));
 }
 
 void TVMeasure(void) {

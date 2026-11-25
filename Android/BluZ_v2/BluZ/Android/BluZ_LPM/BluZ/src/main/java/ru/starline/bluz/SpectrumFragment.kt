@@ -3,6 +3,7 @@ package ru.starline.bluz
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.graphics.Matrix
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -20,6 +21,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import kotlin.math.abs
@@ -66,6 +68,7 @@ class SpectrumFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? = inflater.inflate(R.layout.spectr_layout, container, false)
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -166,8 +169,9 @@ class SpectrumFragment : Fragment() {
             }
         }
 
+        val CBDNL: CheckBox = view.findViewById(R.id.cbDNL)
         val CBSMA: CheckBox = view.findViewById(R.id.cbSMA)
-        val CBMEDIAN: CheckBox = view.findViewById(R.id.cbMED)
+        //val CBMEDIAN: CheckBox = view.findViewById(R.id.cbMED)
         val CBMARKER: CheckBox = view.findViewById(R.id.cbMarker)
         var calState: Int = 0
         //val matrx = Mtrx()
@@ -279,9 +283,25 @@ class SpectrumFragment : Fragment() {
         }
 
         GO.propButtonInit = false
+        CBDNL.isChecked = GO.drawSPECTER.flagDNL
+        GO.drawSPECTER.cbDnl = CBDNL
+        GO.drawSPECTER.applyDnlEnabled()
         CBSMA.isChecked = GO.drawSPECTER.flagSMA
-        CBMEDIAN.isChecked = GO.drawSPECTER.flagMEDIAN
+        //CBMEDIAN.isChecked = GO.drawSPECTER.flagMEDIAN
         GO.propButtonInit = true
+
+        CBDNL.setOnCheckedChangeListener { _, isChecked ->
+            if (GO.propButtonInit) {
+                GO.drawSPECTER.flagDNL = isChecked
+                GO.drawSPECTER.firstCompare = true
+                if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
+                    GO.drawSPECTER.clearSpecter()
+                    GO.drawSPECTER.redrawSpecter(GO.specterType)
+                } else {
+                    Log.e("BluZ-BT", "drawSPEC is null")
+                }
+            }
+        }
 
         CBSMA.setOnCheckedChangeListener { _, isChecked ->
             if (GO.propButtonInit) {
@@ -296,6 +316,7 @@ class SpectrumFragment : Fragment() {
             }
         }
 
+        /*
         CBMEDIAN.setOnCheckedChangeListener { _, isChecked ->
             if (GO.propButtonInit) {
                 GO.drawSPECTER.flagMEDIAN = isChecked
@@ -307,7 +328,7 @@ class SpectrumFragment : Fragment() {
                     Log.e("BluZ-BT", "drawSPEC is null")
                 }
             }
-        }
+        }*/
 
         CBMARKER.setOnCheckedChangeListener { _, isChecked ->
             if (GO.propButtonInit) {

@@ -9,6 +9,7 @@ C_SRCS += \
 ../Core/Src/app_entry.c \
 ../Core/Src/main.c \
 ../Core/Src/rw_FLASH.c \
+../Core/Src/spectrum_codec.c \
 ../Core/Src/stm32wbaxx_hal_msp.c \
 ../Core/Src/stm32wbaxx_it.c \
 ../Core/Src/syscalls.c \
@@ -20,6 +21,7 @@ C_DEPS += \
 ./Core/Src/app_entry.d \
 ./Core/Src/main.d \
 ./Core/Src/rw_FLASH.d \
+./Core/Src/spectrum_codec.d \
 ./Core/Src/stm32wbaxx_hal_msp.d \
 ./Core/Src/stm32wbaxx_it.d \
 ./Core/Src/syscalls.d \
@@ -31,6 +33,7 @@ OBJS += \
 ./Core/Src/app_entry.o \
 ./Core/Src/main.o \
 ./Core/Src/rw_FLASH.o \
+./Core/Src/spectrum_codec.o \
 ./Core/Src/stm32wbaxx_hal_msp.o \
 ./Core/Src/stm32wbaxx_it.o \
 ./Core/Src/syscalls.o \
@@ -45,7 +48,7 @@ Core/Src/%.o Core/Src/%.su Core/Src/%.cyclo: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/LTC1662.cyclo ./Core/Src/LTC1662.d ./Core/Src/LTC1662.o ./Core/Src/LTC1662.su ./Core/Src/app_entry.cyclo ./Core/Src/app_entry.d ./Core/Src/app_entry.o ./Core/Src/app_entry.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/rw_FLASH.cyclo ./Core/Src/rw_FLASH.d ./Core/Src/rw_FLASH.o ./Core/Src/rw_FLASH.su ./Core/Src/stm32wbaxx_hal_msp.cyclo ./Core/Src/stm32wbaxx_hal_msp.d ./Core/Src/stm32wbaxx_hal_msp.o ./Core/Src/stm32wbaxx_hal_msp.su ./Core/Src/stm32wbaxx_it.cyclo ./Core/Src/stm32wbaxx_it.d ./Core/Src/stm32wbaxx_it.o ./Core/Src/stm32wbaxx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32wbaxx.cyclo ./Core/Src/system_stm32wbaxx.d ./Core/Src/system_stm32wbaxx.o ./Core/Src/system_stm32wbaxx.su
+	-$(RM) ./Core/Src/LTC1662.cyclo ./Core/Src/LTC1662.d ./Core/Src/LTC1662.o ./Core/Src/LTC1662.su ./Core/Src/app_entry.cyclo ./Core/Src/app_entry.d ./Core/Src/app_entry.o ./Core/Src/app_entry.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/rw_FLASH.cyclo ./Core/Src/rw_FLASH.d ./Core/Src/rw_FLASH.o ./Core/Src/rw_FLASH.su ./Core/Src/spectrum_codec.cyclo ./Core/Src/spectrum_codec.d ./Core/Src/spectrum_codec.o ./Core/Src/spectrum_codec.su ./Core/Src/stm32wbaxx_hal_msp.cyclo ./Core/Src/stm32wbaxx_hal_msp.d ./Core/Src/stm32wbaxx_hal_msp.o ./Core/Src/stm32wbaxx_hal_msp.su ./Core/Src/stm32wbaxx_it.cyclo ./Core/Src/stm32wbaxx_it.d ./Core/Src/stm32wbaxx_it.o ./Core/Src/stm32wbaxx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32wbaxx.cyclo ./Core/Src/system_stm32wbaxx.d ./Core/Src/system_stm32wbaxx.o ./Core/Src/system_stm32wbaxx.su
 
 .PHONY: clean-Core-2f-Src
 

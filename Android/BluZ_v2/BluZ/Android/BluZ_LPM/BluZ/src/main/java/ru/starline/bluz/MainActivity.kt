@@ -415,6 +415,36 @@ public class MainActivity : FragmentActivity() {
         */
         GO.PP = propControl()
         GO.readConfigParameters()
+        if (GO.ColorDosimeter == 0) {
+            GO.ColorDosimeter = resources.getColor(R.color.ColorDosimeter, theme)
+        }
+        if (GO.ColorDosimeterSMA == 0) {
+            GO.ColorDosimeterSMA = resources.getColor(R.color.ColorDosimeterSMA, theme)
+        }
+        if (GO.ColorLin == 0) {
+            GO.ColorLin = resources.getColor(R.color.specterColorLin, theme)
+        }
+        if (GO.ColorLog == 0) {
+            GO.ColorLog = resources.getColor(R.color.specterColorLog, theme)
+        }
+        if (GO.ColorFone == 0) {
+            GO.ColorFone = resources.getColor(R.color.specterColorFone, theme)
+        }
+        if (GO.ColorFoneLg == 0) {
+            GO.ColorFoneLg = resources.getColor(R.color.specterColorFoneLg, theme)
+        }
+        if (GO.ColorLinGisto == 0) {
+            GO.ColorLinGisto = resources.getColor(R.color.specterColorLinGisto, theme)
+        }
+        if (GO.ColorLogGisto == 0) {
+            GO.ColorLogGisto = resources.getColor(R.color.specterColorLogGisto, theme)
+        }
+        if (GO.ColorFoneGisto == 0) {
+            GO.ColorFoneGisto = resources.getColor(R.color.specterColorFoneGisto, theme)
+        }
+        if (GO.ColorFoneLgGisto == 0) {
+            GO.ColorFoneLgGisto = resources.getColor(R.color.specterColorFoneLgGisto, theme)
+        }
         if (GO.fullScrn) {
             enableEdgeToEdge()
         }
@@ -478,6 +508,10 @@ public class MainActivity : FragmentActivity() {
                 val tint = ContextCompat.getColor(GO.mainContext, tintRes)
                 GO.bzBtDot.backgroundTintList = ColorStateList.valueOf(tint)
                 ImageViewCompat.setImageTintList(GO.bzBtIcon, ColorStateList.valueOf(tint))
+                if (status is BleStatus.Connecting) {
+                    // Новое подключение: спектр прошлого прибора не показываем. Если у прибора спектр есть, первый кадр его перерисует.
+                    GO.drawSPECTER.resetSpecter()
+                }
                 if (status !is BleStatus.Connected) {
                     // При отключении сбрасываем индикатор — иначе на экране висят старые «-78» с зелёным цветом.
                     GO.Current_RSSI = -400
@@ -567,7 +601,7 @@ public class MainActivity : FragmentActivity() {
      *    [GO.messTm], [GO.tempMC], [GO.battLevel], [GO.overloadFlag]
      *  - `HardwareConfig` → все `GO.HW*` поля (LED/звук/вибро, пороги, коэффициенты полинома,
      *    ВВ, компаратор, время спектрометра)
-     *  - Состояние спектрометра ([GO.specterRunning]) — `true` если frame содержит `spectrumData`
+     *  - Состояние спектрометра ([GO.specterRunning]) — бит «спектрометр запущен» из заголовка frame
      *  - [GO.specterType] и [drawSpecter.ResolutionSpectr] / [drawHistory.ResolutionHistory]
      *    подгоняются под [frame.frameType]
      */
@@ -600,6 +634,7 @@ public class MainActivity : FragmentActivity() {
         GO.HWpropCPS2UR            = hw.cps2ur
         GO.HWpropHVoltage          = hw.hVoltage
         GO.HWpropComparator        = hw.comparator
+        GO.HWpropHVTempCoef       = hw.hvTempCoef
         //GO.HWCoef1024A             = hw.coef1024A
         //GO.HWCoef1024B             = hw.coef1024B
         //GO.HWCoef1024C             = hw.coef1024C
@@ -612,7 +647,6 @@ public class MainActivity : FragmentActivity() {
         GO.HWCoef4096D             = hw.coef4096D
         GO.HWCoef4096E             = hw.coef4096E
         GO.HWAqureValue            = hw.acquireValue
-        GO.HWBitsChan              = hw.bitsChan
         GO.HWSampleTime            = hw.sampleTime
         GO.spectrometerTime        = hw.spectrometerTime
         GO.spectrometerPulse       = hw.spectrometerPulse
@@ -657,7 +691,8 @@ public class MainActivity : FragmentActivity() {
                 if (GO.overloadFlag) R.color.bz_danger_soft else R.color.bz_surface
             )
         )
-        GO.bzTempValue.text = "%d°C".format(GO.tempMC.toInt())
+        GO.bzTempValue.text = "%d°C".format(Math.round(GO.tempMC))
+        GO.updateHvActual()
         applyBatteryDisplay(GO.battLevel)
         applyBtRssi()
 
@@ -726,7 +761,7 @@ public class MainActivity : FragmentActivity() {
                 if (frame.overload) R.color.bz_danger_soft else R.color.bz_surface
             )
         )
-        GO.bzTempValue.text = "%d°C".format(frame.temperature.toInt())
+        GO.bzTempValue.text = "%d°C".format(Math.round(frame.temperature))
         applyBatteryDisplay(frame.batteryVoltage)
         applyBtRssi()
 
@@ -773,19 +808,14 @@ public class MainActivity : FragmentActivity() {
         }
 
         /* Live spectrum */
+        GO.specterRunning = frame.spectrometerRunning
+        applySpecterButton()
         frame.spectrumData?.let { specData ->
-            GO.specterRunning = true
-            applySpecterButton()
             specData.copyInto(GO.drawSPECTER.spectrData)
             GO.drawSPECTER.init()
             if (GO.drawSPECTER.VSize > 0 && GO.drawSPECTER.HSize > 0) {
                 GO.drawSPECTER.clearSpecter()
                 GO.drawSPECTER.redrawSpecter(GO.specterType)
-            }
-        } ?: run {
-            if (frame.frameType == 0) {
-                GO.specterRunning = false
-                applySpecterButton()
             }
         }
     }

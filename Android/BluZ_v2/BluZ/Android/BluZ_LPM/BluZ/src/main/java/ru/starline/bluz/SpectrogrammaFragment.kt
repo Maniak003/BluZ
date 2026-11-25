@@ -7,8 +7,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.core.view.doOnLayout // <-- Не забудьте этот импорт
 import androidx.fragment.app.Fragment
 
@@ -25,8 +27,25 @@ class SpectrogrammaFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val btnStartSGram: ImageButton = view.findViewById(R.id.btnStartSpectrogram)
         GO.sGramView = view.findViewById(R.id.sGrammaView)
+        val running = GO.drawSPECTER.spectrogramActive
+        btnStartSGram.setImageResource(if (running) R.drawable.ic_bz_stop else R.drawable.ic_bz_play)
+        btnStartSGram.background = ContextCompat.getDrawable(
+            view.context,
+            if (running) R.drawable.bg_bz_circle_danger else R.drawable.bg_bz_circle_accent
+        )
 
+        btnStartSGram.setOnClickListener {
+            GO.drawSPECTER.spectrogramActive = ! GO.drawSPECTER.spectrogramActive
+            val running = GO.drawSPECTER.spectrogramActive
+            btnStartSGram.setImageResource(if (running) R.drawable.ic_bz_stop else R.drawable.ic_bz_play)
+            btnStartSGram.background = ContextCompat.getDrawable(
+                view.context,
+                if (running) R.drawable.bg_bz_circle_danger else R.drawable.bg_bz_circle_accent
+            )
+
+        }
         // doOnLayout выполнится, когда у sGramView появятся реальные размеры
         GO.sGramView.doOnLayout { imageView ->
             val hSize = imageView.width

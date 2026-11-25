@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -623,6 +624,10 @@ class BluZMapFragment : Fragment() {
         }
         // Стартуем обновления сразу (onStart мог отработать до создания locationManager)
         GO.locationManager?.startLocationUpdates()
+
+        /* Без разрешения на геолокацию последнюю точку не запрашиваем: на первом запуске это SecurityException */
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) return
 
         val lstLoc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         if (lstLoc != null) {

@@ -111,6 +111,7 @@ class globalObj {
     public val propCfgCoef4096D: String = "Coeff4096D"
     public val propCfgCoef4096E: String = "Coeff4096E"
     public val propCfgHV: String = "HVoltage"
+    public val propCfgHVTempCoef: String = "HVTempCoef"
     public val propCfgComparator: String = "Comparator"
     public val propCfgSoundKvant: String = "SoundKvantN"
     public val propCfgLedKvant: String = "LedKvantN"
@@ -122,7 +123,6 @@ class globalObj {
                                           //0.013870353993599009
     public val acuricyPatern : String = "###0.##################"
     public val propAquracy : String = "AquracyDozimeter"
-    public val propBitsChan: String = "BitsOfChannel"
     public val propFullScrn: String = "FullScreen"
     public val propNightMode: String = "NightMapMode"
     public val propSaveTrackType: String = "SaveTrackType"
@@ -385,6 +385,8 @@ class globalObj {
     lateinit var rbResolution2048: RadioButton
     lateinit var rbResolution4096: RadioButton
     lateinit var editHVoltage: EditText
+    lateinit var editHVTempCoef: EditText
+    lateinit var textHVActual: TextView
     lateinit var editComparator: EditText
     lateinit var cbSpectrometr: CheckBox
     lateinit var editSMA: EditText
@@ -393,12 +395,10 @@ class globalObj {
     lateinit var rbSpctTypeSPE: RadioButton
     lateinit var rbSpctType : RadioGroup
     lateinit var aqureEdit : EditText
-    lateinit var bitsChannelEdit: EditText
     lateinit var sampleTimeEdit: EditText
     lateinit var textAppLogLevel: EditText
     lateinit var textXZoom: EditText
     var aqureValue: Int = 100
-    var bitsChannel:Int = 20
     public lateinit var cbFullScrn: CheckBox            // Управление полноэкранным режимом
     public var fullScrn: Boolean = false                // Флаг для полноэкранного режима
     /*
@@ -476,6 +476,7 @@ class globalObj {
     public var propCoef4096E: Float = 0.0f
     public var propComparator: UShort = 0u          // Уровень компаратора
     public var propHVoltage: UShort = 0u            // Уровень высокого напряжения
+    public var propHVTempCoef: Int = 0             // Температурная коррекция высокого напряжения, 0.001 кода DAC на °C
     public var windowSMA: Int = 5
     public var sampleTime: Int = 0
 
@@ -572,6 +573,7 @@ class globalObj {
     public var HWpropCPS2UR: Float = 0.0f
 
     public var HWpropHVoltage: UShort = 0u
+    public var HWpropHVTempCoef: Int = 0
 
     public var HWpropComparator: UShort = 0u
 
@@ -593,7 +595,6 @@ class globalObj {
     public var HWCoef4096D: Float = 0.0f
     public var HWCoef4096E: Float = 0.0f
     public var HWAqureValue: UShort = 0u
-    public var HWBitsChan: UByte = 0u
     public var HWSampleTime: UByte = 0u
 
     /**
@@ -618,6 +619,22 @@ class globalObj {
      *  - 1 (L1) → то же + `bz_warn`, title "Превышение порога 1"
      *  - 0 (NORMAL) → `bz_accent`, title "В норме"
      */
+    /**
+     * Фактическое (компенсированное) ВВ в окне настроек — та же формула, что `hvCompensate()` в прошивке:
+     * HV = HV0 + HVTC/1000 · (20 − T), в пределах 0..1023. Без подключённого прибора — прочерк.
+     */
+    fun updateHvActual() {
+        if (!::textHVActual.isInitialized) return
+        val hv0 = editHVoltage.text.toString().trim().toIntOrNull()
+        val tc = editHVTempCoef.text.toString().trim().toIntOrNull()
+        textHVActual.text = if (!BTT.connected || hv0 == null || tc == null) {
+            "—"
+        } else {
+            val level = (hv0 + tc / 1000.0f * (20.0f - tempMC)).coerceIn(0.0f, 1023.0f)
+            (level + 0.5f).toInt().toString()
+        }
+    }
+
     fun applyDoseReadouts() {
         val hasCoef = GO.propCPS2UR > 0f
 
@@ -811,9 +828,6 @@ class globalObj {
             return
         } else {
             // Первый "живой" канал ограничен аппаратным порогом компаратора.
-            // propComparator — отсчёты АЦП, bitsChannel — отсчётов АЦП на 1 канал спектра.
-            //val bitsCh = if (GO.bitsChannel in 1..64) GO.bitsChannel else 20
-            //val firstCh = (GO.propComparator.toInt() / bitsCh).coerceIn(0, channels - 1)
             //val firstCh = 0
             val lastCh = channels - 1
             val eFirst = 0
@@ -1137,14 +1151,10 @@ class globalObj {
         GO.propCPSLevel2 = GO.propLevel2 * GO.propCPS2UR
         GO.propCPSLevel3 = GO.propLevel3 * GO.propCPS2UR
         GO.propHVoltage = GO.HWpropHVoltage
+        GO.propHVTempCoef = GO.HWpropHVTempCoef
         GO.propComparator = GO.HWpropComparator
         GO.propAutoStartSpectrometr = GO.HWpropAutoStartSpectrometr
         GO.aqureValue = GO.HWAqureValue.toInt()
-        if (GO.HWBitsChan.toInt() < 16 || GO.HWBitsChan.toInt() > 32) {
-            GO.bitsChannel = 20
-        } else {
-            GO.bitsChannel = GO.HWBitsChan.toInt()
-        }
         /* Время выборки АЦП */
         if (GO.HWSampleTime > 7u) {
             GO.sampleTime = 0
@@ -1192,6 +1202,7 @@ class globalObj {
         GO.PP.setPropInt(propCfgResolution, GO.spectrResolution)
         GO.PP.setPropInt(propCfgComparator, GO.propComparator.toInt())     // Уровень Компаратора
         GO.PP.setPropInt(propCfgHV, GO.propHVoltage.toInt())               // Уровень высокого напряжения
+        GO.PP.setPropInt(propCfgHVTempCoef, GO.propHVTempCoef)             // Температурная коррекция высокого напряжения
         GO.PP.setPropInt(propCfgSMAWindow, GO.windowSMA)
         //GO.PP.setPropFloat(propCfgCoef1024A, GO.propCoef1024A)             // A - полинома пересчета канала в энергию
         //GO.PP.setPropFloat(propCfgCoef1024B, GO.propCoef1024B)             // B - полинома пересчета канала в энергию
@@ -1219,7 +1230,6 @@ class globalObj {
         GO.PP.setPropInt(propCfgSoundKvant, GO.propSoundKvant)
         GO.PP.setPropInt(propCfgSpectrGraphType, GO.specterGraphType)
         GO.PP.setPropInt(propAquracy, GO.aqureValue)                        // Точность усреднения для дозиметра, количество импульсов.
-        GO.PP.setPropInt(propBitsChan, GO.bitsChannel)                      // Количество  бит в канале
         GO.PP.setPropBoolean(propFullScrn, GO.fullScrn)                     // Полноэкранный режим
         GO.PP.setPropInt(propSaveTrackType, GO.saveTrackType)               // Формат для сохранения трека
         GO.PP.setPropInt(propSampleTime, GO.sampleTime)                     // Время выборки АЦП
@@ -1303,6 +1313,7 @@ class globalObj {
         GO.propCoef4096E = GO.PP.getPropFloat(propCfgCoef4096E)
         GO.propCPS2UR = GO.PP.getPropFloat(propCfgCPS2UR)
         GO.propHVoltage = GO.PP.getPropInt(propCfgHV).toUShort()
+        GO.propHVTempCoef = GO.PP.getPropInt(propCfgHVTempCoef)
         GO.propComparator = GO.PP.getPropInt(propCfgComparator).toUShort()
         GO.spectrResolution = GO.PP.getPropInt(propCfgResolution)
         GO.windowSMA = GO.PP.getPropInt(propCfgSMAWindow)
@@ -1317,10 +1328,6 @@ class globalObj {
         */
         GO.saveSpecterType = GO.PP.getPropInt(propCfgSaveSpecterType)
         GO.aqureValue = GO.PP.getPropInt(propAquracy)
-        GO.bitsChannel = GO.PP.getPropInt(propBitsChan)
-        if (GO.bitsChannel < 16 || GO.bitsChannel > 32) {
-            GO.bitsChannel = 20
-        }
         GO.sampleTime = GO.PP.getPropInt(propSampleTime)
         if (GO.sampleTime < 0 || GO.sampleTime > 7) {
             GO.sampleTime = 0
@@ -1462,4 +1469,4 @@ class globalObj {
     val dao: DosimeterDao
         get() = database.dosimeterDao()
 
-}
+}

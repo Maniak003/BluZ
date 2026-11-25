@@ -135,10 +135,10 @@ HAL_StatusTypeDef writeFlash() {
 	tmpData = enCoefA4096.Uint32 | ((uint64_t)enCoefB4096.Uint32 << 32);
 	PL[idxPL++] = tmpData;					// 12, 13
 
-	tmpData = enCoefC4096.Uint32 | ((uint64_t)dozimetrAquracy << 32) | (((uint64_t) bitsOfChannal & 0xFF) << 48) | (((uint64_t) currentSamplingTime & 0x7) << 56) | (((uint64_t) divide10sound & 0x1) << 59) | (((uint64_t) divide10led & 0x1) << 60);
+	tmpData = enCoefC4096.Uint32 | ((uint64_t)dozimetrAquracy << 32) | (((uint64_t) currentSamplingTime & 0x7) << 56) | (((uint64_t) divide10sound & 0x1) << 59) | (((uint64_t) divide10led & 0x1) << 60);
 	PL[idxPL++] = tmpData;					// 14, 15
 
-	tmpData = battKoeff.Uint32;
+	tmpData = battKoeff.Uint32 | ((uint64_t)(uint16_t)hvTempCoef << 32);
 	PL[idxPL++] = tmpData;
 
 	//PL[idxPL++] = 0xDDDDDDFFCCCCCCFF;		// 16, 17
@@ -203,17 +203,17 @@ HAL_StatusTypeDef readFlash() {
 		 *	5			--	Уровень второго порога
 		 *	6			--	Уровень третьего порога
 		 *	7			--	N/A
-		 *	8			--	Коэффициент A пересчета канала в энергию для 1024
-		 *	9			--	Коэффициент B пересчета канала в энергию для 1024
-		 *	10			--	Коэффициент C пересчета канала в энергию для 1024
-		 *	11			--	Коэффициент A пересчета канала в энергию для 2048
-		 *	12			--	Коэффициент B пересчета канала в энергию для 2048
-		 *	13			--	Коэффициент C пересчета канала в энергию для 2048
+		 *	8			--	Не используется
+		 *	9			--	Не используется
+		 *	10			--	Не используется
+		 *	11			--	Не используется
+		 *	12			--	Коэффициент D пересчета канала в энергию для 4096
+		 *	13			--	Коэффициент E пересчета канала в энергию для 4096
 		 *	14			--	Коэффициент A пересчета канала в энергию для 4096
 		 *	15			--	Коэффициент B пересчета канала в энергию для 4096
 		 *	16			--	Коэффициент C пересчета канала в энергию для 4096
 		 *	17			--	Количество импульсов для усреднения (uint16_t), Разрядность канала (uint8_t), Время выборки АЦП (0x7 - три бита), Деление озвучки (0x10 - один бит)
-		 *	18			--  Коэффициент пересчета напряжения для аккумулятора (uint32_t)
+		 *	18			--  Коэффициент пересчета напряжения для аккумулятора (uint32_t, 0 - 31 биты), температурная коррекция HV (int16_t, 32 - 47 биты)
 		 *
 		 */
 
@@ -242,25 +242,25 @@ HAL_StatusTypeDef readFlash() {
 		level2 = (tmpData >> 16) & 0xFFFF;
 		level3 = (tmpData >> 32) & 0xFFFF;
 
-		/* Коэффициент A полинома преобразования канала в энергию для 1024 каналов*/
+		/* Не используется */
 		tmpData = PL[idxPL++];						// 6, 7
 		enCoefA1024.Uint32 = tmpData & 0xFFFFFFFF;
 
-		/* Коэффициент B полинома преобразования канала в энергию для 1024 каналов */
+		/* Не используется */
 		enCoefB1024.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
 
-		/* Коэффициент C полинома преобразования канала в энергию для 1024 каналов */
+		/* Не используется */
 		tmpData = PL[idxPL++];						// 8, 9
 		enCoefC1024.Uint32 = tmpData & 0xFFFFFFFF;
 
-		/* Коэффициент A полинома преобразования канала в энергию для 2048 каналов*/
+		/* Не используется*/
 		enCoefA2048.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
 
-		/* Коэффициент B полинома преобразования канала в энергию для 2048 каналов */
+		/* Коэффициент D полинома преобразования канала в энергию для 4096 каналов */
 		tmpData = PL[idxPL++];						// 10, 11
 		enCoefB2048.Uint32 = tmpData & 0xFFFFFFFF;
 
-		/* Коэффициент C полинома преобразования канала в энергию для 2048 каналов */
+		/* Коэффициент E полинома преобразования канала в энергию для 4096 каналов */
 		enCoefC2048.Uint32 = (tmpData >> 32) & 0xFFFFFFFF;
 
 		/* Коэффициент A полинома преобразования канала в энергию для 4096 каналов*/
@@ -281,11 +281,6 @@ HAL_StatusTypeDef readFlash() {
 		if ((dozimetrAquracy == 0xFFFF) || (dozimetrAquracy == 0)) {
 			dozimetrAquracy = 100;
 		}
-		/* Разрядность канала */
-		bitsOfChannal = (tmpData >> 48) & 0xFF;							// 48 - 55 биты
-		if ((bitsOfChannal < 16) || (bitsOfChannal > 32)) {
-			bitsOfChannal = CAPCHAN;
-		}
 		/* Время выборки для ADC */										// 56 - 58 биты
 		currentSamplingTime = (tmpData >> 56) & 0x7;
 		if (currentSamplingTime > 7) {
@@ -303,6 +298,9 @@ HAL_StatusTypeDef readFlash() {
 		if (isnan(battKoeff.Float) || isinf(battKoeff.Float) || battKoeff.Float < 0.00095f || battKoeff.Float > 0.00115f) {
 			battKoeff.Float = ADC_VREF_COEF;
 		}
+
+		/* Температурная коррекция высокого напряжения */
+		hvTempCoef = (int16_t) ((tmpData >> 32) & 0xFFFF);
 
 	return HAL_OK;
 

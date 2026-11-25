@@ -1342,14 +1342,66 @@
                     android:layout_marginTop="8dp"
                     android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/textView21"
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Высокое напряжение"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="HV"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Фактическое, с учётом температуры (код DAC)"
+                            android:textColor="@color/bz_text_dim"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/textHVActual"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:text="—"
                         android:textColor="@color/bz_text"
                         android:textSize="13sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/textView21"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="HV0"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Базовое, при 20 °C (код DAC)"
+                            android:textColor="@color/bz_text_dim"
+                            android:textSize="10sp" />
+                    </LinearLayout>
 
                     <EditText
                         android:id="@+id/editHvoltage"
@@ -1360,6 +1412,49 @@
                         android:gravity="center"
                         android:imeOptions="actionDone"
                         android:inputType="number"
+                        android:padding="8dp"
+                        android:text="0"
+                        android:textColor="@color/bz_danger"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/textViewHVTC"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="HVTC"
+                            android:textColor="@color/bz_text"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Коэффициент: 0.001 кода DAC на °C"
+                            android:textColor="@color/bz_text_dim"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <EditText
+                        android:id="@+id/editHVTempCoef"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_bz_button_surface"
+                        android:fontFamily="@font/bz_jetbrains_mono_bold"
+                        android:gravity="center"
+                        android:imeOptions="actionDone"
+                        android:inputType="numberSigned"
                         android:padding="8dp"
                         android:text="0"
                         android:textColor="@color/bz_danger"
@@ -1415,35 +1510,6 @@
                     android:text="Подбирается при естественном фоне (без источника)"
                     android:textColor="@color/bz_text_muted"
                     android:textSize="11sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Бит канала (16–32)"
-                        android:textColor="@color/bz_text"
-                        android:textSize="13sp" />
-
-                    <EditText
-                        android:id="@+id/editBitsChannel"
-                        android:layout_width="80dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_bz_button_surface"
-                        android:fontFamily="@font/bz_jetbrains_mono_bold"
-                        android:gravity="center"
-                        android:imeOptions="actionDone"
-                        android:inputType="number"
-                        android:padding="8dp"
-                        android:text="20"
-                        android:textColor="@color/bz_text"
-                        android:textSize="13sp" />
-                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"

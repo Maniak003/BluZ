@@ -64,7 +64,8 @@ extern "C" {
  * для разрешения 4096
  * 8192 + 104 =  34 * 244(MTU)
  */
-#define PROTOVERSION 0x0001									/* Версия протокола */
+#define PROTOVERSION_MAJOR 1								/* Мажорная версия протокола (байт 6), несовместимые изменения */
+#define PROTOVERSION_MINOR 0								/* Минорная версия протокола (байт 7), совместимые добавления */
 #define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 #define CRC_SIZE 1											/* размер в uint16_t */
 #define MTU_SIZE DATA_NOTIFICATION_MAX_PACKET_SIZE			/* Размер mtu в uint8_t */
@@ -73,15 +74,11 @@ extern "C" {
 #define LOG_BUFER_SIZE 50									/* Количество записей в логе */
 #define LOG_OFFSET (HEADER_OFFSET + SIZE_DOZIMETR_BUFER)	/* Начало данных лога */
 #define SPECTER_OFFSET (LOG_OFFSET + LOG_BUFER_SIZE * 3)	/* Начало спектра в буфере в uint16_t */
-#define NUMBER_MTU_DOZR 6									/* Количество MTU для передачи накоплений дозиметра */
-#define NUMBER_MTU_1024 16									/* Количество MTU для передачи спектра разрешением 1024 */
-#define NUMBER_MTU_2048 23									/* Количество MTU для передачи спектра разрешением 2048 */
-#define NUMBER_MTU_4096 40									/* Количество MTU для передачи спектра разрешением 4096 */
+#define NUMBER_MTU_MAX 73									/* Максимум MTU в кадре: 1424 + 4 * 4096 + 2 байт (несжатый спектр 4096) */
 #define CHANNELS_1024	1024
 #define CHANNELS_2048	2048
 #define CHANNELS_4096	4096
 #define MAX_RESOLUTION 	4096
-#define CAPCHAN 20											/* Количество разрядов в канале */
 #define OFFSET_CHAN		1U									/* Смещение канала для усредненния */
 #define DEFAULTAQR		100									/* Точность дозиметра по умолчанию */
 #define SEND_DELAY		30									/* Задержка в ms между передачами MTU */
@@ -108,20 +105,23 @@ typedef enum sendDataTypes {
 extern uint16_t MTUSizeValue;
 extern spectrResolution_t resolutionSpecter;
 extern sendDataTypes_t dataType;
-extern uint16_t transmitBuffer[NUMBER_MTU_4096 * 244 / 2 + SPECTER_OFFSET];
+extern uint16_t transmitBuffer[NUMBER_MTU_MAX * 244 / 2];
 extern uint16_t currTemperature, currVoltage;
 extern uint32_t tmpSpecterBuffer[MAX_RESOLUTION], spectrometerTime, spectrometerPulse;
 extern uint32_t historySpecterBuffer[MAX_RESOLUTION];
 extern uint32_t currentTimeAvg, pulseCounterAvg, pulseCounter, currentTime, pulseCounterSecond, CPS, intervalNow, TVLevel[3];
 extern uint32_t interval2;
+extern uint8_t notifyInterval;
 extern bool SoundEnable, VibroEnable, LEDEnable, LEDflag;
 extern bool levelSound1, levelSound2, levelSound3;
 extern bool levelVibro1, levelVibro2, levelVibro3;
 extern bool flagTemperatureMess, autoStartSpecrometr;
-extern bool history_active, historyRequest/*, findDevice*/;
+extern bool history_active, requestHistory/*, findDevice*/;
 extern bool divide10sound, divide10led;
 extern bool inhibitAlarm;
 extern uint16_t HVoltage, comparatorLevel;
+extern int16_t hvTempCoef;
+void hvCompensate(void);
 extern LPTIM_HandleTypeDef hlptim2;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER];
@@ -129,10 +129,8 @@ extern int indexDozimetrBufer;
 extern ADC_HandleTypeDef hadc4;
 extern uint64_t PL[19];
 extern uint32_t tmpLevel;
-extern uint32_t limitChan;
-extern double CoefChan;
 extern uint8_t currentSamplingTime;
-extern bool requestHardwareInfo;
+extern bool requestHardwareInfo, requestSpectrum, requestDosimeter, requestState;
 
 typedef enum commandTx {
 	cmd_setup,					// 0
@@ -146,6 +144,9 @@ typedef enum commandTx {
 	cmd_clear_history,			// 8
 	cmd_infibit_alarm,			// 9
 	cmd_get_hardware_info,		// 10
+	cmd_get_specter,			// 11
+	cmd_get_dosimeter,			// 12
+	cmd_set_notify_interval,	// 13
 } commantTx_t;
 
 typedef enum logTypes {
@@ -169,7 +170,8 @@ typedef enum logTypes {
 	clearHistory,				// 17
 	inhibitAlarms,				// 18
 	requestWHcfg,				// 19
-	unknownCommand,				//
+	timerRecoverLog,			// 20
+	unknownCommand,				// EOF
 } logTypes_t;
 
 struct LG {
@@ -198,7 +200,6 @@ union dataA {
 
 extern uint32_t level1_cps, level2_cps, level3_cps, tmp_level;
 extern uint16_t level1, level2, level3;
-extern uint8_t bitsOfChannal;
 extern union dataC calcCoeff;
 extern union dataC enCoefA1024, enCoefB1024, enCoefC1024;
 extern union dataC enCoefA2048, enCoefB2048, enCoefC2048;
@@ -268,9 +269,10 @@ void NotifyAct(uint8_t SRC, uint32_t repCnt);
 
 /* USER CODE BEGIN Private defines */
 #define INTERVAL1 1
-#define INTERVAL2 5
 #define INTERVAL3 1
 #define INTERVAL4 120
+#define HV_TEMP_REF 20.0f								// Температура, при которой коррекция высокого напряжения равна нулю, °C
+#define HV_TEMP_COEF_DEFAULT 7900						// Коэффициент температурной коррекции по умолчанию, 0.001 кода DAC на °C
 #define INTERVAL5 60									// Интервал звукового оповещения о низком заряде аккумулятора
 #define DIVCOUNTER 5									// Делитель событий для озвучки.
 #define DIVCOUNTERLED 10								// Делитель событий для светодиода.
