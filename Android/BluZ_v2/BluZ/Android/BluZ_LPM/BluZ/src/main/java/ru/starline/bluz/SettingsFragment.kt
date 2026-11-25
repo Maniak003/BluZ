@@ -752,6 +752,7 @@ class SettingsFragment : Fragment() {
             GO.BTT.sendBuffer[33] = (GO.propHVoltage and 255u).toUByte()
             GO.BTT.sendBuffer[34] = ((GO.propHVoltage.toUInt() shr 8) and 255u).toUByte()
 
+            /* Температурная коррекция, int16 LE, 0.001 кода DAC на °C (по умолчанию 7900), 0 - выключена */
             GO.BTT.sendBuffer[65] = (GO.propHVTempCoef and 255).toUByte()
             GO.BTT.sendBuffer[66] = ((GO.propHVTempCoef shr 8) and 255).toUByte()
 
