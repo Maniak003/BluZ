@@ -388,7 +388,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           UNUSED(p_conn_update_complete);
 
           /* USER CODE BEGIN EVT_LE_CONN_UPDATE_COMPLETE */
-
+          BLE_GetConnParam(conn_interval_us, p_conn_update_complete->Conn_Latency, p_conn_update_complete->Supervision_Timeout*10);
           /* USER CODE END EVT_LE_CONN_UPDATE_COMPLETE */
           break;
         }
@@ -450,10 +450,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           //hci_le_set_phy(p_enhanced_conn_complete->Connection_Handle, 0, HCI_TX_PHYS_LE_2M_PREF, HCI_RX_PHYS_LE_2M_PREF, 0);
 
           /* 50 ms, 0 latency, 500 ms timeout */
-          //aci_l2cap_connection_parameter_update_req(p_enhanced_conn_complete->Connection_Handle,
-          //    40, 40,   // 50 ms
-          //    0,        // latency
-          //    500);     // timeout
+          aci_l2cap_connection_parameter_update_req(p_enhanced_conn_complete->Connection_Handle,
+              40, 40,   // 50 ms
+              0,        // latency
+              500);     // timeout
           /* USER CODE END HCI_EVT_LE_ENHANCED_CONN_COMPLETE */
           break; /* HCI_LE_ENHANCED_CONNECTION_COMPLETE_SUBEVT_CODE */
         }

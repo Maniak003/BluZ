@@ -447,6 +447,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
            * Установка параметров интерфейса
            *  2 M PHY
            */
+
           //hci_le_set_phy(p_enhanced_conn_complete->Connection_Handle, 0, HCI_TX_PHYS_LE_2M_PREF, HCI_RX_PHYS_LE_2M_PREF, 0);
 
           /* 50 ms, 0 latency, 500 ms timeout */

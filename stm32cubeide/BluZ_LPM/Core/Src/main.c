@@ -63,6 +63,7 @@ uint32_t tmpLevel, pulseCounter = 0,  pulseCounterSecond = 0, currentTime = 0, C
 uint16_t dozimetrBuffer[SIZE_DOZIMETR_BUFER] = {0,};
 uint8_t notifyInterval = 0;									/* Интервал автонотификации в секундах, 0 - выключена. Во flash не хранится. */
 bool noSendProgress = true, requestHardwareInfo = false, requestSpectrum = false, requestDosimeter = false, requestState = false;
+
 /*
  *	Точность измерения дозиметра
  *	1 sigma <10% -  100
@@ -129,7 +130,7 @@ union dataB battKoeff;
 
 uint8_t	low_batt_count = 0;											// Счетчик низкого уровня батареии
 uint32_t batt_time_counter = 0;										// ИНтервал звукового оповещения о низком заряде аккумулятора
-int16_t hvTempCoef = HV_TEMP_COEF_DEFAULT;									// Температурная коррекция высокого напряжения, 0.001 кода DAC на °C, 0 - выключена
+int16_t hvTempCoef = HV_TEMP_COEF_DEFAULT;							// Температурная коррекция высокого напряжения, 0.001 кода DAC на °C, 0 - выключена
 uint16_t HVoltage = 256, comparatorLevel = 256;						// Уровни настройки высокого напряжения и компаратора
 
 uint8_t notifyFlags = 0;											// 1 - Звук, 2 - Вибро, 4 - Led
@@ -180,6 +181,19 @@ uint32_t samplingTm(uint8_t smplTm) {
 		default: return ADC_SAMPLETIME_1CYCLE_5;
 	}
 }
+
+/* Получение параметров BLE стека */
+
+uint32_t con_inter = 0;
+uint16_t con_lat = 0, con_tout = 0;
+
+__attribute__((used)) void BLE_GetConnParam(uint32_t c, uint16_t l, uint16_t t) {
+	con_inter = c;
+	con_lat = l;
+	con_tout = t;
+}
+
+
 
 /*
  *	Добавление записи в лог
@@ -775,9 +789,14 @@ int main(void)
 	  transmitBuffer[25] = HVoltage;
 
 	  /* Уставка порога компаратора */
+	  //transmitBuffer[26] = con_tout;
 	  transmitBuffer[26] = comparatorLevel;
 
 	  /* Значения порогов предупреждений */
+
+	  //transmitBuffer[27] = con_inter & 0xFF;
+	  //transmitBuffer[28] = (con_inter >> 16) & 0xFF;
+	  //transmitBuffer[29] = con_lat;
 	  transmitBuffer[27] = level1;
 	  transmitBuffer[28] = level2;
 	  transmitBuffer[29] = level3;

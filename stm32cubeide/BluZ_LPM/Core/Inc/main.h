@@ -131,6 +131,9 @@ extern uint64_t PL[19];
 extern uint32_t tmpLevel;
 extern uint8_t currentSamplingTime;
 extern bool requestHardwareInfo, requestSpectrum, requestDosimeter, requestState;
+extern uint32_t con_inter;
+extern uint16_t con_lat, con_tout;
+
 
 typedef enum commandTx {
 	cmd_setup,					// 0

@@ -31,7 +31,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
-#include <main.h>
+//#include <main.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -113,7 +113,6 @@ typedef enum
 }ProcGapCentralId_t;
 
 /* USER CODE BEGIN ET */
-
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -125,6 +124,7 @@ typedef enum
 
 /* USER CODE BEGIN EV */
 extern bool connectFlag;
+void BLE_GetConnParam(uint32_t c, uint16_t l, uint16_t t);
 /* USER CODE END EV */
 
 /* Exported macro ------------------------------------------------------------*/
